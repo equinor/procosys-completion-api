@@ -10,6 +10,7 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
 {
     public void Configure(EntityTypeBuilder<Link> builder)
     {
+        builder.ConfigureSystemVersioning();
         builder.ConfigureCreationAudit();
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();

@@ -9,6 +9,7 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 {
     public void Configure(EntityTypeBuilder<Attachment> builder)
     {
+        builder.ConfigureSystemVersioning();
         builder.ConfigureCreationAudit();
         builder.ConfigureConcurrencyToken();
 

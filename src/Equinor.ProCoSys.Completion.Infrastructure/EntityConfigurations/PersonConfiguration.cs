@@ -9,6 +9,7 @@ internal class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
     public void Configure(EntityTypeBuilder<Person> builder)
     {
+        builder.ConfigureSystemVersioning();
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 

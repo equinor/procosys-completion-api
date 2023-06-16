@@ -10,12 +10,11 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
 {
     public void Configure(EntityTypeBuilder<Punch> builder)
     {
+        builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
         builder.ConfigureCreationAudit();
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
-
-        builder.ToTable(t => t.IsTemporal());
 
         builder.HasOne<Project>()
             .WithMany()
