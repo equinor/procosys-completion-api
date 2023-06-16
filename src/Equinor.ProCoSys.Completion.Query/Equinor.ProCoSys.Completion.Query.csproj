@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceResult" Version="1.0.1" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
