@@ -28,8 +28,10 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public string Url { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
+    public Guid CreatedByOid { get; private set; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
+    public Guid? ModifiedByOid { get; private set; }
     public Guid Guid { get; private set; }
 
     public void SetCreated(Person createdBy)
@@ -40,6 +42,7 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
             throw new ArgumentNullException(nameof(createdBy));
         }
         CreatedById = createdBy.Id;
+        CreatedByOid = createdBy.Guid;
     }
 
     public void SetModified(Person modifiedBy)
@@ -50,5 +53,6 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
             throw new ArgumentNullException(nameof(modifiedBy));
         }
         ModifiedById = modifiedBy.Id;
+        ModifiedByOid = modifiedBy.Guid;
     }
 }

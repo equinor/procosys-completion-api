@@ -11,7 +11,7 @@ public class PunchVoidedEventHandler : INotificationHandler<PunchVoidedEvent>
     public Task Handle(PunchVoidedEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Punch.Guid;
-
+        //_massTransitBusService.Publish(notification);
         // ToDo Send event to the bus
         return Task.CompletedTask;
     }

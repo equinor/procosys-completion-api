@@ -1,18 +1,57 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
+using MassTransit;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
 
 public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
 {
-    // todo unit test
-    public Task Handle(PunchCreatedEvent notification, CancellationToken cancellationToken)
+    private readonly IPublishEndpoint _publishEndpoint;
+    public PunchCreatedEventHandler(IPublishEndpoint publishEndpoint)
     {
-        var sourceGuid = notification.Punch.Guid;
+        _publishEndpoint = publishEndpoint;
+    }
+    
+    // todo unit test
+    public async Task Handle(PunchCreatedEvent notification, CancellationToken cancellationToken) =>
+        await _publishEndpoint.Publish<Punch>(new
+        {
+            SourceGuid = notification.Punch.Guid,
+            Title = notification.Punch.Title, 
+            CreatedByOid = notification.Punch.CreatedByOid, 
+            CreatedAtUtc = notification.Punch.CreatedAtUtc
+        }, cancellationToken);
 
-        // ToDo Send event to the bus
-        return Task.CompletedTask;
+    record Punch : IPunchV1, IPunchV2 //TODO clean up befpre merge. 
+    {
+        public Guid SourceGuid { get; init; }
+        public string? Title { get; init; }
+        public Guid CreatedByOid { get; init; }
+        public int CreatedById { get; init; }
+        
+        
+        public DateTime CreatedAtUtc { get; init; }
+        
+    }
+    interface IPunchV1
+    {
+        public Guid SourceGuid { get; init; }
+        public string? Title { get; init; }
+        public int CreatedById { get; init; }
+        
+        public DateTime CreatedAtUtc { get; init; }
+        
+    }
+
+    interface IPunchV2
+    {
+        public Guid SourceGuid { get; init; }
+        public string? Title { get; init; }
+        public Guid CreatedByOid { get; init; }
+        
+        public DateTime CreatedAtUtc { get; init; }
     }
 }

@@ -46,8 +46,10 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
+    public Guid CreatedByOid { get; private set; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
+    public Guid? ModifiedByOid { get; private set; }
     public Guid Guid { get; private set; }
 
     public void Update(string title, string? text)
@@ -64,6 +66,7 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
             throw new ArgumentNullException(nameof(createdBy));
         }
         CreatedById = createdBy.Id;
+        CreatedByOid = createdBy.Guid;
     }
 
     public void SetModified(Person modifiedBy)
@@ -74,5 +77,6 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
             throw new ArgumentNullException(nameof(modifiedBy));
         }
         ModifiedById = modifiedBy.Id;
+        ModifiedByOid = modifiedBy.Guid;
     }
 }

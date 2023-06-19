@@ -15,6 +15,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using MassTransit;
+using ConcurrencyException = Equinor.ProCoSys.Common.Misc.ConcurrencyException;
 using IDomainMarker = Equinor.ProCoSys.Completion.Domain.IDomainMarker;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure;
@@ -52,6 +54,11 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
+        
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+        
     }      
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
@@ -85,9 +92,11 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await DispatchDomainEventsAsync(cancellationToken);
-
         await SetAuditDataAsync();
+        
+        //must be called after SetAuditDataAsync
+        await DispatchDomainEventsAsync(cancellationToken); //TODO create test that fails if order is wrong
+        
         UpdateConcurrencyToken();
 
         try

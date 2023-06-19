@@ -11,6 +11,7 @@ public interface IModificationAuditable
 {
     DateTime? ModifiedAtUtc { get; }
     int? ModifiedById { get; }
+    Guid? ModifiedByOid { get; }
 
     /// <summary>
     /// Method to set modification data on an entity.

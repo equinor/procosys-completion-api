@@ -22,13 +22,14 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     }
 
     // private setters needed for Entity Framework
-    public Guid Guid { get; private set; }
+    public Guid Guid { get; private set; } //Azure AD Oid
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string UserName { get; set; }
     public string Email { get; set; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
+    public Guid? ModifiedByOid { get; private set; }
 
     public void SetModified(Person modifiedBy)
     {
@@ -38,5 +39,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
             throw new ArgumentNullException(nameof(modifiedBy));
         }
         ModifiedById = modifiedBy.Id;
+        ModifiedByOid = modifiedBy.Guid;
+        
     }
 }

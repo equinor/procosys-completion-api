@@ -4,7 +4,9 @@ using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
+using MassTransit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents;
 
@@ -18,7 +20,8 @@ public class PunchCreatedEventHandlerTests
         // Arrange
         var punch = new Punch("X", new Project("X", Guid.NewGuid(), "Pro", "Desc"), "F");
         var punchCreatedEvent = new PunchCreatedEvent(punch);
-        var dut = new PunchCreatedEventHandler();
+        var mockPublishEndpoint = new Mock<IPublishEndpoint>();
+        var dut = new PunchCreatedEventHandler(mockPublishEndpoint.Object);
 
         // Act
         await dut.Handle(punchCreatedEvent, default);

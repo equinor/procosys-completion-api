@@ -25,6 +25,7 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     public Guid SourceGuid { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
+    public Guid CreatedByOid { get; }
     public Guid Guid { get; private set; }
 
     public void SetCreated(Person createdBy)

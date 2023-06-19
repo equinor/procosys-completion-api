@@ -18,11 +18,11 @@ public class INotificationHandlerTests : IDomainMarker
         var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
         var domainAssembly = allAssemblies
             .Single(a => a.FullName != null &&
-                         a.FullName.Contains("Equinor.ProCoSys.Completion.Domain") &&
+                         a.FullName.Contains(nameof(Domain)) &&
                          !a.FullName.Contains(".Test"));
         var commandAssembly = allAssemblies
             .Single(a => a.FullName != null &&
-                         a.FullName.Contains("Equinor.ProCoSys.Completion.Command") &&
+                         a.FullName.Contains(nameof(Command)) &&
                          !a.FullName.Contains(".Test"));
 
         var notifications =

@@ -25,6 +25,8 @@ using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
+using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -43,6 +45,28 @@ public static class ApplicationModule
             var connectionString = configuration.GetConnectionString(CompletionContext.CompletionContextConnectionStringName);
             options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
+
+        services.AddMassTransit(x =>
+        {
+            x.AddEntityFrameworkOutbox<CompletionContext>(o =>
+            {
+                o.UseSqlServer();
+                o.UseBusOutbox();
+            });
+            
+            x.UsingAzureServiceBus((context,cfg) =>
+            {
+                var connectionString = configuration.GetConnectionString("ServiceBus");
+                cfg.Host(connectionString);
+                cfg.ConfigureEndpoints(context);
+                cfg.UseServiceBusMessageScheduler();
+                cfg.AutoStart = true;
+            });
+        });
+        
+        
+        
+    
 
         services.AddHttpContextAccessor();
         services.AddHttpClient();

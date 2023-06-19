@@ -40,8 +40,10 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public string BlobPath { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
+    public Guid CreatedByOid { get; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
+    public Guid? ModifiedByOid { get; private set; }
     public Guid Guid { get; private set; }
     public int RevisionNumber { get; private set; }
 
@@ -68,5 +70,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
             throw new ArgumentNullException(nameof(modifiedBy));
         }
         ModifiedById = modifiedBy.Id;
+        ModifiedByOid = modifiedBy.Guid;
+        
     }
 }
