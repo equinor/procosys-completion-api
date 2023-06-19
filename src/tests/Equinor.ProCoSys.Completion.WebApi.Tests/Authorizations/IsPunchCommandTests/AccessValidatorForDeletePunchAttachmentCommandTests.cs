@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForDeletePunchAttachmentCommandTests : AccessValidatorForIPunchCommandTests<DeletePunchAttachmentCommand>
+public class AccessValidatorForDeletePunchAttachmentCommandTests : AccessValidatorForIIsPunchCommandTests<DeletePunchAttachmentCommand>
 {
     protected override DeletePunchAttachmentCommand GetPunchCommandWithAccessToProject()
         => new(PunchGuidWithAccessToProject, Guid.Empty, null!);

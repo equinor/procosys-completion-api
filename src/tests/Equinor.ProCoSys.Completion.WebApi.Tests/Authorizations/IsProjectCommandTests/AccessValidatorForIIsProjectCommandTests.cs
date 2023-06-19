@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 
 [TestClass]
-public abstract class AccessValidatorForIProjectCommandTests<TProjectRequest> : AccessValidatorTestBase
+public abstract class AccessValidatorForIIsProjectCommandTests<TProjectRequest> : AccessValidatorTestBase
     where TProjectRequest : IBaseRequest, IIsProjectCommand
 {
     protected abstract TProjectRequest GetProjectRequestWithAccessToProjectToTest();

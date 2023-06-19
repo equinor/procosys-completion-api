@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public abstract class AccessValidatorForIPunchCommandTests<TPunchCommand> : AccessValidatorTestBase
+public abstract class AccessValidatorForIIsPunchCommandTests<TPunchCommand> : AccessValidatorTestBase
     where TPunchCommand : IBaseRequest, IIsPunchCommand
 {
     protected abstract TPunchCommand GetPunchCommandWithAccessToProject();

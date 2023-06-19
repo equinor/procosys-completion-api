@@ -4,11 +4,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchLinksQueryTests : AccessValidatorForIPunchQueryTests<GetPunchLinksQuery>
+public class AccessValidatorForGetPunchLinksQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchLinksQuery>
 {
-    protected override GetPunchLinksQuery GetPunchCommandWithAccessToProject()
+    protected override GetPunchLinksQuery GetPunchQueryWithAccessToProject()
         => new(PunchGuidWithAccessToProject);
 
-    protected override GetPunchLinksQuery GetPunchCommandWithoutAccessToProject()
+    protected override GetPunchLinksQuery GetPunchQueryWithoutAccessToProject()
         => new(PunchGuidWithoutAccessToProject);
 }

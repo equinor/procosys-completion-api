@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers;
 public class INotificationHandlerTests : IDomainMarker
 {
     [TestMethod]
-    public void AllINotifications_ShouldHaveCorrespondingHandler()
+    public void AllImplementedINotifications_ShouldHaveCorrespondingHandler()
     {
         var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
         var domainAssembly = allAssemblies

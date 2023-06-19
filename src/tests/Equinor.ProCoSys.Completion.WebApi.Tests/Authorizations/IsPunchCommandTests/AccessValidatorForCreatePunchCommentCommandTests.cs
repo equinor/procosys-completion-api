@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchCommentCommandTests : AccessValidatorForIPunchCommandTests<CreatePunchCommentCommand>
+public class AccessValidatorForCreatePunchCommentCommandTests : AccessValidatorForIIsPunchCommandTests<CreatePunchCommentCommand>
 {
     protected override CreatePunchCommentCommand GetPunchCommandWithAccessToProject()
         => new(PunchGuidWithAccessToProject, null!);

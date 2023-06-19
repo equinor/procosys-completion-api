@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForUpdatePunchLinkCommandTests : AccessValidatorForIPunchCommandTests<UpdatePunchLinkCommand>
+public class AccessValidatorForUpdatePunchLinkCommandTests : AccessValidatorForIIsPunchCommandTests<UpdatePunchLinkCommand>
 {
     protected override UpdatePunchLinkCommand GetPunchCommandWithAccessToProject()
         => new(PunchGuidWithAccessToProject, Guid.Empty, null!, null!, null!);
