@@ -15,9 +15,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch
                 .NotNull()
                 .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMin)
                 .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMax);
-
-            RuleFor(dto => dto.ProjectName)
-                .NotNull();
         }
     }
 }

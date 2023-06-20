@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Misc;
@@ -11,14 +12,9 @@ public class ProjectAccessChecker : IProjectAccessChecker
 
     public ProjectAccessChecker(IClaimsPrincipalProvider claimsPrincipalProvider) => _claimsPrincipalProvider = claimsPrincipalProvider;
 
-    public bool HasCurrentUserAccessToProject(string? projectName)
+    public bool HasCurrentUserAccessToProject(Guid projectGuid)
     {
-        if (string.IsNullOrEmpty(projectName))
-        {
-            return false;
-        }
-            
-        var userDataClaimWithProject = ClaimsTransformation.GetProjectClaimValue(projectName);
+        var userDataClaimWithProject = ClaimsTransformation.GetProjectClaimValue(projectGuid);
         return _claimsPrincipalProvider.GetCurrentClaimsPrincipal().Claims.Any(c => c.Type == ClaimTypes.UserData && c.Value == userDataClaimWithProject);
     }
 }

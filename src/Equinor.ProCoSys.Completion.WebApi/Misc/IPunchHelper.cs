@@ -5,5 +5,5 @@ namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 
 public interface IPunchHelper
 {
-    Task<string?> GetProjectNameAsync(Guid punchGuid);
+    Task<Guid?> GetProjectGuidForPunchAsync(Guid punchGuid);
 }

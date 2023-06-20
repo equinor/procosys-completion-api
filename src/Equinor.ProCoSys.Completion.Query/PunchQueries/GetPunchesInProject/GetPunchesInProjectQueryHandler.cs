@@ -22,12 +22,12 @@ public class GetPunchesInProjectQueryHandler : IRequestHandler<GetPunchesInProje
     {
         var punches =
             await (from punch in _context.QuerySet<Punch>()
-                   join pro in _context.QuerySet<Project>()
-                       on punch.ProjectId equals pro.Id
-                   where pro.Name == request.ProjectName && (!punch.IsVoided || request.IncludeVoided)
+                   join project in _context.QuerySet<Project>()
+                       on punch.ProjectId equals project.Id
+                   where project.Guid == request.ProjectGuid && (!punch.IsVoided || request.IncludeVoided)
                    select new PunchDto(
                        punch.Guid,
-                       pro.Name,
+                       project.Name,
                        punch.Title,
                        punch.IsVoided,
                        punch.RowVersion.ConvertToString())

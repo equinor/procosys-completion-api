@@ -4,8 +4,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvent
 
 public class AttachmentDeletedEvent : AttachmentEvent
 {
-    public AttachmentDeletedEvent(Attachment attachment)
-        : base($"Attachment deleted for {attachment.SourceType}", attachment)
+    public AttachmentDeletedEvent(Attachment attachment) : base(attachment)
     {
     }
 }

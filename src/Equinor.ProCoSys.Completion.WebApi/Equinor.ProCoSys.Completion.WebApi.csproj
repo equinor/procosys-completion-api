@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.2" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.6" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.0.16" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />

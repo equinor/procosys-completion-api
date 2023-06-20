@@ -14,13 +14,13 @@ public class PunchHelper : IPunchHelper
 
     public PunchHelper(IReadOnlyContext context) => _context = context;
 
-    public async Task<string?> GetProjectNameAsync(Guid punchGuid)
+    public async Task<Guid?> GetProjectGuidForPunchAsync(Guid punchGuid)
     {
-        var projectName = await (from p in _context.QuerySet<Project>()
+        var project = await (from p in _context.QuerySet<Project>()
             join punch in _context.QuerySet<Punch>() on p.Id equals punch.ProjectId
             where punch.Guid == punchGuid
-            select p.Name).SingleOrDefaultAsync();
+            select p).SingleOrDefaultAsync();
 
-        return projectName;
+        return project?.Guid;
     }
 }

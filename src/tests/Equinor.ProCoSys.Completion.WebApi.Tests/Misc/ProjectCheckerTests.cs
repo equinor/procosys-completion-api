@@ -15,7 +15,7 @@ public class ProjectCheckerTests
 {
     private readonly Guid _currentUserOid = new("12345678-1234-1234-1234-123456789123");
     private readonly string _plant = "Plant";
-    private readonly string _project = "Project";
+    private readonly Guid _projectGuid = Guid.NewGuid();
 
     private Mock<IPlantProvider> _plantProviderMock;
     private Mock<ICurrentUserProvider> _currentUserProviderMock;
@@ -34,7 +34,7 @@ public class ProjectCheckerTests
 
         _permissionCacheMock = new Mock<IPermissionCache>();
 
-        _testRequest = new TestRequest(_project);
+        _testRequest = new TestRequest(_projectGuid);
         _dut = new ProjectChecker(_plantProviderMock.Object, _currentUserProviderMock.Object, _permissionCacheMock.Object);
     }
 
@@ -42,7 +42,7 @@ public class ProjectCheckerTests
     public async Task EnsureValidProjectAsync_ShouldValidateOK()
     {
         // Arrange
-        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _project)).ReturnsAsync(true);
+        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid)).ReturnsAsync(true);
 
         // Act
         await _dut.EnsureValidProjectAsync(_testRequest);
@@ -52,7 +52,7 @@ public class ProjectCheckerTests
     public async Task EnsureValidProjectAsync_ShouldThrowInvalidException_WhenProjectIsNotValid()
     {
         // Arrange
-        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _project)).ReturnsAsync(false);
+        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid)).ReturnsAsync(false);
 
         // Act
         await Assert.ThrowsExceptionAsync<InValidProjectException>(() => _dut.EnsureValidProjectAsync(_testRequest));
@@ -64,8 +64,8 @@ public class ProjectCheckerTests
 
     private class TestRequest : IIsProjectCommand
     {
-        public TestRequest(string projectName) => ProjectName = projectName;
+        public TestRequest(Guid projectGuid) => ProjectGuid = projectGuid;
 
-        public string ProjectName { get; }
+        public Guid ProjectGuid { get; }
     }
 }

@@ -39,8 +39,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
     public static string Unknown => "UNKNOWN";
-    public static string ProjectWithAccess => KnownTestData.ProjectNameA;
-    public static string ProjectWithoutAccess => KnownTestData.ProjectNameB;
+    public static string ProjectNameWithAccess => KnownTestData.ProjectNameA;
+    public static Guid ProjectGuidWithAccess => KnownTestData.ProjectGuidA;
+    public static string ProjectNameWithoutAccess => KnownTestData.ProjectNameB;
+    public static Guid ProjectGuidWithoutAccess => KnownTestData.ProjectGuidB;
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
 
@@ -238,8 +240,17 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         var accessableProjects = new List<AccessableProject>
         {
-            new() {Name = ProjectWithAccess, HasAccess = true},
-            new() {Name = ProjectWithoutAccess}
+            new()
+            {
+                ProCoSysGuid = ProjectGuidWithAccess,
+                Name = ProjectNameWithAccess,
+                HasAccess = true
+            },
+            new()
+            {
+                ProCoSysGuid = ProjectGuidWithoutAccess,
+                Name = ProjectNameWithoutAccess
+            }
         };
 
         SetupAnonymousUser();
@@ -294,7 +305,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
-        // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middelware
+        // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Authenticator:CompletionApiObjectId"];
         _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(apiObjectId)))

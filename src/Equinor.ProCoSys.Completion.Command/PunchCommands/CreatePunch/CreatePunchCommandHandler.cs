@@ -37,15 +37,15 @@ public class CreatePunchCommandHandler : IRequestHandler<CreatePunchCommand, Res
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.TryGetProjectByNameAsync(request.ProjectName);
+        var project = await _projectRepository.TryGetByGuidAsync(request.ProjectGuid);
         if (project is null)
         {
-            throw new Exception($"Could not find ProCoSys project called {request.ProjectName} in plant {_plantProvider.Plant}");
+            throw new Exception($"Could not find ProCoSys project with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
         var punch = new Punch(_plantProvider.Plant, project, request.Title);
         _punchRepository.Add(punch);
-        punch.AddDomainEvent(new PunchCreatedEvent(punch));
+        punch.AddDomainEvent(new PunchCreatedEvent(punch, request.ProjectGuid));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

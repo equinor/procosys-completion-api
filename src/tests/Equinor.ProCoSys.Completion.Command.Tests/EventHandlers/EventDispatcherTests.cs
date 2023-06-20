@@ -64,9 +64,6 @@ public class TestableEntity : EntityBase
 {
 }
 
-public class TestableDomainEvent : DomainEvent
+public class TestableDomainEvent : IDomainEvent
 {
-    public TestableDomainEvent() : base("Test")
-    {
-    }
 }

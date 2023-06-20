@@ -63,7 +63,7 @@ public class CacheController : ControllerBase
     }
 
     [HttpGet("ProjectsFromCache")]
-    public async Task<IList<string>> GetProjects(
+    public async Task<IList<AccessableProject>> GetProjects(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         string plant)

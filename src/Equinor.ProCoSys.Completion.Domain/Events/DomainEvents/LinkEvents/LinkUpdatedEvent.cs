@@ -4,8 +4,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkEvents;
 
 public class LinkUpdatedEvent : LinkEvent
 {
-    public LinkUpdatedEvent(Link link)
-        : base($"Link updated for {link.SourceType}", link)
+    public LinkUpdatedEvent(Link link) : base(link)
     {
     }
 }

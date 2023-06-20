@@ -63,10 +63,10 @@ public class PunchesController : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [Required]
-        [FromQuery] string projectName,
+        [FromQuery] Guid projectGuid,
         [FromQuery] bool includeVoided = false)
     {
-        var result = await _mediator.Send(new GetPunchesInProjectQuery(projectName, includeVoided));
+        var result = await _mediator.Send(new GetPunchesInProjectQuery(projectGuid, includeVoided));
         return this.FromResult(result);
     }
 
@@ -79,7 +79,7 @@ public class PunchesController : ControllerBase
         string plant,
         [FromBody] CreatePunchDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchCommand(dto.Title, dto.ProjectName));
+        var result = await _mediator.Send(new CreatePunchCommand(dto.Title, dto.ProjectGuid));
         return this.FromResult(result);
     }
 

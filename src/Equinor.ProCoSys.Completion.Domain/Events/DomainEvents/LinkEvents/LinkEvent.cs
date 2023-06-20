@@ -3,9 +3,9 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkEvents;
 
-public abstract class LinkEvent : DomainEvent
+public abstract class LinkEvent : IDomainEvent
 {
-    protected LinkEvent(string displayName, Link link) : base(displayName) => Link = link;
+    protected LinkEvent(Link link) => Link = link;
 
     public Link Link { get; }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -37,7 +38,7 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery("UnknownProject");
+        var query = new GetPunchesInProjectQuery(Guid.Empty);
         var dut = new GetPunchesInProjectQueryHandler(context);
 
         // Act
@@ -55,7 +56,7 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery(_projectA.Name, true);
+        var query = new GetPunchesInProjectQuery(_projectA.Guid, true);
         var dut = new GetPunchesInProjectQueryHandler(context);
 
         // Act
@@ -76,7 +77,7 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery(_projectA.Name);
+        var query = new GetPunchesInProjectQuery(_projectA.Guid);
         var dut = new GetPunchesInProjectQueryHandler(context);
 
         // Act

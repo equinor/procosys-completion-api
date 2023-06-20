@@ -42,9 +42,9 @@ public class AccessValidator : IAccessValidator
 
         var userOid = _currentUserProvider.GetCurrentUserOid();
         if (request is IIsProjectCommand projectCommand &&
-            !_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectName))
+            !_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
         {
-            _logger.LogWarning($"Current user {userOid} don't have access to project {projectCommand.ProjectName}");
+            _logger.LogWarning($"Current user {userOid} don't have access to project {projectCommand.ProjectGuid}");
             return false;
         }
 
@@ -69,14 +69,14 @@ public class AccessValidator : IAccessValidator
 
     private async Task<bool> HasCurrentUserAccessToProjectAsync(Guid punchGuid, Guid userOid)
     {
-        var projectName = await _punchHelper.GetProjectNameAsync(punchGuid);
-        if (projectName != null)
+        var projectGuid = await _punchHelper.GetProjectGuidForPunchAsync(punchGuid);
+        if (projectGuid.HasValue)
         {
-            var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectName);
+            var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectGuid.Value);
 
             if (!accessToProject)
             {
-                _logger.LogWarning($"Current user {userOid} don't have access to project {projectName}");
+                _logger.LogWarning($"Current user {userOid} don't have access to project {projectGuid.Value}");
                 return false;
             }
         }

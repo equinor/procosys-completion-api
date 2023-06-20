@@ -32,9 +32,9 @@ public class ProjectChecker : IProjectChecker
         var plant = _plantProvider.Plant;
         var userOid = _currentUserProvider.GetCurrentUserOid();
 
-        if (request is IIsProjectCommand projectRequest && !await _permissionCache.IsAValidProjectForUserAsync(plant, userOid, projectRequest.ProjectName))
+        if (request is IIsProjectCommand projectRequest && !await _permissionCache.IsAValidProjectForUserAsync(plant, userOid, projectRequest.ProjectGuid))
         {
-            throw new InValidProjectException($"Project '{projectRequest.ProjectName}' is not a valid project in '{plant}'");
+            throw new InValidProjectException($"Project '{projectRequest.ProjectGuid}' is not a valid project in '{plant}'");
         }
     }
 }

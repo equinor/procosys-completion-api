@@ -12,10 +12,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 public class AccessValidatorTestBase
 {
     protected AccessValidator _dut;
-    protected readonly Guid PunchGuidWithAccessToProject = new("679b7135-a1a8-4762-8b99-17f34f3a95a8");
-    protected readonly Guid PunchGuidWithoutAccessToProject = new("ea9efc61-8574-4a21-8a1a-14582ddff509");
-    protected readonly string ProjectWithAccess = "TestProjectWithAccess";
-    protected readonly string ProjectWithoutAccess = "TestProjectWithoutAccess";
+    protected readonly Guid PunchGuidWithAccessToProject = new("11111111-1111-1111-1111-111111111111");
+    protected readonly Guid PunchGuidWithoutAccessToProject = new("22222222-2222-2222-2222-222222222222");
+    protected readonly Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
+    protected readonly Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
 
     private Mock<IProjectAccessChecker> _projectAccessCheckerMock;
     private Mock<ILogger<AccessValidator>> _loggerMock;
@@ -28,14 +28,14 @@ public class AccessValidatorTestBase
 
         _projectAccessCheckerMock = new Mock<IProjectAccessChecker>();
 
-        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectWithoutAccess)).Returns(false);
-        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectWithAccess)).Returns(true);
+        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess)).Returns(false);
+        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithAccess)).Returns(true);
 
         var punchHelperMock = new Mock<IPunchHelper>();
-        punchHelperMock.Setup(p => p.GetProjectNameAsync(PunchGuidWithAccessToProject))
-            .ReturnsAsync(ProjectWithAccess);
-        punchHelperMock.Setup(p => p.GetProjectNameAsync(PunchGuidWithoutAccessToProject))
-            .ReturnsAsync(ProjectWithoutAccess);
+        punchHelperMock.Setup(p => p.GetProjectGuidForPunchAsync(PunchGuidWithAccessToProject))
+            .ReturnsAsync(ProjectGuidWithAccess);
+        punchHelperMock.Setup(p => p.GetProjectGuidForPunchAsync(PunchGuidWithoutAccessToProject))
+            .ReturnsAsync(ProjectGuidWithoutAccess);
 
         _loggerMock = new Mock<ILogger<AccessValidator>>();
 

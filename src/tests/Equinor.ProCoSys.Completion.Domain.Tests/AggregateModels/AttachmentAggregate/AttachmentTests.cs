@@ -1,8 +1,6 @@
 ﻿using System;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.AttachmentAggregate;
@@ -20,11 +18,7 @@ public class AttachmentTests : IModificationAuditableTests
     protected override IModificationAuditable GetModificationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup()
-    {
-        _dut = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName);
-        TimeService.SetProvider(new ManualTimeProvider(_now));
-    }
+    public void Setup() => _dut = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()

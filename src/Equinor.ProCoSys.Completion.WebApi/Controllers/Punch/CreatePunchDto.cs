@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
 
@@ -8,5 +9,5 @@ public class CreatePunchDto
     public string Title { get; set; } = null!;
 
     [Required]
-    public string ProjectName { get; set; } = null!;
+    public Guid ProjectGuid { get; set; }
 }

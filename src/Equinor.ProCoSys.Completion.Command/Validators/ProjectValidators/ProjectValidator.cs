@@ -15,15 +15,15 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators
 
         public ProjectValidator(IReadOnlyContext context) => _context = context;
 
-        public async Task<bool> ExistsAsync(string projectName, CancellationToken cancellationToken) =>
+        public async Task<bool> ExistsAsync(Guid projectGuid, CancellationToken cancellationToken) =>
             await (from p in _context.QuerySet<Project>()
-                where p.Name == projectName
+                where p.Guid == projectGuid
                 select p).AnyAsync(cancellationToken);
 
-        public async Task<bool> IsClosed(string projectName, CancellationToken cancellationToken)
+        public async Task<bool> IsClosed(Guid projectGuid, CancellationToken cancellationToken)
         {
             var project = await (from p in _context.QuerySet<Project>()
-                where p.Name == projectName
+                where p.Guid == projectGuid
                 select p).SingleOrDefaultAsync(cancellationToken);
 
             return project != null && project.IsClosed;

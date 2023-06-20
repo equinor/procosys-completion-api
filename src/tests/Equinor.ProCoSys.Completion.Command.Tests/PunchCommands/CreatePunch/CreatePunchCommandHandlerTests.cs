@@ -19,7 +19,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
     private Mock<IPunchRepository> _punchRepositoryMock;
     private Mock<IProjectRepository> _projectRepositoryMock;
 
-    private readonly string _projectName = "Project";
+    private readonly Guid _projectGuid = Guid.NewGuid();
     private readonly int _projectIdOnExisting = 10;
 
     private Punch _punchAddedToRepository;
@@ -37,14 +37,14 @@ public class CreatePunchCommandHandlerTests : TestsBase
             {
                 _punchAddedToRepository = punch;
             });
-        var project = new Project(TestPlantA, Guid.NewGuid(), _projectName, "");
+        var project = new Project(TestPlantA, _projectGuid, null!, null!);
         project.SetProtectedIdForTesting(_projectIdOnExisting);
         _projectRepositoryMock = new Mock<IProjectRepository>();
         _projectRepositoryMock
-            .Setup(x => x.TryGetProjectByNameAsync(_projectName))
+            .Setup(x => x.TryGetByGuidAsync(_projectGuid))
             .ReturnsAsync(project);
 
-        _command = new CreatePunchCommand("Punch", _projectName);
+        _command = new CreatePunchCommand("Punch", _projectGuid);
 
         _dut = new CreatePunchCommandHandler(
             _plantProviderMock.Object,
@@ -91,7 +91,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
     {
         // Arrange
         _projectRepositoryMock
-            .Setup(x => x.TryGetProjectByNameAsync(_projectName))
+            .Setup(x => x.TryGetByGuidAsync(_projectGuid))
             .ReturnsAsync((Project)null);
 
         // Act and Assert

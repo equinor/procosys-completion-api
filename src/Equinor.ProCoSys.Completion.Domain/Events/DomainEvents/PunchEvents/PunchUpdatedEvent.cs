@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 
 public class PunchUpdatedEvent : PunchEvent
 {
-    public PunchUpdatedEvent(Punch punch) : base("Punch updated", punch)
+    public PunchUpdatedEvent(Punch punch) : base(punch)
     { }
 }

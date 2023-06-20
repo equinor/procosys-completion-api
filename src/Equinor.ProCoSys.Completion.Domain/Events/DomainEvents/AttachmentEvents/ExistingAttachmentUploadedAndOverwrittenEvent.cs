@@ -4,8 +4,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvent
 
 public class ExistingAttachmentUploadedAndOverwrittenEvent : AttachmentEvent
 {
-    public ExistingAttachmentUploadedAndOverwrittenEvent(Attachment attachment)
-        : base($"Existing attachment uploaded again for {attachment.SourceType}", attachment)
+    public ExistingAttachmentUploadedAndOverwrittenEvent(Attachment attachment) : base(attachment)
     {
     }
 }

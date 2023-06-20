@@ -1,8 +1,6 @@
 ﻿using System;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Completion.Domain.Audit;
@@ -26,8 +24,6 @@ public class PunchTests : IModificationAuditableTests
     {
         _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
         _project.SetProtectedIdForTesting(_projectId);
-        TimeService.SetProvider(new ManualTimeProvider(_now));
-
         _dut = new Punch(_testPlant, _project, _title); 
     }
 

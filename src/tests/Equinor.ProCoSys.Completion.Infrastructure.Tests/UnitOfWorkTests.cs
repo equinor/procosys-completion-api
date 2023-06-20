@@ -56,7 +56,7 @@ public class UnitOfWorkTests
 
         var user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
         dut.Persons.Add(user);
-        dut.SaveChanges();
+        await dut.SaveChangesAsync();
 
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
@@ -70,8 +70,10 @@ public class UnitOfWorkTests
         // Assert
         Assert.AreEqual(_currentTime, newPunch.CreatedAtUtc);
         Assert.AreEqual(user.Id, newPunch.CreatedById);
+        Assert.AreEqual(_currentUserOid, newPunch.CreatedByOid);
         Assert.IsNull(newPunch.ModifiedAtUtc);
         Assert.IsNull(newPunch.ModifiedById);
+        Assert.IsNull(newPunch.ModifiedByOid);
     }
 
     [TestMethod]
@@ -101,5 +103,6 @@ public class UnitOfWorkTests
         // Assert
         Assert.AreEqual(_currentTime, newPunch.ModifiedAtUtc);
         Assert.AreEqual(user.Id, newPunch.ModifiedById);
+        Assert.AreEqual(_currentUserOid, newPunch.ModifiedByOid);
     }
 }

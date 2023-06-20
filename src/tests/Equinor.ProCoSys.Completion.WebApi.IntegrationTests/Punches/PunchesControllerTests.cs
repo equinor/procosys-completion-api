@@ -20,7 +20,7 @@ public class PunchesControllerTests : TestBase
     {
         _punchGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
         _initialPunchesInProject = await PunchesControllerTestsHelper
-            .GetAllPunchesInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectWithAccess);
+            .GetAllPunchesInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
     }
 
     [TestMethod]
@@ -34,7 +34,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             title,
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
 
         // Assert
         AssertValidGuidAndRowVersion(guidAndRowVersion);
@@ -42,11 +42,10 @@ public class PunchesControllerTests : TestBase
             .GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunch);
         Assert.AreEqual(title, newPunch.Title);
-        Assert.AreEqual(TestFactory.ProjectWithAccess, newPunch.ProjectName);
         AssertCreatedBy(UserType.Writer, newPunch.CreatedBy);
 
         var allPunches = await PunchesControllerTestsHelper
-            .GetAllPunchesInProjectAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectWithAccess);
+            .GetAllPunchesInProjectAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         Assert.AreEqual(_initialPunchesInProject.Count+1, allPunches.Count);
     }
 
@@ -67,13 +66,12 @@ public class PunchesControllerTests : TestBase
     {
         // Act
         var punches = await PunchesControllerTestsHelper
-            .GetAllPunchesInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectWithAccess);
+            .GetAllPunchesInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
 
         // Assert
         Assert.IsTrue(punches.Count > 0);
-        Assert.IsTrue(punches.All(f => f.ProjectName == TestFactory.ProjectWithAccess));
-        Assert.IsTrue(punches.All(f => !f.Title.IsEmpty()));
-        Assert.IsTrue(punches.All(f => !f.RowVersion.IsEmpty()));
+        Assert.IsTrue(punches.All(p => !p.Title.IsEmpty()));
+        Assert.IsTrue(punches.All(p => !p.RowVersion.IsEmpty()));
     }
 
     [TestMethod]
@@ -110,7 +108,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
         var initialRowVersion = guidAndRowVersion.RowVersion;
 
         // Act
@@ -135,7 +133,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
         var newRowVersion = await PunchesControllerTestsHelper.VoidPunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
@@ -415,7 +413,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
 
         var linkGuidAndRowVersion = await PunchesControllerTestsHelper.CreatePunchLinkAsync(
             UserType.Writer,
@@ -434,7 +432,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
 
         var commentGuidAndRowVersion = await PunchesControllerTestsHelper.CreatePunchCommentAsync(
             UserType.Writer,
@@ -452,7 +450,7 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
 
         var attachmentGuidAndRowVersion = await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.Writer,

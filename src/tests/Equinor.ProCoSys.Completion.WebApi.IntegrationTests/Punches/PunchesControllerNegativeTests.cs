@@ -78,7 +78,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
-            TestFactory.Unknown,
+            Guid.Empty,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
-            TestFactory.Unknown,
+            Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -95,7 +95,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.Writer,
             TestFactory.Unknown,
-            TestFactory.Unknown,
+            Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -104,7 +104,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectWithoutAccess,
+            TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectWithoutAccess,
+            TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectWithoutAccess,
+            TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
     #endregion
 
@@ -131,7 +131,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Anonymous,
             TestFactory.Unknown,
             "Punch1",
-            "Pro",
+            Guid.Empty,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             "Punch1",
-            "Pro",
+            Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -150,7 +150,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.Unknown,
             "Punch1",
-            "Pro",
+            Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -160,7 +160,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             "Punch1",
-            "Pro",
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -168,8 +168,8 @@ public class PunchesControllerNegativeTests : TestBase
         => await PunchesControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
-            "Punch1", 
-            "Pro",
+            "Punch1",
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -178,7 +178,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Reader,
             TestFactory.PlantWithAccess,
             "Punch1",
-            "Pro",
+            TestFactory.ProjectGuidWithAccess,
             HttpStatusCode.Forbidden);
     #endregion
         
@@ -395,7 +395,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectWithAccess);
+            TestFactory.ProjectGuidWithAccess);
         await PunchesControllerTestsHelper.VoidPunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,

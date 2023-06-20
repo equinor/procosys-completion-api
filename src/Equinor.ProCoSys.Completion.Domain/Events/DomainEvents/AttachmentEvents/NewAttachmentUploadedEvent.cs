@@ -4,8 +4,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvent
 
 public class NewAttachmentUploadedEvent : AttachmentEvent
 {
-    public NewAttachmentUploadedEvent(Attachment attachment)
-        : base($"New attachment uploaded for {attachment.SourceType}", attachment)
+    public NewAttachmentUploadedEvent(Attachment attachment) : base(attachment)
     {
     }
 }

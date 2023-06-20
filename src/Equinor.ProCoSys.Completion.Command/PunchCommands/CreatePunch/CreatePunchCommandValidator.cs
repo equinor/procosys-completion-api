@@ -14,14 +14,14 @@ public class CreatePunchCommandValidator : AbstractValidator<CreatePunchCommand>
 
         RuleFor(command => command)
             .MustAsync(BeAnExistingProjectAsync)
-            .WithMessage(command => $"Project with this name does not exist! Guid={command.ProjectName}")
+            .WithMessage(command => $"Project with this Guid does not exist! Guid={command.ProjectGuid}")
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage("Project is closed!");
 
         async Task<bool> BeAnExistingProjectAsync(CreatePunchCommand command, CancellationToken cancellationToken)
-            => await projectValidator.ExistsAsync(command.ProjectName, cancellationToken);
+            => await projectValidator.ExistsAsync(command.ProjectGuid, cancellationToken);
 
         async Task<bool> NotBeAClosedProjectAsync(CreatePunchCommand command, CancellationToken cancellationToken)
-            => !await projectValidator.IsClosed(command.ProjectName, cancellationToken);
+            => !await projectValidator.IsClosed(command.ProjectGuid, cancellationToken);
     }
 }

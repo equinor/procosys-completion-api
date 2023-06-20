@@ -4,8 +4,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentEvents;
 
 public class CommentCreatedEvent : CommentEvent
 {
-    public CommentCreatedEvent(Comment comment)
-        : base($"Comment created for {comment.SourceType}", comment)
+    public CommentCreatedEvent(Comment comment) : base(comment)
     {
     }
 }

@@ -1,16 +1,17 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchCommands.CreatePunch;
 
 public class CreatePunchCommand : IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
-    public CreatePunchCommand(string title, string projectName)
+    public CreatePunchCommand(string title, Guid projectGuid)
     {
         Title = title;
-        ProjectName = projectName;
+        ProjectGuid = projectGuid;
     }
 
     public string Title { get; }
-    public string ProjectName { get; }
+    public Guid ProjectGuid { get; }
 }

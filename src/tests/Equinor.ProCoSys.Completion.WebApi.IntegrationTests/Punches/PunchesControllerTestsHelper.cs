@@ -55,13 +55,13 @@ public static class PunchesControllerTestsHelper
     public static async Task<List<PunchDto>> GetAllPunchesInProjectAsync(
         UserType userType,
         string plant,
-        string projectName,
+        Guid projectGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var parameters = new ParameterCollection
         {
-            { "projectName", projectName },
+            { "projectGuid", projectGuid.ToString() },
             { "includeVoided", "true" }
         };
         var url = $"{_route}{parameters}";
@@ -83,14 +83,14 @@ public static class PunchesControllerTestsHelper
         UserType userType,
         string plant,
         string title,
-        string projectName,
+        Guid projectGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
             title,
-            projectName
+            projectGuid = projectGuid.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);

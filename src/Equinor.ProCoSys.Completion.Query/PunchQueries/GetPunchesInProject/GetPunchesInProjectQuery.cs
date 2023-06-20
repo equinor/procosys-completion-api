@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Command;
 using MediatR;
 using ServiceResult;
@@ -7,12 +8,12 @@ namespace Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchesInProject;
 
 public class GetPunchesInProjectQuery : IRequest<Result<IEnumerable<PunchDto>>>, IIsProjectCommand
 {
-    public GetPunchesInProjectQuery(string projectName, bool includeVoided = false)
+    public GetPunchesInProjectQuery(Guid projectGuid, bool includeVoided = false)
     {
-        ProjectName = projectName;
+        ProjectGuid = projectGuid;
         IncludeVoided = includeVoided;
     }
 
-    public string ProjectName { get; }
+    public Guid ProjectGuid { get; }
     public bool IncludeVoided { get; }
 }
