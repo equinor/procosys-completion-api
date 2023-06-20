@@ -1,19 +1,30 @@
 ﻿using System;
+using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.Audit;
+using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.AttachmentAggregate;
 
 [TestClass]
-public class AttachmentTests
+public class AttachmentTests : IModificationAuditableTests
 {
     private Attachment _dut;
     private readonly string _sourceType = "X";
     private readonly Guid _sourceGuid = Guid.NewGuid();
     private readonly string _fileName = "a.txt";
 
+    protected override ICreationAuditable GetCreationAuditable() => _dut;
+
+    protected override IModificationAuditable GetModificationAuditable() => _dut;
+
     [TestInitialize]
-    public void Setup() => _dut = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName);
+    public void Setup()
+    {
+        _dut = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName);
+        TimeService.SetProvider(new ManualTimeProvider(_now));
+    }
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()

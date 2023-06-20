@@ -1,11 +1,14 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.Audit;
+using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.ProjectAggregate;
 
 [TestClass]
-public class ProjectTests
+public class ProjectTests : IModificationAuditableTests
 {
     private Project _dut;
     private readonly string _testPlant = "PlantA";
@@ -13,8 +16,16 @@ public class ProjectTests
     private readonly Guid _guid = Guid.NewGuid();
     private readonly string _description = "Desc A";
 
+    protected override ICreationAuditable GetCreationAuditable() => _dut;
+    protected override IModificationAuditable GetModificationAuditable() => _dut;
+
     [TestInitialize]
-    public void Setup() => _dut = new Project(_testPlant, _guid, _name, _description);
+    public void Setup()
+    {
+        _dut = new Project(_testPlant, _guid, _name, _description);
+        _person = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+        _person.SetProtectedIdForTesting(3);
+    }
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()

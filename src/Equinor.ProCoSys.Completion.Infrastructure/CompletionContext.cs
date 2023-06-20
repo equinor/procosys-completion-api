@@ -55,11 +55,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
         
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
-        
-    }      
+        ConfigureMassTransitOutBox(modelBuilder);
+    }
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
 
@@ -69,6 +66,13 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Link> Links => Set<Link>();
     public virtual DbSet<Comment> Comments => Set<Comment>();
     public virtual DbSet<Attachment> Attachments => Set<Attachment>();
+
+    private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
+    {
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+    }
 
     private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
     {

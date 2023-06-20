@@ -5,11 +5,12 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.PunchAggregate;
 
 [TestClass]
-public class PunchTests
+public class PunchTests : IModificationAuditableTests
 {
     private Punch _dut;
     private readonly string _testPlant = "PlantA";
@@ -17,13 +18,15 @@ public class PunchTests
     private Project _project;
     private readonly string _title = "Title A";
 
+    protected override ICreationAuditable GetCreationAuditable() => _dut;
+    protected override IModificationAuditable GetModificationAuditable() => _dut;
+
     [TestInitialize]
     public void Setup()
     {
-        _project = new(_testPlant, Guid.NewGuid(), "P", "D");
+        _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
         _project.SetProtectedIdForTesting(_projectId);
-        TimeService.SetProvider(
-            new ManualTimeProvider(new DateTime(2021, 1, 1, 12, 0, 0, DateTimeKind.Utc)));
+        TimeService.SetProvider(new ManualTimeProvider(_now));
 
         _dut = new Punch(_testPlant, _project, _title); 
     }
