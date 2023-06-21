@@ -39,21 +39,6 @@ public class DeletePunchCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchNotVoided()
-    {
-        // Arrange
-        _punchValidatorMock.Setup(x => x.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch must be voided before delete!"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_When_PunchNotExists()
     {
         // Arrange
