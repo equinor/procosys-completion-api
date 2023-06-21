@@ -18,9 +18,9 @@ public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
     public async Task Handle(PunchCreatedEvent punchCreatedEvent, CancellationToken cancellationToken) =>
         await _publishEndpoint.Publish(new PunchCreatedMessage(punchCreatedEvent), cancellationToken);
 
-    public record PunchCreatedMessage : IPunchCreatedV1
+   private record PunchCreatedMessage : IPunchCreatedV1
     {
-        public PunchCreatedMessage(PunchCreatedEvent punchCreatedEvent)
+        internal PunchCreatedMessage(PunchCreatedEvent punchCreatedEvent)
         {
             ProjectGuid = punchCreatedEvent.ProjectGuid;
             Guid = punchCreatedEvent.Punch.Guid;
