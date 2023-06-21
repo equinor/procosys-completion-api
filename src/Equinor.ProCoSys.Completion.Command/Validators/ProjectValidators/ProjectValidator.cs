@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,16 +23,6 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators
         {
             var project = await (from p in _context.QuerySet<Project>()
                 where p.Guid == projectGuid
-                select p).SingleOrDefaultAsync(cancellationToken);
-
-            return project != null && project.IsClosed;
-        }
-
-        public async Task<bool> IsClosedForPunch(Guid punchGuid, CancellationToken cancellationToken)
-        {
-            var project = await (from punch in _context.QuerySet<Punch>()
-                join p in _context.QuerySet<Project>() on punch.ProjectId equals p.Id
-                where punch.Guid == punchGuid
                 select p).SingleOrDefaultAsync(cancellationToken);
 
             return project != null && project.IsClosed;

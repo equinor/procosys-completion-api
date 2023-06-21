@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchCommands.OverwriteExistingPunchAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -15,7 +14,6 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
 {
     private OverwriteExistingPunchAttachmentCommandValidator _dut;
     private Mock<IPunchValidator> _punchValidatorMock;
-    private Mock<IProjectValidator> _projectValidatorMock;
     private Mock<IAttachmentService> _attachmentServiceMock;
     private OverwriteExistingPunchAttachmentCommand _command;
     private readonly string _fileName = "a.txt";
@@ -24,7 +22,6 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new OverwriteExistingPunchAttachmentCommand(Guid.NewGuid(), _fileName, "r", new MemoryStream());
-        _projectValidatorMock = new Mock<IProjectValidator>();
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
@@ -34,7 +31,6 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
                 _command.FileName))
             .ReturnsAsync(true);
         _dut = new OverwriteExistingPunchAttachmentCommandValidator(
-            _projectValidatorMock.Object,
             _punchValidatorMock.Object,
             _attachmentServiceMock.Object);
     }
@@ -83,7 +79,7 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.IsClosedForPunch(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ProjectOwningPunchIsClosedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act

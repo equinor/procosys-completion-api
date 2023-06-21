@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Command.PunchCommands.DeletePunchLink;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchCommands.DeletePunchLink;
 
@@ -14,7 +13,6 @@ public class DeletePunchLinkCommandValidatorTests
 {
     private DeletePunchLinkCommandValidator _dut;
     private Mock<IPunchValidator> _punchValidatorMock;
-    private Mock<IProjectValidator> _projectValidatorMock;
     private Mock<ILinkService> _linkServiceMock;
 
     private DeletePunchLinkCommand _command;
@@ -23,7 +21,6 @@ public class DeletePunchLinkCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new DeletePunchLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "r1");
-        _projectValidatorMock = new Mock<IProjectValidator>();
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
@@ -32,7 +29,6 @@ public class DeletePunchLinkCommandValidatorTests
             .ReturnsAsync(true);
 
         _dut = new DeletePunchLinkCommandValidator(
-            _projectValidatorMock.Object,
             _punchValidatorMock.Object,
             _linkServiceMock.Object);
     }
@@ -99,7 +95,7 @@ public class DeletePunchLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.IsClosedForPunch(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ProjectOwningPunchIsClosedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act

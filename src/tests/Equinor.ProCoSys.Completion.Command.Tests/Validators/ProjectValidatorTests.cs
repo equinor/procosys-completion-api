@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +14,6 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
 {
     private Project _openProject;
     private Project _closedProject;
-    private Punch _punchInOpenProject;
-    private Punch _punchInClosedProject;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -26,11 +23,6 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
         _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2") { IsClosed = true };
         context.Projects.Add(_openProject);
         context.Projects.Add(_closedProject);
-
-        _punchInOpenProject = new Punch(TestPlantA, _openProject, "x1");
-        _punchInClosedProject = new Punch(TestPlantA, _closedProject, "x2");
-        context.Punches.Add(_punchInOpenProject);
-        context.Punches.Add(_punchInClosedProject);
 
         context.SaveChangesAsync().Wait();
     }
@@ -117,50 +109,6 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
 
         // Act
         var result = await dut.IsClosed(Guid.Empty, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
-
-    #region IsClosedForPunch
-    [TestMethod]
-    public async Task IsClosedForPunch_ShouldReturnTrue_WhenPunchIsInClosedProject()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
-        var dut = new ProjectValidator(context);
-
-        // Act
-        var result = await dut.IsClosedForPunch(_punchInClosedProject.Guid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task IsClosedForPunch_ShouldReturnFalse_WhenPunchIsInOpenProject()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
-        var dut = new ProjectValidator(context);
-
-        // Act
-        var result = await dut.IsClosedForPunch(_punchInOpenProject.Guid, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task IsClosedForPunch_ShouldReturnFalse_WhenPunchNotExist()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
-        var dut = new ProjectValidator(context);
-
-        // Act
-        var result = await dut.IsClosedForPunch(Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);

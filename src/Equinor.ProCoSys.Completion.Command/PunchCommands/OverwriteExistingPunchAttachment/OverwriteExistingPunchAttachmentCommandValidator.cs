@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchCommands.OverwriteExistingPunchAttachment;
@@ -11,7 +10,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchCommands.OverwriteExistingPun
 public class OverwriteExistingPunchAttachmentCommandValidator : AbstractValidator<OverwriteExistingPunchAttachmentCommand>
 {
     public OverwriteExistingPunchAttachmentCommandValidator(
-        IProjectValidator projectValidator,
         IPunchValidator punchValidator,
         IAttachmentService attachmentService)
     {
@@ -28,7 +26,7 @@ public class OverwriteExistingPunchAttachmentCommandValidator : AbstractValidato
             .WithMessage(command => $"Punch don't have an attachment with filename {command.FileName}!");
 
         async Task<bool> NotBeInAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => !await projectValidator.IsClosedForPunch(punchGuid, cancellationToken);
+            => !await punchValidator.ProjectOwningPunchIsClosedAsync(punchGuid, cancellationToken);
 
         async Task<bool> NotBeInAVoidedTagForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => !await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);

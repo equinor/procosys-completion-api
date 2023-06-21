@@ -8,4 +8,5 @@ public interface IPunchValidator
 {
     Task<bool> PunchExistsAsync(Guid punchGuid, CancellationToken cancellationToken);
     Task<bool> TagOwingPunchIsVoidedAsync(Guid punchGuid, CancellationToken cancellationToken);
+    Task<bool> ProjectOwningPunchIsClosedAsync(Guid punchGuid, CancellationToken cancellationToken);
 }

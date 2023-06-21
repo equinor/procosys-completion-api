@@ -15,10 +15,13 @@ public abstract class ReadOnlyTestsBase : TestsBase
 {
     protected readonly string ProjectNameA = "ProA";
     protected readonly string ProjectNameB = "ProB";
+    protected readonly string ProjectNameC = "ProC";
     protected static readonly Guid ProjectGuidA = Guid.NewGuid();
     protected static readonly Guid ProjectGuidB = Guid.NewGuid();
+    protected static readonly Guid ProjectGuidC = Guid.NewGuid();
     protected Project _projectA;
     protected Project _projectB;
+    protected Project _closedProjectC;
     protected Person _currentPerson;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
@@ -53,9 +56,11 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
         _projectA = new(TestPlantA, ProjectGuidA, ProjectNameA, $"{ProjectNameA} desc");
         _projectB = new(TestPlantA, ProjectGuidB, ProjectNameB, $"{ProjectNameB} desc");
+        _closedProjectC = new(TestPlantA, ProjectGuidC, ProjectNameC, $"{ProjectNameC} desc") {IsClosed = true};
 
         AddProject(context, _projectA);
         AddProject(context, _projectB);
+        AddProject(context, _closedProjectC);
 
         SetupNewDatabase(_dbContextOptions);
     }

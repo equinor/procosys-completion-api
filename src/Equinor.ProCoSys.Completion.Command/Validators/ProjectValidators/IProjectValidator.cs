@@ -8,6 +8,5 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators
     {
         Task<bool> ExistsAsync(Guid projectGuid, CancellationToken cancellationToken);
         Task<bool> IsClosed(Guid projectGuid, CancellationToken cancellationToken);
-        Task<bool> IsClosedForPunch(Guid punchGuid, CancellationToken cancellationToken);
     }
 }

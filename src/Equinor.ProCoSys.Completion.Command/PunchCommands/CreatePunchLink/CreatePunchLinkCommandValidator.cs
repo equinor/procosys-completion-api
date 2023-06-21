@@ -2,16 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchCommands.CreatePunchLink;
 
 public class CreatePunchLinkCommandValidator : AbstractValidator<CreatePunchLinkCommand>
 {
-    public CreatePunchLinkCommandValidator(
-        IProjectValidator projectValidator,
-        IPunchValidator punchValidator)
+    public CreatePunchLinkCommandValidator(IPunchValidator punchValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -25,7 +22,7 @@ public class CreatePunchLinkCommandValidator : AbstractValidator<CreatePunchLink
             .WithMessage("Tag owning punch is voided!");
 
         async Task<bool> NotBeInAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => !await projectValidator.IsClosedForPunch(punchGuid, cancellationToken);
+            => !await punchValidator.ProjectOwningPunchIsClosedAsync(punchGuid, cancellationToken);
 
         async Task<bool> NotBeInAVoidedTagForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => !await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);

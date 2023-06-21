@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Command.PunchCommands.UpdatePunchLink;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchCommands.UpdatePunchLink;
 
@@ -14,7 +13,6 @@ public class UpdatePunchLinkCommandValidatorTests
 {
     private UpdatePunchLinkCommandValidator _dut;
     private Mock<IPunchValidator> _punchValidatorMock;
-    private Mock<IProjectValidator> _projectValidatorMock;
     private Mock<ILinkService> _linkServiceMock;
     private UpdatePunchLinkCommand _command;
 
@@ -22,7 +20,6 @@ public class UpdatePunchLinkCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new UpdatePunchLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "New title", "New text", "r");
-        _projectValidatorMock = new Mock<IProjectValidator>();
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
@@ -31,7 +28,6 @@ public class UpdatePunchLinkCommandValidatorTests
             .ReturnsAsync(true);
 
         _dut = new UpdatePunchLinkCommandValidator(
-            _projectValidatorMock.Object,
             _punchValidatorMock.Object,
             _linkServiceMock.Object);
     }
@@ -98,7 +94,7 @@ public class UpdatePunchLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.IsClosedForPunch(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ProjectOwningPunchIsClosedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act

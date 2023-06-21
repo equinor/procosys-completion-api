@@ -2,16 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchCommands.DeletePunch;
 
 public class DeletePunchCommandValidator : AbstractValidator<DeletePunchCommand>
 {
-    public DeletePunchCommandValidator(
-        IProjectValidator projectValidator,
-        IPunchValidator punchValidator)
+    public DeletePunchCommandValidator(IPunchValidator punchValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -23,7 +20,7 @@ public class DeletePunchCommandValidator : AbstractValidator<DeletePunchCommand>
             .WithMessage(command => $"Punch with this guid does not exist! Guid={command.PunchGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => !await projectValidator.IsClosedForPunch(punchGuid, cancellationToken);
+            => !await punchValidator.ProjectOwningPunchIsClosedAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => await punchValidator.PunchExistsAsync(punchGuid, cancellationToken);
