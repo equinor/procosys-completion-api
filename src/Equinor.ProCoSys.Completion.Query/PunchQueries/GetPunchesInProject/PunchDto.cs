@@ -8,19 +8,16 @@ public class PunchDto
         Guid guid,
         string projectName,
         string itemNo,
-        bool isVoided,
         string rowVersion)
     {
         Guid = guid;
         ProjectName = projectName;
         ItemNo = itemNo;
-        IsVoided = isVoided;
         RowVersion = rowVersion;
     }
 
     public Guid Guid { get; }
     public string ProjectName { get; }
     public string ItemNo { get; }
-    public bool IsVoided { get; }
     public string RowVersion { get; }
 }

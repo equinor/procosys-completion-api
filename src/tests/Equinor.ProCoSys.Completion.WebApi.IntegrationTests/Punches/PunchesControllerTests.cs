@@ -98,31 +98,6 @@ public class PunchesControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task VoidPunch_AsWriter_ShouldVoidPunch()
-    {
-        // Arrange
-        var guidAndRowVersion = await PunchesControllerTestsHelper.CreatePunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
-        var initialRowVersion = guidAndRowVersion.RowVersion;
-
-        // Act
-        var newRowVersion = await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
-            guidAndRowVersion.RowVersion);
-
-        // Assert
-        AssertRowVersionChange(initialRowVersion, newRowVersion);
-        var punch = await PunchesControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
-        Assert.IsTrue(punch.IsVoided);
-        Assert.AreEqual(newRowVersion, punch.RowVersion);
-    }
-
-    [TestMethod]
     public async Task DeletePunch_AsWriter_ShouldDeletePunch()
     {
         // Arrange
@@ -131,11 +106,6 @@ public class PunchesControllerTests : TestBase
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        var newRowVersion = await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
-            guidAndRowVersion.RowVersion);
         var punch = await PunchesControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(punch);
 
@@ -143,7 +113,7 @@ public class PunchesControllerTests : TestBase
         await PunchesControllerTestsHelper.DeletePunchAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
             guidAndRowVersion.Guid,
-            newRowVersion);
+            guidAndRowVersion.RowVersion);
 
         // Assert
         await PunchesControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);

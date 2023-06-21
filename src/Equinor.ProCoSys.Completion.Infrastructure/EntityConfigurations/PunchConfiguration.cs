@@ -41,7 +41,6 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
                 x.CreatedAtUtc,
                 x.ModifiedById,
                 x.ModifiedAtUtc,
-                x.IsVoided,
                 x.RowVersion
             });
 
@@ -51,7 +50,6 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
             .IncludeProperties(x => new
             {
                 x.ItemNo,
-                x.IsVoided,
                 x.RowVersion
             });
     }

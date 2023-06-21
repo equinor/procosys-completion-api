@@ -24,12 +24,11 @@ public class GetPunchesInProjectQueryHandler : IRequestHandler<GetPunchesInProje
             await (from punch in _context.QuerySet<Punch>()
                    join project in _context.QuerySet<Project>()
                        on punch.ProjectId equals project.Id
-                   where project.Guid == request.ProjectGuid && (!punch.IsVoided || request.IncludeVoided)
+                   where project.Guid == request.ProjectGuid
                    select new PunchDto(
                        punch.Guid,
                        project.Name,
                        punch.ItemNo,
-                       punch.IsVoided,
                        punch.RowVersion.ConvertToString())
                 )
                 .TagWith($"{nameof(GetPunchesInProjectQueryHandler)}.{nameof(Handle)}")

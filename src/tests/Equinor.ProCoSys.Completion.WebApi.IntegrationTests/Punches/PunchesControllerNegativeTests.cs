@@ -181,74 +181,6 @@ public class PunchesControllerNegativeTests : TestBase
             TestFactory.ProjectGuidWithAccess,
             HttpStatusCode.Forbidden);
     #endregion
-        
-    #region VoidPunch
-    [TestMethod]
-    public async Task VoidPunch_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Anonymous, 
-            TestFactory.Unknown,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.Unauthorized);
-
-    [TestMethod]
-    public async Task VoidPunch_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.NoPermissionUser,
-            TestFactory.Unknown,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task VoidPunch_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.Unknown,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task VoidPunch_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.NoPermissionUser,
-            TestFactory.PlantWithoutAccess,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task VoidPunch_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithoutAccess,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task VoidPunch_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Reader,
-            TestFactory.PlantWithAccess,
-            _punchGuidUnderTest,
-            TestFactory.AValidRowVersion,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task VoidPunch_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            _punchGuidUnderTest,
-            TestFactory.WrongButValidRowVersion,
-            HttpStatusCode.Conflict);
-
-    #endregion
 
     #region UpdatePunch
     [TestMethod]
@@ -389,11 +321,6 @@ public class PunchesControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        await PunchesControllerTestsHelper.VoidPunchAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            idAndRowVersion.Guid,
-            idAndRowVersion.RowVersion);
         // Act
 
         await PunchesControllerTestsHelper.DeletePunchAsync(

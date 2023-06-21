@@ -17,20 +17,20 @@ public class DeletePunchCommandValidator : AbstractValidator<DeletePunchCommand>
         ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(command => command)
-            .MustAsync((command, cancellationToken) => NotBeAClosedProjectForPunchAsync(command.PunchGuid, cancellationToken))
+            .MustAsync((command, cancellationToken) => NotBeInAClosedProjectForPunchAsync(command.PunchGuid, cancellationToken))
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => BeAnExistingPunch(command.PunchGuid, cancellationToken))
+            .MustAsync((command, cancellationToken) => BeAnExistingPunchAsync(command.PunchGuid, cancellationToken))
             .WithMessage(command => $"Punch with this guid does not exist! Guid={command.PunchGuid}")
             .MustAsync((command, cancellationToken) => BeAVoidedPunch(command.PunchGuid, cancellationToken))
             .WithMessage("Punch must be voided before delete!");
 
-        async Task<bool> NotBeAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
+        async Task<bool> NotBeInAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => !await projectValidator.IsClosedForPunch(punchGuid, cancellationToken);
 
-        async Task<bool> BeAnExistingPunch(Guid punchGuid, CancellationToken cancellationToken)
+        async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => await punchValidator.PunchExistsAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAVoidedPunch(Guid punchGuid, CancellationToken cancellationToken)
-            => await punchValidator.PunchIsVoidedAsync(punchGuid, cancellationToken);
+            => await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);
     }
 }

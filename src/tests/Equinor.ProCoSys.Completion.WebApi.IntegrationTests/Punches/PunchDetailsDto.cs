@@ -11,6 +11,5 @@ public class PunchDetailsDto
     [CanBeNull]
     public string Description { get; set;  }
     public PersonDto CreatedBy { get; set; }
-    public bool IsVoided { get; set; }
     public string RowVersion { get; set; }
 }

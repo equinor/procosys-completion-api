@@ -23,7 +23,7 @@ public class DeletePunchCommandValidatorTests
         _projectValidatorMock = new Mock<IProjectValidator>();
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default)).ReturnsAsync(true);
-        _punchValidatorMock.Setup(x => x.PunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(true);
+        _punchValidatorMock.Setup(x => x.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(true);
 
         _dut = new DeletePunchCommandValidator(_projectValidatorMock.Object, _punchValidatorMock.Object);
     }
@@ -42,7 +42,7 @@ public class DeletePunchCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchNotVoided()
     {
         // Arrange
-        _punchValidatorMock.Setup(x => x.PunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(false);
+        _punchValidatorMock.Setup(x => x.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 
-public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IVoidable, IHaveGuid
+public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
     public const int ItemNoLengthMin = 3;
     public const int ItemNoLengthMax = 64;
@@ -43,7 +43,6 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
     // todo #104033 How should we generate ItemNo? End user should not need to add it
     public string ItemNo { get; private set; }
     public string? Description { get; set; }
-    public bool IsVoided { get; set; } // todo remove, punch is not voidable
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }

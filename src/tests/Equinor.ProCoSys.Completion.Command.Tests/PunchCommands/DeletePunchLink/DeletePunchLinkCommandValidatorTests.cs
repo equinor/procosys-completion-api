@@ -83,7 +83,7 @@ public class DeletePunchLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchIsVoided()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.PunchIsVoidedAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act
@@ -92,7 +92,7 @@ public class DeletePunchLinkCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch is voided!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Tag owning punch is voided!"));
     }
 
     [TestMethod]

@@ -13,7 +13,6 @@ public class PunchDetailsDto
         DateTime createdAtUtc,
         PersonDto? modifiedBy,
         DateTime? modifiedAtUtc,
-        bool isVoided,
         string rowVersion)
     {
         Guid = guid;
@@ -24,7 +23,6 @@ public class PunchDetailsDto
         CreatedAtUtc = createdAtUtc;
         ModifiedBy = modifiedBy;
         ModifiedAtUtc = modifiedAtUtc;
-        IsVoided = isVoided;
         RowVersion = rowVersion;
     }
 
@@ -36,6 +34,5 @@ public class PunchDetailsDto
     public DateTime CreatedAtUtc { get; set; }
     public PersonDto? ModifiedBy { get; }
     public DateTime? ModifiedAtUtc { get; set; }
-    public bool IsVoided { get; }
     public string RowVersion { get; }
 }

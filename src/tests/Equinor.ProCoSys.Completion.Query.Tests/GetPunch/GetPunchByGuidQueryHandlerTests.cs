@@ -102,7 +102,6 @@ public class GetPunchByGuidQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunch(PunchDetailsDto punchDetailsDto, Punch punch)
     {
         Assert.AreEqual(punch.ItemNo, punchDetailsDto.ItemNo);
-        Assert.IsFalse(punch.IsVoided);
         var project = GetProjectById(punch.ProjectId);
         Assert.AreEqual(project.Name, punchDetailsDto.ProjectName);
 

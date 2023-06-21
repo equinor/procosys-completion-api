@@ -18,7 +18,6 @@ using Equinor.ProCoSys.Completion.Command.PunchCommands.OverwriteExistingPunchAt
 using Equinor.ProCoSys.Completion.Command.PunchCommands.UpdatePunch;
 using Equinor.ProCoSys.Completion.Command.PunchCommands.UpdatePunchLink;
 using Equinor.ProCoSys.Completion.Command.PunchCommands.UploadNewPunchAttachment;
-using Equinor.ProCoSys.Completion.Command.PunchCommands.VoidPunch;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunch;
@@ -95,21 +94,6 @@ public class PunchesController : ControllerBase
     {
         var result = await _mediator.Send(
             new UpdatePunchCommand(guid, dto.Description, dto.RowVersion));
-        return this.FromResult(result);
-    }
-
-    [AuthorizeAny(Permissions.PUNCH_WRITE, Permissions.APPLICATION_TESTER)]
-    [HttpPut("{guid}/Void")]
-    public async Task<ActionResult<string>> VoidPunch(
-        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
-        [Required]
-        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant,
-        [FromRoute] Guid guid,
-        [FromBody] RowVersionDto dto)
-    {
-        var result = await _mediator.Send(
-            new VoidPunchCommand(guid, dto.RowVersion));
         return this.FromResult(result);
     }
 

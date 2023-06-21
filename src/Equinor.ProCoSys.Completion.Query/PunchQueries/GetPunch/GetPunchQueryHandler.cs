@@ -70,7 +70,6 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
                        dto.Punch.CreatedAtUtc,
                        modifiedBy,
                        dto.Punch.ModifiedAtUtc,
-                       dto.Punch.IsVoided,
                        dto.Punch.RowVersion.ConvertToString());
         return new SuccessResult<PunchDetailsDto>(punchDetailsDto);
     }

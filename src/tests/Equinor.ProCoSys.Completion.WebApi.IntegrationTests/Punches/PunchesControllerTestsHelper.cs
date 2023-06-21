@@ -321,33 +321,6 @@ public static class PunchesControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
-    public static async Task<string> VoidPunchAsync(
-        UserType userType,
-        string plant,
-        Guid guid,
-        string rowVersion,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var bodyPayload = new
-        {
-            rowVersion
-        };
-
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
-        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{_route}/{guid}/Void", content);
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        return await response.Content.ReadAsStringAsync();
-    }
-
     public static async Task DeletePunchAsync(
         UserType userType,
         string plant,
