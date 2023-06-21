@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
 
@@ -6,8 +7,9 @@ public class PunchDetailsDto
 {
     public Guid Guid { get; set; }
     public string ProjectName { get; set; }
-    public string Title { get; set; }
-    public string Text { get; set;  }
+    public string ItemNo { get; set; }
+    [CanBeNull]
+    public string Description { get; set;  }
     public PersonDto CreatedBy { get; set; }
     public bool IsVoided { get; set; }
     public string RowVersion { get; set; }

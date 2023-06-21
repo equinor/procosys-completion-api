@@ -64,8 +64,8 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
         var punchDetailsDto = new PunchDetailsDto(
                        dto.Punch.Guid,
                        dto.Project.Name,
-                       dto.Punch.Title,
-                       dto.Punch.Text,
+                       dto.Punch.ItemNo,
+                       dto.Punch.Description,
                        createdBy,
                        dto.Punch.CreatedAtUtc,
                        modifiedBy,

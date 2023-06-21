@@ -11,10 +11,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch
 
             RuleFor(dto => dto).NotNull();
 
-            RuleFor(dto => dto.Title)
+            RuleFor(dto => dto.ItemNo)
                 .NotNull()
-                .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMin)
-                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMax);
+                .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMin)
+                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax);
         }
     }
 }

@@ -9,9 +9,9 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 
 public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IVoidable, IHaveGuid
 {
-    public const int TitleLengthMin = 3;
-    public const int TitleLengthMax = 250;
-    public const int TextLengthMax = 500;
+    public const int ItemNoLengthMin = 3;
+    public const int ItemNoLengthMax = 64;
+    public const int DescriptionLengthMax = 2000;
 
 #pragma warning disable CS8618
     protected Punch()
@@ -20,7 +20,7 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
     {
     }
 
-    public Punch(string plant, Project project, string title)
+    public Punch(string plant, Project project, string itemNo)
         : base(plant)
     {
         if (project is null)
@@ -34,15 +34,16 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
         }
         ProjectId = project.Id;
 
-        Title = title;
+        ItemNo = itemNo;
         Guid = Guid.NewGuid();
     }
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
-    public string Title { get; set; }
-    public string? Text { get; set; }
-    public bool IsVoided { get; set; }
+    // todo #104033 How should we generate ItemNo? End user should not need to add it
+    public string ItemNo { get; private set; }
+    public string? Description { get; set; }
+    public bool IsVoided { get; set; } // todo remove, punch is not voidable
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -52,11 +53,7 @@ public class Punch : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModif
     public Guid? ModifiedByOid { get; private set; }
     public Guid Guid { get; private set; }
 
-    public void Update(string title, string? text)
-    {
-        Title = title;
-        Text = text;
-    }
+    public void Update(string? description) => Description = description;
 
     public void SetCreated(Person createdBy)
     {

@@ -27,13 +27,13 @@ public class PunchesControllerTests : TestBase
     public async Task CreatePunch_AsWriter_ShouldCreatePunch()
     {
         // Arrange
-        var title = Guid.NewGuid().ToString();
+        var itemNo = Guid.NewGuid().ToString();
 
         // Act
         var guidAndRowVersion = await PunchesControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            title,
+            itemNo,
             TestFactory.ProjectGuidWithAccess);
 
         // Assert
@@ -41,7 +41,7 @@ public class PunchesControllerTests : TestBase
         var newPunch = await PunchesControllerTestsHelper
             .GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunch);
-        Assert.AreEqual(title, newPunch.Title);
+        Assert.AreEqual(itemNo, newPunch.ItemNo);
         AssertCreatedBy(UserType.Writer, newPunch.CreatedBy);
 
         var allPunches = await PunchesControllerTestsHelper
@@ -70,7 +70,7 @@ public class PunchesControllerTests : TestBase
 
         // Assert
         Assert.IsTrue(punches.Count > 0);
-        Assert.IsTrue(punches.All(p => !p.Title.IsEmpty()));
+        Assert.IsTrue(punches.All(p => !p.ItemNo.IsEmpty()));
         Assert.IsTrue(punches.All(p => !p.RowVersion.IsEmpty()));
     }
 
@@ -78,8 +78,7 @@ public class PunchesControllerTests : TestBase
     public async Task UpdatePunch_AsWriter_ShouldUpdatePunchAndRowVersion()
     {
         // Arrange
-        var newTitle = Guid.NewGuid().ToString();
-        var newText = Guid.NewGuid().ToString();
+        var newDescription = Guid.NewGuid().ToString();
         var punch = await PunchesControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchGuidUnderTest);
         var initialRowVersion = punch.RowVersion;
 
@@ -88,15 +87,13 @@ public class PunchesControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             punch.Guid,
-            newTitle,
-            newText,
+            newDescription,
             initialRowVersion);
 
         // Assert
         AssertRowVersionChange(initialRowVersion, newRowVersion);
         punch = await PunchesControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchGuidUnderTest);
-        Assert.AreEqual(newTitle, punch.Title);
-        Assert.AreEqual(newText, punch.Text);
+        Assert.AreEqual(newDescription, punch.Description);
         Assert.AreEqual(newRowVersion, punch.RowVersion);
     }
 
@@ -406,8 +403,9 @@ public class PunchesControllerTests : TestBase
         Assert.AreEqual(0, attachments.Count);
     }
 
-    private async Task<(GuidAndRowVersion punchGuidAndRowVersion, GuidAndRowVersion linkGuidAndRowVersion)>
-        CreatePunchLinkAsync(string title, string url)
+    private async Task<(
+        GuidAndRowVersion punchGuidAndRowVersion, 
+        GuidAndRowVersion linkGuidAndRowVersion)>CreatePunchLinkAsync(string title, string url)
     {
         var punchGuidAndRowVersion = await PunchesControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,

@@ -14,9 +14,12 @@ public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
 
     public PunchCreatedEventHandler(IPublishEndpoint publishEndpoint) => _publishEndpoint = publishEndpoint;
 
-    // todo unit test to fail if property in contract IPunchCreatedV1 not in published message
-    public async Task Handle(PunchCreatedEvent punchCreatedEvent, CancellationToken cancellationToken) =>
+    public async Task Handle(PunchCreatedEvent punchCreatedEvent, CancellationToken cancellationToken)
+    {
+        // TODO TORD Mass Transit logging
+        // TODO TORD Mass Transit Navn på Topic
         await _publishEndpoint.Publish(new PunchCreatedMessage(punchCreatedEvent), cancellationToken);
+    }
 
     public record PunchCreatedMessage : IPunchCreatedV1
     {
@@ -24,7 +27,7 @@ public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
         {
             ProjectGuid = punchCreatedEvent.ProjectGuid;
             Guid = punchCreatedEvent.Punch.Guid;
-            Title = punchCreatedEvent.Punch.Title;
+            ItemNo = punchCreatedEvent.Punch.ItemNo;
             CreatedAtUtc = punchCreatedEvent.Punch.CreatedAtUtc;
             CreatedByOid = punchCreatedEvent.Punch.CreatedByOid;
         }
@@ -33,7 +36,7 @@ public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
 
         public Guid ProjectGuid { get; }
         public Guid Guid { get; init; }
-        public string Title { get; init; }
+        public string ItemNo { get; init; }
         public Guid CreatedByOid { get; init; }
         public DateTime CreatedAtUtc { get; init; }
     }

@@ -41,7 +41,7 @@ public class VoidPunchCommandHandler : IRequestHandler<VoidPunchCommand, Result<
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-        _logger.LogInformation($"Punch '{punch.Title}' voided");
+        _logger.LogInformation($"Punch '{punch.ItemNo}' voided");
             
         return new SuccessResult<string>(punch.RowVersion.ConvertToString());
     }

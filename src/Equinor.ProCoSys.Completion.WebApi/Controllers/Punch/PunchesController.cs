@@ -79,7 +79,7 @@ public class PunchesController : ControllerBase
         string plant,
         [FromBody] CreatePunchDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchCommand(dto.Title, dto.ProjectGuid));
+        var result = await _mediator.Send(new CreatePunchCommand(dto.ItemNo, dto.ProjectGuid));
         return this.FromResult(result);
     }
 
@@ -94,7 +94,7 @@ public class PunchesController : ControllerBase
         [FromBody] UpdatePunchDto dto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchCommand(guid, dto.Title, dto.Text, dto.RowVersion));
+            new UpdatePunchCommand(guid, dto.Description, dto.RowVersion));
         return this.FromResult(result);
     }
 

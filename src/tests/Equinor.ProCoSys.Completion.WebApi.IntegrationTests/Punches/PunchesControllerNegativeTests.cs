@@ -257,8 +257,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Unauthorized);
 
@@ -268,8 +267,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -280,8 +278,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -292,8 +289,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -303,8 +299,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -314,8 +309,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
-            "Punch1",
-            "Punch1-txt",
+            "Punch updated",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -325,8 +319,7 @@ public class PunchesControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
-            Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString(),
+            "Punch updated",
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
 

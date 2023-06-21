@@ -7,8 +7,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommand
 public class AccessValidatorForUpdatePunchCommandTests : AccessValidatorForIIsPunchCommandTests<UpdatePunchCommand>
 {
     protected override UpdatePunchCommand GetPunchCommandWithAccessToProject()
-        => new(PunchGuidWithAccessToProject, null!, null!, null!);
+        => new(PunchGuidWithAccessToProject, null!, null!);
 
     protected override UpdatePunchCommand GetPunchCommandWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject, null!, null!, null!);
+        => new(PunchGuidWithoutAccessToProject, null!, null!);
 }

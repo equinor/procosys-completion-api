@@ -60,6 +60,6 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_punchCreatedEvent.Punch.Guid, _publishedMessage.Guid);
         Assert.AreEqual(_punchCreatedEvent.Punch.CreatedAtUtc, _publishedMessage.CreatedAtUtc);
         Assert.AreEqual(_punchCreatedEvent.Punch.CreatedByOid, _publishedMessage.CreatedByOid);
-        Assert.AreEqual(_punchCreatedEvent.Punch.Title, _publishedMessage.Title);
+        Assert.AreEqual(_punchCreatedEvent.Punch.ItemNo, _publishedMessage.ItemNo);
     }
 }

@@ -7,8 +7,8 @@ public class PunchDetailsDto
     public PunchDetailsDto(
         Guid guid,
         string projectName,
-        string title,
-        string? text,
+        string itemNo,
+        string? description,
         PersonDto createdBy,
         DateTime createdAtUtc,
         PersonDto? modifiedBy,
@@ -18,8 +18,8 @@ public class PunchDetailsDto
     {
         Guid = guid;
         ProjectName = projectName;
-        Title = title;
-        Text = text;
+        ItemNo = itemNo;
+        Description = description;
         CreatedBy = createdBy;
         CreatedAtUtc = createdAtUtc;
         ModifiedBy = modifiedBy;
@@ -30,8 +30,8 @@ public class PunchDetailsDto
 
     public Guid Guid { get; }
     public string ProjectName { get; }
-    public string Title { get; }
-    public string? Text { get; }
+    public string ItemNo { get; }
+    public string? Description { get; }
     public PersonDto CreatedBy { get; }
     public DateTime CreatedAtUtc { get; set; }
     public PersonDto? ModifiedBy { get; }

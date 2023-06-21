@@ -95,7 +95,7 @@ public class UnitOfWorkTests
 
         await dut.SaveChangesAsync();
 
-        newPunch.Title = "UpdatedTitle";
+        newPunch.Description = "Updated";
             
         // Act
         await dut.SaveChangesAsync();

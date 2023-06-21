@@ -93,7 +93,7 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
 
     private void AssertPunch(PunchDto punchDto, Punch punch)
     {
-        Assert.AreEqual(punch.Title, punchDto.Title);
+        Assert.AreEqual(punch.ItemNo, punchDto.Title);
         var project = GetProjectById(punch.ProjectId);
         Assert.AreEqual(project.Name, punchDto.ProjectName);
     }

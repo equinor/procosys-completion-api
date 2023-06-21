@@ -13,7 +13,7 @@ public class CreatePunchDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreatePunchDto { Title = "New title"};
+        var dto = new CreatePunchDto { ItemNo = "New item"};
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -23,7 +23,7 @@ public class CreatePunchDtoValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleNotGiven()
+    public async Task Validate_ShouldFail_WhenItemNoNotGiven()
     {
         // Arrange
         var dto = new CreatePunchDto();
@@ -34,14 +34,14 @@ public class CreatePunchDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Title' must not be empty."));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Item No' must not be empty."));
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleIsTooShort()
+    public async Task Validate_ShouldFail_WhenItemNoIsTooShort()
     {
         // Arrange
-        var dto = new CreatePunchDto { Title = "N" };
+        var dto = new CreatePunchDto { ItemNo = "N" };
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -49,16 +49,16 @@ public class CreatePunchDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith($"The length of 'Item No' must be"));
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
+    public async Task Validate_ShouldFail_WhenItemNoIsTooLongAsync()
     {
         // Arrange
         var dto = new CreatePunchDto
         {
-            Title = new string('x', Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMax + 1)
+            ItemNo = new string('x', Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax + 1)
         };
 
         // Act
@@ -67,6 +67,6 @@ public class CreatePunchDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'ItemNo' must be"));
     }
 }

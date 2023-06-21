@@ -25,7 +25,6 @@ using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -63,10 +62,6 @@ public static class ApplicationModule
                 cfg.AutoStart = true;
             });
         });
-        
-        
-        
-    
 
         services.AddHttpContextAccessor();
         services.AddHttpClient();

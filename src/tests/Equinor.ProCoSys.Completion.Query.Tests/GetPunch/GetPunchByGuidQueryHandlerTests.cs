@@ -30,7 +30,7 @@ public class GetPunchByGuidQueryHandlerTests : ReadOnlyTestsBase
         context.SaveChangesAsync().Wait();
         _createdPunchGuid = _createdPunch.Guid;
 
-        _modifiedPunch.Update("TitleB modified", "Modified");
+        _modifiedPunch.Update("Modified");
         context.SaveChangesAsync().Wait();
         _modifiedPunchGuid = _modifiedPunch.Guid;
     }
@@ -101,7 +101,7 @@ public class GetPunchByGuidQueryHandlerTests : ReadOnlyTestsBase
 
     private void AssertPunch(PunchDetailsDto punchDetailsDto, Punch punch)
     {
-        Assert.AreEqual(punch.Title, punchDetailsDto.Title);
+        Assert.AreEqual(punch.ItemNo, punchDetailsDto.ItemNo);
         Assert.IsFalse(punch.IsVoided);
         var project = GetProjectById(punch.ProjectId);
         Assert.AreEqual(project.Name, punchDetailsDto.ProjectName);

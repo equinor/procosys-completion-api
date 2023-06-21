@@ -16,9 +16,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchCommands.UpdatePunch;
 [TestClass]
 public class UpdatePunchCommandHandlerTests : TestsBase
 {
-    private readonly string _newTitle = "newTitle";
-    private readonly string _existingTitle = "existingTitle";
-    private readonly string _newText = "newText";
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private Mock<IPunchRepository> _punchRepositoryMock;
@@ -31,12 +28,12 @@ public class UpdatePunchCommandHandlerTests : TestsBase
     public void Setup()
     {
         var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
-        _existingPunch = new Punch(TestPlantA, project, _existingTitle);
+        _existingPunch = new Punch(TestPlantA, project, "X1");
         _punchRepositoryMock = new Mock<IPunchRepository>();
         _punchRepositoryMock.Setup(r => r.TryGetByGuidAsync(_existingPunch.Guid))
             .ReturnsAsync(_existingPunch);
 
-        _command = new UpdatePunchCommand(_existingPunch.Guid, _newTitle, _newText, _rowVersion);
+        _command = new UpdatePunchCommand(_existingPunch.Guid, "newText", _rowVersion);
 
         _dut = new UpdatePunchCommandHandler(
             _punchRepositoryMock.Object,
@@ -47,15 +44,11 @@ public class UpdatePunchCommandHandlerTests : TestsBase
     [TestMethod]
     public async Task HandlingCommand_ShouldUpdatePunch()
     {
-        // Arrange
-        Assert.AreEqual(_existingTitle, _existingPunch.Title);
-
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_newTitle, _existingPunch.Title);
-        Assert.AreEqual(_newText, _existingPunch.Text);
+        Assert.AreEqual(_command.Description, _existingPunch.Description);
     }
 
     [TestMethod]

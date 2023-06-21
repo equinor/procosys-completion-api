@@ -82,14 +82,14 @@ public static class PunchesControllerTestsHelper
     public static async Task<GuidAndRowVersion> CreatePunchAsync(
         UserType userType,
         string plant,
-        string title,
+        string itemNo,
         Guid projectGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            title,
+            itemNo,
             projectGuid = projectGuid.ToString()
         };
 
@@ -264,16 +264,14 @@ public static class PunchesControllerTestsHelper
         UserType userType,
         string plant,
         Guid guid,
-        string title,
-        string text,
+        string description,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            title,
-            text,
+            description,
             rowVersion
         };
 

@@ -28,7 +28,7 @@ public class GetPunchesInProjectQueryHandler : IRequestHandler<GetPunchesInProje
                    select new PunchDto(
                        punch.Guid,
                        project.Name,
-                       punch.Title,
+                       punch.ItemNo,
                        punch.IsVoided,
                        punch.RowVersion.ConvertToString())
                 )

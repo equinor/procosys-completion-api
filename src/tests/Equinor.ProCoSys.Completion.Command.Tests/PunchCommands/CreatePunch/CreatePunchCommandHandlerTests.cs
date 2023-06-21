@@ -72,7 +72,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
 
         // Assert
         Assert.IsNotNull(_punchAddedToRepository);
-        Assert.AreEqual(_command.Title, _punchAddedToRepository.Title);
+        Assert.AreEqual(_command.ItemNo, _punchAddedToRepository.ItemNo);
         Assert.AreEqual(_projectIdOnExisting, _punchAddedToRepository.ProjectId);
     }
 

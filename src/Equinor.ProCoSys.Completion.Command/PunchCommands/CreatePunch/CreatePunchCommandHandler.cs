@@ -43,13 +43,13 @@ public class CreatePunchCommandHandler : IRequestHandler<CreatePunchCommand, Res
             throw new Exception($"Could not find ProCoSys project with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var punch = new Punch(_plantProvider.Plant, project, request.Title);
+        var punch = new Punch(_plantProvider.Plant, project, request.ItemNo);
         _punchRepository.Add(punch);
         punch.AddDomainEvent(new PunchCreatedEvent(punch, request.ProjectGuid));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation($"Punch '{request.Title}' created");
+        _logger.LogInformation($"Punch '{request.ItemNo}' created");
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punch.Guid, punch.RowVersion.ConvertToString()));
     }

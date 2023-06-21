@@ -27,7 +27,7 @@ public class UpdatePunchDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new UpdatePunchDto { Title = "New title", RowVersion = _rowVersion };
+        var dto = new UpdatePunchDto { RowVersion = _rowVersion };
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -37,59 +37,10 @@ public class UpdatePunchDtoValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleNotGiven()
-    {
-        // Arrange
-        var dto = new UpdatePunchDto { RowVersion = _rowVersion };
-
-        // Act
-        var result = await _dut.ValidateAsync(dto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Title' must not be empty."));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleIsTooShort()
-    {
-        // Arrange
-        var dto = new UpdatePunchDto { Title = "N", Text = "New text", RowVersion = _rowVersion };
-
-        // Act
-        var result = await _dut.ValidateAsync(dto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
-    {
-        // Arrange
-        var dto = new UpdatePunchDto
-        {
-            Title = new string('x', Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMax + 1),
-            RowVersion = _rowVersion
-        };
-
-        // Act
-        var result = await _dut.ValidateAsync(dto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new UpdatePunchDto { Title = "New title" };
+        var dto = new UpdatePunchDto();
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -105,7 +56,7 @@ public class UpdatePunchDtoValidatorTests
     {
         // Arrange
         _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(false);
-        var dto = new UpdatePunchDto { Title = "New title", RowVersion = _rowVersion };
+        var dto = new UpdatePunchDto { RowVersion = _rowVersion };
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -114,5 +65,23 @@ public class UpdatePunchDtoValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Dto does not have valid rowVersion!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenDescriptionIsTooLongAsync()
+    {
+        // Arrange
+        var dto = new UpdatePunchDto
+        {
+            Description = new string('x', Domain.AggregateModels.PunchAggregate.Punch.DescriptionLengthMax + 1)
+        };
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Description' must be"));
     }
 }

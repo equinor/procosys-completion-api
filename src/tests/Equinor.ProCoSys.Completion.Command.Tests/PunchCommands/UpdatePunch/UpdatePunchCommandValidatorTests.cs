@@ -19,7 +19,7 @@ public class UpdatePunchCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchCommand(Guid.NewGuid(), "New title", "New text", "r");
+        _command = new UpdatePunchCommand(Guid.NewGuid(), "New description", "r");
         _projectValidatorMock = new Mock<IProjectValidator>();
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))

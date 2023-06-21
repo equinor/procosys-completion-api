@@ -22,20 +22,20 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.Property(x => x.Title)
-            .HasMaxLength(Punch.TitleLengthMax)
+        builder.Property(x => x.ItemNo)
+            .HasMaxLength(Punch.ItemNoLengthMax)
             .IsRequired();
 
-        builder.Property(x => x.Text)
-            .HasMaxLength(Punch.TextLengthMax);
+        builder.Property(x => x.Description)
+            .HasMaxLength(Punch.DescriptionLengthMax);
 
         builder
             .HasIndex(x => x.Guid)
             .HasDatabaseName("IX_Punches_Guid")
             .IncludeProperties(x => new
             {
-                x.Title,
-                x.Text,
+                Title = x.ItemNo,
+                Text = x.Description,
                 x.ProjectId,
                 x.CreatedById,
                 x.CreatedAtUtc,
@@ -50,7 +50,7 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
             .HasDatabaseName("IX_Punches_ProjectId")
             .IncludeProperties(x => new
             {
-                x.Title,
+                Title = x.ItemNo,
                 x.IsVoided,
                 x.RowVersion
             });

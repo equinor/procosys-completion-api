@@ -35,13 +35,13 @@ public class UpdatePunchCommandHandler : IRequestHandler<UpdatePunchCommand, Res
             throw new Exception($"Entity {nameof(Punch)} {request.PunchGuid} not found");
         }
 
-        punch.Update(request.Title, request.Text);
+        punch.Update(request.Description);
         punch.SetRowVersion(request.RowVersion);
         punch.AddDomainEvent(new PunchUpdatedEvent(punch));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-        _logger.LogInformation($"Punch '{request.Title}' updated");
+        _logger.LogInformation($"Punch '{punch.ItemNo}' updated");
             
         return new SuccessResult<string>(punch.RowVersion.ConvertToString());
     }

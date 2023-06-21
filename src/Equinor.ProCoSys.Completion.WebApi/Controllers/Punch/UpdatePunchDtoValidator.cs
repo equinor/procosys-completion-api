@@ -11,13 +11,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch
 
             RuleFor(dto => dto).NotNull();
 
-            RuleFor(dto => dto.Title)
-                .NotNull()
-                .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMin)
-                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.TitleLengthMax);
-
-            RuleFor(dto => dto.Text)
-                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.TextLengthMax);
+            RuleFor(dto => dto.Description)
+                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.DescriptionLengthMax);
 
             RuleFor(dto => dto.RowVersion)
                 .NotNull()
