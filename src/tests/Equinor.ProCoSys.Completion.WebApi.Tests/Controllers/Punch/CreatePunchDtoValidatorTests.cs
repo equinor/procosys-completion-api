@@ -67,6 +67,6 @@ public class CreatePunchDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'ItemNo' must be"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Item No' must be"));
     }
 }
