@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using static Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents.PunchCreatedEventHandler;
 using System.Threading;
+using Equinor.ProCoSys.Completion.Command.MessageContracts.Punch;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchEvents;
 
@@ -18,7 +19,7 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
     private PunchCreatedEventHandler _dut;
     private PunchCreatedEvent _punchCreatedEvent;
     private Mock<IPublishEndpoint> _publishEndpointMock;
-    private PunchCreatedMessage _publishedMessage;
+    private IPunchCreatedV1 _publishedMessage;
 
     [TestInitialize]
     public void Setup()
@@ -31,8 +32,8 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         _publishEndpointMock = new Mock<IPublishEndpoint>();
         _dut = new PunchCreatedEventHandler(_publishEndpointMock.Object);
         _publishEndpointMock
-            .Setup(x => x.Publish(It.IsAny<PunchCreatedMessage>(), default))
-            .Callback<PunchCreatedMessage, CancellationToken>((message, _) =>
+            .Setup(x => x.Publish(It.IsAny<IPunchCreatedV1>(), default))
+            .Callback<IPunchCreatedV1, CancellationToken>((message, _) =>
             {
                 _publishedMessage = message;
             });
@@ -45,7 +46,7 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchCreatedEvent, default);
 
         // Assert
-        _publishEndpointMock.Verify(p => p.Publish(It.IsAny<PunchCreatedMessage>(), default), Times.Once);
+        _publishEndpointMock.Verify(p => p.Publish(It.IsAny<IPunchCreatedV1>(), default), Times.Once);
     }
 
     [TestMethod]
