@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20230621095300_RenamePunchColumns")]
+    partial class RenamePunchColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

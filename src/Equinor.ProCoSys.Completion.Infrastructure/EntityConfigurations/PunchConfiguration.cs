@@ -34,8 +34,8 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
             .HasDatabaseName("IX_Punches_Guid")
             .IncludeProperties(x => new
             {
-                Title = x.ItemNo,
-                Text = x.Description,
+                x.ItemNo,
+                x.Description,
                 x.ProjectId,
                 x.CreatedById,
                 x.CreatedAtUtc,
@@ -50,7 +50,7 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
             .HasDatabaseName("IX_Punches_ProjectId")
             .IncludeProperties(x => new
             {
-                Title = x.ItemNo,
+                x.ItemNo,
                 x.IsVoided,
                 x.RowVersion
             });
