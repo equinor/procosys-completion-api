@@ -8,12 +8,12 @@ Accepted
 
 ## Context
 
-The issue motivating this decision, and any context that influences or constrains the decision.
+Which platform to be used for this solution
 
 ## Decision
 
-The change that we're proposing or have agreed to implement.
+We use .Net 6 with Entity Framework. Will be upgraded to latest .Net asap
 
 ## Consequences
 
-What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.
+Build on known technologies used in previous made solutions

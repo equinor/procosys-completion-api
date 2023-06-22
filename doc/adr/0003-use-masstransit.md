@@ -8,12 +8,13 @@ Accepted
 
 ## Context
 
-The issue motivating this decision, and any context that influences or constrains the decision.
+Is there a known and recognized framework for publishing / consuming messages on message bus? We like to use Outbox pattern
 
 ## Decision
 
-The change that we're proposing or have agreed to implement.
+Microsoft suggests MassTransit or similar. The team as evaluated MassTransit through a POC. Seem to be easy to setup, 
+including Outbox pattern, MassTransit also create Azure Bus Topics when using Publish
 
 ## Consequences
 
-What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.
+We don't need to implement custom code for this
