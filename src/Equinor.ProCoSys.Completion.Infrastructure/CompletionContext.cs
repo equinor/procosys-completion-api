@@ -97,9 +97,10 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await SetAuditDataAsync();
-        
-        //must be called after SetAuditDataAsync
-        await DispatchDomainEventsAsync(cancellationToken); //TODO create test that fails if order is wrong
+
+        // NB! DispatchDomainEventsAsync must be called AFTER SetAuditDataAsync
+        // Domain Events Handlers rely on Created / Modified info set in SetAuditDataAsync
+        await DispatchDomainEventsAsync(cancellationToken);
         
         UpdateConcurrencyToken();
 
