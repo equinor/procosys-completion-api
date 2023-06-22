@@ -16,6 +16,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{946E8B4F-9EA5-4301-AFAD-14299C816709}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\doc\adr\0001-record-architecture-decisions.md = ..\doc\adr\0001-record-architecture-decisions.md
+		..\doc\adr\0002-use-net-core-with-ef.md = ..\doc\adr\0002-use-net-core-with-ef.md
+		..\doc\adr\0003-use-masstransit.md = ..\doc\adr\0003-use-masstransit.md
 		nuget.config = nuget.config
 		..\README.md = ..\README.md
 		usersecrets_minimum.json = usersecrets_minimum.json
