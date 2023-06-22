@@ -16,8 +16,8 @@ public class PunchCreatedEventHandler : INotificationHandler<PunchCreatedEvent>
 
     public async Task Handle(PunchCreatedEvent punchCreatedEvent, CancellationToken cancellationToken)
     {
-        // TODO TORD Mass Transit logging
-        // TODO TORD Mass Transit Navn på Topic
+        // ToDo #103910 Mass Transit logging
+        // ToDo #103910 Mass Transit Navn på Topic
         await _publishEndpoint.Publish(new PunchCreatedMessage(punchCreatedEvent), cancellationToken);
     }
 

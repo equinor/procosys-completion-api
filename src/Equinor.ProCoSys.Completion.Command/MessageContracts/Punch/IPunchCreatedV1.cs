@@ -2,7 +2,6 @@
 
 namespace Equinor.ProCoSys.Completion.Command.MessageContracts.Punch;
 
-// TODO TORD #Unit test: Lag test som bryter om konrakt endres (endre type eller rename / delete property)
 public interface IPunchCreatedV1 : IHaveDisplayName, IEventMessage
 {
     public Guid ProjectGuid { get; }

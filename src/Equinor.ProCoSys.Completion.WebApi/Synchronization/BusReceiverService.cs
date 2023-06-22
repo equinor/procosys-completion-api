@@ -59,7 +59,6 @@ public class BusReceiverService : IBusReceiverService
         var project = await _projectRepository.TryGetByGuidAsync(projectEvent.ProCoSysGuid);
         if (project != null)
         {
-            // todo The softstring "delete" should be defined in Equinor.ProCoSys.PcsServiceBus
             if (projectEvent.Behavior == "delete")
             {
                 project.IsDeletedInSource = true;

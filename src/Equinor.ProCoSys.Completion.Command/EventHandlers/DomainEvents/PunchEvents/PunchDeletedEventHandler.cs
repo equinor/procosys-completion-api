@@ -7,12 +7,11 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEv
 
 public class PunchDeletedEventHandler : INotificationHandler<PunchDeletedEvent>
 {
-    // todo unit test
     public Task Handle(PunchDeletedEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Punch.Guid;
 
-        // ToDo Send event to the bus
+        // ToDo #104081 Publish message
         return Task.CompletedTask;
     }
 }

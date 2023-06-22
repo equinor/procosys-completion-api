@@ -7,12 +7,11 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.Attachm
 
 public class ExistingAttachmentUploadedAndOverwrittenEventHandler : INotificationHandler<ExistingAttachmentUploadedAndOverwrittenEvent>
 {
-    // todo unit test
     public Task Handle(ExistingAttachmentUploadedAndOverwrittenEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Attachment.SourceGuid;
 
-        // ToDo Send event to the bus
+        // ToDo #104081 Publish message
         return Task.CompletedTask;
     }
 }

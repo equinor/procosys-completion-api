@@ -99,7 +99,6 @@ public class AttachmentService : IAttachmentService
         return attachment != null;
     }
 
-    // todo unit tests
     public async Task DeleteAsync(
         Guid guid,
         string rowVersion,

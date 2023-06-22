@@ -7,12 +7,11 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.Comment
 
 public class CommentCreatedEventHandler : INotificationHandler<CommentCreatedEvent>
 {
-    // todo unit test
     public Task Handle(CommentCreatedEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Comment.SourceGuid;
 
-        // ToDo Send event to the bus
+        // ToDo #104081 Publish message
         return Task.CompletedTask;
     }
 }

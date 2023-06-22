@@ -7,12 +7,11 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEve
 
 public class LinkDeletedEventHandler : INotificationHandler<LinkDeletedEvent>
 {
-    // todo unit test
     public Task Handle(LinkDeletedEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Link.SourceGuid;
 
-        // ToDo Send event to the bus
+        // ToDo #104081 Publish message
         return Task.CompletedTask;
     }
 }
