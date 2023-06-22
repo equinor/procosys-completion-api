@@ -2,12 +2,14 @@
 
 public class Permissions
 {
-    public const string PUNCH_READ = "PUNCH/READ";
-    public const string PUNCH_CREATE = "PUNCH/CREATE";
-    public const string PUNCH_DELETE = "PUNCH/DELETE";
-    public const string PUNCH_WRITE = "PUNCH/WRITE";
-    public const string PUNCH_ATTACH = "PUNCH/ATTACH";
-    public const string PUNCH_DETACH = "PUNCH/DETACH";
+    public const string PUNCHLISTITEM_READ = "PUNCHLISTITEM/READ";
+    public const string PUNCHLISTITEM_CREATE = "PUNCHLISTITEM/CREATE";
+    public const string PUNCHLISTITEM_DELETE = "PUNCHLISTITEM/DELETE";
+    public const string PUNCHLISTITEM_WRITE = "PUNCHLISTITEM/WRITE";
+    public const string PUNCHLISTITEM_ATTACH = "PUNCHLISTITEM/ATTACH";
+    public const string PUNCHLISTITEM_DETACH = "PUNCHLISTITEM/DETACH";
+    public const string PUNCHLISTITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
+    public const string PUNCHLISTITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
 
     public const string APPLICATION_TESTER = "APPLICATION_EXPLORER/EXECUTE";
 }

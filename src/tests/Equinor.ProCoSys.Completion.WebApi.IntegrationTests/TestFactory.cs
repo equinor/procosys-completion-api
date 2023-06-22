@@ -362,7 +362,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
                 {
-                    Permissions.PUNCH_READ
+                    Permissions.PUNCHLISTITEM_READ
                 },
                 AccessableProjects = accessableProjects
             });
@@ -386,12 +386,12 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>
                 {
-                    Permissions.PUNCH_CREATE,
-                    Permissions.PUNCH_WRITE,
-                    Permissions.PUNCH_ATTACH,
-                    Permissions.PUNCH_DETACH,
-                    Permissions.PUNCH_DELETE,
-                    Permissions.PUNCH_READ
+                    Permissions.PUNCHLISTITEM_CREATE,
+                    Permissions.PUNCHLISTITEM_WRITE,
+                    Permissions.PUNCHLISTITEM_ATTACH,
+                    Permissions.PUNCHLISTITEM_DETACH,
+                    Permissions.PUNCHLISTITEM_DELETE,
+                    Permissions.PUNCHLISTITEM_READ
                 },
                 AccessableProjects = accessableProjects
             });

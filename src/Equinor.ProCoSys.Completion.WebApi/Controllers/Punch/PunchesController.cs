@@ -41,7 +41,7 @@ public class PunchesController : ControllerBase
     public PunchesController(IMediator mediator) => _mediator = mediator;
 
     #region Punches
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}")]
     public async Task<ActionResult<PunchDetailsDto>> GetPunchByGuid(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -54,7 +54,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PunchDto>>> GetPunchesInProject(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -69,7 +69,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_CREATE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_CREATE, Permissions.APPLICATION_TESTER)]
     [HttpPost]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunch(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -82,7 +82,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_WRITE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}")]
     public async Task<ActionResult<string>> UpdatePunch(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -97,7 +97,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_DELETE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}")]
     public async Task<ActionResult> DeletePunch(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -113,7 +113,7 @@ public class PunchesController : ControllerBase
     #endregion
 
     #region Links
-    [AuthorizeAny(Permissions.PUNCH_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Links")]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchLink(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -127,7 +127,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Links")]
     public async Task<ActionResult<IEnumerable<LinkDto>>> GetPunchLinks(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -140,7 +140,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_WRITE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Links/{linkGuid}")]
     public async Task<ActionResult<string>> UpdatePunchLink(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -155,7 +155,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_DELETE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Links/{linkGuid}")]
     public async Task<ActionResult> DeleteLink(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -172,7 +172,7 @@ public class PunchesController : ControllerBase
     #endregion
 
     #region Comments
-    [AuthorizeAny(Permissions.PUNCH_WRITE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Comments")]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchComment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -186,7 +186,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Comments")]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetPunchComments(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -201,7 +201,7 @@ public class PunchesController : ControllerBase
     #endregion
 
     #region Attachments
-    [AuthorizeAny(Permissions.PUNCH_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Attachments")]
     public async Task<ActionResult<GuidAndRowVersion>> UploadPunchAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -220,7 +220,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Attachments")]
     public async Task<ActionResult<string>> OverwriteExistingPunchAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -240,7 +240,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Attachments")]
     public async Task<ActionResult<IEnumerable<AttachmentDto>>> GetPunchAttachments(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -253,7 +253,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_DELETE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult> DeleteAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -268,7 +268,7 @@ public class PunchesController : ControllerBase
         return this.FromResult(result);
     }
 
-    [AuthorizeAny(Permissions.PUNCH_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult<string>> GetPunchAttachmentDownloadUrl(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
