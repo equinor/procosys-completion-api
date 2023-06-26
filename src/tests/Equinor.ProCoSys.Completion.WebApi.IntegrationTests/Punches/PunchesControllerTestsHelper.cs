@@ -10,7 +10,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
 
 public static class PunchesControllerTestsHelper
 {
-    private const string _route = "Punches";
+    private const string Route = "Punches";
 
     public static async Task<PunchDetailsDto> GetPunchAsync(
         UserType userType,
@@ -19,7 +19,7 @@ public static class PunchesControllerTestsHelper
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{_route}/{guid}");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}");
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -39,7 +39,7 @@ public static class PunchesControllerTestsHelper
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{_route}/{guid}/Links");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/Links");
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -64,7 +64,7 @@ public static class PunchesControllerTestsHelper
             { "projectGuid", projectGuid.ToString() },
             { "includeVoided", "true" }
         };
-        var url = $"{_route}{parameters}";
+        var url = $"{Route}{parameters}";
 
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync(url);
 
@@ -95,7 +95,7 @@ public static class PunchesControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync(_route, content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync(Route, content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
         if (response.StatusCode != HttpStatusCode.OK)
@@ -124,7 +124,7 @@ public static class PunchesControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{_route}/{guid}/Links", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Links", content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
         if (response.StatusCode != HttpStatusCode.OK)
@@ -151,7 +151,7 @@ public static class PunchesControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{_route}/{guid}/Comments", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Comments", content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
         if (response.StatusCode != HttpStatusCode.OK)
@@ -171,7 +171,7 @@ public static class PunchesControllerTestsHelper
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{_route}/{guid}/Attachments");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/Attachments");
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -192,7 +192,7 @@ public static class PunchesControllerTestsHelper
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{_route}/{guid}/Attachments/{attachmentGuid}");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/Attachments/{attachmentGuid}");
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -213,7 +213,7 @@ public static class PunchesControllerTestsHelper
         string expectedMessageOnBadRequest = null)
     {
         var httpContent = file.CreateHttpContent();
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{_route}/{guid}/Attachments", httpContent);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -231,7 +231,7 @@ public static class PunchesControllerTestsHelper
     {
         var httpContent = file.CreateHttpContent();
         httpContent.Add(new StringContent(rowVersion), nameof(rowVersion));
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{_route}/{guid}/Attachments", httpContent);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
         return await response.Content.ReadAsStringAsync();
@@ -251,7 +251,7 @@ public static class PunchesControllerTestsHelper
             rowVersion
         };
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{_route}/{guid}/Attachments/{attachmentGuid}")
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}/Attachments/{attachmentGuid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
         };
@@ -277,7 +277,7 @@ public static class PunchesControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{_route}/{guid}", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}", content);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -309,7 +309,7 @@ public static class PunchesControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{_route}/{guid}/Links/{linkGuid}", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Links/{linkGuid}", content);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -334,7 +334,7 @@ public static class PunchesControllerTestsHelper
             rowVersion
         };
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{_route}/{guid}")
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
         };
@@ -357,7 +357,7 @@ public static class PunchesControllerTestsHelper
             rowVersion
         };
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{_route}/{guid}/Links/{linkGuid}")
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}/Links/{linkGuid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
         };
@@ -373,7 +373,7 @@ public static class PunchesControllerTestsHelper
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{_route}/{guid}/Comments");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/Comments");
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
