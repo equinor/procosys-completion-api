@@ -53,7 +53,7 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery(_projectA.Guid, true);
+        var query = new GetPunchesInProjectQuery(_projectA.Guid);
         var dut = new GetPunchesInProjectQueryHandler(context);
 
         // Act

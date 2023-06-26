@@ -62,10 +62,9 @@ public class PunchesController : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [Required]
-        [FromQuery] Guid projectGuid,
-        [FromQuery] bool includeVoided = false)
+        [FromQuery] Guid projectGuid)
     {
-        var result = await _mediator.Send(new GetPunchesInProjectQuery(projectGuid, includeVoided));
+        var result = await _mediator.Send(new GetPunchesInProjectQuery(projectGuid));
         return this.FromResult(result);
     }
 
