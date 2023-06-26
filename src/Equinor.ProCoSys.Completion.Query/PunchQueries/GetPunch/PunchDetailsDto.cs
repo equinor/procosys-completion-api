@@ -31,8 +31,8 @@ public class PunchDetailsDto
     public string ItemNo { get; }
     public string? Description { get; }
     public PersonDto CreatedBy { get; }
-    public DateTime CreatedAtUtc { get; set; }
+    public DateTime CreatedAtUtc { get; }
     public PersonDto? ModifiedBy { get; }
-    public DateTime? ModifiedAtUtc { get; set; }
+    public DateTime? ModifiedAtUtc { get; }
     public string RowVersion { get; }
 }
