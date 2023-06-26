@@ -36,7 +36,7 @@ public class PunchValidatorTests : ReadOnlyTestsBase
         var dut = new PunchValidator(context);
 
         // Act
-        var result = await dut.PunchExistsAsync(_punchInOpenProject.Guid, default);
+        var result = await dut.ExistsAsync(_punchInOpenProject.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -50,7 +50,7 @@ public class PunchValidatorTests : ReadOnlyTestsBase
         var dut = new PunchValidator(context);
 
         // Act
-        var result = await dut.PunchExistsAsync(Guid.Empty, default);
+        var result = await dut.ExistsAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);

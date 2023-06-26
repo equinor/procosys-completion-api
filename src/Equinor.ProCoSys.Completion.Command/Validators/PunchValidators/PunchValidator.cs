@@ -15,7 +15,7 @@ public class PunchValidator : IPunchValidator
 
     public PunchValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> PunchExistsAsync(Guid punchGuid, CancellationToken cancellationToken) =>
+    public async Task<bool> ExistsAsync(Guid punchGuid, CancellationToken cancellationToken) =>
         await (from punch in _context.QuerySet<Punch>()
             where punch.Guid == punchGuid
             select punch).AnyAsync(cancellationToken);

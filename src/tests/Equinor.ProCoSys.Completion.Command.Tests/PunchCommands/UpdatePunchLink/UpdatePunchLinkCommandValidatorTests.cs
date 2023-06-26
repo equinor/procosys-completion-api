@@ -21,7 +21,7 @@ public class UpdatePunchLinkCommandValidatorTests
     {
         _command = new UpdatePunchLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "New title", "New text", "r");
         _punchValidatorMock = new Mock<IPunchValidator>();
-        _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
         _linkServiceMock = new Mock<ILinkService>();
         _linkServiceMock.Setup(x => x.ExistsAsync(_command.LinkGuid))
@@ -46,7 +46,7 @@ public class UpdatePunchLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchNotExists()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(false);
 
         // Act

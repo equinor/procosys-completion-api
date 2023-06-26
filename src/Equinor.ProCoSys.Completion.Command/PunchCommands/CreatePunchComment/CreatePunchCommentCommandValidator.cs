@@ -28,6 +28,6 @@ public class CreatePunchCommentCommandValidator : AbstractValidator<CreatePunchC
             => !await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => await punchValidator.PunchExistsAsync(punchGuid, cancellationToken);
+            => await punchValidator.ExistsAsync(punchGuid, cancellationToken);
     }
 }

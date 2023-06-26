@@ -23,6 +23,6 @@ public class DeletePunchCommandValidator : AbstractValidator<DeletePunchCommand>
             => !await punchValidator.ProjectOwningPunchIsClosedAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => await punchValidator.PunchExistsAsync(punchGuid, cancellationToken);
+            => await punchValidator.ExistsAsync(punchGuid, cancellationToken);
     }
 }

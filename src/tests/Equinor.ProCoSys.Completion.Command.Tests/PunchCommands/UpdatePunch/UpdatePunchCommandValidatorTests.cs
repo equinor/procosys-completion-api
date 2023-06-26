@@ -19,7 +19,7 @@ public class UpdatePunchCommandValidatorTests
     {
         _command = new UpdatePunchCommand(Guid.NewGuid(), "New description", "r");
         _punchValidatorMock = new Mock<IPunchValidator>();
-        _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         _dut = new UpdatePunchCommandValidator(_punchValidatorMock.Object);
@@ -39,7 +39,7 @@ public class UpdatePunchCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchNotExists()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(false);
 
         // Act

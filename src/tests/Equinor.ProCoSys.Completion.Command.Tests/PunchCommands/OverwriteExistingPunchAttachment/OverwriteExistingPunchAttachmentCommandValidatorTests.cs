@@ -23,7 +23,7 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     {
         _command = new OverwriteExistingPunchAttachmentCommand(Guid.NewGuid(), _fileName, "r", new MemoryStream());
         _punchValidatorMock = new Mock<IPunchValidator>();
-        _punchValidatorMock.Setup(x => x.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(x => x.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
         _attachmentServiceMock = new Mock<IAttachmentService>();
         _attachmentServiceMock.Setup(x => x.FilenameExistsForSourceAsync(
@@ -47,7 +47,7 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchNotExists()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.PunchExistsAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(false);
 
         // Act

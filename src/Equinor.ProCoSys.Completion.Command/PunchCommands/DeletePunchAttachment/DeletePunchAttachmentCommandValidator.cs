@@ -33,7 +33,7 @@ public class DeletePunchAttachmentCommandValidator : AbstractValidator<DeletePun
             => !await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => await punchValidator.PunchExistsAsync(punchGuid, cancellationToken);
+            => await punchValidator.ExistsAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingAttachment(Guid attachmentGuid)
             => await attachmentService.ExistsAsync(attachmentGuid);
