@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Threading;
 using Equinor.ProCoSys.MessageContracts.Punch;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchEvents;
 
@@ -19,6 +20,7 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
     private PunchCreatedEvent _punchCreatedEvent;
     private Mock<IPublishEndpoint> _publishEndpointMock;
     private IPunchCreatedV1 _publishedMessage;
+    private Mock<ILogger<PunchCreatedEventHandler>> _mockLogger;
 
     [TestInitialize]
     public void Setup()
@@ -29,7 +31,8 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
 
         _punchCreatedEvent = new PunchCreatedEvent(punch, projectGuid);
         _publishEndpointMock = new Mock<IPublishEndpoint>();
-        _dut = new PunchCreatedEventHandler(_publishEndpointMock.Object);
+        _mockLogger = new Mock<ILogger<PunchCreatedEventHandler>>();
+        _dut = new PunchCreatedEventHandler(_publishEndpointMock.Object, _mockLogger.Object);
         _publishEndpointMock
             .Setup(x => x.Publish(It.IsAny<IPunchCreatedV1>(), default))
             .Callback<IPunchCreatedV1, CancellationToken>((message, _) =>
