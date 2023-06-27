@@ -31,7 +31,6 @@ public class GlobalExceptionHandler
         }
         catch (UnauthorizedAccessException)
         {
-            _logger.LogWarning("Unauthorized");
             context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
             context.Response.ContentType = "application/text";
             await context.Response.WriteAsync("Unauthorized!");
@@ -69,9 +68,9 @@ public class GlobalExceptionHandler
         {
             context.Response.StatusCode = (int)HttpStatusCode.Conflict;
             context.Response.ContentType = "application/text";
-            const string message = "Data store operation failed. Data may have been modified or deleted since entities were loaded.";
-            _logger.LogDebug(message);
-            await context.Response.WriteAsync(message);
+            const string Message = "Data store operation failed. Data may have been modified or deleted since entities were loaded.";
+            _logger.LogDebug(Message);
+            await context.Response.WriteAsync(Message);
         }
         catch (Exception ex)
         {
