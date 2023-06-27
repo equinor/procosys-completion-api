@@ -22,11 +22,11 @@ public class CheckAccessBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     {
         var typeName = request.GetGenericTypeName();
 
-        _logger.LogInformation($"----- Checking access for {typeName}");
+        _logger.LogInformation("----- Checking access for {TypeName}", typeName);
 
         if (!await _accessValidator.ValidateAsync(request as IBaseRequest))
         {
-            _logger.LogWarning($"User do not have access - {typeName}");
+            _logger.LogWarning("User do not have access - {TypeName}", typeName);
 
             throw new UnauthorizedAccessException();
         }

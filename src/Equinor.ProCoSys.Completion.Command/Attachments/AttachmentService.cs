@@ -126,7 +126,7 @@ public class AttachmentService : IAttachmentService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation($"Attachment '{attachment.FileName}' with guid {attachment.Guid} deleted for {attachment.SourceGuid}");
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentSourceGuid}", attachment.FileName, attachment.Guid, attachment.SourceGuid);
     }
 
     private async Task UploadAsync(
@@ -143,7 +143,7 @@ public class AttachmentService : IAttachmentService
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation($"Attachment '{attachment.FileName}' with guid {attachment.Guid} uploaded for {attachment.SourceGuid}");
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentSourceGuid}", attachment.FileName, attachment.Guid, attachment.SourceGuid);
     }
 
     public async Task<bool> ExistsAsync(Guid guid)

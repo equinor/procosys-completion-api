@@ -59,7 +59,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             _personRepository.Add(person);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("{type} with oid {oid} created", type, person.Guid);
+            _logger.LogInformation("{Type} with oid {Oid} created", type, person.Guid);
         }
 
         return new SuccessResult<Unit>(Unit.Value);

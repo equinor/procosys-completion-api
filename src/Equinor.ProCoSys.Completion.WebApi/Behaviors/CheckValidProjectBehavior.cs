@@ -22,7 +22,7 @@ public class CheckValidProjectBehavior<TRequest, TResponse> : IPipelineBehavior<
     {
         var typeName = request.GetGenericTypeName();
 
-        _logger.LogInformation($"----- Checking project for {typeName}");
+        _logger.LogInformation("----- Checking project for {TypeName}", typeName);
 
         await _projectChecker.EnsureValidProjectAsync(request as IBaseRequest);
 

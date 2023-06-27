@@ -49,7 +49,7 @@ public class CreatePunchCommandHandler : IRequestHandler<CreatePunchCommand, Res
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch '{itemNo}' with guid {guid} created", request.ItemNo, punch.Guid);
+        _logger.LogInformation("Punch '{ItemNo}' with guid {Guid} created", request.ItemNo, punch.Guid);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punch.Guid, punch.RowVersion.ConvertToString()));
     }
