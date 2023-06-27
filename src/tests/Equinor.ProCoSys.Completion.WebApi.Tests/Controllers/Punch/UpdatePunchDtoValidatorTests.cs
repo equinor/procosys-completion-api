@@ -27,7 +27,7 @@ public class UpdatePunchDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new UpdatePunchDto { RowVersion = _rowVersion };
+        var dto = new UpdatePunchDto(null, _rowVersion);
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -40,7 +40,7 @@ public class UpdatePunchDtoValidatorTests
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new UpdatePunchDto();
+        var dto = new UpdatePunchDto(null, null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -56,7 +56,7 @@ public class UpdatePunchDtoValidatorTests
     {
         // Arrange
         _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(false);
-        var dto = new UpdatePunchDto { RowVersion = _rowVersion };
+        var dto = new UpdatePunchDto(null, _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -71,10 +71,9 @@ public class UpdatePunchDtoValidatorTests
     public async Task Validate_ShouldFail_WhenDescriptionIsTooLongAsync()
     {
         // Arrange
-        var dto = new UpdatePunchDto
-        {
-            Description = new string('x', Domain.AggregateModels.PunchAggregate.Punch.DescriptionLengthMax + 1)
-        };
+        var dto = new UpdatePunchDto(
+            new string('x', Domain.AggregateModels.PunchAggregate.Punch.DescriptionLengthMax + 1),
+            _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);

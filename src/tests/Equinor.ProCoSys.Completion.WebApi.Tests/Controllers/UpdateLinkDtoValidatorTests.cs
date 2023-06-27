@@ -26,7 +26,7 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new UpdateLinkDto { Title = "New title", Url = "U", RowVersion = _rowVersion };
+        var dto = new UpdateLinkDto("New title", "U", _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -39,7 +39,7 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTitleNotGiven()
     {
         // Arrange
-        var dto = new UpdateLinkDto { Url = "U", RowVersion = _rowVersion };
+        var dto = new UpdateLinkDto(null!, "U", _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -54,12 +54,10 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
     {
         // Arrange
-        var dto = new UpdateLinkDto
-        {
-            Title = new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1),
-            Url = "U",
-            RowVersion = _rowVersion
-        };
+        var dto = new UpdateLinkDto(
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1), 
+            "U", 
+            _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -74,7 +72,7 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenUrlNotGiven()
     {
         // Arrange
-        var dto = new UpdateLinkDto { Title = "New title", RowVersion = _rowVersion };
+        var dto = new UpdateLinkDto("New title", null!, _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -89,12 +87,10 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenUrlIsTooLongAsync()
     {
         // Arrange
-        var dto = new UpdateLinkDto
-        {
-            Title = "New title",
-            Url = new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1),
-            RowVersion = _rowVersion
-        };
+        var dto = new UpdateLinkDto(
+            "New title",
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1), 
+            _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -109,7 +105,7 @@ public class UpdateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new UpdateLinkDto { Title = "New title", Url = "U"};
+        var dto = new UpdateLinkDto("New title", "U", null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -125,7 +121,7 @@ public class UpdateLinkDtoValidatorTests
     {
         // Arrange
         _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(false);
-        var dto = new UpdateLinkDto { Title = "New title", Url = "U", RowVersion = _rowVersion };
+        var dto = new UpdateLinkDto("New title", "U", _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);

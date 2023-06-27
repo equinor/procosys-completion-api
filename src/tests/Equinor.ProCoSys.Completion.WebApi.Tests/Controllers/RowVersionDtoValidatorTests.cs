@@ -26,7 +26,7 @@ public class RowVersionDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new RowVersionDto { RowVersion = _rowVersion };
+        var dto = new RowVersionDto(_rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -39,7 +39,7 @@ public class RowVersionDtoValidatorTests
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new RowVersionDto();
+        var dto = new RowVersionDto(null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);

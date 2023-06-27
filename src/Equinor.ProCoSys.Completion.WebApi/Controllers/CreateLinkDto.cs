@@ -2,10 +2,8 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public class CreateLinkDto
-{
+public record CreateLinkDto(
     [Required]
-    public string Title { get; set; } = null!;
+    string Title,
     [Required]
-    public string Url { get; set; } = null!;
-}
+    string Url);

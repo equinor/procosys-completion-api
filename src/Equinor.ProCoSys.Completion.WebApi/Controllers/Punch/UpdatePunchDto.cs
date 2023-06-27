@@ -2,10 +2,8 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
 
-public class UpdatePunchDto
-{
+public record UpdatePunchDto(
     [Required]
-    public string? Description { get; set; }
+    string? Description,
     [Required]
-    public string RowVersion { get; set; } = null!;
-}
+    string RowVersion);

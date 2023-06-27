@@ -2,8 +2,6 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public class CreateCommentDto
-{
+public record CreateCommentDto(
     [Required]
-    public string Text { get; set; } = null!;
-}
+    string Text);

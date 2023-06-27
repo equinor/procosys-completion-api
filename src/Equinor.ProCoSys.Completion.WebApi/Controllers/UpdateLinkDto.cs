@@ -2,12 +2,10 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public class UpdateLinkDto
-{
+public record UpdateLinkDto(
     [Required]
-    public string Title { get; set; } = null!;
+    string Title,
     [Required]
-    public string Url { get; set; } = null!;
+    string Url,
     [Required]
-    public string RowVersion { get; set; } = null!;
-}
+    string RowVersion);
