@@ -1,15 +1,14 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
 
-public class PunchDetailsDto
-{
-    public Guid Guid { get; set; }
-    public string ProjectName { get; set; }
-    public string ItemNo { get; set; }
-    [CanBeNull]
-    public string Description { get; set;  }
-    public PersonDto CreatedBy { get; set; }
-    public string RowVersion { get; set; }
-}
+public record PunchDetailsDto(
+    Guid Guid,
+    string ProjectName,
+    string ItemNo,
+    string Description,
+    PersonDto CreatedBy,
+    DateTime CreatedAtUtc,
+    PersonDto ModifiedBy,
+    DateTime? ModifiedAtUtc,
+    string RowVersion);

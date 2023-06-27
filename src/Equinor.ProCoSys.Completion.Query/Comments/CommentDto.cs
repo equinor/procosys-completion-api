@@ -2,7 +2,8 @@
 
 namespace Equinor.ProCoSys.Completion.Query.Comments;
 
-public record CommentDto(Guid SourceGuid,
+public record CommentDto(
+    Guid SourceGuid,
     Guid Guid,
     string Text,
     PersonDto CreatedBy,
