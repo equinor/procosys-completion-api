@@ -24,12 +24,12 @@ public class HeartbeatController : ControllerBase
     [HttpGet("IsAlive")]
     public IActionResult IsAlive()
     {
-        var timestampString = $"{TimeService.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
-        _logger.LogInformation("The application is running at {TimestampString}", timestampString);
+        var timestamp = $"{TimeService.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
+        _logger.LogInformation("The application is running at {Timestamp}", timestamp);
         return new JsonResult(new
         {
             IsAlive = true,
-            TimeStamp = timestampString
+            TimeStamp = timestamp
         });
     }
 

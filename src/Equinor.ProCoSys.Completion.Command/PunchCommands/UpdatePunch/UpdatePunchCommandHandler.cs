@@ -41,7 +41,7 @@ public class UpdatePunchCommandHandler : IRequestHandler<UpdatePunchCommand, Res
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch '{itemNo}' with guid {guid} updated", punch.ItemNo, punch.Guid);
+        _logger.LogInformation("Punch '{PunchItemNo}' with guid {PunchGuid} updated", punch.ItemNo, punch.Guid);
 
         return new SuccessResult<string>(punch.RowVersion.ConvertToString());
     }

@@ -43,7 +43,7 @@ public class DeletePunchCommandHandler : IRequestHandler<DeletePunchCommand, Res
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch '{ItemNo}' with guid {Guid} deleted", punch.ItemNo, punch.Guid);
+        _logger.LogInformation("Punch '{PunchItemNo}' with guid {PunchGuid} deleted", punch.ItemNo, punch.Guid);
 
         return new SuccessResult<Unit>(Unit.Value);
     }
