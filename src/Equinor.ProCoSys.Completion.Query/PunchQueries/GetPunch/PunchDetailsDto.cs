@@ -2,37 +2,13 @@
 
 namespace Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunch;
 
-public class PunchDetailsDto
-{
-    public PunchDetailsDto(
-        Guid guid,
-        string projectName,
-        string itemNo,
-        string? description,
-        PersonDto createdBy,
-        DateTime createdAtUtc,
-        PersonDto? modifiedBy,
-        DateTime? modifiedAtUtc,
-        string rowVersion)
-    {
-        Guid = guid;
-        ProjectName = projectName;
-        ItemNo = itemNo;
-        Description = description;
-        CreatedBy = createdBy;
-        CreatedAtUtc = createdAtUtc;
-        ModifiedBy = modifiedBy;
-        ModifiedAtUtc = modifiedAtUtc;
-        RowVersion = rowVersion;
-    }
-
-    public Guid Guid { get; }
-    public string ProjectName { get; }
-    public string ItemNo { get; }
-    public string? Description { get; }
-    public PersonDto CreatedBy { get; }
-    public DateTime CreatedAtUtc { get; }
-    public PersonDto? ModifiedBy { get; }
-    public DateTime? ModifiedAtUtc { get; }
-    public string RowVersion { get; }
-}
+public record PunchDetailsDto(
+    Guid Guid,
+    string ProjectName,
+    string ItemNo,
+    string? Description,
+    PersonDto CreatedBy,
+    DateTime CreatedAtUtc,
+    PersonDto? ModifiedBy,
+    DateTime? ModifiedAtUtc,
+    string RowVersion);
