@@ -40,9 +40,9 @@ public class UpdatePunchCommandHandler : IRequestHandler<UpdatePunchCommand, Res
         punch.AddDomainEvent(new PunchUpdatedEvent(punch));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-        _logger.LogInformation($"Punch '{punch.ItemNo}' updated");
-            
+
+        _logger.LogInformation("Punch '{itemNo}' with guid {guid} updated", punch.ItemNo, punch.Guid);
+
         return new SuccessResult<string>(punch.RowVersion.ConvertToString());
     }
 }
