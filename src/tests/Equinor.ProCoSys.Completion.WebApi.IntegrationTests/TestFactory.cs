@@ -10,6 +10,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,6 +36,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly Mock<IAzureBlobService> BlobStorageMock = new();
     private readonly Mock<IPersonApiService> _personApiServiceMock = new();
     private readonly Mock<IPermissionApiService> _permissionApiServiceMock = new();
+    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
@@ -138,6 +140,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _personApiServiceMock.Object);
             services.AddScoped(_ => _permissionApiServiceMock.Object);
             services.AddScoped(_ => BlobStorageMock.Object);
+            services.AddScoped(_ => _publishEndpointMock.Object);
         });
 
         builder.ConfigureServices(services =>
