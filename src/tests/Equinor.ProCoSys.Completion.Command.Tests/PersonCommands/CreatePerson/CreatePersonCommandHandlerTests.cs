@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -74,7 +75,8 @@ public class CreatePersonCommandHandlerTests : TestsBase
             _personCacheMock.Object,
             _personRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _optionsMock.Object);
+            _optionsMock.Object,
+            new Mock<ILogger<CreatePersonCommandHandler>>().Object);
     }
 
     [TestMethod]
