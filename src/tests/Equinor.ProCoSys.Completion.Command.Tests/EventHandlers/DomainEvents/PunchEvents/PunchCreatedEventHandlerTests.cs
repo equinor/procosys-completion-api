@@ -7,9 +7,8 @@ using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using MassTransit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using static Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents.PunchCreatedEventHandler;
 using System.Threading;
-using Equinor.ProCoSys.Completion.Command.MessageContracts.Punch;
+using Equinor.ProCoSys.MessageContracts.Punch;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchEvents;
 

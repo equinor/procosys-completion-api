@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -18,6 +19,11 @@ public class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+            // .ConfigureLogging(logging =>
+            // {
+            //     logging.AddApplicationInsights();
+            //     logging.AddConsole();
+            // })
             .ConfigureAppConfiguration((context, config) =>
             {
                 if (!context.HostingEnvironment.IsIntegrationTest())

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Command.MessageContracts.Punch;
+using Equinor.ProCoSys.MessageContracts.Punch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts.Punch;

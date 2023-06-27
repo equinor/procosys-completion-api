@@ -25,7 +25,10 @@ using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
+using Equinor.ProCoSys.Completion.Command.MassTransit;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -45,6 +48,8 @@ public static class ApplicationModule
             options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
 
+        services.AddLogging(configure => configure.AddConsole());
+
         services.AddMassTransit(x =>
         {
             x.AddEntityFrameworkOutbox<CompletionContext>(o =>
@@ -57,8 +62,14 @@ public static class ApplicationModule
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
-                cfg.ConfigureEndpoints(context);
-                cfg.UseServiceBusMessageScheduler();
+                
+                cfg.MessageTopology.SetEntityNameFormatter(new KebabCaseEntityNameFormatter(new TopicNameFormatter(), false));
+                
+                cfg.Send<PunchCreatedMessage>(topologyConfigurator =>
+                {
+                    topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
+                });
+                
                 cfg.AutoStart = true;
             });
         });

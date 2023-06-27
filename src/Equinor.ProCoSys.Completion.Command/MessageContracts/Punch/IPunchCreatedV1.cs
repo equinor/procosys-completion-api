@@ -1,12 +1,15 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Command.MessageContracts;
+using MassTransit.Audit;
 
-namespace Equinor.ProCoSys.Completion.Command.MessageContracts.Punch;
+// ReSharper disable once CheckNamespace
+namespace Equinor.ProCoSys.MessageContracts.Punch;
 
 public interface IPunchCreatedV1 : IHaveDisplayName, IEventMessage
 {
     public Guid ProjectGuid { get; }
-    public Guid Guid { get; init; }
-    public string ItemNo { get; init; }
-    public Guid CreatedByOid { get; init; }
-    public DateTime CreatedAtUtc { get; init; }
+    public Guid Guid { get;  }
+    public string ItemNo { get; }
+    public Guid CreatedByOid { get; }
+    public DateTime CreatedAtUtc { get;  }
 }
