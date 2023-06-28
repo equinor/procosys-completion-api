@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,11 +14,13 @@ public class PunchesControllerNegativeTests : TestBase
     private Guid _attachmentGuidUnderTest;
 
     [TestInitialize]
-    public void TestInitialize()
+    public async Task TestInitialize()
     {
         _punchGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
         _linkGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].LinkInPunchAGuid;
         _attachmentGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].AttachmentInPunchAGuid;
+
+        await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }
 
     #region GetPunch
@@ -522,6 +525,18 @@ public class PunchesControllerNegativeTests : TestBase
             "U",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchLink_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest,
+            _linkGuidUnderTest,
+            "T",
+            "U",
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
     #endregion
 
     #region DeletePunchLink
@@ -586,6 +601,16 @@ public class PunchesControllerNegativeTests : TestBase
             _linkGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task DeletePunchLink_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest,
+            _linkGuidUnderTest,
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
     #endregion
 
     #region CreatePunchComment
@@ -903,6 +928,20 @@ public class PunchesControllerNegativeTests : TestBase
             new TestFile("T", "F"),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task OverwriteExistingPunchAttachment_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+    {
+        var punchAttachmentUnderTest = await GetPunchAttachmentUnderTest();
+        await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest,
+            new TestFile("T", punchAttachmentUnderTest.FileName),
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
+    }
+
     #endregion
 
     #region DeletePunchAttachment
@@ -967,5 +1006,66 @@ public class PunchesControllerNegativeTests : TestBase
             _attachmentGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task DeletePunchAttachment_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest,
+            _attachmentGuidUnderTest,
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
     #endregion
+
+    private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()
+    {
+        var punchUnderTest = await GetPunchUnderTest();
+        Assert.AreNotEqual(
+            TestFactory.WrongButValidRowVersion,
+            punchUnderTest.RowVersion,
+            "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
+
+        var punchLinkUnderTest = await GetPunchLinkUnderTest();
+        Assert.AreNotEqual(
+            TestFactory.WrongButValidRowVersion,
+            punchLinkUnderTest.RowVersion,
+            "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
+
+        var punchAttachmentUnderTest = await GetPunchAttachmentUnderTest();
+
+        Assert.AreNotEqual(
+            TestFactory.WrongButValidRowVersion,
+            punchAttachmentUnderTest.RowVersion,
+            "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
+    }
+
+    private async Task<AttachmentDto> GetPunchAttachmentUnderTest()
+    {
+        var punchAttachmentsUnderTest = await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest);
+        var punchAttachmentUnderTest = punchAttachmentsUnderTest.Single(p => p.Guid == _attachmentGuidUnderTest);
+        return punchAttachmentUnderTest;
+    }
+
+    private async Task<LinkDto> GetPunchLinkUnderTest()
+    {
+        var punchLinksUnderTest = await PunchesControllerTestsHelper.GetPunchLinksAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest);
+        var punchLinkUnderTest = punchLinksUnderTest.Single(p => p.Guid == _linkGuidUnderTest);
+        return punchLinkUnderTest;
+    }
+
+    private async Task<PunchDetailsDto> GetPunchUnderTest()
+    {
+        var punchUnderTest = await PunchesControllerTestsHelper.GetPunchAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchGuidUnderTest);
+        return punchUnderTest;
+    }
 }
