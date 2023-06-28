@@ -1,6 +1,5 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Command.MessageContracts;
-using MassTransit.Audit;
 
 // ReSharper disable once CheckNamespace
 namespace Equinor.ProCoSys.MessageContracts.Punch;
