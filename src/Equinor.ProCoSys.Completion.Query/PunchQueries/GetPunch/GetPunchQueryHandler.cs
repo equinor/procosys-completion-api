@@ -51,7 +51,7 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
             dto.CreatedByUser.Email);
         
         PersonDto? modifiedBy = null;
-        if (dto.ModifiedByUser != null)
+        if (dto.ModifiedByUser is not null)
         {
             modifiedBy = new PersonDto(
                 dto.ModifiedByUser.Guid,

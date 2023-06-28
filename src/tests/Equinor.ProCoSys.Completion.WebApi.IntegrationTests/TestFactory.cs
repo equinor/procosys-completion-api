@@ -158,7 +158,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         var descriptor = services.SingleOrDefault
             (d => d.ServiceType == typeof(DbContextOptions<CompletionContext>));
 
-        if (descriptor != null)
+        if (descriptor is not null)
         {
             services.Remove(descriptor);
         }
@@ -283,7 +283,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         {
             testUser.HttpClient = webHostBuilder.CreateClient();
 
-            if (testUser.Profile != null)
+            if (testUser.Profile is not null)
             {
                 AuthenticateUser(testUser);
             }
@@ -292,9 +292,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
     private void SetupProCoSysServiceMocks()
     {
-        foreach (var testUser in _testUsers.Values.Where(t => t.Profile != null))
+        foreach (var testUser in _testUsers.Values.Where(t => t.Profile is not null))
         {
-            if (testUser.AuthProCoSysPerson != null)
+            if (testUser.AuthProCoSysPerson is not null)
             {
                 _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
                     .Returns(Task.FromResult(testUser.AuthProCoSysPerson));

@@ -21,7 +21,7 @@ public class PlantValidatorMiddleware
     {
         logger.LogInformation($"----- {GetType().Name} start");
         var plantId = plantProvider.Plant;
-        if (context.User.Identity != null && context.User.Identity.IsAuthenticated && plantId != null)
+        if (context.User.Identity is not null && context.User.Identity.IsAuthenticated && plantId is not null)
         {
             if (!await permissionCache.IsAValidPlantForCurrentUserAsync(plantId))
             {

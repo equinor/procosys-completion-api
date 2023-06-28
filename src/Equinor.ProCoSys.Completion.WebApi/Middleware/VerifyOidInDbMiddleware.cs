@@ -21,7 +21,7 @@ public class VerifyOidInDbMiddleware
         ILogger<VerifyOidInDbMiddleware> logger)
     {
         logger.LogInformation($"----- {GetType().Name} start");
-        if (httpContextAccessor.HttpContext != null)
+        if (httpContextAccessor.HttpContext is not null)
         {
             var httpContextUser = httpContextAccessor.HttpContext.User;
             var oid = httpContextUser.Claims.TryGetOid();

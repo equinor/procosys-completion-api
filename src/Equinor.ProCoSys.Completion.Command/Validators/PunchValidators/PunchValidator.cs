@@ -27,7 +27,7 @@ public class PunchValidator : IPunchValidator
         //    join t in _context.QuerySet<Tag>() on punch.TagId equals t.Id 
         //    where punch.Guid == punchGuid
         //    select t).SingleOrDefaultAsync(cancellationToken);
-        //return tag != null && tag.IsVoided;
+        //return tag is not null && tag.IsVoided;
         // ReSharper disable once ArrangeMethodOrOperatorBody
         return Task.FromResult(false);
     }
@@ -39,6 +39,6 @@ public class PunchValidator : IPunchValidator
             where punch.Guid == punchGuid
             select p).SingleOrDefaultAsync(cancellationToken);
 
-        return project != null && project.IsClosed;
+        return project is not null && project.IsClosed;
     }
 }

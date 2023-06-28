@@ -50,7 +50,7 @@ public class LinkService : ILinkService
     public async Task<bool> ExistsAsync(Guid guid)
     {
         var link = await _linkRepository.TryGetByGuidAsync(guid);
-        return link != null;
+        return link is not null;
     }
 
     public async Task<string> UpdateAsync(

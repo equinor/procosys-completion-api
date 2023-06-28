@@ -89,7 +89,7 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
                 break;
         }
 
-        if (profile.AppRoles != null)
+        if (profile.AppRoles is not null)
         {
             foreach (var role in profile.AppRoles)
             {
