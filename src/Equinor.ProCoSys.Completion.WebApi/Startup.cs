@@ -109,7 +109,7 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-        services.AddSwaggerGen(c => //TODO: Ensure swagger auth works correctly, meaning setting up swagger UI so that it can authenticate it self. Use separate app registration
+        services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
             var authorizationUrl = Configuration.GetRequiredConfiguration("Swagger:AuthorizationUrl");
