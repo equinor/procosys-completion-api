@@ -41,7 +41,7 @@ public class AttachmentServiceTests : TestsBase
                 _attachmentAddedToRepository = attachment;
             });
         _existingAttachment = new Attachment(_sourceType, _sourceGuid, TestPlantA, _existingFileName);
-        _attachmentRepositoryMock.Setup(a => a.GetAttachmentWithFilenameForSourceAsync(
+        _attachmentRepositoryMock.Setup(a => a.GetAttachmentWithFileNameForSourceAsync(
                 _existingAttachment.SourceGuid,
                 _existingAttachment.FileName))
             .ReturnsAsync(_existingAttachment);

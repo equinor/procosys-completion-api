@@ -5,5 +5,5 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate
 
 public interface IAttachmentRepository : IRepositoryWithGuid<Attachment>
 {
-    Task<Attachment?> GetAttachmentWithFilenameForSourceAsync(Guid sourceGuid, string fileName);
+    Task<Attachment?> GetAttachmentWithFileNameForSourceAsync(Guid sourceGuid, string fileName);
 }

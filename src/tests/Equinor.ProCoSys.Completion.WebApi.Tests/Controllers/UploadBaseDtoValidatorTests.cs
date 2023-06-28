@@ -70,7 +70,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
 
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.AreEqual(result.Errors[0].ErrorMessage, "Filename not given!");
+        Assert.AreEqual(result.Errors[0].ErrorMessage, "File name not given!");
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
 
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Filename to long! Max"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("File name to long! Max"));
     }
 
     [TestMethod]

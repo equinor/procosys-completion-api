@@ -22,7 +22,7 @@ public class OverwriteExistingPunchAttachmentCommandValidator : AbstractValidato
             .WithMessage(command => $"Punch with this guid does not exist! Guid={command.PunchGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchAsync(command.PunchGuid, cancellationToken))
             .WithMessage("Tag owning punch is voided!")
-            .MustAsync((command, _) => HaveAttachmentWithFilenameAsync(command.PunchGuid, command.FileName))
+            .MustAsync((command, _) => HaveAttachmentWithFileNameAsync(command.PunchGuid, command.FileName))
             .WithMessage(command => $"Punch don't have an attachment with filename {command.FileName}!");
 
         async Task<bool> NotBeInAClosedProjectForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
@@ -34,7 +34,7 @@ public class OverwriteExistingPunchAttachmentCommandValidator : AbstractValidato
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => await punchValidator.ExistsAsync(punchGuid, cancellationToken);
 
-        async Task<bool> HaveAttachmentWithFilenameAsync(Guid punchGuid, string fileName)
-            => await attachmentService.FilenameExistsForSourceAsync(punchGuid, fileName);
+        async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchGuid, string fileName)
+            => await attachmentService.FileNameExistsForSourceAsync(punchGuid, fileName);
     }
 }

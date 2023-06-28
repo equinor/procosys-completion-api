@@ -44,7 +44,7 @@ public class AttachmentService : IAttachmentService
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
 
         if (attachment is not null)
         {
@@ -74,7 +74,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
 
         if (attachment is null)
         {
@@ -93,9 +93,9 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    public async Task<bool> FilenameExistsForSourceAsync(Guid sourceGuid, string fileName)
+    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
         return attachment is not null;
     }
 
