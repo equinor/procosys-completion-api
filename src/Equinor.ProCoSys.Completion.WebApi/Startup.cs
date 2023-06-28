@@ -64,13 +64,15 @@ public class Startup
             }
         }
 
+        //TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                Configuration.Bind("API", options);
+                Configuration.Bind("API", options); //TODO #104226 "Used standardized config section names for Azure Ad config"
+
             });
 
-        services.AddCors(options =>
+        services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
         {
             options.AddPolicy(AllowAllOriginsCorsPolicy,
                 builder =>
@@ -107,7 +109,7 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-        services.AddSwaggerGen(c =>
+        services.AddSwaggerGen(c => //TODO: Ensure swagger auth works correctly, meaning setting up swagger UI so that it can authenticate it self. Use separate app registration
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
             var authorizationUrl = Configuration.GetRequiredConfiguration("Swagger:AuthorizationUrl");
@@ -211,7 +213,7 @@ public class Startup
 
         app.UseGlobalExceptionHandling();
 
-        app.UseCors(AllowAllOriginsCorsPolicy);
+        app.UseCors(AllowAllOriginsCorsPolicy); //TODO: CORS, dont allow all. Se better comment above
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
