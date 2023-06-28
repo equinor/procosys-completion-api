@@ -56,7 +56,7 @@ public class BusReceiverService : IBusReceiverService
 
         _plantSetter.SetPlant(projectEvent.Plant);
 
-        var project = await _projectRepository.TryGetByGuidAsync(projectEvent.ProCoSysGuid);
+        var project = await _projectRepository.GetByGuidAsync(projectEvent.ProCoSysGuid);
         if (project is not null)
         {
             if (projectEvent.Behavior == "delete")

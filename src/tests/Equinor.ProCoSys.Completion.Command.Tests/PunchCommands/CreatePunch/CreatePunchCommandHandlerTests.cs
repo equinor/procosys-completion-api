@@ -41,7 +41,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
         project.SetProtectedIdForTesting(_projectIdOnExisting);
         _projectRepositoryMock = new Mock<IProjectRepository>();
         _projectRepositoryMock
-            .Setup(x => x.TryGetByGuidAsync(_projectGuid))
+            .Setup(x => x.GetByGuidAsync(_projectGuid))
             .ReturnsAsync(project);
 
         _command = new CreatePunchCommand("Punch", _projectGuid);
@@ -91,7 +91,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
     {
         // Arrange
         _projectRepositoryMock
-            .Setup(x => x.TryGetByGuidAsync(_projectGuid))
+            .Setup(x => x.GetByGuidAsync(_projectGuid))
             .ReturnsAsync((Project)null);
 
         // Act and Assert

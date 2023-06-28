@@ -49,7 +49,7 @@ public class LinkService : ILinkService
 
     public async Task<bool> ExistsAsync(Guid guid)
     {
-        var link = await _linkRepository.TryGetByGuidAsync(guid);
+        var link = await _linkRepository.GetByGuidAsync(guid);
         return link is not null;
     }
 
@@ -60,7 +60,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.TryGetByGuidAsync(guid);
+        var link = await _linkRepository.GetByGuidAsync(guid);
 
         if (link is null)
         {
@@ -88,7 +88,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.TryGetByGuidAsync(guid);
+        var link = await _linkRepository.GetByGuidAsync(guid);
 
         if (link is null)
         {

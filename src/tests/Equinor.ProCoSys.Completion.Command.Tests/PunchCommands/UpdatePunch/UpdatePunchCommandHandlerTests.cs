@@ -30,7 +30,7 @@ public class UpdatePunchCommandHandlerTests : TestsBase
         var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
         _existingPunch = new Punch(TestPlantA, project, "X1");
         _punchRepositoryMock = new Mock<IPunchRepository>();
-        _punchRepositoryMock.Setup(r => r.TryGetByGuidAsync(_existingPunch.Guid))
+        _punchRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunch.Guid))
             .ReturnsAsync(_existingPunch);
 
         _command = new UpdatePunchCommand(_existingPunch.Guid, "newText", _rowVersion);

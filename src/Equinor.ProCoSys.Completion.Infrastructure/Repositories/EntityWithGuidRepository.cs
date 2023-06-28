@@ -18,6 +18,6 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
     {
     }
 
-    public virtual Task<TEntity?> TryGetByGuidAsync(Guid guid) =>
+    public virtual Task<TEntity?> GetByGuidAsync(Guid guid) =>
         DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
 }

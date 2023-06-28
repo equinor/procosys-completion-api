@@ -35,7 +35,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Result<Unit>> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
-        var person = await _personRepository.TryGetByGuidAsync(request.Oid);
+        var person = await _personRepository.GetByGuidAsync(request.Oid);
 
         if (person is null)
         {

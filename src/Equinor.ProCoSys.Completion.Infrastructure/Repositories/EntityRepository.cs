@@ -34,7 +34,7 @@ public abstract class EntityRepository<TEntity> : Domain.IRepository<TEntity> wh
     public virtual Task<List<TEntity>> GetAllAsync() =>
         DefaultQuery.ToListAsync();
 
-    public virtual Task<TEntity?> TryGetByIdAsync(int id) =>
+    public virtual Task<TEntity?> GetByIdAsync(int id) =>
         DefaultQuery.SingleOrDefaultAsync(x => x.Id == id);
 
     public Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> ids) =>

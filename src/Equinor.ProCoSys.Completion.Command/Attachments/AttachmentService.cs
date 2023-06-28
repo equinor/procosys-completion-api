@@ -44,7 +44,7 @@ public class AttachmentService : IAttachmentService
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
 
         if (attachment is not null)
         {
@@ -74,7 +74,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
 
         if (attachment is null)
         {
@@ -95,7 +95,7 @@ public class AttachmentService : IAttachmentService
 
     public async Task<bool> FilenameExistsForSourceAsync(Guid sourceGuid, string fileName)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
         return attachment is not null;
     }
 
@@ -104,7 +104,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetByGuidAsync(guid);
+        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
 
         if (attachment is null)
         {
@@ -154,7 +154,7 @@ public class AttachmentService : IAttachmentService
 
     public async Task<bool> ExistsAsync(Guid guid)
     {
-        var attachment = await _attachmentRepository.TryGetByGuidAsync(guid);
+        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
         return attachment is not null;
     }
 }

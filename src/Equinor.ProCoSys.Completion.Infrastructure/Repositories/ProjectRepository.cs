@@ -11,7 +11,4 @@ public class ProjectRepository : EntityWithGuidRepository<Project>, IProjectRepo
             
     {
     }
-
-    public Task<Project?> TryGetProjectByNameAsync(string projectName)
-        => DefaultQuery.SingleOrDefaultAsync(p => !string.IsNullOrEmpty(projectName) &&  p.Name == projectName);
 }

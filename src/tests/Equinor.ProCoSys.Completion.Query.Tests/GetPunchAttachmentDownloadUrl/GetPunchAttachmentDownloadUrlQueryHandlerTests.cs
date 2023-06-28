@@ -25,7 +25,7 @@ public class GetPunchAttachmentDownloadUrlQueryHandlerTests : TestsBase
 
         _uri = new Uri("http://blah.blah.com");
         _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(l => l.TryGetDownloadUriAsync(_query.AttachmentGuid, default))
+        _attachmentServiceMock.Setup(l => l.GetDownloadUriAsync(_query.AttachmentGuid, default))
             .ReturnsAsync(_uri);
 
         _dut = new GetPunchAttachmentDownloadUrlQueryHandler(_attachmentServiceMock.Object);
@@ -58,13 +58,13 @@ public class GetPunchAttachmentDownloadUrlQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_Should_CallTryGetDownloadUriAsync_OnAttachmentService()
+    public async Task HandlingQuery_Should_CallGetDownloadUriAsync_OnAttachmentService()
     {
         // Act
         await _dut.Handle(_query, default);
 
         // Assert
-        _attachmentServiceMock.Verify(u => u.TryGetDownloadUriAsync(
+        _attachmentServiceMock.Verify(u => u.GetDownloadUriAsync(
             _query.AttachmentGuid,
             default), Times.Exactly(1));
     }
