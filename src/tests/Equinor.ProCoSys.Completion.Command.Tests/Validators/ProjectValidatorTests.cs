@@ -80,7 +80,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
         var dut = new ProjectValidator(context);
 
         // Act
-        var result = await dut.IsClosed(_closedProject.Guid, default);
+        var result = await dut.IsClosedAsync(_closedProject.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -94,7 +94,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
         var dut = new ProjectValidator(context);
 
         // Act
-        var result = await dut.IsClosed(_openProject.Guid, default);
+        var result = await dut.IsClosedAsync(_openProject.Guid, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -108,7 +108,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
         var dut = new ProjectValidator(context);
 
         // Act
-        var result = await dut.IsClosed(Guid.Empty, default);
+        var result = await dut.IsClosedAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);

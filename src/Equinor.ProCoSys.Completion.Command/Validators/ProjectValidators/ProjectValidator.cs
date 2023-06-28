@@ -19,7 +19,7 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators
                 where p.Guid == projectGuid
                 select p).AnyAsync(cancellationToken);
 
-        public async Task<bool> IsClosed(Guid projectGuid, CancellationToken cancellationToken)
+        public async Task<bool> IsClosedAsync(Guid projectGuid, CancellationToken cancellationToken)
         {
             var project = await (from p in _context.QuerySet<Project>()
                 where p.Guid == projectGuid
