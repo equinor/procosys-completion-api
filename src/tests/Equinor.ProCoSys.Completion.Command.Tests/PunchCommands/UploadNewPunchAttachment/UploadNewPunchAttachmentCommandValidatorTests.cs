@@ -55,7 +55,7 @@ public class UploadNewPunchAttachmentCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchIsVoided()
+    public async Task Validate_ShouldFail_When_TagOwningPunchIsVoided()
     {
         // Arrange
         _punchValidatorMock.Setup(inv => inv.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default))

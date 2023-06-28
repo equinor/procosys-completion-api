@@ -13,7 +13,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreateCommentDto { Text = "New text" };
+        var dto = new CreateCommentDto("New text");
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -26,7 +26,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTextNotGiven()
     {
         // Arrange
-        var dto = new CreateCommentDto();
+        var dto = new CreateCommentDto(null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -41,11 +41,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTextIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreateCommentDto
-        {
-            Text = new string('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1),
-            
-        };
+        var dto = new CreateCommentDto(new string('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1));
 
         // Act
         var result = await _dut.ValidateAsync(dto);

@@ -24,12 +24,12 @@ public class HeartbeatController : ControllerBase
     [HttpGet("IsAlive")]
     public IActionResult IsAlive()
     {
-        var timestampString = $"{TimeService.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
-        _logger.LogInformation($"The application is running at {timestampString}");
+        var timestamp = $"{TimeService.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
+        _logger.LogInformation("The application is running at {Timestamp}", timestamp);
         return new JsonResult(new
         {
             IsAlive = true,
-            TimeStamp = timestampString
+            TimeStamp = timestamp
         });
     }
 
@@ -39,17 +39,17 @@ public class HeartbeatController : ControllerBase
 
     [HttpPost("LogInfo")]
     public void LogInfo([Required] string info)
-        => _logger.LogInformation($"Information: {info}");
+        => _logger.LogInformation("Information: {Info}", info);
 
     [HttpPost("LogWarning")]
     public void LogWarning([Required] string warning)
-        => _logger.LogWarning($"Warning: {warning}");
+        => _logger.LogWarning("Warning: {Warning}", warning);
 
     [HttpPost("LogError")]
     public void LogError([Required] string error)
-        => _logger.LogError($"Error: {error}");
+        => _logger.LogError("Error: {Error}", error);
 
     [HttpPost("LogException")]
     public void LogException([Required] string error)
-        => _logger.LogError(new System.Exception(error), $"Exception: {error}");
+        => _logger.LogError(new System.Exception(error), "Exception: {Error}", error);
 }

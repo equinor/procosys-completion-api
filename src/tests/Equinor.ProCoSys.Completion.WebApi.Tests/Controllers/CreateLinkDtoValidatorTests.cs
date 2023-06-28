@@ -13,7 +13,7 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreateLinkDto { Title = "New title", Url = "U" };
+        var dto = new CreateLinkDto("New title","U" );
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -26,7 +26,7 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTitleNotGiven()
     {
         // Arrange
-        var dto = new CreateLinkDto { Url = "U"};
+        var dto = new CreateLinkDto(null!, "U");
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -41,11 +41,9 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreateLinkDto
-        {
-            Title = new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1),
-            Url = "U"
-        };
+        var dto = new CreateLinkDto(
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1),
+            "U");
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -60,7 +58,7 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenUrlNotGiven()
     {
         // Arrange
-        var dto = new CreateLinkDto { Title = "New title"};
+        var dto = new CreateLinkDto("New title", null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -75,11 +73,9 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldFail_WhenUrlIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreateLinkDto
-        {
-            Title = "New title",
-            Url = new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1)
-        };
+        var dto = new CreateLinkDto(
+            "New title",
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1));
 
         // Act
         var result = await _dut.ValidateAsync(dto);

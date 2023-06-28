@@ -75,7 +75,7 @@ public class UpdatePunchCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchEditedEvent()
+    public async Task HandlingCommand_ShouldAddPunchUpdatedEvent()
     {
         // Act
         await _dut.Handle(_command, default);

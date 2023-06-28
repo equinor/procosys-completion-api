@@ -44,12 +44,12 @@ public class VerifyApplicationExistsAsPerson : IHostedService
                 .GetRequiredService<ICurrentUserSetter>();
 
         var oid = _options.CurrentValue.CompletionApiObjectId;
-        _logger.LogInformation($"Ensuring '{oid}' exists as Person");
+        _logger.LogInformation("Ensuring {Oid} exists as Person", oid);
         try
         {
             currentUserSetter.SetCurrentUserOid(oid);
             await mediator.Send(new CreatePersonCommand(oid), cancellationToken);
-            _logger.LogInformation($"'{oid}' ensured");
+            _logger.LogInformation("{Oid} ensured", oid);
         }
         catch (Exception e)
         {

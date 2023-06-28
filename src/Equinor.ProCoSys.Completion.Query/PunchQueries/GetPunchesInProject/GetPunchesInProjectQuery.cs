@@ -8,12 +8,7 @@ namespace Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchesInProject;
 
 public class GetPunchesInProjectQuery : IRequest<Result<IEnumerable<PunchDto>>>, IIsProjectCommand
 {
-    public GetPunchesInProjectQuery(Guid projectGuid, bool includeVoided = false)
-    {
-        ProjectGuid = projectGuid;
-        IncludeVoided = includeVoided;
-    }
+    public GetPunchesInProjectQuery(Guid projectGuid) => ProjectGuid = projectGuid;
 
     public Guid ProjectGuid { get; }
-    public bool IncludeVoided { get; }
 }

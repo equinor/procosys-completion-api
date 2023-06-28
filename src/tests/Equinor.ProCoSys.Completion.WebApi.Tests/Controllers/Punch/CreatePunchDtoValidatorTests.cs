@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,7 +14,7 @@ public class CreatePunchDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreatePunchDto { ItemNo = "New item"};
+        var dto = new CreatePunchDto("New item", Guid.Empty);
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -26,7 +27,7 @@ public class CreatePunchDtoValidatorTests
     public async Task Validate_ShouldFail_WhenItemNoNotGiven()
     {
         // Arrange
-        var dto = new CreatePunchDto();
+        var dto = new CreatePunchDto(null!, Guid.NewGuid());
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -41,7 +42,7 @@ public class CreatePunchDtoValidatorTests
     public async Task Validate_ShouldFail_WhenItemNoIsTooShort()
     {
         // Arrange
-        var dto = new CreatePunchDto { ItemNo = "N" };
+        var dto = new CreatePunchDto("N", Guid.Empty);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -56,10 +57,9 @@ public class CreatePunchDtoValidatorTests
     public async Task Validate_ShouldFail_WhenItemNoIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreatePunchDto
-        {
-            ItemNo = new string('x', Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax + 1)
-        };
+        var dto = new CreatePunchDto(
+            new string('x', Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax + 1),
+            Guid.NewGuid());
 
         // Act
         var result = await _dut.ValidateAsync(dto);

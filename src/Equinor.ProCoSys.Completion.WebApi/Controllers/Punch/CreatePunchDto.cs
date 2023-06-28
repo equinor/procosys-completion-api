@@ -3,11 +3,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
 
-public class CreatePunchDto
-{
+public record CreatePunchDto(
     [Required]
-    public string ItemNo { get; set; } = null!;
+    string ItemNo, 
+    [Required]
+    Guid ProjectGuid);
+//{
+//    [Required]
+//    public string ItemNo { get; init; } = null!;
 
-    [Required]
-    public Guid ProjectGuid { get; set; }
-}
+//    [Required]
+//    public Guid ProjectGuid { get; init; }
+//}

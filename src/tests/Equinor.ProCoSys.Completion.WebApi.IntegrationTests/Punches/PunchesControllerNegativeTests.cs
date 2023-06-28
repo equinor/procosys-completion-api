@@ -122,6 +122,14 @@ public class PunchesControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchesInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            HttpStatusCode.BadRequest);
     #endregion
 
     #region CreatePunch

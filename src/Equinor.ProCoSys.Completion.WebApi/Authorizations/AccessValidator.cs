@@ -44,7 +44,7 @@ public class AccessValidator : IAccessValidator
         if (request is IIsProjectCommand projectCommand &&
             !_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
         {
-            _logger.LogWarning($"Current user {userOid} don't have access to project {projectCommand.ProjectGuid}");
+            _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectCommandProjectGuid}", userOid, projectCommand.ProjectGuid);
             return false;
         }
 
@@ -76,7 +76,7 @@ public class AccessValidator : IAccessValidator
 
             if (!accessToProject)
             {
-                _logger.LogWarning($"Current user {userOid} don't have access to project {projectGuid.Value}");
+                _logger.LogWarning("Current user: {UserOid} does not have access to project: {ProjectGuid}", userOid, projectGuid);
                 return false;
             }
         }

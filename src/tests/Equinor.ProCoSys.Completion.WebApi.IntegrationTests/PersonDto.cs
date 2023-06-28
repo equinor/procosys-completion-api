@@ -1,7 +1,10 @@
-﻿namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
+﻿using System;
 
-public class PersonDto
-{
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-}
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
+
+public record PersonDto(
+    Guid Guid,
+    string FirstName,
+    string LastName,
+    string UserName,
+    string Email);

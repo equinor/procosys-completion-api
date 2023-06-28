@@ -6,15 +6,22 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts;
 
-public class ContractTestBase<TContract> where TContract: IEventMessage
+public abstract class ContractTestBase<TContract> where TContract: IEventMessage
 {
+    private const string ExpectedNameSpace = "Equinor.ProCoSys.MessageContracts";
+
+    [TestMethod]
+    public abstract void Contract_InterfacePropertiesAndMethods_DoNotChange();
+    [TestMethod]
+    public abstract void Contract_Namespace_DoNotChange();
+
     /**
      * If this tests fails, its most likely because the versioning contract is breached. Consider creating a new version instead of
      * modifying the existing one.
      * If new properties are added to the interface (non breaking), this test should be updated with the new properties.
      * If existing properties are modified (breaking), a new version of the interface should be created.
      */
-    protected static void AssertContractNotBreached(Dictionary<string, Type> expectedProperties)
+    protected void AssertContractNotBreached(Dictionary<string, Type> expectedProperties)
     {
         var contractToTestType = typeof(TContract);
 
@@ -32,5 +39,17 @@ public class ContractTestBase<TContract> where TContract: IEventMessage
             Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key], "Property type mismatch. " +
                 "Consider creating a new version instead of modifying the existing one.");
         }
+    }
+
+    /**
+     * If this test fails, its mostly because the namespace of contract is other than Equinor.ProCoSys.MessageContracts
+     * See adr 0004
+     */
+    protected void AssertNamespaceNotChanged()
+    {
+        var contractToTestType = typeof(TContract);
+
+        // Assert 
+        Assert.AreEqual(ExpectedNameSpace, contractToTestType.Namespace);
     }
 }

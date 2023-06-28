@@ -37,7 +37,10 @@ public class CommentService : ICommentService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogDebug($"Comment with guid {comment.Guid} created for {comment.SourceGuid}");
+        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentSourceGuid}", 
+            comment.Guid, 
+            comment.SourceType,
+            comment.SourceGuid);
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }

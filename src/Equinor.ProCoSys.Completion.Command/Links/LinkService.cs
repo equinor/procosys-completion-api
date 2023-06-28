@@ -38,7 +38,11 @@ public class LinkService : ILinkService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogDebug($"Link '{link.Title}' with guid {link.Guid} created for {link.SourceGuid}");
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {SourceType} : {LinkSourceGuid}", 
+            link.Title, 
+            link.Guid,
+            link.SourceType, 
+            link.SourceGuid);
 
         return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
     }
@@ -70,7 +74,11 @@ public class LinkService : ILinkService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogDebug($"Link '{link.Title}' with guid {link.Guid} updated for {link.SourceGuid}");
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {SourceType} : {LinkSourceGuid}", 
+            link.Title, 
+            link.Guid,
+            link.SourceType, 
+            link.SourceGuid);
 
         return link.RowVersion.ConvertToString();
     }
@@ -96,6 +104,10 @@ public class LinkService : ILinkService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogDebug($"Link '{link.Title}' with guid {link.Guid} deleted for {link.SourceGuid}");
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {SourceType} : {LinkSourceGuid}", 
+            link.Title, 
+            link.Guid,
+            link.SourceType, 
+            link.SourceGuid);
     }
 }

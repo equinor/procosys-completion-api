@@ -2,11 +2,9 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public class LinkDto
-{
-    public Guid SourceGuid { get; set; }
-    public Guid Guid { get; set; }
-    public string Title { get; set; }
-    public string Url { get; set; }
-    public string RowVersion { get; set; }
-}
+public record LinkDto(
+    Guid SourceGuid,
+    Guid Guid,
+    string Title,
+    string Url,
+    string RowVersion);
