@@ -122,8 +122,12 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         => await base.Database.CommitTransactionAsync(cancellationToken);
 
+
     private void UpdateConcurrencyToken()
     {
+        // The custom code inside this method is needed to achieve that EF throw ConcurrencyException ...
+        // ... when client give incorrect RowVersion according to the excepting one.
+        // Without this code block a save with whatever RowVersion pass through OK
         var modifiedEntries = ChangeTracker
             .Entries<EntityBase>()
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted);
@@ -143,7 +147,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         var entities = ChangeTracker
             .Entries<EntityBase>()
-            .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+            .Where(x => x.Entity.DomainEvents is not null && x.Entity.DomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchDomainEventsAsync(entities, cancellationToken);
     }
@@ -152,7 +156,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         var entities = ChangeTracker
             .Entries<EntityBase>()
-            .Where(x => x.Entity.PostSaveDomainEvents != null && x.Entity.PostSaveDomainEvents.Any())
+            .Where(x => x.Entity.PostSaveDomainEvents is not null && x.Entity.PostSaveDomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchPostSaveEventsAsync(entities, cancellationToken);
     }
@@ -173,7 +177,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         {
             var currentUserOid = _currentUserProvider.GetCurrentUserOid();
             var currentUser = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
-            if (currentUser == null)
+            if (currentUser is null)
             {
                 throw new Exception(
                     $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");

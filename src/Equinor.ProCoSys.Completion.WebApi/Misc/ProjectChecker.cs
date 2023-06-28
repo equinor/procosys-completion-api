@@ -24,7 +24,7 @@ public class ProjectChecker : IProjectChecker
 
     public async Task EnsureValidProjectAsync<TRequest>(TRequest request) where TRequest : IBaseRequest
     {
-        if (request == null)
+        if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }

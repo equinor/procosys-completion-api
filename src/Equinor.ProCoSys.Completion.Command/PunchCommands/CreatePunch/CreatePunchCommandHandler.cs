@@ -37,7 +37,7 @@ public class CreatePunchCommandHandler : IRequestHandler<CreatePunchCommand, Res
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.TryGetByGuidAsync(request.ProjectGuid);
+        var project = await _projectRepository.GetByGuidAsync(request.ProjectGuid);
         if (project is null)
         {
             throw new Exception($"Could not find ProCoSys project with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");

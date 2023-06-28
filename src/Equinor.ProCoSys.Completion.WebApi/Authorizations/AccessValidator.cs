@@ -35,7 +35,7 @@ public class AccessValidator : IAccessValidator
 
     public async Task<bool> ValidateAsync<TRequest>(TRequest request) where TRequest : IBaseRequest
     {
-        if (request == null)
+        if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }

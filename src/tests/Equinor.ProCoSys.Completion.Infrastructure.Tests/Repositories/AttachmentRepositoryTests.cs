@@ -39,26 +39,26 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     protected override Attachment GetNewEntity() => new("Whatever", Guid.NewGuid(), TestPlant, "new-file.txt");
 
     [TestMethod]
-    public async Task TryGetAttachmentWithFilenameForSource_KnownFileName_ShouldReturnAttachment()
+    public async Task GetAttachmentWithFileNameForSource_KnownFileName_ShouldReturnAttachment()
     {
-        var result = await _dut.TryGetAttachmentWithFilenameForSourceAsync(_knownSourceGuid, _knownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, _knownFileName);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownFileName, result.FileName);
     }
 
     [TestMethod]
-    public async Task TryGetAttachmentWithFilenameForSource_UnknownFileName_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForSource_UnknownFileName_ShouldReturnNull()
     {
-        var result = await _dut.TryGetAttachmentWithFilenameForSourceAsync(_knownSourceGuid, "abc.pdf");
+        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, "abc.pdf");
 
         Assert.IsNull(result);
     }
 
     [TestMethod]
-    public async Task TryGetAttachmentWithFilenameForSource_UnknownSource_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForSource_UnknownSource_ShouldReturnNull()
     {
-        var result = await _dut.TryGetAttachmentWithFilenameForSourceAsync(Guid.NewGuid(), _knownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(Guid.NewGuid(), _knownFileName);
 
         Assert.IsNull(result);
     }

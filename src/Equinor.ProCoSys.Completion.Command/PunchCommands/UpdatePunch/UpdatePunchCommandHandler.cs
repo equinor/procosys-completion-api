@@ -29,8 +29,8 @@ public class UpdatePunchCommandHandler : IRequestHandler<UpdatePunchCommand, Res
 
     public async Task<Result<string>> Handle(UpdatePunchCommand request, CancellationToken cancellationToken)
     {
-        var punch = await _punchRepository.TryGetByGuidAsync(request.PunchGuid);
-        if (punch == null)
+        var punch = await _punchRepository.GetByGuidAsync(request.PunchGuid);
+        if (punch is null)
         {
             throw new Exception($"Entity {nameof(Punch)} {request.PunchGuid} not found");
         }

@@ -22,9 +22,9 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
             
         RuleFor(x => x.File.FileName)
             .NotEmpty()
-            .WithMessage("Filename not given!")
+            .WithMessage("File name not given!")
             .MaximumLength(Attachment.FileNameLengthMax)
-            .WithMessage($"Filename to long! Max {Attachment.FileNameLengthMax} characters")
+            .WithMessage($"File name to long! Max {Attachment.FileNameLengthMax} characters")
             .Must(BeAValidFile)
             .WithMessage(x => $"File {x.File.FileName} is not a valid file for upload!");
             
@@ -35,7 +35,7 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
         bool BeAValidFile(string? fileName)
         {
             var suffix = Path.GetExtension(fileName?.ToLower());
-            return suffix != null && !blobStorageOptions.Value.BlockedFileSuffixes.Contains(suffix) && fileName?.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
+            return suffix is not null && !blobStorageOptions.Value.BlockedFileSuffixes.Contains(suffix) && fileName?.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
         }
             
         bool BeSmallerThanMaxSize(long fileSizeInBytes)

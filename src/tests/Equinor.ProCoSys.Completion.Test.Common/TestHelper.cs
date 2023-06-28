@@ -12,7 +12,7 @@ public static class TestHelper
     {
         var assembly =
             AppDomain.CurrentDomain.GetAssemblies()
-                .Single(a => a.FullName != null &&
+                .Single(a => a.FullName is not null &&
                              a.FullName.Contains(assemblyName) &&
                              !a.FullName.Contains(".Test"));
 
@@ -28,7 +28,7 @@ public static class TestHelper
     {
         var assembly =
             AppDomain.CurrentDomain.GetAssemblies()
-                .Single(a => a.FullName != null &&
+                .Single(a => a.FullName is not null &&
                              a.FullName.Contains(assemblyName) &&
                              !a.FullName.Contains(".Test"));
 
@@ -43,7 +43,7 @@ public static class TestHelper
 
     public static List<Type> GetGenericArgumentsOfBaseClasses(List<Type> testClassList) =>
         testClassList
-            .Where(a => a.BaseType != null)
+            .Where(a => a.BaseType is not null)
             .SelectMany(a => a.BaseType.GetGenericArguments()).ToList();
 
     public static List<Type> GetInterfaces(List<Type> testClassList) =>
@@ -70,7 +70,7 @@ public static class TestHelper
     public static bool IsAEquinorType(Type type)
     {
         var isAEquinorClass =
-            type.FullName != null &&
+            type.FullName is not null &&
             type.FullName.Contains("Equinor.");
         return isAEquinorClass;
     }
@@ -78,8 +78,8 @@ public static class TestHelper
     public static bool HasBaseClassOfType(Type type, string baseClassFullName)
     {
         var hasBaseClassOfType =
-            type.BaseType != null &&
-            type.BaseType.FullName != null &&
+            type.BaseType is not null &&
+            type.BaseType.FullName is not null &&
             type.BaseType.FullName.StartsWith(baseClassFullName);
 
         return hasBaseClassOfType;

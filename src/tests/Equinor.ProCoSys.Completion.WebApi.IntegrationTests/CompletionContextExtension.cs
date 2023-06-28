@@ -48,8 +48,8 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidA,
             KnownTestData.ProjectNameA,
             KnownTestData.ProjectDescriptionA);
-        var punch = SeedPunch(dbContext, plant, project, KnownTestData.PunchA);
-        knownTestData.PunchAGuid = punch.Guid;
+        var punchA = SeedPunch(dbContext, plant, project, KnownTestData.PunchA);
+        knownTestData.PunchAGuid = punchA.Guid;
 
         project = SeedProject(
             dbContext, 
@@ -57,24 +57,24 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidB,
             KnownTestData.ProjectNameB, 
             KnownTestData.ProjectDescriptionB);
-        punch = SeedPunch(dbContext, plant, project, KnownTestData.PunchB);
-        knownTestData.PunchBGuid = punch.Guid;
+        var punchB = SeedPunch(dbContext, plant, project, KnownTestData.PunchB);
+        knownTestData.PunchBGuid = punchB.Guid;
 
-        var link = SeedLink(dbContext, "Punch", punch.Guid, "VG", "www.vg.no");
+        var link = SeedLink(dbContext, "Punch", punchA.Guid, "VG", "www.vg.no");
         knownTestData.LinkInPunchAGuid = link.Guid;
 
-        var comment = SeedComment(dbContext, "Punch", punch.Guid, "Comment");
+        var comment = SeedComment(dbContext, "Punch", punchA.Guid, "Comment");
         knownTestData.CommentInPunchAGuid = comment.Guid;
 
-        var attachment = SeedAttachment(dbContext, plant, "Punch", punch.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, plant, "Punch", punchA.Guid, "fil.txt");
         knownTestData.AttachmentInPunchAGuid = attachment.Guid;
     }
 
     private static void EnsureCurrentUserIsSeeded(CompletionContext dbContext, ICurrentUserProvider userProvider)
     {
         var personRepository = new PersonRepository(dbContext);
-        var seeder = personRepository.TryGetByGuidAsync(userProvider.GetCurrentUserOid()).Result;
-        if (seeder == null)
+        var seeder = personRepository.GetByGuidAsync(userProvider.GetCurrentUserOid()).Result;
+        if (seeder is null)
         {
             SeedCurrentUserAsPerson(dbContext, userProvider);
         }

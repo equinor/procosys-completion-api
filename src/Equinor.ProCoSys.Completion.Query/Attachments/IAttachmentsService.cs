@@ -11,7 +11,7 @@ public interface IAttachmentService
         Guid sourceGuid,
         CancellationToken cancellationToken);
 
-    Task<Uri?> TryGetDownloadUriAsync(
+    Task<Uri?> GetDownloadUriAsync(
         Guid guid,
         CancellationToken cancellationToken);
 }

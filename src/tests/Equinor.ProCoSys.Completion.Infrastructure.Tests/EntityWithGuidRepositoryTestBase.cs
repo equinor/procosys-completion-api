@@ -66,18 +66,18 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     }
 
     [TestMethod]
-    public async Task TryGetById_KnownId_ShouldReturnEntity()
+    public async Task GetById_KnownId_ShouldReturnEntity()
     {
-        var result = await _dut.TryGetByIdAsync(_knownId);
+        var result = await _dut.GetByIdAsync(_knownId);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownId, result.Id);
     }
 
     [TestMethod]
-    public async Task TryGetById_UnknownId_ShouldReturnNull()
+    public async Task GetById_UnknownId_ShouldReturnNull()
     {
-        var result = await _dut.TryGetByIdAsync(1234);
+        var result = await _dut.GetByIdAsync(1234);
 
         Assert.IsNull(result);
     }
@@ -92,18 +92,18 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     }
 
     [TestMethod]
-    public async Task TryGetByGuid_KnownGuid_ShouldReturnEntity()
+    public async Task GetByGuid_KnownGuid_ShouldReturnEntity()
     {
-        var result = await _dut.TryGetByGuidAsync(_knownGuid);
+        var result = await _dut.GetByGuidAsync(_knownGuid);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownGuid, result.Guid);
     }
 
     [TestMethod]
-    public async Task TryGetByGuid_UnknownGuid_ShouldReturnNull()
+    public async Task GetByGuid_UnknownGuid_ShouldReturnNull()
     {
-        var result = await _dut.TryGetByGuidAsync(Guid.Empty);
+        var result = await _dut.GetByGuidAsync(Guid.Empty);
 
         Assert.IsNull(result);
     }

@@ -10,6 +10,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,6 +36,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly Mock<IAzureBlobService> BlobStorageMock = new();
     private readonly Mock<IPersonApiService> _personApiServiceMock = new();
     private readonly Mock<IPermissionApiService> _permissionApiServiceMock = new();
+    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
@@ -56,11 +58,11 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     {
         get
         {
-            if (s_instance == null)
+            if (s_instance is null)
             {
                 lock (s_padlock)
                 {
-                    if (s_instance == null)
+                    if (s_instance is null)
                     {
                         s_instance = new TestFactory();
                     }
@@ -138,6 +140,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _personApiServiceMock.Object);
             services.AddScoped(_ => _permissionApiServiceMock.Object);
             services.AddScoped(_ => BlobStorageMock.Object);
+            services.AddScoped(_ => _publishEndpointMock.Object);
         });
 
         builder.ConfigureServices(services =>
@@ -155,7 +158,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         var descriptor = services.SingleOrDefault
             (d => d.ServiceType == typeof(DbContextOptions<CompletionContext>));
 
-        if (descriptor != null)
+        if (descriptor is not null)
         {
             services.Remove(descriptor);
         }
@@ -280,7 +283,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         {
             testUser.HttpClient = webHostBuilder.CreateClient();
 
-            if (testUser.Profile != null)
+            if (testUser.Profile is not null)
             {
                 AuthenticateUser(testUser);
             }
@@ -289,9 +292,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
     private void SetupProCoSysServiceMocks()
     {
-        foreach (var testUser in _testUsers.Values.Where(t => t.Profile != null))
+        foreach (var testUser in _testUsers.Values.Where(t => t.Profile is not null))
         {
-            if (testUser.AuthProCoSysPerson != null)
+            if (testUser.AuthProCoSysPerson is not null)
             {
                 _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
                     .Returns(Task.FromResult(testUser.AuthProCoSysPerson));

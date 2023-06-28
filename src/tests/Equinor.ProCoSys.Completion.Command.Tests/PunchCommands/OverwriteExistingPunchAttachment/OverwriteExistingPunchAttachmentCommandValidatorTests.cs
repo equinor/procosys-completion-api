@@ -26,7 +26,7 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
         _punchValidatorMock.Setup(x => x.ExistsAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
         _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(x => x.FilenameExistsForSourceAsync(
+        _attachmentServiceMock.Setup(x => x.FileNameExistsForSourceAsync(
                 _command.PunchGuid, 
                 _command.FileName))
             .ReturnsAsync(true);
@@ -63,7 +63,7 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchIsVoided()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.TagOwningPunchIsVoidedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act
@@ -92,10 +92,10 @@ public class OverwriteExistingPunchAttachmentCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_AttachmentWithFilenameNotExists()
+    public async Task Validate_ShouldFail_When_AttachmentWithFileNameNotExists()
     {
         // Arrange
-        _attachmentServiceMock.Setup(x => x.FilenameExistsForSourceAsync(
+        _attachmentServiceMock.Setup(x => x.FileNameExistsForSourceAsync(
                 _command.PunchGuid,
                 _command.FileName))
             .ReturnsAsync(false);

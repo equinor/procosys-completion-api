@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.Domain;
 
 public interface IRepositoryWithGuid<TEntity> : IRepository<TEntity> where TEntity : EntityBase, IAggregateRoot, IHaveGuid
 {
-    Task<TEntity?> TryGetByGuidAsync(Guid guid);
+    Task<TEntity?> GetByGuidAsync(Guid guid);
 }

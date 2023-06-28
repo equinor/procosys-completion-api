@@ -7,11 +7,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 public class ProjectRepository : EntityWithGuidRepository<Project>, IProjectRepository
 {
     public ProjectRepository(CompletionContext context)
-        : base(context, context.Projects, context.Projects)
+        : base(context, context.Projects)
             
     {
     }
-
-    public Task<Project?> TryGetProjectByNameAsync(string projectName)
-        => DefaultQuery.SingleOrDefaultAsync(p => !string.IsNullOrEmpty(projectName) &&  p.Name == projectName);
 }

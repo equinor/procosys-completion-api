@@ -69,14 +69,14 @@ public class AttachmentService : IAttachmentService
         return attachments;
     }
 
-    public async Task<Uri?> TryGetDownloadUriAsync(Guid guid, CancellationToken cancellationToken)
+    public async Task<Uri?> GetDownloadUriAsync(Guid guid, CancellationToken cancellationToken)
     {
         var attachment = await
             (from a in _context.QuerySet<Attachment>()
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             return null;
         }

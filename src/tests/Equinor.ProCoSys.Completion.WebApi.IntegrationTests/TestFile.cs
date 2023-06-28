@@ -13,7 +13,7 @@ public class TestFile
 
     public TestFile(string content, string fileName)
     {
-        if (content == null)
+        if (content is null)
         {
             throw new ArgumentNullException(nameof(content));
         }

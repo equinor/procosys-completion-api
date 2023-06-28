@@ -38,7 +38,7 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
                 .TagWith($"{nameof(GetPunchQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
-        if (dto == null)
+        if (dto is null)
         {
             return new NotFoundResult<PunchDetailsDto>(Strings.EntityNotFound(nameof(Punch), request.PunchGuid));
         }
@@ -51,7 +51,7 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
             dto.CreatedByUser.Email);
         
         PersonDto? modifiedBy = null;
-        if (dto.ModifiedByUser != null)
+        if (dto.ModifiedByUser is not null)
         {
             modifiedBy = new PersonDto(
                 dto.ModifiedByUser.Guid,

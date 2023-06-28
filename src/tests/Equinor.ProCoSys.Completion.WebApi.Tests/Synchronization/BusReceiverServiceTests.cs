@@ -32,7 +32,7 @@ public class BusReceiverServiceTests
         _unitOfWork = new Mock<IUnitOfWork>();
         _project1 = new Project(_plant, _projectGuid, Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
         _projectRepository = new Mock<IProjectRepository>();
-        _projectRepository.Setup(p => p.TryGetByGuidAsync(_projectGuid))
+        _projectRepository.Setup(p => p.GetByGuidAsync(_projectGuid))
             .ReturnsAsync(_project1);
         _projectRepository
             .Setup(x => x.Add(It.IsAny<Project>()))
@@ -71,7 +71,7 @@ public class BusReceiverServiceTests
         // Assert
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _plantSetter.Verify(p => p.SetPlant(_plant), Times.Once);
-        _projectRepository.Verify(i => i.TryGetByGuidAsync(_projectGuid), Times.Once);
+        _projectRepository.Verify(i => i.GetByGuidAsync(_projectGuid), Times.Once);
         Assert.AreEqual(message.ProjectName, _project1.Name);
         Assert.AreEqual(message.Description, _project1.Description);
         Assert.IsTrue(_project1.IsClosed);
@@ -90,7 +90,7 @@ public class BusReceiverServiceTests
             ProCoSysGuid = _projectGuid
         };
         var messageJson = JsonSerializer.Serialize(message);
-        _projectRepository.Setup(p => p.TryGetByGuidAsync(_projectGuid))
+        _projectRepository.Setup(p => p.GetByGuidAsync(_projectGuid))
             .ReturnsAsync((Project)null);
         Assert.IsFalse(_project1.IsClosed);
 
@@ -100,7 +100,7 @@ public class BusReceiverServiceTests
         // Assert
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _plantSetter.Verify(p => p.SetPlant(_plant), Times.Once);
-        _projectRepository.Verify(i => i.TryGetByGuidAsync(_projectGuid), Times.Once);
+        _projectRepository.Verify(i => i.GetByGuidAsync(_projectGuid), Times.Once);
         Assert.IsNotNull(_projectedAddedToRepository);
         Assert.AreEqual(message.ProCoSysGuid, _projectedAddedToRepository.Guid);
         Assert.AreEqual(message.ProjectName, _projectedAddedToRepository.Name);
@@ -130,7 +130,7 @@ public class BusReceiverServiceTests
         // Assert
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _plantSetter.Verify(p => p.SetPlant(_plant), Times.Once);
-        _projectRepository.Verify(i => i.TryGetByGuidAsync(_projectGuid), Times.Once);
+        _projectRepository.Verify(i => i.GetByGuidAsync(_projectGuid), Times.Once);
         Assert.AreEqual(oldName, _project1.Name);
         Assert.AreEqual(oldDescription, _project1.Description);
         Assert.IsTrue(_project1.IsDeletedInSource);

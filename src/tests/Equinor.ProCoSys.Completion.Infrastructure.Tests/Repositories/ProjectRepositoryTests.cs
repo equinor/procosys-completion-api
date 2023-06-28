@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
@@ -36,21 +35,4 @@ public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
     }
 
     protected override Project GetNewEntity() => new(TestPlant, Guid.NewGuid(), "New Project", "D");
-
-    [TestMethod]
-    public async Task GetProjectOnlyByName_KnownName_ShouldReturnProject()
-    {
-        var result = await _dut.TryGetProjectByNameAsync(_knownProjectName);
-
-        Assert.IsNotNull(result);
-        Assert.AreEqual(_knownProjectName, result.Name);
-    }
-
-    [TestMethod]
-    public async Task GetProjectOnlyByName_UnknownName_ShouldReturnNull()
-    {
-        var result = await _dut.TryGetProjectByNameAsync(Guid.NewGuid().ToString());
-
-        Assert.IsNull(result);
-    }
 }

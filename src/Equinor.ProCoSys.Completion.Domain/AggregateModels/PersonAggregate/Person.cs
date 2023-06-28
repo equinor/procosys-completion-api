@@ -34,7 +34,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public void SetModified(Person modifiedBy)
     {
         ModifiedAtUtc = TimeService.UtcNow;
-        if (modifiedBy == null)
+        if (modifiedBy is null)
         {
             throw new ArgumentNullException(nameof(modifiedBy));
         }

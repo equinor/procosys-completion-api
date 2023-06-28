@@ -54,7 +54,7 @@ public class CreatePunchCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.IsClosed(_command.ProjectGuid, default))
+        _projectValidatorMock.Setup(x => x.IsClosedAsync(_command.ProjectGuid, default))
             .ReturnsAsync(true);
 
         // Act

@@ -22,6 +22,6 @@ public class CreatePunchCommandValidator : AbstractValidator<CreatePunchCommand>
             => await projectValidator.ExistsAsync(command.ProjectGuid, cancellationToken);
 
         async Task<bool> NotBeAClosedProjectAsync(CreatePunchCommand command, CancellationToken cancellationToken)
-            => !await projectValidator.IsClosed(command.ProjectGuid, cancellationToken);
+            => !await projectValidator.IsClosedAsync(command.ProjectGuid, cancellationToken);
     }
 }

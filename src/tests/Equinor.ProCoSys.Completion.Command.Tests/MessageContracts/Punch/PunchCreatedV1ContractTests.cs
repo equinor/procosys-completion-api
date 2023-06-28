@@ -9,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts.Punch;
 public class PunchCreatedV1ContractTests : ContractTestBase<IPunchCreatedV1>
 {
     [TestMethod]
-    public void IPunchCreatedV1_InterfacePropertiesAndMethods_DoNotChange()
+    public override void Contract_InterfacePropertiesAndMethods_DoNotChange()
     {
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
@@ -21,6 +21,10 @@ public class PunchCreatedV1ContractTests : ContractTestBase<IPunchCreatedV1>
             { "CreatedAtUtc", typeof(DateTime) }
         };
 
+        // Act
         AssertContractNotBreached(expectedProperties);
     }
+
+    [TestMethod]
+    public override void Contract_Namespace_DoNotChange() => AssertNamespaceNotChanged();
 }

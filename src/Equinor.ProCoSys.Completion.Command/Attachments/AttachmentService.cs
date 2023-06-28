@@ -44,9 +44,9 @@ public class AttachmentService : IAttachmentService
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
 
-        if (attachment != null)
+        if (attachment is not null)
         {
             throw new Exception($"{sourceType} {sourceGuid} already has an attachment with filename {fileName}");
         }
@@ -74,9 +74,9 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             throw new Exception($"{sourceType} {sourceGuid} don't have an attachment with filename {fileName}");
         }
@@ -93,10 +93,10 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    public async Task<bool> FilenameExistsForSourceAsync(Guid sourceGuid, string fileName)
+    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName)
     {
-        var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
-        return attachment != null;
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        return attachment is not null;
     }
 
     public async Task DeleteAsync(
@@ -104,9 +104,9 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.TryGetByGuidAsync(guid);
+        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             throw new Exception($"Attachment with guid {guid} not found when updating");
         }
@@ -154,7 +154,7 @@ public class AttachmentService : IAttachmentService
 
     public async Task<bool> ExistsAsync(Guid guid)
     {
-        var attachment = await _attachmentRepository.TryGetByGuidAsync(guid);
-        return attachment != null;
+        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
+        return attachment is not null;
     }
 }

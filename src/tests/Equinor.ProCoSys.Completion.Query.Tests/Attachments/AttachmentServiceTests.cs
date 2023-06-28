@@ -84,7 +84,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task TryGetDownloadUriAsync_ShouldReturnUri_WhenKnownAttachment()
+    public async Task GetDownloadUriAsync_ShouldReturnUri_WhenKnownAttachment()
     {
         // Arrange
         var uri = new Uri("http://blah.blah.com");
@@ -95,7 +95,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
             .Returns(uri);
 
         // Act
-        var result = await dut.TryGetDownloadUriAsync(_createdAttachment.Guid, default);
+        var result = await dut.GetDownloadUriAsync(_createdAttachment.Guid, default);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(uri, result);
@@ -103,14 +103,14 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
 
     [TestMethod]
-    public async Task TryGetDownloadUriAsync_ShouldReturnNull_WhenUnknownAttachment()
+    public async Task GetDownloadUriAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
 
         // Act
-        var result = await dut.TryGetDownloadUriAsync(Guid.NewGuid(), default);
+        var result = await dut.GetDownloadUriAsync(Guid.NewGuid(), default);
 
         Assert.IsNull(result);
         _azureBlobServiceMock.Verify(

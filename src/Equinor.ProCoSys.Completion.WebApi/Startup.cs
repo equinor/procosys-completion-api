@@ -64,13 +64,15 @@ public class Startup
             }
         }
 
+        //TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                Configuration.Bind("API", options);
+                Configuration.Bind("API", options); //TODO #104226 "Used standardized config section names for Azure Ad config"
+
             });
 
-        services.AddCors(options =>
+        services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
         {
             options.AddPolicy(AllowAllOriginsCorsPolicy,
                 builder =>
@@ -184,7 +186,7 @@ public class Startup
                 .WithReadFromDeadLetterQueue(Configuration.GetValue("ServiceBus:ReadFromDeadLetterQueue", defaultValue: false)));
 
             var topics = Configuration["ServiceBus:TopicNames"];
-            if (topics != null)
+            if (topics is not null)
             {
                 services.AddTopicClients(Configuration.GetRequiredConnectionString("ServiceBus"), topics);
             }
@@ -211,7 +213,7 @@ public class Startup
 
         app.UseGlobalExceptionHandling();
 
-        app.UseCors(AllowAllOriginsCorsPolicy);
+        app.UseCors(AllowAllOriginsCorsPolicy); //TODO: CORS, dont allow all. Se better comment above
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
