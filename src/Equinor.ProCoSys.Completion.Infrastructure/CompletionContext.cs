@@ -147,7 +147,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         var entities = ChangeTracker
             .Entries<EntityBase>()
-            .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+            .Where(x => x.Entity.DomainEvents is not null && x.Entity.DomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchDomainEventsAsync(entities, cancellationToken);
     }
@@ -156,7 +156,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         var entities = ChangeTracker
             .Entries<EntityBase>()
-            .Where(x => x.Entity.PostSaveDomainEvents != null && x.Entity.PostSaveDomainEvents.Any())
+            .Where(x => x.Entity.PostSaveDomainEvents is not null && x.Entity.PostSaveDomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchPostSaveEventsAsync(entities, cancellationToken);
     }
@@ -177,7 +177,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         {
             var currentUserOid = _currentUserProvider.GetCurrentUserOid();
             var currentUser = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
-            if (currentUser == null)
+            if (currentUser is null)
             {
                 throw new Exception(
                     $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");

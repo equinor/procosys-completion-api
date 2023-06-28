@@ -186,7 +186,7 @@ public class Startup
                 .WithReadFromDeadLetterQueue(Configuration.GetValue("ServiceBus:ReadFromDeadLetterQueue", defaultValue: false)));
 
             var topics = Configuration["ServiceBus:TopicNames"];
-            if (topics != null)
+            if (topics is not null)
             {
                 services.AddTopicClients(Configuration.GetRequiredConnectionString("ServiceBus"), topics);
             }

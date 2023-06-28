@@ -11,7 +11,7 @@ public static class TypeProvider
 
     public static List<Type> GetEntityTypes(Assembly assembly, Type baseType)
     {
-        if (s_entityTypeCache != null)
+        if (s_entityTypeCache is not null)
         {
             return s_entityTypeCache;
         }

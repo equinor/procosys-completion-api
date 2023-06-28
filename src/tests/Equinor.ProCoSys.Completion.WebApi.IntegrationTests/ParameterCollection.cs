@@ -12,7 +12,7 @@ public class ParameterCollection : NameValueCollection
         foreach (var key in AllKeys)
         {
             var values = GetValues(key);
-            if (values != null)
+            if (values is not null)
             {
                 foreach (var value in values)
                 {

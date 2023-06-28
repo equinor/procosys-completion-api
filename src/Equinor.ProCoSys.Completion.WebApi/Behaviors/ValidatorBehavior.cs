@@ -29,7 +29,7 @@ public class ValidatorBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest
         var failures = _validators
             .Select(async v => await v.ValidateAsync(request, cancellationToken))
             .SelectMany(result => result.Result.Errors)
-            .Where(error => error != null)
+            .Where(error => error is not null)
             .ToList();
 
         if (failures.Any())

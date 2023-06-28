@@ -78,7 +78,7 @@ public class UpdatePunchLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchIsVoided()
     {
         // Arrange
-        _punchValidatorMock.Setup(inv => inv.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default))
+        _punchValidatorMock.Setup(inv => inv.TagOwningPunchIsVoidedAsync(_command.PunchGuid, default))
             .ReturnsAsync(true);
 
         // Act

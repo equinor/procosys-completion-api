@@ -20,14 +20,14 @@ public class PunchValidator : IPunchValidator
             where punch.Guid == punchGuid
             select punch).AnyAsync(cancellationToken);
 
-    public Task<bool> TagOwingPunchIsVoidedAsync(Guid punchGuid, CancellationToken cancellationToken)
+    public Task<bool> TagOwningPunchIsVoidedAsync(Guid punchGuid, CancellationToken cancellationToken)
     {
         // todo #103935 update code below to query tag table to check if tag for punch is voided 
         //var tag = await (from punch in _context.QuerySet<Punch>()
         //    join t in _context.QuerySet<Tag>() on punch.TagId equals t.Id 
         //    where punch.Guid == punchGuid
         //    select t).SingleOrDefaultAsync(cancellationToken);
-        //return tag != null && tag.IsVoided;
+        //return tag is not null && tag.IsVoided;
         // ReSharper disable once ArrangeMethodOrOperatorBody
         return Task.FromResult(false);
     }
@@ -39,6 +39,6 @@ public class PunchValidator : IPunchValidator
             where punch.Guid == punchGuid
             select p).SingleOrDefaultAsync(cancellationToken);
 
-        return project != null && project.IsClosed;
+        return project is not null && project.IsClosed;
     }
 }

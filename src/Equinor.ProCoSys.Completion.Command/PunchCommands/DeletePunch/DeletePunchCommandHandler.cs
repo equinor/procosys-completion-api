@@ -29,7 +29,7 @@ public class DeletePunchCommandHandler : IRequestHandler<DeletePunchCommand, Res
     public async Task<Result<Unit>> Handle(DeletePunchCommand request, CancellationToken cancellationToken)
     {
         var punch = await _punchRepository.TryGetByGuidAsync(request.PunchGuid);
-        if (punch == null)
+        if (punch is null)
         {
             throw new Exception($"Entity {nameof(Punch)} {request.PunchGuid} not found");
         }

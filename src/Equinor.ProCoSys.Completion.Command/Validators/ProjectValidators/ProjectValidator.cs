@@ -25,7 +25,7 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators
                 where p.Guid == projectGuid
                 select p).SingleOrDefaultAsync(cancellationToken);
 
-            return project != null && project.IsClosed;
+            return project is not null && project.IsClosed;
         }
     }
 }

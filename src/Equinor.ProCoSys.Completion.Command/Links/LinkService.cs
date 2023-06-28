@@ -50,7 +50,7 @@ public class LinkService : ILinkService
     public async Task<bool> ExistsAsync(Guid guid)
     {
         var link = await _linkRepository.TryGetByGuidAsync(guid);
-        return link != null;
+        return link is not null;
     }
 
     public async Task<string> UpdateAsync(
@@ -62,7 +62,7 @@ public class LinkService : ILinkService
     {
         var link = await _linkRepository.TryGetByGuidAsync(guid);
 
-        if (link == null)
+        if (link is null)
         {
             throw new Exception($"Link with guid {guid} not found when updating");
         }
@@ -90,7 +90,7 @@ public class LinkService : ILinkService
     {
         var link = await _linkRepository.TryGetByGuidAsync(guid);
 
-        if (link == null)
+        if (link is null)
         {
             throw new Exception($"Link with guid {guid} not found when updating");
         }

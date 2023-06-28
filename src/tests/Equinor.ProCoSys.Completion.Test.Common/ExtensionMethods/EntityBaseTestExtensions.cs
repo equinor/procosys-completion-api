@@ -10,7 +10,7 @@ public static class EntityBaseTestExtensions
     {
         var objType = typeof(EntityBase);
         var property = objType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
-        if (property == null)
+        if (property is null)
         {
             throw new ArgumentNullException(nameof(property));
         }

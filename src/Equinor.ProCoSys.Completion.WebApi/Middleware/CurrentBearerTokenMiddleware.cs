@@ -18,12 +18,12 @@ public class CurrentBearerTokenMiddleware
         ILogger<CurrentBearerTokenMiddleware> logger)
     {
         logger.LogInformation($"----- {GetType().Name} start");
-        if (httpContextAccessor.HttpContext != null)
+        if (httpContextAccessor.HttpContext is not null)
         {
             var authorizationHeader = httpContextAccessor.HttpContext.Request.Headers["Authorization"];
             var tokens = authorizationHeader.ToString()?.Split(' ');
 
-            if (tokens != null && tokens.Length > 1)
+            if (tokens is not null && tokens.Length > 1)
             {
                 var token = tokens[1];
                 bearerTokenSetterForAll.SetBearerToken(token);

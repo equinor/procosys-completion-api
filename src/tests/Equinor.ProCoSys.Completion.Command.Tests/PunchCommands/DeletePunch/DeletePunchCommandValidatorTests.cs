@@ -20,7 +20,7 @@ public class DeletePunchCommandValidatorTests
         _command = new DeletePunchCommand(Guid.NewGuid(), "r");
         _punchValidatorMock = new Mock<IPunchValidator>();
         _punchValidatorMock.Setup(x => x.ExistsAsync(_command.PunchGuid, default)).ReturnsAsync(true);
-        _punchValidatorMock.Setup(x => x.TagOwingPunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(true);
+        _punchValidatorMock.Setup(x => x.TagOwningPunchIsVoidedAsync(_command.PunchGuid, default)).ReturnsAsync(true);
 
         _dut = new DeletePunchCommandValidator(_punchValidatorMock.Object);
     }
