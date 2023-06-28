@@ -29,7 +29,7 @@ public class UploadNewPunchAttachmentCommandValidator : AbstractValidator<Upload
             => !await punchValidator.ProjectOwningPunchIsClosedAsync(punchGuid, cancellationToken);
 
         async Task<bool> NotBeInAVoidedTagForPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
-            => !await punchValidator.TagOwingPunchIsVoidedAsync(punchGuid, cancellationToken);
+            => !await punchValidator.TagOwningPunchIsVoidedAsync(punchGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchAsync(Guid punchGuid, CancellationToken cancellationToken)
             => await punchValidator.ExistsAsync(punchGuid, cancellationToken);
