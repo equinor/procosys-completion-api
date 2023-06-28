@@ -1,20 +1,19 @@
 ﻿using FluentValidation;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
+
+public class CreatePunchDtoValidator : AbstractValidator<CreatePunchDto>
 {
-    public class CreatePunchDtoValidator : AbstractValidator<CreatePunchDto>
+    public CreatePunchDtoValidator()
     {
-        public CreatePunchDtoValidator()
-        {
-            RuleLevelCascadeMode = CascadeMode.Stop;
-            ClassLevelCascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
-            RuleFor(dto => dto).NotNull();
+        RuleFor(dto => dto).NotNull();
 
-            RuleFor(dto => dto.ItemNo)
-                .NotNull()
-                .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMin)
-                .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax);
-        }
+        RuleFor(dto => dto.ItemNo)
+            .NotNull()
+            .MinimumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMin)
+            .MaximumLength(Domain.AggregateModels.PunchAggregate.Punch.ItemNoLengthMax);
     }
 }

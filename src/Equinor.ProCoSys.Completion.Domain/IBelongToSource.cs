@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.Domain
+namespace Equinor.ProCoSys.Completion.Domain;
+
+public interface IBelongToSource
 {
-    public interface IBelongToSource
-    {
-        string SourceType { get; }
-        Guid SourceGuid { get; }
-    }
+    string SourceType { get; }
+    Guid SourceGuid { get; }
 }
