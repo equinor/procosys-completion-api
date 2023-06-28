@@ -8,7 +8,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 public class AttachmentRepository : EntityWithGuidRepository<Attachment>, IAttachmentRepository
 {
     public AttachmentRepository(CompletionContext context)
-        : base(context, context.Attachments, context.Attachments)
+        : base(context, context.Attachments)
     {
     }
 
