@@ -122,8 +122,12 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         => await base.Database.CommitTransactionAsync(cancellationToken);
 
+
     private void UpdateConcurrencyToken()
     {
+        // The custom code inside this method is needed to achieve that EF throw ConcurrencyException ...
+        // ... when client give incorrect RowVersion according to the excepting one.
+        // Without this code block a save with whatever RowVersion pass through OK
         var modifiedEntries = ChangeTracker
             .Entries<EntityBase>()
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted);
