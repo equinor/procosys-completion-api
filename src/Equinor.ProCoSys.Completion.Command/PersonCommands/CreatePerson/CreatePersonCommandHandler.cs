@@ -37,10 +37,10 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
     {
         var person = await _personRepository.TryGetByGuidAsync(request.Oid);
 
-        if (person == null)
+        if (person is null)
         {
             var pcsPerson = await _personCache.GetAsync(request.Oid);
-            if (pcsPerson == null)
+            if (pcsPerson is null)
             {
                 throw new Exception($"Details for user with oid {request.Oid:D} not found in ProCoSys");
             }

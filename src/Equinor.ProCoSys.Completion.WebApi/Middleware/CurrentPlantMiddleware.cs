@@ -22,7 +22,7 @@ public class CurrentPlantMiddleware
     {
         logger.LogInformation($"----- {GetType().Name} start");
         var headers = httpContextAccessor?.HttpContext?.Request.Headers;
-        if (headers == null)
+        if (headers is null)
         {
             throw new Exception("Could not determine request headers");
         }

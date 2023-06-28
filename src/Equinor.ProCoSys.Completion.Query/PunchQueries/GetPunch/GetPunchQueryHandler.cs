@@ -38,7 +38,7 @@ public class GetPunchQueryHandler : IRequestHandler<GetPunchQuery, Result<PunchD
                 .TagWith($"{nameof(GetPunchQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
-        if (dto == null)
+        if (dto is null)
         {
             return new NotFoundResult<PunchDetailsDto>(Strings.EntityNotFound(nameof(Punch), request.PunchGuid));
         }

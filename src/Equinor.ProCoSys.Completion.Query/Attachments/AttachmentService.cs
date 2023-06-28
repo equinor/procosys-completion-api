@@ -76,7 +76,7 @@ public class AttachmentService : IAttachmentService
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             return null;
         }

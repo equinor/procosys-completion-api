@@ -52,7 +52,7 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
     {
         var authorizationHeader = Request.Headers["Authorization"];
         var tokens = authorizationHeader.ToString()?.Split(' ');
-        if (tokens == null || tokens.Length <= 1)
+        if (tokens is null || tokens.Length <= 1)
         {
             throw new Exception("[Authorization] header missing");
         }
@@ -63,7 +63,7 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
         {
             var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(tokenPart));
             profile = JsonConvert.DeserializeObject<TestProfile>(decoded);
-            if (profile == null)
+            if (profile is null)
             {
                 throw new Exception("Error Deserialize token");
             }

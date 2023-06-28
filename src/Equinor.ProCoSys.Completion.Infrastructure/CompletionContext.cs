@@ -173,7 +173,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         {
             var currentUserOid = _currentUserProvider.GetCurrentUserOid();
             var currentUser = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
-            if (currentUser == null)
+            if (currentUser is null)
             {
                 throw new Exception(
                     $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");

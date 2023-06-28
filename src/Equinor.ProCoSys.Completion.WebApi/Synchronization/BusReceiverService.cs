@@ -47,7 +47,7 @@ public class BusReceiverService : IBusReceiverService
     private async Task ProcessProjectEvent(string messageJson)
     {
         var projectEvent = JsonSerializer.Deserialize<ProjectTopic>(messageJson);
-        if (projectEvent == null || projectEvent.Plant.IsEmpty())
+        if (projectEvent is null || projectEvent.Plant.IsEmpty())
         {
             throw new ArgumentNullException($"Deserialized JSON is not a valid ProjectEvent {messageJson}");
         }

@@ -76,7 +76,7 @@ public class AttachmentService : IAttachmentService
     {
         var attachment = await _attachmentRepository.TryGetAttachmentWithFilenameForSourceAsync(sourceGuid, fileName);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             throw new Exception($"{sourceType} {sourceGuid} don't have an attachment with filename {fileName}");
         }
@@ -106,7 +106,7 @@ public class AttachmentService : IAttachmentService
     {
         var attachment = await _attachmentRepository.TryGetByGuidAsync(guid);
 
-        if (attachment == null)
+        if (attachment is null)
         {
             throw new Exception($"Attachment with guid {guid} not found when updating");
         }

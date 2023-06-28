@@ -58,11 +58,11 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     {
         get
         {
-            if (s_instance == null)
+            if (s_instance is null)
             {
                 lock (s_padlock)
                 {
-                    if (s_instance == null)
+                    if (s_instance is null)
                     {
                         s_instance = new TestFactory();
                     }

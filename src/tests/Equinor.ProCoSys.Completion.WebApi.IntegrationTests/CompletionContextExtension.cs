@@ -74,7 +74,7 @@ public static class CompletionContextExtension
     {
         var personRepository = new PersonRepository(dbContext);
         var seeder = personRepository.TryGetByGuidAsync(userProvider.GetCurrentUserOid()).Result;
-        if (seeder == null)
+        if (seeder is null)
         {
             SeedCurrentUserAsPerson(dbContext, userProvider);
         }

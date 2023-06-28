@@ -16,7 +16,7 @@ public class GetPunchAttachmentDownloadUrlQueryHandler : IRequestHandler<GetPunc
     public async Task<Result<Uri>> Handle(GetPunchAttachmentDownloadUrlQuery request, CancellationToken cancellationToken)
     {
         var uri = await _attachmentService.TryGetDownloadUriAsync(request.AttachmentGuid, cancellationToken);
-        if (uri == null)
+        if (uri is null)
         {
             return new NotFoundResult<Uri>($"Attachment with Guid {request.AttachmentGuid} not found");
         }

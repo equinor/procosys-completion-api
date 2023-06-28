@@ -48,7 +48,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
         using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
             
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
-        if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) == null)
+        if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
         {
             _currentPerson = new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs");
             AddPerson(context, _currentPerson);
