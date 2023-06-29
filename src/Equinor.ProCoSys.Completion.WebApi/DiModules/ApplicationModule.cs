@@ -65,7 +65,7 @@ public static class ApplicationModule
                 
                 cfg.MessageTopology.SetEntityNameFormatter(new KebabCaseEntityNameFormatter(new TopicNameFormatter(), false));
                 
-                cfg.Send<PunchCreatedMessage>(topologyConfigurator =>
+                cfg.Send<PunchCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
                 });

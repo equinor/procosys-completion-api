@@ -18,7 +18,7 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
     private PunchCreatedEventHandler _dut;
     private PunchCreatedEvent _punchCreatedEvent;
     private Mock<IPublishEndpoint> _publishEndpointMock;
-    private PunchCreatedMessage _publishedMessage;
+    private PunchCreatedIntegrationEvent _published;
     private Mock<ILogger<PunchCreatedEventHandler>> _mockLogger;
 
     [TestInitialize]
@@ -33,10 +33,10 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         _mockLogger = new Mock<ILogger<PunchCreatedEventHandler>>();
         _dut = new PunchCreatedEventHandler(_publishEndpointMock.Object, _mockLogger.Object);
         _publishEndpointMock
-            .Setup(x => x.Publish(It.IsAny<PunchCreatedMessage>(),It.IsAny<IPipe<PublishContext<PunchCreatedMessage>>>(),default))
-            .Callback<PunchCreatedMessage,IPipe<PublishContext<PunchCreatedMessage>>, CancellationToken>((message, _,_) =>
+            .Setup(x => x.Publish(It.IsAny<PunchCreatedIntegrationEvent>(),It.IsAny<IPipe<PublishContext<PunchCreatedIntegrationEvent>>>(),default))
+            .Callback<PunchCreatedIntegrationEvent,IPipe<PublishContext<PunchCreatedIntegrationEvent>>, CancellationToken>((message, _,_) =>
             {
-                _publishedMessage = message;
+                _published = message;
             });
     }
 
@@ -47,7 +47,7 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchCreatedEvent, default);
 
         // Assert
-        _publishEndpointMock.Verify(p => p.Publish(It.IsAny<PunchCreatedMessage>(),It.IsAny<IPipe<PublishContext<PunchCreatedMessage>>>(), default), Times.Once);
+        _publishEndpointMock.Verify(p => p.Publish(It.IsAny<PunchCreatedIntegrationEvent>(),It.IsAny<IPipe<PublishContext<PunchCreatedIntegrationEvent>>>(), default), Times.Once);
     }
 
     [TestMethod]
@@ -57,11 +57,11 @@ public class PunchCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchCreatedEvent, default);
 
         // Assert
-        Assert.IsNotNull(_publishedMessage);
-        Assert.AreEqual(_punchCreatedEvent.ProjectGuid, _publishedMessage.ProjectGuid);
-        Assert.AreEqual(_punchCreatedEvent.Punch.Guid, _publishedMessage.Guid);
-        Assert.AreEqual(_punchCreatedEvent.Punch.CreatedAtUtc, _publishedMessage.CreatedAtUtc);
-        Assert.AreEqual(_punchCreatedEvent.Punch.CreatedByOid, _publishedMessage.CreatedByOid);
-        Assert.AreEqual(_punchCreatedEvent.Punch.ItemNo, _publishedMessage.ItemNo);
+        Assert.IsNotNull(_published);
+        Assert.AreEqual(_punchCreatedEvent.ProjectGuid, _published.ProjectGuid);
+        Assert.AreEqual(_punchCreatedEvent.Punch.Guid, _published.Guid);
+        Assert.AreEqual(_punchCreatedEvent.Punch.CreatedAtUtc, _published.CreatedAtUtc);
+        Assert.AreEqual(_punchCreatedEvent.Punch.CreatedByOid, _published.CreatedByOid);
+        Assert.AreEqual(_punchCreatedEvent.Punch.ItemNo, _published.ItemNo);
     }
 }

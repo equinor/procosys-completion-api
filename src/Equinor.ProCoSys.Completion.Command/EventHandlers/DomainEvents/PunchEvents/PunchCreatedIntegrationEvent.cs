@@ -1,9 +1,10 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
-public record PunchCreatedMessage
+public record PunchCreatedIntegrationEvent
 (
     string DisplayName,
     Guid ProjectGuid ,
@@ -13,12 +14,12 @@ public record PunchCreatedMessage
     DateTime CreatedAtUtc
 ) : IPunchCreatedV1
 {
-    internal PunchCreatedMessage(PunchCreatedEvent punchCreatedEvent) : this(
-        "Punch created",
+    internal PunchCreatedIntegrationEvent(PunchCreatedEvent punchCreatedEvent) : this(
+        DisplayName:"Punch created",
         punchCreatedEvent.ProjectGuid,
         punchCreatedEvent.Punch.Guid,
         punchCreatedEvent.Punch.ItemNo,
         punchCreatedEvent.Punch.CreatedByOid,
         punchCreatedEvent.Punch.CreatedAtUtc) { }
- 
+    
 }
