@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Equinor.ProCoSys.Completion.Command.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,7 +20,7 @@ public class ContractNotBreachedTestCoverageTests
     {
         var interfaces =
             TestHelper.GetInterfacesImplementingInterface(
-                "Equinor.ProCoSys.Completion.Command",
+                "Equinor.ProCoSys.Completion.MessageContracts",
                 typeof(IEventMessage));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(Assembly.GetExecutingAssembly(), typeof(ContractTestBase<>));

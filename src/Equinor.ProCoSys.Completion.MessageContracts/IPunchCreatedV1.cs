@@ -1,8 +1,4 @@
-﻿using System;
-using Equinor.ProCoSys.Completion.Command.MessageContracts;
-
-// ReSharper disable once CheckNamespace
-namespace Equinor.ProCoSys.MessageContracts.Punch;
+﻿namespace Equinor.ProCoSys.Completion.MessageContracts;
 
 public interface IPunchCreatedV1 : IHaveDisplayName, IEventMessage
 {
