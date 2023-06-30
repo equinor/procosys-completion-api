@@ -9,7 +9,6 @@ using MediatR;
 using ServiceResult;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
-using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchCommands.CreatePunch;
 
