@@ -36,7 +36,6 @@ public class PunchCreatedTests
                 "TestItem1"),new Guid()), default);
 
        Assert.IsTrue(await harness.Published.Any<PunchCreatedIntegrationEvent>());
-        
     }
 }
 
