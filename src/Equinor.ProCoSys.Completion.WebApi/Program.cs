@@ -17,38 +17,35 @@ public class Program
         host.Run();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
+    private static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            // .ConfigureLogging(logging =>
-            // {
-            //     logging.AddApplicationInsights();
-            //     logging.AddConsole();
-            // })
             .ConfigureAppConfiguration((context, config) =>
             {
-                if (!context.HostingEnvironment.IsIntegrationTest())
+                if (context.HostingEnvironment.IsIntegrationTest())
                 {
-                    var settings = config.Build();
-                    var azConfig = settings.GetValue<bool>("UseAzureAppConfiguration");
-                    if (azConfig)
+                    return;
+                }
+
+                var settings = config.Build();
+                var azConfig = settings.GetValue<bool>("UseAzureAppConfiguration");
+                if (azConfig)
+                {
+                    config.AddAzureAppConfiguration(options =>
                     {
-                        config.AddAzureAppConfiguration(options =>
-                        {
-                            var connectionString = settings["ConnectionStrings:AppConfig"];
-                            options.Connect(connectionString)
-                                .ConfigureKeyVault(kv =>
-                                {
-                                    kv.SetCredential(new DefaultAzureCredential());
-                                })
-                                .Select(KeyFilter.Any)
-                                .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName)
-                                .ConfigureRefresh(refreshOptions =>
-                                {
-                                    refreshOptions.Register("Sentinel", true);
-                                    refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
-                                });
-                        });
-                    }
+                        var connectionString = settings["ConnectionStrings:AppConfig"];
+                        options.Connect(connectionString)
+                            .ConfigureKeyVault(kv =>
+                            {
+                                kv.SetCredential(new DefaultAzureCredential());
+                            })
+                            .Select(KeyFilter.Any)
+                            .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName)
+                            .ConfigureRefresh(refreshOptions =>
+                            {
+                                refreshOptions.Register("Sentinel", true);
+                                refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
+                            });
+                    });
                 }
             })
             .ConfigureWebHostDefaults(webBuilder =>

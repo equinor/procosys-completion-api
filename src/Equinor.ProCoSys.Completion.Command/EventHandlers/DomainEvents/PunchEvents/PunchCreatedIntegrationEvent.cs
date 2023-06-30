@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 
@@ -21,5 +20,4 @@ public record PunchCreatedIntegrationEvent
         punchCreatedEvent.Punch.ItemNo,
         punchCreatedEvent.Punch.CreatedByOid,
         punchCreatedEvent.Punch.CreatedAtUtc) { }
-    
 }

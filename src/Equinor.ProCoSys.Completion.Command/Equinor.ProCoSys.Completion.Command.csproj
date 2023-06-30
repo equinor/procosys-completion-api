@@ -33,8 +33,4 @@
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="MessageContracts\" />
-  </ItemGroup>
-
 </Project>

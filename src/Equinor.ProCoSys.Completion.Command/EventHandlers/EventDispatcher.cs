@@ -19,7 +19,7 @@ public class EventDispatcher : IEventDispatcher
     /// <param name="entities">The collection of entities that may have domain events to dispatch.</param>
     /// <param name="cancellationToken">(Optional) A cancellation token that can be used to cancel the operation.</param>
     /// <remarks>
-    /// This method should be called BEFORE saveAsync to ensure that all operations are performed within the same transaction.
+    /// This method should be called BEFORE committing data (EF SaveChanges) to ensure that all operations are performed within the same transaction.
     /// </remarks>
     /// <returns>A task that represents the asynchronous operation of dispatching domain events.</returns>
     public async Task DispatchDomainEventsAsync(IEnumerable<EntityBase> entities, CancellationToken cancellationToken = default)
@@ -56,7 +56,6 @@ public class EventDispatcher : IEventDispatcher
             .ToList();
 
         entityList.ForEach(e => e.ClearPostSaveDomainEvents());
-
         await PublishEvents(events, cancellationToken);
     }
 

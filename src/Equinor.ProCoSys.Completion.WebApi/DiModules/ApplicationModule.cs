@@ -63,7 +63,8 @@ public static class ApplicationModule
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
                 
-                cfg.MessageTopology.SetEntityNameFormatter(new KebabCaseEntityNameFormatter(new TopicNameFormatter(), false));
+                cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
+                
                 
                 cfg.Send<PunchCreatedIntegrationEvent>(topologyConfigurator =>
                 {
