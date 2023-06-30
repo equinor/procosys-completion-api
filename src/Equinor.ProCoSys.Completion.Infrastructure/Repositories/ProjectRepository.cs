@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Microsoft.EntityFrameworkCore;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
