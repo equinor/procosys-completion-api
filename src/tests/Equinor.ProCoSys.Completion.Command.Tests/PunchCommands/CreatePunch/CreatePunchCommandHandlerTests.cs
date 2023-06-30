@@ -52,8 +52,8 @@ public class CreatePunchCommandHandlerTests : TestsBase
             _punchRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _projectRepositoryMock.Object,
-            new Mock<ILogger<CreatePunchCommandHandler>>().Object,
-            new Mock<IPublishEndpoint>().Object);
+            new Mock<ILogger<CreatePunchCommandHandler>>().Object
+            );
     }
 
     [TestMethod]
