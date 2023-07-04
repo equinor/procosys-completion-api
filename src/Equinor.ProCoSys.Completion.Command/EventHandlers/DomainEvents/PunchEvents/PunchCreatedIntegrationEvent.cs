@@ -3,6 +3,7 @@ using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
+
 public record PunchCreatedIntegrationEvent
 (
     string DisplayName,
