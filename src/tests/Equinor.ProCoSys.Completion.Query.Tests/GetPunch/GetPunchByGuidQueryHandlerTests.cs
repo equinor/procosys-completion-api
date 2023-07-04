@@ -25,8 +25,8 @@ public class GetPunchByGuidQueryHandlerTests : ReadOnlyTestsBase
         _createdPunch = new Punch(TestPlantA, _projectA, "TitleA");
         _modifiedPunch = new Punch(TestPlantA, _projectA, "TitleB");
 
-        context.Punches.Add(_createdPunch);
-        context.Punches.Add(_modifiedPunch);
+        context.PunchItems.Add(_createdPunch);
+        context.PunchItems.Add(_modifiedPunch);
         context.SaveChangesAsync().Wait();
         _createdPunchGuid = _createdPunch.Guid;
 

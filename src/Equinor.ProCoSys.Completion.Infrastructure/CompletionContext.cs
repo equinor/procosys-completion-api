@@ -61,7 +61,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
 
     public virtual DbSet<Person> Persons => Set<Person>();
-    public virtual DbSet<Punch> Punches => Set<Punch>();
+    public virtual DbSet<Punch> PunchItems => Set<Punch>();
     public virtual DbSet<Project> Projects => Set<Project>();
     public virtual DbSet<Link> Links => Set<Link>();
     public virtual DbSet<Comment> Comments => Set<Comment>();

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
-using Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

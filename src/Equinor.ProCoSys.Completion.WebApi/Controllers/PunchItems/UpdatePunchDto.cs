@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public record UpdatePunchDto(
     [Required]

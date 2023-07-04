@@ -22,7 +22,7 @@ public class PunchHelperTests : ReadOnlyTestsBase
         context.SaveChangesAsync().Wait();
 
         var punch = new Punch(TestPlantA, _projectA, "Title");
-        context.Punches.Add(punch);
+        context.PunchItems.Add(punch);
         context.SaveChangesAsync().Wait();
         _punchGuid = punch.Guid;
     }

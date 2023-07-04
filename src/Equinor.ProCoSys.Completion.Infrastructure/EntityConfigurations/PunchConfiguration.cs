@@ -31,7 +31,7 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
 
         builder
             .HasIndex(x => x.Guid)
-            .HasDatabaseName("IX_Punches_Guid")
+            .HasDatabaseName("IX_PunchItems_Guid")
             .IncludeProperties(x => new
             {
                 x.ItemNo,
@@ -46,7 +46,7 @@ internal class PunchConfiguration : IEntityTypeConfiguration<Punch>
 
         builder
             .HasIndex(x => x.ProjectId)
-            .HasDatabaseName("IX_Punches_ProjectId")
+            .HasDatabaseName("IX_PunchItems_ProjectId")
             .IncludeProperties(x => new
             {
                 x.ItemNo,

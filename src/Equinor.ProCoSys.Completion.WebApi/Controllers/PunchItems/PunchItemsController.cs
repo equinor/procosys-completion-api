@@ -24,23 +24,23 @@ using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunch;
 using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchAttachments;
 using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchComments;
-using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchesInProject;
+using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchLinks;
 using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 [ApiController]
-[Route("Punches")]
-public class PunchesController : ControllerBase
+[Route("PunchItems")]
+public class PunchItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public PunchesController(IMediator mediator) => _mediator = mediator;
+    public PunchItemsController(IMediator mediator) => _mediator = mediator;
 
-    #region Punches
+    #region PunchItems
     [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}")]
     public async Task<ActionResult<PunchDetailsDto>> GetPunchByGuid(
@@ -56,7 +56,7 @@ public class PunchesController : ControllerBase
 
     [AuthorizeAny(Permissions.PUNCHLISTITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<PunchDto>>> GetPunchesInProject(
+    public async Task<ActionResult<IEnumerable<PunchDto>>> GetPunchItemsInProject(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
@@ -64,7 +64,7 @@ public class PunchesController : ControllerBase
         [Required]
         [FromQuery] Guid projectGuid)
     {
-        var result = await _mediator.Send(new GetPunchesInProjectQuery(projectGuid));
+        var result = await _mediator.Send(new GetPunchItemsInProjectQuery(projectGuid));
         return this.FromResult(result);
     }
 

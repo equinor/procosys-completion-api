@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Punch;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public class CreatePunchDtoValidator : AbstractValidator<CreatePunchDto>
 {

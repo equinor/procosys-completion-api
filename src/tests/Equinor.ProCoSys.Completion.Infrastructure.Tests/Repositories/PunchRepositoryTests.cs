@@ -22,13 +22,13 @@ public class PunchRepositoryTests : EntityWithGuidRepositoryTestBase<Punch>
         _knownGuid = punch.Guid;
         punch.SetProtectedIdForTesting(_knownId);
 
-        var punches = new List<Punch> { punch };
+        var punchItems = new List<Punch> { punch };
 
-        _dbSetMock = punches.AsQueryable().BuildMockDbSet();
+        _dbSetMock = punchItems.AsQueryable().BuildMockDbSet();
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Punches)
+            .Setup(x => x.PunchItems)
             .Returns(_dbSetMock.Object);
 
         _dut = new PunchRepository(_contextHelper.ContextMock.Object);

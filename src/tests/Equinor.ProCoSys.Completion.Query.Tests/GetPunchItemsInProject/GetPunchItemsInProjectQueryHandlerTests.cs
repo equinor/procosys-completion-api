@@ -7,12 +7,12 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
-using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchesInProject;
+using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchItemsInProject;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchesInProject;
+namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemsInProject;
 
 [TestClass]
-public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
+public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 {
     private Punch _punchInProjectA;
     private Punch _punchInProjectB;
@@ -24,8 +24,8 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         _punchInProjectA = new Punch(TestPlantA, _projectA, "A");
         _punchInProjectB = new Punch(TestPlantA, _projectB, "B");
 
-        context.Punches.Add(_punchInProjectA);
-        context.Punches.Add(_punchInProjectB);
+        context.PunchItems.Add(_punchInProjectA);
+        context.PunchItems.Add(_punchInProjectB);
         context.SaveChangesAsync().Wait();
     }
 
@@ -35,8 +35,8 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery(Guid.Empty);
-        var dut = new GetPunchesInProjectQueryHandler(context);
+        var query = new GetPunchItemsInProjectQuery(Guid.Empty);
+        var dut = new GetPunchItemsInProjectQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -48,13 +48,13 @@ public class GetPunchesInProjectQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectPunches()
+    public async Task Handler_ShouldReturnCorrectPunchItems()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        var query = new GetPunchesInProjectQuery(_projectA.Guid);
-        var dut = new GetPunchesInProjectQueryHandler(context);
+        var query = new GetPunchItemsInProjectQuery(_projectA.Guid);
+        var dut = new GetPunchItemsInProjectQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);

@@ -62,7 +62,7 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
         var newPunch = new Punch(_plant, _project, "Title");
-        dut.Punches.Add(newPunch);
+        dut.PunchItems.Add(newPunch);
 
         // Act
         await dut.SaveChangesAsync();
@@ -91,7 +91,7 @@ public class UnitOfWorkTests
             .Returns(_currentUserOid);
 
         var newPunch = new Punch(_plant, _project, "Title");
-        dut.Punches.Add(newPunch);
+        dut.PunchItems.Add(newPunch);
 
         await dut.SaveChangesAsync();
 

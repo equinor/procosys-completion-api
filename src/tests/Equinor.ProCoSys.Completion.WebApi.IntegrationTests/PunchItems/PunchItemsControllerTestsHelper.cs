@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
-public static class PunchesControllerTestsHelper
+public static class PunchItemsControllerTestsHelper
 {
-    private const string Route = "Punches";
+    private const string Route = "PunchItems";
 
     public static async Task<PunchDetailsDto> GetPunchAsync(
         UserType userType,
@@ -52,7 +52,7 @@ public static class PunchesControllerTestsHelper
         return JsonConvert.DeserializeObject<List<LinkDto>>(content);
     }
 
-    public static async Task<List<PunchDto>> GetAllPunchesInProjectAsync(
+    public static async Task<List<PunchDto>> GetAllPunchItemsInProjectAsync(
         UserType userType,
         string plant,
         Guid projectGuid,

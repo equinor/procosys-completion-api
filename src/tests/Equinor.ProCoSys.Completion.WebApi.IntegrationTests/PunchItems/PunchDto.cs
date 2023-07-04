@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
 public record PunchDto(
     Guid Guid,

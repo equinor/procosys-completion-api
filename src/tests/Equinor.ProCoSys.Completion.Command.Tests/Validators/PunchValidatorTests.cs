@@ -21,8 +21,8 @@ public class PunchValidatorTests : ReadOnlyTestsBase
 
         _punchInOpenProject = new Punch(TestPlantA, _projectA, "x1");
         _punchInClosedProject = new Punch(TestPlantA, _closedProjectC, "x2");
-        context.Punches.Add(_punchInOpenProject);
-        context.Punches.Add(_punchInClosedProject);
+        context.PunchItems.Add(_punchInOpenProject);
+        context.PunchItems.Add(_punchInClosedProject);
 
         context.SaveChangesAsync().Wait();
     }

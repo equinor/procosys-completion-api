@@ -4,10 +4,10 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Punches;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
 [TestClass]
-public class PunchesControllerNegativeTests : TestBase
+public class PunchItemsControllerNegativeTests : TestBase
 {
     private Guid _punchGuidUnderTest;
     private Guid _linkGuidUnderTest;
@@ -26,7 +26,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region GetPunch
     [TestMethod]
     public async Task GetPunch_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -34,7 +34,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunch_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -43,7 +43,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunch_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest, 
@@ -52,7 +52,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunch_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest, 
@@ -60,7 +60,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunch_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess, 
             _punchGuidUnderTest, 
@@ -68,25 +68,25 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunch_AsWriter_ShouldReturnNotFound_WhenUnknownPunch()
-        => await PunchesControllerTestsHelper.GetPunchAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess, 
             Guid.Empty, 
             HttpStatusCode.NotFound);
     #endregion
 
-    #region GetPunchesInProject
+    #region GetAllPunchItemsInProject
     [TestMethod]
-    public async Task GetPunchesInProject_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             Guid.Empty,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             Guid.Empty,
@@ -94,8 +94,8 @@ public class PunchesControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.Unknown,
             Guid.Empty,
@@ -103,32 +103,32 @@ public class PunchesControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToProject()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToProject()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithoutAccess,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchesInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
-        => await PunchesControllerTestsHelper.GetAllPunchesInProjectAsync(
+    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
@@ -138,7 +138,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region CreatePunch
     [TestMethod]
     public async Task CreatePunch_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             "Punch1",
@@ -147,7 +147,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunch_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             "Punch1",
@@ -157,7 +157,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunch_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,
             TestFactory.Unknown,
             "Punch1",
@@ -167,7 +167,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunch_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             "Punch1",
@@ -176,7 +176,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunch_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             "Punch1",
@@ -185,7 +185,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunch_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.CreatePunchAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             "Punch1",
@@ -196,7 +196,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region UpdatePunch
     [TestMethod]
     public async Task UpdatePunch_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -206,7 +206,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -217,7 +217,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -228,7 +228,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -238,7 +238,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -248,7 +248,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -258,7 +258,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunch_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchesControllerTestsHelper.UpdatePunchAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -271,7 +271,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region DeletePunch
     [TestMethod]
     public async Task DeletePunch_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -280,7 +280,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunch_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.NoPermissionUser, TestFactory.Unknown,
             _punchGuidUnderTest,
             TestFactory.AValidRowVersion,
@@ -289,7 +289,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunch_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -299,7 +299,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunch_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -308,7 +308,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunch_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -317,7 +317,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunch_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.DeletePunchAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -327,14 +327,14 @@ public class PunchesControllerNegativeTests : TestBase
     [TestMethod]
     public async Task DeletePunch_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
     {
-        var idAndRowVersion = await PunchesControllerTestsHelper.CreatePunchAsync(
+        var idAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
         // Act
 
-        await PunchesControllerTestsHelper.DeletePunchAsync(
+        await PunchItemsControllerTestsHelper.DeletePunchAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             idAndRowVersion.Guid,
@@ -346,7 +346,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region CreatePunchLink
     [TestMethod]
     public async Task CreatePunchLink_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -356,7 +356,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchLink_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -367,7 +367,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -378,7 +378,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchLink_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -388,7 +388,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchLink_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -398,7 +398,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.CreatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -410,7 +410,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region GetPunchLinks
     [TestMethod]
     public async Task GetPunchLinks_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -418,7 +418,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchLinks_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -427,7 +427,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchLinks_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -436,7 +436,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchLinks_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -444,7 +444,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchLinks_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -454,7 +454,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region UpdatePunchLink
     [TestMethod]
     public async Task UpdatePunchLink_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -466,7 +466,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -479,7 +479,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -492,7 +492,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -504,7 +504,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -516,7 +516,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -528,7 +528,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UpdatePunchLink_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchesControllerTestsHelper.UpdatePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -542,7 +542,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region DeletePunchLink
     [TestMethod]
     public async Task DeletePunchLink_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -552,7 +552,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -563,7 +563,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -574,7 +574,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -584,7 +584,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -594,7 +594,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -604,7 +604,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchLink_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchesControllerTestsHelper.DeletePunchLinkAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -616,7 +616,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region CreatePunchComment
     [TestMethod]
     public async Task CreatePunchComment_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -625,7 +625,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchComment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -635,7 +635,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchComment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -645,7 +645,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchComment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -654,7 +654,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchComment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -663,7 +663,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task CreatePunchComment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.CreatePunchCommentAsync(
+        => await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -674,7 +674,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region GetPunchComments
     [TestMethod]
     public async Task GetPunchComments_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetPunchCommentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -682,7 +682,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchComments_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchCommentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -691,7 +691,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchCommentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -700,7 +700,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchComments_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchCommentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -708,7 +708,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchComments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchCommentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -718,7 +718,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region UploadNewPunchAttachment
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -727,7 +727,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -737,7 +737,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -747,7 +747,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -756,7 +756,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -765,7 +765,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task UploadNewPunchAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -776,7 +776,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region GetPunchAttachments
     [TestMethod]
     public async Task GetPunchAttachments_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -784,7 +784,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachments_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -793,7 +793,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -802,7 +802,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachments_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -810,7 +810,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -820,7 +820,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region GetPunchAttachmentDownloadUrl
     [TestMethod]
     public async Task GetPunchAttachmentDownloadUrl_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -829,7 +829,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachmentDownloadUrl_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -839,7 +839,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachmentDownloadUrl_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -849,7 +849,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachmentDownloadUrl_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -858,7 +858,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task GetPunchAttachmentDownloadUrl_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        => await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -869,7 +869,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region OverwriteExistingPunchAttachment
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -879,7 +879,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -890,7 +890,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -901,7 +901,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -911,7 +911,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -921,7 +921,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task OverwriteExistingPunchAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -933,7 +933,7 @@ public class PunchesControllerNegativeTests : TestBase
     public async Task OverwriteExistingPunchAttachment_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
     {
         var punchAttachmentUnderTest = await GetPunchAttachmentUnderTest();
-        await PunchesControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -947,7 +947,7 @@ public class PunchesControllerNegativeTests : TestBase
     #region DeletePunchAttachment
     [TestMethod]
     public async Task DeletePunchAttachment_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -957,7 +957,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -968,7 +968,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.Writer,
             TestFactory.Unknown,
             _punchGuidUnderTest,
@@ -979,7 +979,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -989,7 +989,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchGuidUnderTest,
@@ -999,7 +999,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -1009,7 +1009,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     [TestMethod]
     public async Task DeletePunchAttachment_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchesControllerTestsHelper.DeletePunchAttachmentAsync(
+        => await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest,
@@ -1042,7 +1042,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     private async Task<AttachmentDto> GetPunchAttachmentUnderTest()
     {
-        var punchAttachmentsUnderTest = await PunchesControllerTestsHelper.GetPunchAttachmentsAsync(
+        var punchAttachmentsUnderTest = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest);
@@ -1052,7 +1052,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     private async Task<LinkDto> GetPunchLinkUnderTest()
     {
-        var punchLinksUnderTest = await PunchesControllerTestsHelper.GetPunchLinksAsync(
+        var punchLinksUnderTest = await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest);
@@ -1062,7 +1062,7 @@ public class PunchesControllerNegativeTests : TestBase
 
     private async Task<PunchDetailsDto> GetPunchUnderTest()
     {
-        var punchUnderTest = await PunchesControllerTestsHelper.GetPunchAsync(
+        var punchUnderTest = await PunchItemsControllerTestsHelper.GetPunchAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchGuidUnderTest);
