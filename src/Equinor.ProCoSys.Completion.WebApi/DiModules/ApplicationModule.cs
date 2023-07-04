@@ -26,7 +26,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
-using Equinor.ProCoSys.Completion.Command.MassTransit;
+using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 

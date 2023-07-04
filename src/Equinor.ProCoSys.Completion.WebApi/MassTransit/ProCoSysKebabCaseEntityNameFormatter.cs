@@ -2,7 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using MassTransit;
 
-namespace Equinor.ProCoSys.Completion.Command.MassTransit;
+namespace Equinor.ProCoSys.Completion.WebApi.MassTransit;
 
 public class ProCoSysKebabCaseEntityNameFormatter : IEntityNameFormatter
 {
