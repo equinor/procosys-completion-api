@@ -20,7 +20,6 @@ public class CreatePersonCommandHandlerTests : TestsBase
     private Mock<IPersonCache> _personCacheMock;
     private Mock<IPersonRepository> _personRepositoryMock;
     private Mock<IOptionsMonitor<ApplicationOptions>> _optionsMock;
-    private Mock<ILogger<CreatePersonCommandHandler>> _loggerMock;
     private readonly string _userName = "VP";
     private readonly string _fistName = "Vippe";
     private readonly string _lastName = "Tangen";
@@ -41,7 +40,6 @@ public class CreatePersonCommandHandlerTests : TestsBase
     public void Setup()
     {
         _personRepositoryMock = new Mock<IPersonRepository>();
-        _loggerMock = new Mock<ILogger<CreatePersonCommandHandler>>();
         _personRepositoryMock
             .Setup(x => x.Add(It.IsAny<Person>()))
             .Callback<Person>(person =>
@@ -78,7 +76,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
             _personRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _optionsMock.Object,
-            _loggerMock.Object);
+            new Mock<ILogger<CreatePersonCommandHandler>>().Object);
     }
 
     [TestMethod]
