@@ -51,19 +51,14 @@ public class EventDispatcher : IEventDispatcher
     {
         var entityList = entities.ToList();
 
-        var events = entityList
+        var postSaveDomainEvents = entityList
             .SelectMany(x => x.PostSaveDomainEvents)
             .ToList();
 
         entityList.ForEach(e => e.ClearPostSaveDomainEvents());
-        await PublishEvents(events, cancellationToken);
-    }
-
-    private async Task PublishEvents(IEnumerable<INotification> events, CancellationToken cancellationToken)
-    {
-        var tasks = events.Select(domainEvent 
-            => _mediator.Publish(domainEvent, cancellationToken));
-    
-        await Task.WhenAll(tasks);
+        foreach (var domainEvent in postSaveDomainEvents)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
     }
 }
