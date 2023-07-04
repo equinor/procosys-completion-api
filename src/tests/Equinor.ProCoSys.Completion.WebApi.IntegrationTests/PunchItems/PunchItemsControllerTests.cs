@@ -12,25 +12,25 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 [TestClass]
 public class PunchItemsControllerTests : TestBase
 {
-    private Guid _punchGuidUnderTest;
-    private List<PunchDto> _initialPunchItemsInProject;
+    private Guid _punchItemGuidUnderTest;
+    private List<PunchItemDto> _initialPunchItemsInProject;
 
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
     }
 
     [TestMethod]
-    public async Task CreatePunch_AsWriter_ShouldCreatePunch()
+    public async Task CreatePunchItem_AsWriter_ShouldCreatePunchItem()
     {
         // Arrange
         var itemNo = Guid.NewGuid().ToString();
 
         // Act
-        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             itemNo,
@@ -39,7 +39,7 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         AssertValidGuidAndRowVersion(guidAndRowVersion);
         var newPunch = await PunchItemsControllerTestsHelper
-            .GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+            .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunch);
         Assert.AreEqual(itemNo, newPunch.ItemNo);
         AssertCreatedBy(UserType.Writer, newPunch.CreatedBy);
@@ -50,15 +50,15 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetPunch_AsReader_ShouldGetPunch()
+    public async Task GetPunchItem_AsReader_ShouldGetPunchItem()
     {
         // Act
-        var punch = await PunchItemsControllerTestsHelper
-            .GetPunchAsync(UserType.Reader, TestFactory.PlantWithAccess, _punchGuidUnderTest);
+        var punchItem = await PunchItemsControllerTestsHelper
+            .GetPunchItemAsync(UserType.Reader, TestFactory.PlantWithAccess, _punchItemGuidUnderTest);
 
         // Assert
-        Assert.AreEqual(_punchGuidUnderTest, punch.Guid);
-        Assert.IsNotNull(punch.RowVersion);
+        Assert.AreEqual(_punchItemGuidUnderTest, punchItem.Guid);
+        Assert.IsNotNull(punchItem.RowVersion);
     }
 
     [TestMethod]
@@ -75,78 +75,78 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task UpdatePunch_AsWriter_ShouldUpdatePunchAndRowVersion()
+    public async Task UpdatePunchItem_AsWriter_ShouldUpdatePunchItemAndRowVersion()
     {
         // Arrange
         var newDescription = Guid.NewGuid().ToString();
-        var punch = await PunchItemsControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchGuidUnderTest);
-        var initialRowVersion = punch.RowVersion;
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchItemGuidUnderTest);
+        var initialRowVersion = punchItem.RowVersion;
 
         // Act
-        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchAsync(
+        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punch.Guid,
+            punchItem.Guid,
             newDescription,
             initialRowVersion);
 
         // Assert
         AssertRowVersionChange(initialRowVersion, newRowVersion);
-        punch = await PunchItemsControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchGuidUnderTest);
-        Assert.AreEqual(newDescription, punch.Description);
-        Assert.AreEqual(newRowVersion, punch.RowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, _punchItemGuidUnderTest);
+        Assert.AreEqual(newDescription, punchItem.Description);
+        Assert.AreEqual(newRowVersion, punchItem.RowVersion);
     }
 
     [TestMethod]
-    public async Task DeletePunch_AsWriter_ShouldDeletePunch()
+    public async Task DeletePunchItem_AsWriter_ShouldDeletePunchItem()
     {
         // Arrange
-        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        var punch = await PunchItemsControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
-        Assert.IsNotNull(punch);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
 
         // Act
-        await PunchItemsControllerTestsHelper.DeletePunchAsync(
+        await PunchItemsControllerTestsHelper.DeletePunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
             guidAndRowVersion.Guid,
             guidAndRowVersion.RowVersion);
 
         // Assert
-        await PunchItemsControllerTestsHelper.GetPunchAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
+        await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
     }
 
     [TestMethod]
-    public async Task CreatePunchLink_AsWriter_ShouldCreatePunchLink()
+    public async Task CreatePunchItemLink_AsWriter_ShouldCreatePunchItemLink()
     {
         // Arrange and Act
         var (_, linkGuidAndRowVersion)
-            = await CreatePunchLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+            = await CreatePunchItemLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
         // Assert
         AssertValidGuidAndRowVersion(linkGuidAndRowVersion);
     }
 
     [TestMethod]
-    public async Task GetPunchLinksAsync_AsReader_ShouldGetPunchLinks()
+    public async Task GetPunchItemLinksAsync_AsReader_ShouldGetPunchItemLinks()
     {
         // Arrange and Act
         var title = Guid.NewGuid().ToString();
         var url = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, linkGuidAndRowVersion) = await CreatePunchLinkAsync(title, url);
+        var (punchItemGuidAndRowVersion, linkGuidAndRowVersion) = await CreatePunchItemLinkAsync(title, url);
 
         // Act
-        var links = await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
+        var links = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
 
         // Assert
         AssertFirstAndOnlyLink(
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.RowVersion,
             title,
@@ -155,33 +155,33 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task UpdatePunchLink_AsWriter_ShouldUpdatePunchLinkAndRowVersion()
+    public async Task UpdatePunchItemLink_AsWriter_ShouldUpdatePunchItemLinkAndRowVersion()
     {
         // Arrange
         var newTitle = Guid.NewGuid().ToString();
         var newUrl = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, linkGuidAndRowVersion) =
-            await CreatePunchLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        var (punchItemGuidAndRowVersion, linkGuidAndRowVersion) =
+            await CreatePunchItemLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
         // Act
-        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchLinkAsync(
+        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.Guid,
             newTitle,
             newUrl,
             linkGuidAndRowVersion.RowVersion);
 
         // Assert
-        var links = await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
+        var links = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
 
         AssertRowVersionChange(linkGuidAndRowVersion.RowVersion, newRowVersion);
         AssertFirstAndOnlyLink(
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.Guid,
             newRowVersion,
             newTitle, 
@@ -190,59 +190,59 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task DeletePunchLink_AsWriter_ShouldDeletePunchLink()
+    public async Task DeletePunchItemLink_AsWriter_ShouldDeletePunchItemLink()
     {
         // Arrange
-        var (punchGuidAndRowVersion, linkGuidAndRowVersion)
-            = await CreatePunchLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
-        var links = await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
+        var (punchItemGuidAndRowVersion, linkGuidAndRowVersion)
+            = await CreatePunchItemLinkAsync(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        var links = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(1, links.Count);
 
         // Act
-        await PunchItemsControllerTestsHelper.DeletePunchLinkAsync(
+        await PunchItemsControllerTestsHelper.DeletePunchItemLinkAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.Guid,
             linkGuidAndRowVersion.RowVersion);
 
         // Assert
-        links = await PunchItemsControllerTestsHelper.GetPunchLinksAsync(
+        links = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(0, links.Count);
     }
 
     [TestMethod]
-    public async Task CreatePunchComment_AsWriter_ShouldCreatePunchComment()
+    public async Task CreatePunchItemComment_AsWriter_ShouldCreatePunchItemComment()
     {
         // Arrange and Act
         var (_, commentGuidAndRowVersion)
-            = await CreatePunchCommentAsync(Guid.NewGuid().ToString());
+            = await CreatePunchItemCommentAsync(Guid.NewGuid().ToString());
 
         // Assert
         AssertValidGuidAndRowVersion(commentGuidAndRowVersion);
     }
 
     [TestMethod]
-    public async Task GetPunchCommentsAsync_AsReader_ShouldGetPunchComments()
+    public async Task GetPunchItemCommentsAsync_AsReader_ShouldGetPunchItemComments()
     {
         // Arrange and Act
         var text = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, commentGuidAndRowVersion) = await CreatePunchCommentAsync(text);
+        var (punchItemGuidAndRowVersion, commentGuidAndRowVersion) = await CreatePunchItemCommentAsync(text);
 
         // Act
-        var comments = await PunchItemsControllerTestsHelper.GetPunchCommentsAsync(
+        var comments = await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
 
         // Assert
         AssertFirstAndOnlyComment(
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             commentGuidAndRowVersion.Guid,
             text,
             comments);
@@ -253,28 +253,28 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var (_, attachmentGuidAndRowVersion)
-            = await UploadNewPunchAttachmentAsync(Guid.NewGuid().ToString());
+            = await UploadNewPunchItemAttachmentAsync(Guid.NewGuid().ToString());
 
         // Assert
         AssertValidGuidAndRowVersion(attachmentGuidAndRowVersion);
     }
 
     [TestMethod]
-    public async Task GetPunchAttachmentsAsync_AsReader_ShouldGetPunchAttachments()
+    public async Task GetPunchItemAttachmentsAsync_AsReader_ShouldGetPunchItemAttachments()
     {
         // Arrange and Act
         var fileName = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
 
         // Act
-        var attachments = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
+        var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
 
         // Assert
         AssertFirstAndOnlyAttachment(
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.RowVersion,
             fileName,
@@ -282,16 +282,16 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetPunchAttachmentDownloadUrl_AsReader_ShouldGetUrl()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsReader_ShouldGetUrl()
     {
         // Arrange
         var fileName = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
 
-        var attachments = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
+        var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
         var uri = new Uri("http://blah.blah.com");
         var fullBlobPath = attachments.ElementAt(0).FullBlobPath;
         TestFactory.Instance.BlobStorageMock
@@ -304,10 +304,10 @@ public class PunchItemsControllerTests : TestBase
 
 
         // Act
-        var attachmentUrl = await PunchItemsControllerTestsHelper.GetPunchAttachmentDownloadUrlAsync(
+        var attachmentUrl = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid);
 
         // Assert
@@ -315,31 +315,31 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task OverwriteExistingPunchAttachment_AsWriter_ShouldUpdatePunchAttachmentAndRowVersion()
+    public async Task OverwriteExistingPunchItemAttachment_AsWriter_ShouldUpdatePunchItemAttachmentAndRowVersion()
     {
         // Arrange
         var fileName = Guid.NewGuid().ToString();
-        var (punchGuidAndRowVersion, attachmentGuidAndRowVersion) =
-            await UploadNewPunchAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) =
+            await UploadNewPunchItemAttachmentAsync(fileName);
 
         // Act
-        var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.OverwriteExistingPunchAttachmentAsync(
+        var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.OverwriteExistingPunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             new TestFile("blah updated", fileName),
             attachmentGuidAndRowVersion.RowVersion);
 
         // Assert
         AssertRowVersionChange(attachmentGuidAndRowVersion.RowVersion, newAttachmentRowVersion);
 
-        var attachments = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
+        var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
 
         AssertFirstAndOnlyAttachment(
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid,
             newAttachmentRowVersion,
             fileName,
@@ -347,90 +347,90 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task DeletePunchAttachment_AsWriter_ShouldDeletePunchAttachment()
+    public async Task DeletePunchItemAttachment_AsWriter_ShouldDeletePunchItemAttachment()
     {
         // Arrange
-        var (punchGuidAndRowVersion, attachmentGuidAndRowVersion)
-            = await UploadNewPunchAttachmentAsync(Guid.NewGuid().ToString());
-        var attachments = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion)
+            = await UploadNewPunchItemAttachmentAsync(Guid.NewGuid().ToString());
+        var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(1, attachments.Count);
 
         // Act
-        await PunchItemsControllerTestsHelper.DeletePunchAttachmentAsync(
+        await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.RowVersion);
 
         // Assert
-        attachments = await PunchItemsControllerTestsHelper.GetPunchAttachmentsAsync(
+        attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid);
+            punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(0, attachments.Count);
     }
 
     private async Task<(
-        GuidAndRowVersion punchGuidAndRowVersion, 
-        GuidAndRowVersion linkGuidAndRowVersion)>CreatePunchLinkAsync(string title, string url)
+        GuidAndRowVersion punchItemGuidAndRowVersion, 
+        GuidAndRowVersion linkGuidAndRowVersion)>CreatePunchItemLinkAsync(string title, string url)
     {
-        var punchGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
+        var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
 
-        var linkGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchLinkAsync(
+        var linkGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             title,
             url);
 
-        return (punchGuidAndRowVersion, linkGuidAndRowVersion);
+        return (punchItemGuidAndRowVersion, linkGuidAndRowVersion);
     }
 
-    private async Task<(GuidAndRowVersion punchGuidAndRowVersion, GuidAndRowVersion commentGuidAndRowVersion)>
-        CreatePunchCommentAsync(string text)
+    private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion commentGuidAndRowVersion)>
+        CreatePunchItemCommentAsync(string text)
     {
-        var punchGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
+        var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
 
-        var commentGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchCommentAsync(
+        var commentGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             text);
 
-        return (punchGuidAndRowVersion, commentGuidAndRowVersion);
+        return (punchItemGuidAndRowVersion, commentGuidAndRowVersion);
     }
 
-    private async Task<(GuidAndRowVersion punchGuidAndRowVersion, GuidAndRowVersion linkGuidAndRowVersion)>
-        UploadNewPunchAttachmentAsync(string fileName)
+    private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion linkGuidAndRowVersion)>
+        UploadNewPunchItemAttachmentAsync(string fileName)
     {
-        var punchGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchAsync(
+        var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
 
-        var attachmentGuidAndRowVersion = await PunchItemsControllerTestsHelper.UploadNewPunchAttachmentAsync(
+        var attachmentGuidAndRowVersion = await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchGuidAndRowVersion.Guid,
+            punchItemGuidAndRowVersion.Guid,
             new TestFile("blah", fileName));
 
-        return (punchGuidAndRowVersion, attachmentGuidAndRowVersion);
+        return (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion);
     }
 
     private static void AssertFirstAndOnlyLink(
-        Guid punchGuid,
+        Guid punchItemGuid,
         Guid linkGuid,
         string linkRowVersion,
         string title,
@@ -440,7 +440,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(links);
         Assert.AreEqual(1, links.Count);
         var link = links[0];
-        Assert.AreEqual(punchGuid, link.SourceGuid);
+        Assert.AreEqual(punchItemGuid, link.SourceGuid);
         Assert.AreEqual(linkGuid, link.Guid);
         Assert.AreEqual(linkRowVersion, link.RowVersion);
         Assert.AreEqual(title, link.Title);
@@ -448,7 +448,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private static void AssertFirstAndOnlyComment(
-        Guid punchGuid,
+        Guid punchItemGuid,
         Guid commentGuid,
         string text,
         List<CommentDto> comments)
@@ -456,7 +456,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(comments);
         Assert.AreEqual(1, comments.Count);
         var comment = comments[0];
-        Assert.AreEqual(punchGuid, comment.SourceGuid);
+        Assert.AreEqual(punchItemGuid, comment.SourceGuid);
         Assert.AreEqual(commentGuid, comment.Guid);
         Assert.AreEqual(text, comment.Text);
         Assert.IsNotNull(comment.CreatedBy);
@@ -464,7 +464,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private static void AssertFirstAndOnlyAttachment(
-        Guid punchGuid,
+        Guid punchItemGuid,
         Guid attachmentGuid,
         string attachmentRowVersion,
         string fileName,
@@ -473,7 +473,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(attachments);
         Assert.AreEqual(1, attachments.Count);
         var attachment = attachments[0];
-        Assert.AreEqual(punchGuid, attachment.SourceGuid);
+        Assert.AreEqual(punchItemGuid, attachment.SourceGuid);
         Assert.AreEqual(attachmentGuid, attachment.Guid);
         Assert.AreEqual(attachmentRowVersion, attachment.RowVersion);
         Assert.AreEqual(fileName, attachment.FileName);

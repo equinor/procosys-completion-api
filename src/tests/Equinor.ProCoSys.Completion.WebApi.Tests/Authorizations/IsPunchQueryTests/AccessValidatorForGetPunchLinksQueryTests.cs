@@ -1,14 +1,14 @@
-﻿using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchLinks;
+﻿using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchLinksQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchLinksQuery>
+public class AccessValidatorForGetPunchItemLinksQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchItemLinksQuery>
 {
-    protected override GetPunchLinksQuery GetPunchQueryWithAccessToProject()
-        => new(PunchGuidWithAccessToProject);
+    protected override GetPunchItemLinksQuery GetPunchItemQueryWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject);
 
-    protected override GetPunchLinksQuery GetPunchQueryWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject);
+    protected override GetPunchItemLinksQuery GetPunchItemQueryWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject);
 }

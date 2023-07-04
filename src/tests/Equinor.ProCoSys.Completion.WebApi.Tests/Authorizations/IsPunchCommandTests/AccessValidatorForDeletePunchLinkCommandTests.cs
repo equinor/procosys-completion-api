@@ -1,15 +1,15 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Command.PunchCommands.DeletePunchLink;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForDeletePunchLinkCommandTests : AccessValidatorForIIsPunchCommandTests<DeletePunchLinkCommand>
+public class AccessValidatorForDeletePunchItemLinkCommandTests : AccessValidatorForIIsPunchCommandTests<DeletePunchItemLinkCommand>
 {
-    protected override DeletePunchLinkCommand GetPunchCommandWithAccessToProject()
-        => new(PunchGuidWithAccessToProject, Guid.Empty, null!);
+    protected override DeletePunchItemLinkCommand GetPunchItemCommandWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject, Guid.Empty, null!);
 
-    protected override DeletePunchLinkCommand GetPunchCommandWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject, Guid.Empty, null!);
+    protected override DeletePunchItemLinkCommand GetPunchItemCommandWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject, Guid.Empty, null!);
 }

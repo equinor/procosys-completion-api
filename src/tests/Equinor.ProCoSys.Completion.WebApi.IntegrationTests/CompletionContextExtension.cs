@@ -3,7 +3,7 @@ using System.Linq;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
@@ -60,13 +60,13 @@ public static class CompletionContextExtension
         var punchB = SeedPunch(dbContext, plant, project, KnownTestData.PunchB);
         knownTestData.PunchBGuid = punchB.Guid;
 
-        var link = SeedLink(dbContext, "Punch", punchA.Guid, "VG", "www.vg.no");
+        var link = SeedLink(dbContext, nameof(PunchItem), punchA.Guid, "VG", "www.vg.no");
         knownTestData.LinkInPunchAGuid = link.Guid;
 
-        var comment = SeedComment(dbContext, "Punch", punchA.Guid, "Comment");
+        var comment = SeedComment(dbContext, nameof(PunchItem), punchA.Guid, "Comment");
         knownTestData.CommentInPunchAGuid = comment.Guid;
 
-        var attachment = SeedAttachment(dbContext, plant, "Punch", punchA.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchA.Guid, "fil.txt");
         knownTestData.AttachmentInPunchAGuid = attachment.Guid;
     }
 
@@ -102,13 +102,13 @@ public static class CompletionContextExtension
         return project;
     }
 
-    private static Punch SeedPunch(CompletionContext dbContext, string plant, Project project, string title)
+    private static PunchItem SeedPunch(CompletionContext dbContext, string plant, Project project, string title)
     {
-        var punchRepository = new PunchRepository(dbContext);
-        var punch = new Punch(plant, project, title);
-        punchRepository.Add(punch);
+        var punchItemRepository = new PunchItemRepository(dbContext);
+        var punchItem = new PunchItem(plant, project, title);
+        punchItemRepository.Add(punchItem);
         dbContext.SaveChangesAsync().Wait();
-        return punch;
+        return punchItem;
     }
 
     private static Link SeedLink(CompletionContext dbContext, string sourceType, Guid sourceGuid, string title, string url)

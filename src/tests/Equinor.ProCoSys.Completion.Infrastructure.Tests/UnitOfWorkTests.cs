@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Common.Time;
@@ -61,7 +61,7 @@ public class UnitOfWorkTests
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
-        var newPunch = new Punch(_plant, _project, "Title");
+        var newPunch = new PunchItem(_plant, _project, "Title");
         dut.PunchItems.Add(newPunch);
 
         // Act
@@ -90,7 +90,7 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
 
-        var newPunch = new Punch(_plant, _project, "Title");
+        var newPunch = new PunchItem(_plant, _project, "Title");
         dut.PunchItems.Add(newPunch);
 
         await dut.SaveChangesAsync();

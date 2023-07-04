@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
-using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchItemsInProject;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemsInProject;
 
 [TestClass]
 public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 {
-    private Punch _punchInProjectA;
-    private Punch _punchInProjectB;
+    private PunchItem _punchInProjectA;
+    private PunchItem _punchInProjectB;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        _punchInProjectA = new Punch(TestPlantA, _projectA, "A");
-        _punchInProjectB = new Punch(TestPlantA, _projectB, "B");
+        _punchInProjectA = new PunchItem(TestPlantA, _projectA, "A");
+        _punchInProjectB = new PunchItem(TestPlantA, _projectB, "B");
 
         context.PunchItems.Add(_punchInProjectA);
         context.PunchItems.Add(_punchInProjectB);
@@ -67,10 +67,10 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         AssertPunch(result.Data.Single(), _punchInProjectA);
     }
 
-    private void AssertPunch(PunchDto punchDto, Punch punch)
+    private void AssertPunch(PunchItemDto punchDto, PunchItem punchItem)
     {
-        Assert.AreEqual(punch.ItemNo, punchDto.ItemNo);
-        var project = GetProjectById(punch.ProjectId);
+        Assert.AreEqual(punchItem.ItemNo, punchDto.ItemNo);
+        var project = GetProjectById(punchItem.ProjectId);
         Assert.AreEqual(project.Name, punchDto.ProjectName);
     }
 }

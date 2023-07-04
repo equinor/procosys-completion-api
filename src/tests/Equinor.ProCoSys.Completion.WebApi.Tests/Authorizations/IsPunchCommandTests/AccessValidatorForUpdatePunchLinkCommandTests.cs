@@ -1,15 +1,15 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Command.PunchCommands.UpdatePunchLink;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForUpdatePunchLinkCommandTests : AccessValidatorForIIsPunchCommandTests<UpdatePunchLinkCommand>
+public class AccessValidatorForUpdatePunchItemLinkCommandTests : AccessValidatorForIIsPunchCommandTests<UpdatePunchItemLinkCommand>
 {
-    protected override UpdatePunchLinkCommand GetPunchCommandWithAccessToProject()
-        => new(PunchGuidWithAccessToProject, Guid.Empty, null!, null!, null!);
+    protected override UpdatePunchItemLinkCommand GetPunchItemCommandWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject, Guid.Empty, null!, null!, null!);
 
-    protected override UpdatePunchLinkCommand GetPunchCommandWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject, Guid.Empty, null!, null!, null!);
+    protected override UpdatePunchItemLinkCommand GetPunchItemCommandWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject, Guid.Empty, null!, null!, null!);
 }

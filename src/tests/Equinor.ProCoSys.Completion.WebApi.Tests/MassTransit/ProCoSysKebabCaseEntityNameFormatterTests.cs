@@ -15,25 +15,25 @@ public class ProCoSysKebabCaseEntityNameFormatterTests
     public void TestFormatsCorrectlyWithoutIntegrationEventSuffix()
     {
         // Act
-        var formattedName = _formatter.FormatEntityName<PunchCreated>();
+        var formattedName = _formatter.FormatEntityName<PunchItemCreated>();
 
         // Assert
-        Assert.AreEqual("punch-created", formattedName);
+        Assert.AreEqual("punch-item-created", formattedName);
     }
 
     [TestMethod]
     public void TestFormatsCorrectlyWithIntegrationEventSuffix()
     {
         // Act
-        var formattedName = _formatter.FormatEntityName<PunchCreatedIntegrationEvent>();
+        var formattedName = _formatter.FormatEntityName<PunchItemCreatedIntegrationEvent>();
 
         // Assert
-        Assert.AreEqual("punch-created", formattedName);
+        Assert.AreEqual("punch-item-created", formattedName);
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class PunchCreated { }  // Dummy class
+    private class PunchItemCreated { }  // Dummy class
 
     // ReSharper disable once ClassNeverInstantiated.Local
-    private class PunchCreatedIntegrationEvent { }  // Dummy class
+    private class PunchItemCreatedIntegrationEvent { }  // Dummy class
 }

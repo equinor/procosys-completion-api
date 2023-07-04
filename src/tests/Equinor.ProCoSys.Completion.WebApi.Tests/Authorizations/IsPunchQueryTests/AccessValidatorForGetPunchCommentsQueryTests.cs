@@ -1,14 +1,14 @@
-﻿using Equinor.ProCoSys.Completion.Query.PunchQueries.GetPunchComments;
+﻿using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchCommentsQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchCommentsQuery>
+public class AccessValidatorForGetPunchItemCommentsQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchItemCommentsQuery>
 {
-    protected override GetPunchCommentsQuery GetPunchQueryWithAccessToProject()
-        => new(PunchGuidWithAccessToProject);
+    protected override GetPunchItemCommentsQuery GetPunchItemQueryWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject);
 
-    protected override GetPunchCommentsQuery GetPunchQueryWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject);
+    protected override GetPunchItemCommentsQuery GetPunchItemQueryWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject);
 }

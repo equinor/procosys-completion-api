@@ -1,14 +1,14 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchCommands.CreatePunchComment;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchCommentCommandTests : AccessValidatorForIIsPunchCommandTests<CreatePunchCommentCommand>
+public class AccessValidatorForCreatePunchItemCommentCommandTests : AccessValidatorForIIsPunchCommandTests<CreatePunchItemCommentCommand>
 {
-    protected override CreatePunchCommentCommand GetPunchCommandWithAccessToProject()
-        => new(PunchGuidWithAccessToProject, null!);
+    protected override CreatePunchItemCommentCommand GetPunchItemCommandWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject, null!);
 
-    protected override CreatePunchCommentCommand GetPunchCommandWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject, null!);
+    protected override CreatePunchItemCommentCommand GetPunchItemCommandWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject, null!);
 }

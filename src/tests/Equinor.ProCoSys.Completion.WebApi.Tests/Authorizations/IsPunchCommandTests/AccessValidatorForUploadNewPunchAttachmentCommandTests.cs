@@ -1,14 +1,14 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchCommands.UploadNewPunchAttachment;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
 
 [TestClass]
-public class AccessValidatorForUploadNewPunchAttachmentCommandTests : AccessValidatorForIIsPunchCommandTests<UploadNewPunchAttachmentCommand>
+public class AccessValidatorForUploadNewPunchItemAttachmentCommandTests : AccessValidatorForIIsPunchCommandTests<UploadNewPunchItemAttachmentCommand>
 {
-    protected override UploadNewPunchAttachmentCommand GetPunchCommandWithAccessToProject()
-        => new(PunchGuidWithAccessToProject, null!, null!);
+    protected override UploadNewPunchItemAttachmentCommand GetPunchItemCommandWithAccessToProject()
+        => new(PunchItemGuidWithAccessToProject, null!, null!);
 
-    protected override UploadNewPunchAttachmentCommand GetPunchCommandWithoutAccessToProject()
-        => new(PunchGuidWithoutAccessToProject, null!, null!);
+    protected override UploadNewPunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
+        => new(PunchItemGuidWithoutAccessToProject, null!, null!);
 }

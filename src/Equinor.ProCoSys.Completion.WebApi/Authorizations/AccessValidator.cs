@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Query.PunchQueries;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -18,13 +18,13 @@ public class AccessValidator : IAccessValidator
 {
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly IProjectAccessChecker _projectAccessChecker;
-    private readonly IPunchHelper _punchHelper;
+    private readonly IPunchItemHelper _punchHelper;
     private readonly ILogger<AccessValidator> _logger;
 
     public AccessValidator(
         ICurrentUserProvider currentUserProvider,
         IProjectAccessChecker projectAccessChecker,
-        IPunchHelper punchHelper,
+        IPunchItemHelper punchHelper,
         ILogger<AccessValidator> logger)
     {
         _currentUserProvider = currentUserProvider;
@@ -48,17 +48,17 @@ public class AccessValidator : IAccessValidator
             return false;
         }
 
-        if (request is IIsPunchCommand punchCommand)
+        if (request is IIsPunchItemCommand punchCommand)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchCommand.PunchGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectAsync(punchCommand.PunchItemGuid, userOid))
             {
                 return false;
             }
         }
 
-        if (request is IIsPunchQuery punchQuery)
+        if (request is IIsPunchItemQuery punchQuery)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchQuery.PunchGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectAsync(punchQuery.PunchItemGuid, userOid))
             {
                 return false;
             }
@@ -67,9 +67,9 @@ public class AccessValidator : IAccessValidator
         return true;
     }
 
-    private async Task<bool> HasCurrentUserAccessToProjectAsync(Guid punchGuid, Guid userOid)
+    private async Task<bool> HasCurrentUserAccessToProjectAsync(Guid punchItemGuid, Guid userOid)
     {
-        var projectGuid = await _punchHelper.GetProjectGuidForPunchAsync(punchGuid);
+        var projectGuid = await _punchHelper.GetProjectGuidForPunchAsync(punchItemGuid);
         if (projectGuid.HasValue)
         {
             var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectGuid.Value);

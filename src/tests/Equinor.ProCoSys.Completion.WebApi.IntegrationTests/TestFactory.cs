@@ -346,7 +346,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessableProjects = new List<AccessableProject>()
             });
 
-    // Authenticated client with necessary roles to read punch
+    // Authenticated client with necessary roles to read PunchItems
     private void SetupReaderUser(
         List<AccessablePlant> commonAccessablePlants,
         List<AccessableProject> accessableProjects)
@@ -370,7 +370,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessableProjects = accessableProjects
             });
 
-    // Authenticated client with necessary roles to Create and Update a Punch
+    // Authenticated client with necessary roles to Create and Update a PunchItem
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
         List<AccessableProject> accessableProjects)

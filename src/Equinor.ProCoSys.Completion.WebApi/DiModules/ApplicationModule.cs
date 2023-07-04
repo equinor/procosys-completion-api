@@ -1,7 +1,7 @@
 ﻿using Equinor.ProCoSys.Completion.Command.EventHandlers;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchValidators;
+using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -25,7 +25,7 @@ using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchEvents;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -66,7 +66,7 @@ public static class ApplicationModule
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
                 
-                cfg.Send<PunchCreatedIntegrationEvent>(topologyConfigurator =>
+                cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
                 });
@@ -87,13 +87,13 @@ public static class ApplicationModule
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
         services.AddScoped<IProjectChecker, ProjectChecker>();
-        services.AddScoped<IPunchHelper, PunchHelper>();
+        services.AddScoped<IPunchItemHelper, PunchItemHelper>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddScoped<IUnitOfWork>(x => x.GetRequiredService<CompletionContext>());
         services.AddScoped<IReadOnlyContext, CompletionContext>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<ILocalPersonRepository, LocalPersonRepository>();
-        services.AddScoped<IPunchRepository, PunchRepository>();
+        services.AddScoped<IPunchItemRepository, PunchItemRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<ILinkRepository, LinkRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
@@ -108,7 +108,7 @@ public static class ApplicationModule
         services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
 
         services.AddScoped<IProjectValidator, ProjectValidator>();
-        services.AddScoped<IPunchValidator, PunchValidator>();
+        services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<IRowVersionValidator, RowVersionValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();

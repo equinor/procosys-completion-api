@@ -12,7 +12,7 @@ public static class PunchItemsControllerTestsHelper
 {
     private const string Route = "PunchItems";
 
-    public static async Task<PunchDetailsDto> GetPunchAsync(
+    public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -29,10 +29,10 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<PunchDetailsDto>(content);
+        return JsonConvert.DeserializeObject<PunchItemDetailsDto>(content);
     }
 
-    public static async Task<List<LinkDto>> GetPunchLinksAsync(
+    public static async Task<List<LinkDto>> GetPunchItemLinksAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -52,7 +52,7 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<List<LinkDto>>(content);
     }
 
-    public static async Task<List<PunchDto>> GetAllPunchItemsInProjectAsync(
+    public static async Task<List<PunchItemDto>> GetAllPunchItemsInProjectAsync(
         UserType userType,
         string plant,
         Guid projectGuid,
@@ -76,10 +76,10 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<PunchDto>>(content);
+        return JsonConvert.DeserializeObject<List<PunchItemDto>>(content);
     }
 
-    public static async Task<GuidAndRowVersion> CreatePunchAsync(
+    public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
         string itemNo,
@@ -107,7 +107,7 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
     }
 
-    public static async Task<GuidAndRowVersion> CreatePunchLinkAsync(
+    public static async Task<GuidAndRowVersion> CreatePunchItemLinkAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -136,7 +136,7 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
     }
 
-    public static async Task<GuidAndRowVersion> CreatePunchCommentAsync(
+    public static async Task<GuidAndRowVersion> CreatePunchItemCommentAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -164,7 +164,7 @@ public static class PunchItemsControllerTestsHelper
     }
 
 
-    public static async Task<List<AttachmentDto>> GetPunchAttachmentsAsync(
+    public static async Task<List<AttachmentDto>> GetPunchItemAttachmentsAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -184,7 +184,7 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<List<AttachmentDto>>(content);
     }
 
-    public static async Task<string> GetPunchAttachmentDownloadUrlAsync(
+    public static async Task<string> GetPunchItemAttachmentDownloadUrlAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -204,7 +204,7 @@ public static class PunchItemsControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
-    public static async Task<GuidAndRowVersion> UploadNewPunchAttachmentAsync(
+    public static async Task<GuidAndRowVersion> UploadNewPunchItemAttachmentAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -220,7 +220,7 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
     }
 
-    public static async Task<string> OverwriteExistingPunchAttachmentAsync(
+    public static async Task<string> OverwriteExistingPunchItemAttachmentAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -237,7 +237,7 @@ public static class PunchItemsControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
-    public static async Task DeletePunchAttachmentAsync(
+    public static async Task DeletePunchItemAttachmentAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -260,7 +260,7 @@ public static class PunchItemsControllerTestsHelper
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
     }
 
-    public static async Task<string> UpdatePunchAsync(
+    public static async Task<string> UpdatePunchItemAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -289,7 +289,7 @@ public static class PunchItemsControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
-    public static async Task<string> UpdatePunchLinkAsync(
+    public static async Task<string> UpdatePunchItemLinkAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -321,7 +321,7 @@ public static class PunchItemsControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
-    public static async Task DeletePunchAsync(
+    public static async Task DeletePunchItemAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -343,7 +343,7 @@ public static class PunchItemsControllerTestsHelper
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
     }
 
-    public static async Task DeletePunchLinkAsync(
+    public static async Task DeletePunchItemLinkAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -366,7 +366,7 @@ public static class PunchItemsControllerTestsHelper
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
     }
 
-    public static async Task<List<CommentDto>> GetPunchCommentsAsync(
+    public static async Task<List<CommentDto>> GetPunchItemCommentsAsync(
         UserType userType,
         string plant,
         Guid guid,

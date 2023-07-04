@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Query.PunchQueries;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
@@ -41,7 +41,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesImplementingInterface(
                 "Equinor.ProCoSys.Completion.Command",
-                typeof(IIsPunchCommand));
+                typeof(IIsPunchItemCommand));
 
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
@@ -57,7 +57,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesImplementingInterface(
                 "Equinor.ProCoSys.Completion.Query",
-                typeof(IIsPunchQuery));
+                typeof(IIsPunchItemQuery));
 
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(

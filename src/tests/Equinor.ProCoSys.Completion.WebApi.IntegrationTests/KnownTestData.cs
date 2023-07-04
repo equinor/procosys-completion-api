@@ -11,11 +11,11 @@ public class KnownTestData
     public static Guid ProjectGuidA => new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     public static string ProjectNameA => "TestProject A";
     public static string ProjectDescriptionA => "Test - Project A";
-    public static string PunchA => "Punch-A";
+    public static string PunchA => "PunchItem-A";
     public static Guid ProjectGuidB => new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     public static string ProjectNameB => "TestProject B";
     public static string ProjectDescriptionB => "Test - Project B";
-    public static string PunchB => "Punch-B";
+    public static string PunchB => "PunchItem-B";
 
     public Guid PunchAGuid { get; set; }
     public Guid PunchBGuid { get; set; }
