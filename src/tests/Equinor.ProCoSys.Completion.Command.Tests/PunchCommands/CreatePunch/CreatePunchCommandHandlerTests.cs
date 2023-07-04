@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -52,8 +51,7 @@ public class CreatePunchCommandHandlerTests : TestsBase
             _punchRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _projectRepositoryMock.Object,
-            new Mock<ILogger<CreatePunchCommandHandler>>().Object
-            );
+            new Mock<ILogger<CreatePunchCommandHandler>>().Object);
     }
 
     [TestMethod]
