@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.Completion.Command.MessageContracts;
+﻿namespace Equinor.ProCoSys.Completion.MessageContracts;
 
 public interface IHaveDisplayName
 {

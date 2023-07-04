@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Equinor.ProCoSys.Completion.Command.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts;
 
 public abstract class ContractTestBase<TContract> where TContract: IEventMessage
 {
-    private const string ExpectedNameSpace = "Equinor.ProCoSys.MessageContracts";
+    private const string ExpectedNameSpace = "Equinor.ProCoSys.Completion.MessageContracts";
 
     [TestMethod]
     public abstract void Contract_InterfacePropertiesAndMethods_DoNotChange();
@@ -42,7 +42,7 @@ public abstract class ContractTestBase<TContract> where TContract: IEventMessage
     }
 
     /**
-     * If this test fails, its mostly because the namespace of contract is other than Equinor.ProCoSys.MessageContracts
+     * If this test fails, its mostly because the namespace of contract is other than Equinor.ProCoSys.Completion.MessageContracts
      * See adr 0004
      */
     protected void AssertNamespaceNotChanged()

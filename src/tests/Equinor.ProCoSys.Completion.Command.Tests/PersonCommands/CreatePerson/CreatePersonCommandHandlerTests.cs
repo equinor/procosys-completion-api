@@ -20,15 +20,15 @@ public class CreatePersonCommandHandlerTests : TestsBase
     private Mock<IPersonCache> _personCacheMock;
     private Mock<IPersonRepository> _personRepositoryMock;
     private Mock<IOptionsMonitor<ApplicationOptions>> _optionsMock;
-    private readonly string _userName = "VP";
-    private readonly string _fistName = "Vippe";
-    private readonly string _lastName = "Tangen";
-    private readonly string _email = "vp@pcs.com";
-    private readonly string _spEmail = "noreply@pcs.com";
-    private static readonly string s_azureOid = "8d508aa7-b753-4cb7-b084-cf5508c8ac17";
-    private readonly Guid _azureOid = new (s_azureOid);
+    private const string UserName = "VP";
+    private const string FistName = "Vippe";
+    private const string LastName = "Tangen";
+    private const string Email = "vp@pcs.com";
+    private const string SpEmail = "noreply@pcs.com";
+    private const string AzureOid = "8d508aa7-b753-4cb7-b084-cf5508c8ac17";
+    private readonly Guid _azureOid = new (AzureOid);
 
-    private readonly int _personIdOnNew = 1;
+    private const int PersonIdOnNew = 1;
 
     private Person _personAddedToRepository;
     private ProCoSysPerson _proCoSysPerson;
@@ -45,16 +45,16 @@ public class CreatePersonCommandHandlerTests : TestsBase
             .Callback<Person>(person =>
             {
                 _personAddedToRepository = person;
-                person.SetProtectedIdForTesting(_personIdOnNew);
+                person.SetProtectedIdForTesting(PersonIdOnNew);
             });
             
         _proCoSysPerson = new ProCoSysPerson
         {
-            UserName = _userName,
-            FirstName = _fistName,
-            LastName = _lastName,
-            Email = _email,
-            AzureOid = s_azureOid,
+            UserName = UserName,
+            FirstName = FistName,
+            LastName = LastName,
+            Email = Email,
+            AzureOid = AzureOid,
             ServicePrincipal = false
         };
         _personCacheMock = new Mock<IPersonCache>();
@@ -66,7 +66,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
         _optionsMock.Setup(o => o.CurrentValue).Returns(
             new ApplicationOptions
             {
-                ServicePrincipalMail = _spEmail
+                ServicePrincipalMail = SpEmail
             });
 
         _command = new CreatePersonCommand(_azureOid);
@@ -87,11 +87,11 @@ public class CreatePersonCommandHandlerTests : TestsBase
 
         // Assert
         Assert.IsNotNull(_personAddedToRepository);
-        Assert.AreEqual(_personIdOnNew, _personAddedToRepository.Id);
-        Assert.AreEqual(_userName, _personAddedToRepository.UserName);
-        Assert.AreEqual(_fistName, _personAddedToRepository.FirstName);
-        Assert.AreEqual(_lastName, _personAddedToRepository.LastName);
-        Assert.AreEqual(_email, _personAddedToRepository.Email);
+        Assert.AreEqual(PersonIdOnNew, _personAddedToRepository.Id);
+        Assert.AreEqual(UserName, _personAddedToRepository.UserName);
+        Assert.AreEqual(FistName, _personAddedToRepository.FirstName);
+        Assert.AreEqual(LastName, _personAddedToRepository.LastName);
+        Assert.AreEqual(Email, _personAddedToRepository.Email);
     }
 
     [TestMethod]
@@ -106,11 +106,11 @@ public class CreatePersonCommandHandlerTests : TestsBase
 
         // Assert
         Assert.IsNotNull(_personAddedToRepository);
-        Assert.AreEqual(_personIdOnNew, _personAddedToRepository.Id);
-        Assert.AreEqual(_userName, _personAddedToRepository.UserName);
-        Assert.AreEqual(_fistName, _personAddedToRepository.FirstName);
-        Assert.AreEqual(_lastName, _personAddedToRepository.LastName);
-        Assert.AreEqual(_spEmail, _personAddedToRepository.Email);
+        Assert.AreEqual(PersonIdOnNew, _personAddedToRepository.Id);
+        Assert.AreEqual(UserName, _personAddedToRepository.UserName);
+        Assert.AreEqual(FistName, _personAddedToRepository.FirstName);
+        Assert.AreEqual(LastName, _personAddedToRepository.LastName);
+        Assert.AreEqual(SpEmail, _personAddedToRepository.Email);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
     {
         // Arrange
         _personRepositoryMock.Setup(p => p.GetByGuidAsync(_azureOid))
-            .ReturnsAsync(new Person(_azureOid, _fistName, _lastName, _userName, _email));
+            .ReturnsAsync(new Person(_azureOid, FistName, LastName, UserName, Email));
 
         // Act
         await _dut.Handle(_command, default);
