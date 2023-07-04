@@ -18,23 +18,23 @@ public class PunchCreatedTests
     [TestMethod]
     public async Task An_example_unit_test()
     {
+        // Arrange
         await using var provider = new ServiceCollection()
             .AddScoped<PunchCreatedEventHandler>()
-            .AddMassTransitTestHarness(x =>
-            {
-            })
+            .AddMassTransitTestHarness(_ => {})
             .BuildServiceProvider(true);
 
         var harness = provider.GetRequiredService<ITestHarness>();
         var eventHandler = provider.CreateScope().ServiceProvider.GetRequiredService<PunchCreatedEventHandler>();
         await harness.Start();
 
-        //act
+        // Act
        await eventHandler.Handle(new PunchCreatedEvent(
             new Punch("Plant", 
                 new Project("Plant", new Guid(), "project", "sup"), 
                 "TestItem1"),new Guid()), default);
 
+        // Assert   
        Assert.IsTrue(await harness.Published.Any<PunchCreatedIntegrationEvent>());
     }
 }
