@@ -14,18 +14,18 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemsInProject;
 [TestClass]
 public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 {
-    private PunchItem _punchInProjectA;
-    private PunchItem _punchInProjectB;
+    private PunchItem _punchItemInProjectA;
+    private PunchItem _punchItemInProjectB;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        _punchInProjectA = new PunchItem(TestPlantA, _projectA, "A");
-        _punchInProjectB = new PunchItem(TestPlantA, _projectB, "B");
+        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, "A");
+        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, "B");
 
-        context.PunchItems.Add(_punchInProjectA);
-        context.PunchItems.Add(_punchInProjectB);
+        context.PunchItems.Add(_punchItemInProjectA);
+        context.PunchItems.Add(_punchItemInProjectB);
         context.SaveChangesAsync().Wait();
     }
 
@@ -64,7 +64,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(1, result.Data.Count());
 
-        AssertPunch(result.Data.Single(), _punchInProjectA);
+        AssertPunch(result.Data.Single(), _punchItemInProjectA);
     }
 
     private void AssertPunch(PunchItemDto punchDto, PunchItem punchItem)

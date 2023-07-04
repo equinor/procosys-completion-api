@@ -75,10 +75,10 @@ public class UpdatePunchItemLinkCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_TagOwningPunchIsVoided()
+    public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchIsVoidedAsync(_command.PunchItemGuid, default))
+        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
             .ReturnsAsync(true);
 
         // Act
@@ -94,7 +94,7 @@ public class UpdatePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchIsClosedAsync(_command.PunchItemGuid, default))
+        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
             .ReturnsAsync(true);
 
         // Act

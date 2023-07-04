@@ -20,7 +20,7 @@ public class DeletePunchItemCommandValidatorTests
         _command = new DeletePunchItemCommand(Guid.NewGuid(), "r");
         _punchItemValidatorMock = new Mock<IPunchItemValidator>();
         _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default)).ReturnsAsync(true);
-        _punchItemValidatorMock.Setup(x => x.TagOwningPunchIsVoidedAsync(_command.PunchItemGuid, default)).ReturnsAsync(true);
+        _punchItemValidatorMock.Setup(x => x.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)).ReturnsAsync(true);
 
         _dut = new DeletePunchItemCommandValidator(_punchItemValidatorMock.Object);
     }
@@ -55,7 +55,7 @@ public class DeletePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchIsClosedAsync(_command.PunchItemGuid, default))
+        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
             .ReturnsAsync(true);
 
         // Act

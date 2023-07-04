@@ -12,38 +12,38 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
-    private PunchItem _punchInOpenProject;
-    private PunchItem _punchInClosedProject;
+    private PunchItem _punchItemInOpenProject;
+    private PunchItem _punchItemInClosedProject;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        _punchInOpenProject = new PunchItem(TestPlantA, _projectA, "x1");
-        _punchInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2");
-        context.PunchItems.Add(_punchInOpenProject);
-        context.PunchItems.Add(_punchInClosedProject);
+        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, "x1");
+        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2");
+        context.PunchItems.Add(_punchItemInOpenProject);
+        context.PunchItems.Add(_punchItemInClosedProject);
 
         context.SaveChangesAsync().Wait();
     }
 
-    #region PunchExists
+    #region Exists
     [TestMethod]
-    public async Task PunchExists_ShouldReturnTrue_WhenPunchExist()
+    public async Task Exists_ShouldReturnTrue_WhenPunchExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);            
         var dut = new PunchItemValidator(context);
 
         // Act
-        var result = await dut.ExistsAsync(_punchInOpenProject.Guid, default);
+        var result = await dut.ExistsAsync(_punchItemInOpenProject.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task PunchExists_ShouldReturnFalse_WhenPunchNotExist()
+    public async Task Exists_ShouldReturnFalse_WhenPunchNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);    
@@ -57,47 +57,92 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     }
     #endregion
 
-    #region ProjectOwningPunchIsClosed
+    #region ProjectOwningPunchItemIsClosed
     [TestMethod]
-    public async Task ProjectOwningPunchIsClosedAsync_ShouldReturnTrue_WhenPunchIsInClosedProject()
+    public async Task ProjectOwningPunchItemIsClosed_ShouldReturnTrue_WhenPunchItemIsInClosedProject()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new PunchItemValidator(context);
 
         // Act
-        var result = await dut.ProjectOwningPunchIsClosedAsync(_punchInClosedProject.Guid, default);
+        var result = await dut.ProjectOwningPunchItemIsClosedAsync(_punchItemInClosedProject.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task ProjectOwningPunchIsClosedAsync_ShouldReturnFalse_WhenPunchIsInOpenProject()
+    public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemIsInOpenProject()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new PunchItemValidator(context);
 
         // Act
-        var result = await dut.ProjectOwningPunchIsClosedAsync(_punchInOpenProject.Guid, default);
+        var result = await dut.ProjectOwningPunchItemIsClosedAsync(_punchItemInOpenProject.Guid, default);
 
         // Assert
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task ProjectOwningPunchIsClosedAsync_ShouldReturnFalse_WhenPunchNotExist()
+    public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new PunchItemValidator(context);
 
         // Act
-        var result = await dut.ProjectOwningPunchIsClosedAsync(Guid.NewGuid(), default);
+        var result = await dut.ProjectOwningPunchItemIsClosedAsync(Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);
+    }
+    #endregion
+
+    #region TagOwningPunchItemIsVoided
+    // todo #103935 
+    [TestMethod]
+    public async Task TagOwningPunchItemIsVoided_ShouldReturnTrue_WhenPunchItemOwnedByVoidedTag()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        // var result = await dut.TagOwningPunchItemIsVoidedAsync(, default);
+
+        // Assert
+        // Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemOwnedByNonvoidedTag()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        // var result = await dut.TagOwningPunchItemIsVoidedAsync(, default);
+
+        // Assert
+        // Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchNotExist()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        // var result = await dut.TagOwningPunchItemIsVoidedAsync(, default);
+
+        // Assert
+        //Assert.IsFalse(result);
     }
     #endregion
 }
