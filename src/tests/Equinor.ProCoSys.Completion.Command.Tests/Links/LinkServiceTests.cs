@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -79,7 +79,7 @@ public class LinkServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _sourceGuid, "T", "www", default);
 
         // Assert
-        Assert.IsInstanceOfType(_linkAddedToRepository.DomainEvents.First(), typeof(LinkCreatedEvent));
+        Assert.IsInstanceOfType(_linkAddedToRepository.DomainEvents.First(), typeof(LinkCreatedDomainEvent));
     }
     #endregion
 
@@ -144,7 +144,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, "T", "www", _rowVersion, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkUpdatedEvent));
+        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkUpdatedDomainEvent));
     }
 
     [TestMethod]
@@ -195,7 +195,7 @@ public class LinkServiceTests : TestsBase
         await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkDeletedEvent));
+        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkDeletedDomainEvent));
     }
 
     [TestMethod]

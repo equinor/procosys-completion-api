@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -16,7 +16,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.P
 public class PunchItemClearedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemClearedEventHandler _dut;
-    private PunchItemClearedEvent _punchItemClearedEvent;
+    private PunchItemClearedDomainEvent _punchItemClearedEvent;
     private Mock<IPublishEndpoint> _publishEndpointMock;
     private PunchItemClearedIntegrationEvent _publishedIntegrationEvent;
 
@@ -27,7 +27,7 @@ public class PunchItemClearedEventHandlerTests : EventHandlerTestBase
         punchItem.Clear(_person);
         punchItem.SetModified(_person);
 
-        _punchItemClearedEvent = new PunchItemClearedEvent(punchItem, _person.Guid);
+        _punchItemClearedEvent = new PunchItemClearedDomainEvent(punchItem, _person.Guid);
         _publishEndpointMock = new Mock<IPublishEndpoint>();
         _dut = new PunchItemClearedEventHandler(_publishEndpointMock.Object, new Mock<ILogger<PunchItemClearedEventHandler>>().Object);
         _publishEndpointMock

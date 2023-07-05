@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 
-public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreatedEvent>
+public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreatedDomainEvent>
 {
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<PunchItemCreatedEventHandler> _logger;
@@ -18,7 +18,7 @@ public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreate
         _logger = logger;
     }
     
-    public async Task Handle(PunchItemCreatedEvent punchItemCreatedEvent, CancellationToken cancellationToken)
+    public async Task Handle(PunchItemCreatedDomainEvent punchItemCreatedEvent, CancellationToken cancellationToken)
     {
         var sessionId = punchItemCreatedEvent.PunchItem.Guid.ToString();
         

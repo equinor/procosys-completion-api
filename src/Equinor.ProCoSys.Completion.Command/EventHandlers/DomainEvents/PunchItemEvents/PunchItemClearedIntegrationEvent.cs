@@ -1,5 +1,5 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
@@ -15,7 +15,7 @@ public record PunchItemClearedIntegrationEvent
 ) : IPunchItemClearedV1
 {
     internal PunchItemClearedIntegrationEvent(
-        PunchItemClearedEvent punchItemClearedEvent) : this(
+        PunchItemClearedDomainEvent punchItemClearedEvent) : this(
         DisplayName:"Punch item cleared",
         punchItemClearedEvent.PunchItem.Guid,
         punchItemClearedEvent.ClearedByOid,

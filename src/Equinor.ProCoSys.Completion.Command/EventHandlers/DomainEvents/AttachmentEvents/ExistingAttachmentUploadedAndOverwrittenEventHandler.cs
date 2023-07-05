@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
 
-public class ExistingAttachmentUploadedAndOverwrittenEventHandler : INotificationHandler<ExistingAttachmentUploadedAndOverwrittenEvent>
+public class ExistingAttachmentUploadedAndOverwrittenEventHandler : INotificationHandler<ExistingAttachmentUploadedAndOverwrittenDomainEvent>
 {
-    public Task Handle(ExistingAttachmentUploadedAndOverwrittenEvent notification, CancellationToken cancellationToken)
+    public Task Handle(ExistingAttachmentUploadedAndOverwrittenDomainEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Attachment.SourceGuid;
 

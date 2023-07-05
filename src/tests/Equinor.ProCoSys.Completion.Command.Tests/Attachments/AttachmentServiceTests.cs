@@ -6,7 +6,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -114,7 +114,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
-        Assert.IsInstanceOfType(_attachmentAddedToRepository.DomainEvents.First(), typeof(NewAttachmentUploadedEvent));
+        Assert.IsInstanceOfType(_attachmentAddedToRepository.DomainEvents.First(), typeof(NewAttachmentUploadedDomainEvent));
     }
 
     [TestMethod]
@@ -176,7 +176,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingAttachment.DomainEvents.First(), typeof(ExistingAttachmentUploadedAndOverwrittenEvent));
+        Assert.IsInstanceOfType(_existingAttachment.DomainEvents.First(), typeof(ExistingAttachmentUploadedAndOverwrittenDomainEvent));
     }
 
     [TestMethod]

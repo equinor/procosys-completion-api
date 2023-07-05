@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
@@ -86,12 +86,12 @@ public class ClearPunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemClearedEvent()
+    public async Task HandlingCommand_ShouldAddPunchItemClearedDomainEvent()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemClearedEvent));
+        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemClearedDomainEvent));
     }
 }

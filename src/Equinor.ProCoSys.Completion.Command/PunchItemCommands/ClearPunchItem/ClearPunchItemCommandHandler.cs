@@ -8,7 +8,7 @@ using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 
@@ -42,7 +42,7 @@ public class ClearPunchItemCommandHandler : IRequestHandler<ClearPunchItemComman
         var currentPerson = await _personRepository.GetCurrentPersonAsync();
         punchItem.Clear(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
-        punchItem.AddDomainEvent(new PunchItemClearedEvent(punchItem, currentPerson.Guid));
+        punchItem.AddDomainEvent(new PunchItemClearedDomainEvent(punchItem, currentPerson.Guid));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

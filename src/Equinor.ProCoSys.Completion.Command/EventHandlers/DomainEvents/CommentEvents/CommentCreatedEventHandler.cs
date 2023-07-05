@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentDomainEvents;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.CommentEvents;
 
-public class CommentCreatedEventHandler : INotificationHandler<CommentCreatedEvent>
+public class CommentCreatedEventHandler : INotificationHandler<CommentCreatedDomainEvent>
 {
-    public Task Handle(CommentCreatedEvent notification, CancellationToken cancellationToken)
+    public Task Handle(CommentCreatedDomainEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Comment.SourceGuid;
 

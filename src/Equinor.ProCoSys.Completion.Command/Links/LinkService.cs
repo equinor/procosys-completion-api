@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Links;
@@ -34,7 +34,7 @@ public class LinkService : ILinkService
     {
         var link = new Link(sourceType, sourceGuid, title, url);
         _linkRepository.Add(link);
-        link.AddDomainEvent(new LinkCreatedEvent(link));
+        link.AddDomainEvent(new LinkCreatedDomainEvent(link));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -70,7 +70,7 @@ public class LinkService : ILinkService
         link.SetRowVersion(rowVersion);
         link.Url = url;
         link.Title = title;
-        link.AddDomainEvent(new LinkUpdatedEvent(link));
+        link.AddDomainEvent(new LinkUpdatedDomainEvent(link));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -100,7 +100,7 @@ public class LinkService : ILinkService
         // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
         link.SetRowVersion(rowVersion);
         _linkRepository.Remove(link);
-        link.AddDomainEvent(new LinkDeletedEvent(link));
+        link.AddDomainEvent(new LinkDeletedDomainEvent(link));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
