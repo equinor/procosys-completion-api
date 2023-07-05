@@ -390,6 +390,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Permissions = new List<string>
                 {
                     Permissions.PUNCHITEM_CREATE,
+                    Permissions.PUNCHITEM_CLEAR,
+                    Permissions.PUNCHITEM_VERIFY,
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_ATTACH,
                     Permissions.PUNCHITEM_DETACH,

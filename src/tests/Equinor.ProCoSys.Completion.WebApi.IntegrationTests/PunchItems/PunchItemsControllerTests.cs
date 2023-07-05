@@ -372,6 +372,30 @@ public class PunchItemsControllerTests : TestBase
             punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(0, attachments.Count);
     }
+    [TestMethod]
+    public async Task ClearPunchItem_AsWriter_ShouldClearPunchItem()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeCleared);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        // Assert
+        AssertRowVersionChange(guidAndRowVersion.RowVersion, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsFalse(punchItem.IsReadyToBeCleared);
+    }
 
     private async Task<(
         GuidAndRowVersion punchItemGuidAndRowVersion, 
