@@ -671,9 +671,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
     #endregion
 
-    #region GetPunchItemsComments
+    #region GetPunchItemComments
     [TestMethod]
-    public async Task GetPunchItemsComments_AsAnonymous_ShouldReturnUnauthorized()
+    public async Task GetPunchItemComments_AsAnonymous_ShouldReturnUnauthorized()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
@@ -681,7 +681,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
-    public async Task GetPunchItemsComments_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemComments_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
@@ -690,7 +690,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemsComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Writer,
             TestFactory.Unknown,
@@ -699,7 +699,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemsComments_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemComments_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
@@ -707,7 +707,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemsComments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemComments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
