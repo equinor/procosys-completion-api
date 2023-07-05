@@ -31,6 +31,7 @@ public class PunchItemTests : IModificationAuditableTests
     [TestMethod]
     public void Constructor_ShouldSetProperties()
     {
+        // Assert
         Assert.AreEqual(_testPlant, _dut.Plant);
         Assert.AreEqual(_projectId, _dut.ProjectId);
         Assert.AreEqual(_itemNo, _dut.ItemNo);
@@ -48,13 +49,97 @@ public class PunchItemTests : IModificationAuditableTests
     #endregion
 
     #region Update
-
     [TestMethod]
     public void Update_ShouldUpdate()
     {
+        // Act
         _dut.Update("ABC");
 
+        // Assert
         Assert.AreEqual("ABC", _dut.Description);
+    }
+    #endregion
+
+    #region Clear
+    [TestMethod]
+    public void Clear_ShouldSetClearedFields()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+        Assert.IsFalse(_dut.ClearedById.HasValue);
+
+        // Act
+        _dut.Clear(_person);
+
+        // Assert
+        Assert.AreEqual(_now, _dut.ClearedAtUtc);
+        Assert.AreEqual(_person.Id, _dut.ClearedById);
+    }
+
+    [TestMethod]
+    public void Clear_ShouldSetRejectedFieldsToNull()
+    {
+        // Arrange
+        _dut.Reject(_person);
+        Assert.IsTrue(_dut.RejectedAtUtc.HasValue);
+        Assert.IsTrue(_dut.RejectedById.HasValue);
+
+        // Act
+        _dut.Clear(_person);
+
+        // Assert
+        Assert.IsFalse(_dut.RejectedAtUtc.HasValue);
+        Assert.IsFalse(_dut.RejectedById.HasValue);
+    }
+    #endregion
+
+    #region Reject
+    [TestMethod]
+    public void Reject_ShouldSetRejectedFields()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.RejectedAtUtc.HasValue);
+        Assert.IsFalse(_dut.RejectedById.HasValue);
+
+        // Act
+        _dut.Reject(_person);
+
+        // Assert
+        Assert.AreEqual(_now, _dut.RejectedAtUtc);
+        Assert.AreEqual(_person.Id, _dut.RejectedById);
+    }
+
+    [TestMethod]
+    public void Reject_ShouldSetClearedFieldsToNull()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+        Assert.IsTrue(_dut.ClearedById.HasValue);
+
+        // Act
+        _dut.Reject(_person);
+
+        // Assert
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+        Assert.IsFalse(_dut.ClearedById.HasValue);
+    }
+    #endregion
+
+    #region Verify
+    [TestMethod]
+    public void Verify_ShouldSetVerifiedFields()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
+        Assert.IsFalse(_dut.VerifiedById.HasValue);
+
+        // Act
+        _dut.Verify(_person);
+
+        // Assert
+        Assert.AreEqual(_now, _dut.VerifiedAtUtc);
+        Assert.AreEqual(_person.Id, _dut.VerifiedById);
     }
     #endregion
 }

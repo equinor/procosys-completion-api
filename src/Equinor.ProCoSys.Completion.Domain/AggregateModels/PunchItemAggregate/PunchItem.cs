@@ -51,6 +51,34 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? ModifiedById { get; private set; }
     public Guid? ModifiedByOid { get; private set; }
     public Guid Guid { get; private set; }
+    public DateTime? ClearedAtUtc { get; private set; }
+    public int? ClearedById { get; private set; }
+    public DateTime? RejectedAtUtc { get; private set; }
+    public int? RejectedById { get; private set; }
+    public DateTime? VerifiedAtUtc { get; private set; }
+    public int? VerifiedById { get; private set; }
+
+    public void Clear(Person clearedBy)
+    {
+        ClearedAtUtc = TimeService.UtcNow;
+        ClearedById = clearedBy.Id;
+        RejectedAtUtc = null;
+        RejectedById = null;
+    }
+
+    public void Reject(Person rejectedBy)
+    {
+        RejectedAtUtc = TimeService.UtcNow;
+        RejectedById = rejectedBy.Id;
+        ClearedAtUtc = null;
+        ClearedById = null;
+    }
+
+    public void Verify(Person verifiedBy)
+    {
+        VerifiedAtUtc = TimeService.UtcNow;
+        VerifiedById = verifiedBy.Id;
+    }
 
     public void Update(string? description) => Description = description;
 
