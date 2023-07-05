@@ -40,4 +40,13 @@ public class PunchItemValidator : IPunchItemValidator
 
         return project is not null && project.IsClosed;
     }
+
+    public async Task<bool> IsReadyToBeClearedAsync(Guid punchGuid, CancellationToken cancellationToken)
+    {
+        var punchItem = await (from p in _context.QuerySet<PunchItem>()
+            where p.Guid == punchGuid
+            select p).SingleOrDefaultAsync(cancellationToken);
+
+        return punchItem != null && punchItem.IsReadyToBeCleared;
+    }
 }

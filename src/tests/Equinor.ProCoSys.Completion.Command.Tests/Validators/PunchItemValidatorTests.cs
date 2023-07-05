@@ -14,6 +14,8 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
     private PunchItem _punchItemInOpenProject;
     private PunchItem _punchItemInClosedProject;
+    private PunchItem _unclearedPunchItem;
+    private PunchItem _clearedPunchItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -21,8 +23,13 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
         _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, "x1");
         _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2");
+        _unclearedPunchItem = _punchItemInOpenProject;
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "x3");
+        _clearedPunchItem.Clear(_currentPerson);
+
         context.PunchItems.Add(_punchItemInOpenProject);
         context.PunchItems.Add(_punchItemInClosedProject);
+        context.PunchItems.Add(_clearedPunchItem);
 
         context.SaveChangesAsync().Wait();
     }
@@ -145,4 +152,48 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
         //Assert.IsFalse(result);
     }
     #endregion
+
+    #region IsReadyToBeCleared
+    [TestMethod]
+    public async Task IsReadyToBeCleared_ShouldReturnTrue_WhenNotCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsReadyToBeClearedAsync(_unclearedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task IsReadyToBeCleared_ShouldReturnFalse_WhenCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsReadyToBeClearedAsync(_clearedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task IsReadyToBeCleared_ShouldReturnFalse_WhenPunchNotExist()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsReadyToBeClearedAsync(Guid.Empty, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+#endregion
 }
