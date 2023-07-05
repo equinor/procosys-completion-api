@@ -613,9 +613,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Conflict);
     #endregion
 
-    #region CreatePunchItemsComment
+    #region CreatePunchItemComment
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsAnonymous_ShouldReturnUnauthorized()
+    public async Task CreatePunchItemComment_AsAnonymous_ShouldReturnUnauthorized()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
@@ -624,7 +624,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task CreatePunchItemComment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
@@ -634,7 +634,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task CreatePunchItemComment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Writer,
             TestFactory.Unknown,
@@ -644,7 +644,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task CreatePunchItemComment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
@@ -653,7 +653,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task CreatePunchItemComment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
@@ -662,7 +662,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task CreatePunchItemsComment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
+    public async Task CreatePunchItemComment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
