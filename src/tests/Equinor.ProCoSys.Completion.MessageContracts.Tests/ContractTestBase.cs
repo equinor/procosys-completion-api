@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts;
+namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
 public abstract class ContractTestBase<TContract> where TContract: IEventMessage
 {

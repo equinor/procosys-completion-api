@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts.PunchItem;
+namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.PunchItem;
 
 [TestClass]
 public class PunchItemClearedV1ContractTests : ContractTestBase<IPunchItemClearedV1>

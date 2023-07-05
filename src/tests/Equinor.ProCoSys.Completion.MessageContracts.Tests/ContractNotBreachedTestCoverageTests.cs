@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts;
+namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
 /// <summary>
 /// This unit test don't test any business logic.
@@ -39,7 +38,7 @@ public class ContractNotBreachedTestCoverageTests
             var classHasTest = genericArguments.Any(g => g.FullName == i.FullName);
             if (!classHasTest)
             {
-                missingTests.Add(i.FullName);
+                missingTests.Add(i.FullName!);
             }
         }
 

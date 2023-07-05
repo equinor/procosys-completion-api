@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-    <PackageReference Include="MockQueryable.Moq" Version="7.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.2">
       <TreatAsUsed>true</TreatAsUsed>
@@ -21,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Test.Common\Equinor.ProCoSys.Completion.Test.Common.csproj" />
   </ItemGroup>
 

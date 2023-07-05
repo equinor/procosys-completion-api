@@ -1,4 +1,6 @@
-﻿namespace Equinor.ProCoSys.Completion.MessageContracts;
+﻿using System;
+
+namespace Equinor.ProCoSys.Completion.MessageContracts;
 
 public interface IPunchItemClearedV1 : IHaveDisplayName, IEventMessage
 {
