@@ -36,7 +36,7 @@ public class DeletePunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchNotExists()
+    public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
         _punchItemValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchItemGuid, default))

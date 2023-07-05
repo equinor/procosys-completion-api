@@ -18,7 +18,7 @@ public class PunchItemsControllerTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchItemAGuid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
     }
@@ -38,11 +38,11 @@ public class PunchItemsControllerTests : TestBase
 
         // Assert
         AssertValidGuidAndRowVersion(guidAndRowVersion);
-        var newPunch = await PunchItemsControllerTestsHelper
+        var newPunchItem = await PunchItemsControllerTestsHelper
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
-        Assert.IsNotNull(newPunch);
-        Assert.AreEqual(itemNo, newPunch.ItemNo);
-        AssertCreatedBy(UserType.Writer, newPunch.CreatedBy);
+        Assert.IsNotNull(newPunchItem);
+        Assert.AreEqual(itemNo, newPunchItem.ItemNo);
+        AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
 
         var allPunchItems = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
@@ -249,7 +249,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task UploadPunchAttachment_AsWriter_ShouldUploadPunchAttachment()
+    public async Task UploadPunchItemAttachment_AsWriter_ShouldUploadPunchAttachment()
     {
         // Arrange and Act
         var (_, attachmentGuidAndRowVersion)

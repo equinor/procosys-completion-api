@@ -13,30 +13,30 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItem;
 [TestClass]
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 {
-    private PunchItem _createdPunch;
+    private PunchItem _createdPunchItem;
     private Guid _createdPunchItemGuid;
-    private PunchItem _modifiedPunch;
+    private PunchItem _modifiedPunchItem;
     private Guid _modifiedPunchItemGuid;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
-        _createdPunch = new PunchItem(TestPlantA, _projectA, "TitleA");
-        _modifiedPunch = new PunchItem(TestPlantA, _projectA, "TitleB");
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "TitleA");
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "TitleB");
 
-        context.PunchItems.Add(_createdPunch);
-        context.PunchItems.Add(_modifiedPunch);
+        context.PunchItems.Add(_createdPunchItem);
+        context.PunchItems.Add(_modifiedPunchItem);
         context.SaveChangesAsync().Wait();
-        _createdPunchItemGuid = _createdPunch.Guid;
+        _createdPunchItemGuid = _createdPunchItem.Guid;
 
-        _modifiedPunch.Update("Modified");
+        _modifiedPunchItem.Update("Modified");
         context.SaveChangesAsync().Wait();
-        _modifiedPunchItemGuid = _modifiedPunch.Guid;
+        _modifiedPunchItemGuid = _modifiedPunchItem.Guid;
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnNotFound_IfPunchIsNotFound()
+    public async Task Handler_ShouldReturnNotFound_WhenPunchItemNotFound()
     {
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
 
@@ -53,7 +53,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectCreatedPunch()
+    public async Task Handler_ShouldReturnCorrectCreatedPunchItem()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
@@ -68,14 +68,14 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var punchDetailsDto = result.Data;
-        AssertPunch(punchDetailsDto, _createdPunch);
-        Assert.IsNull(punchDetailsDto.ModifiedBy);
-        Assert.IsNull(punchDetailsDto.ModifiedAtUtc);
+        var punchItemDetailsDto = result.Data;
+        AssertPunchItem(punchItemDetailsDto, _createdPunchItem);
+        Assert.IsNull(punchItemDetailsDto.ModifiedBy);
+        Assert.IsNull(punchItemDetailsDto.ModifiedAtUtc);
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectModifiedPunch()
+    public async Task Handler_ShouldReturnCorrectModifiedPunchItem()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
@@ -90,24 +90,24 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var punchDetailsDto = result.Data;
-        AssertPunch(punchDetailsDto, _modifiedPunch);
-        var modifiedBy = punchDetailsDto.ModifiedBy;
+        var punchItemDetailsDto = result.Data;
+        AssertPunchItem(punchItemDetailsDto, _modifiedPunchItem);
+        var modifiedBy = punchItemDetailsDto.ModifiedBy;
         Assert.IsNotNull(modifiedBy);
         Assert.AreEqual(CurrentUserOid, modifiedBy.Guid);
-        Assert.IsNotNull(punchDetailsDto.ModifiedAtUtc);
-        Assert.AreEqual(_modifiedPunch.ModifiedAtUtc, punchDetailsDto.ModifiedAtUtc);
+        Assert.IsNotNull(punchItemDetailsDto.ModifiedAtUtc);
+        Assert.AreEqual(_modifiedPunchItem.ModifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
     }
 
-    private void AssertPunch(PunchItemDetailsDto punchDetailsDto, PunchItem punchItem)
+    private void AssertPunchItem(PunchItemDetailsDto punchItemDetailsDto, PunchItem punchItem)
     {
-        Assert.AreEqual(punchItem.ItemNo, punchDetailsDto.ItemNo);
+        Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
         var project = GetProjectById(punchItem.ProjectId);
-        Assert.AreEqual(project.Name, punchDetailsDto.ProjectName);
+        Assert.AreEqual(project.Name, punchItemDetailsDto.ProjectName);
 
-        var createdBy = punchDetailsDto.CreatedBy;
+        var createdBy = punchItemDetailsDto.CreatedBy;
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
-        Assert.AreEqual(punchItem.CreatedAtUtc, punchDetailsDto.CreatedAtUtc);
+        Assert.AreEqual(punchItem.CreatedAtUtc, punchItemDetailsDto.CreatedAtUtc);
     }
 }

@@ -19,7 +19,7 @@ public class DeletePunchItemCommandHandlerTests : TestsBase
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private Mock<IPunchItemRepository> _punchItemRepositoryMock;
-    private PunchItem _existingPunch;
+    private PunchItem _existingPunchItem;
 
     private DeletePunchItemCommand _command;
     private DeletePunchItemCommandHandler _dut;
@@ -28,12 +28,12 @@ public class DeletePunchItemCommandHandlerTests : TestsBase
     public void Setup()
     {
         var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
-        _existingPunch = new PunchItem(TestPlantA, project, "P123");
+        _existingPunchItem = new PunchItem(TestPlantA, project, "P123");
         _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunch.Guid))
-            .ReturnsAsync(_existingPunch);
+        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
+            .ReturnsAsync(_existingPunchItem);
 
-        _command = new DeletePunchItemCommand(_existingPunch.Guid, _rowVersion);
+        _command = new DeletePunchItemCommand(_existingPunchItem.Guid, _rowVersion);
 
         _dut = new DeletePunchItemCommandHandler(
             _punchItemRepositoryMock.Object,
@@ -48,7 +48,7 @@ public class DeletePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        _punchItemRepositoryMock.Verify(r => r.Remove(_existingPunch), Times.Once);
+        _punchItemRepositoryMock.Verify(r => r.Remove(_existingPunchItem), Times.Once);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class DeletePunchItemCommandHandlerTests : TestsBase
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, _existingPunch.RowVersion.ConvertToString());
+        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -80,6 +80,6 @@ public class DeletePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunch.DomainEvents.Last(), typeof(PunchItemDeletedEvent));
+        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemDeletedEvent));
     }
 }

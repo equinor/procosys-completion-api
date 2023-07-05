@@ -11,25 +11,25 @@ namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
 /// <summary>
 /// Validates if current user has access to perform a request of type IIsProjectCommand, 
-/// IIsPunchCommand or IIsPunchQuery.
+/// IIsPunchItemCommand or IIsPunchItemQuery.
 /// It validates if user has access to the project of the request 
 /// </summary>
 public class AccessValidator : IAccessValidator
 {
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly IProjectAccessChecker _projectAccessChecker;
-    private readonly IPunchItemHelper _punchHelper;
+    private readonly IPunchItemHelper _punchItemHelper;
     private readonly ILogger<AccessValidator> _logger;
 
     public AccessValidator(
         ICurrentUserProvider currentUserProvider,
         IProjectAccessChecker projectAccessChecker,
-        IPunchItemHelper punchHelper,
+        IPunchItemHelper punchItemHelper,
         ILogger<AccessValidator> logger)
     {
         _currentUserProvider = currentUserProvider;
         _projectAccessChecker = projectAccessChecker;
-        _punchHelper = punchHelper;
+        _punchItemHelper = punchItemHelper;
         _logger = logger;
     }
 
@@ -48,17 +48,17 @@ public class AccessValidator : IAccessValidator
             return false;
         }
 
-        if (request is IIsPunchItemCommand punchCommand)
+        if (request is IIsPunchItemCommand punchItemCommand)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchCommand.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectAsync(punchItemCommand.PunchItemGuid, userOid))
             {
                 return false;
             }
         }
 
-        if (request is IIsPunchItemQuery punchQuery)
+        if (request is IIsPunchItemQuery punchItemQuery)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchQuery.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectAsync(punchItemQuery.PunchItemGuid, userOid))
             {
                 return false;
             }
@@ -69,7 +69,7 @@ public class AccessValidator : IAccessValidator
 
     private async Task<bool> HasCurrentUserAccessToProjectAsync(Guid punchItemGuid, Guid userOid)
     {
-        var projectGuid = await _punchHelper.GetProjectGuidForPunchAsync(punchItemGuid);
+        var projectGuid = await _punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid);
         if (projectGuid.HasValue)
         {
             var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectGuid.Value);

@@ -29,7 +29,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
     #region Exists
     [TestMethod]
-    public async Task Exists_ShouldReturnTrue_WhenPunchExist()
+    public async Task Exists_ShouldReturnTrue_WhenPunchItemExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);            
@@ -43,7 +43,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Exists_ShouldReturnFalse_WhenPunchNotExist()
+    public async Task Exists_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);    
@@ -87,7 +87,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchNotExist()
+    public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
@@ -132,7 +132,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchNotExist()
+    public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);

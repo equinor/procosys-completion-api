@@ -61,7 +61,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                 dto.ModifiedByUser.Email);
         }
 
-        var punchDetailsDto = new PunchItemDetailsDto(
+        var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
                        dto.Project.Name,
                        dto.PunchItem.ItemNo,
@@ -71,6 +71,6 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        modifiedBy,
                        dto.PunchItem.ModifiedAtUtc,
                        dto.PunchItem.RowVersion.ConvertToString());
-        return new SuccessResult<PunchItemDetailsDto>(punchDetailsDto);
+        return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
 }

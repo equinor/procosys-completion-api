@@ -31,10 +31,10 @@ public class AccessValidatorTestBase
         _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess)).Returns(false);
         _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithAccess)).Returns(true);
 
-        var punchHelperMock = new Mock<IPunchItemHelper>();
-        punchHelperMock.Setup(p => p.GetProjectGuidForPunchAsync(PunchItemGuidWithAccessToProject))
+        var punchItemHelperMock = new Mock<IPunchItemHelper>();
+        punchItemHelperMock.Setup(p => p.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProject))
             .ReturnsAsync(ProjectGuidWithAccess);
-        punchHelperMock.Setup(p => p.GetProjectGuidForPunchAsync(PunchItemGuidWithoutAccessToProject))
+        punchItemHelperMock.Setup(p => p.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject))
             .ReturnsAsync(ProjectGuidWithoutAccess);
 
         _loggerMock = new Mock<ILogger<AccessValidator>>();
@@ -42,7 +42,7 @@ public class AccessValidatorTestBase
         _dut = new AccessValidator(
             _currentUserProviderMock.Object,
             _projectAccessCheckerMock.Object,
-            punchHelperMock.Object,
+            punchItemHelperMock.Object,
             _loggerMock.Object);
     }
 }

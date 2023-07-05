@@ -28,28 +28,28 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task GetProjectGuidForPunchAsync_KnownPunchId_ShouldReturnProjectGuid()
+    public async Task GetProjectGuidForPunchItem_ShouldReturnProjectGuid_WhenKnownPunchItemId()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new PunchItemHelper(context);
 
         // Act
-        var projectGuid = await dut.GetProjectGuidForPunchAsync(_punchItemGuid);
+        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(_punchItemGuid);
 
         // Assert
         Assert.AreEqual(_projectA.Guid, projectGuid);
     }
 
     [TestMethod]
-    public async Task GetProjectGuidForPunchAsync_UnKnownPunchId_ShouldReturnNull()
+    public async Task GetProjectGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
         var dut = new PunchItemHelper(context);
 
         // Act
-        var projectGuid = await dut.GetProjectGuidForPunchAsync(Guid.Empty);
+        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(Guid.Empty);
 
         // Assert
         Assert.IsNull(projectGuid);

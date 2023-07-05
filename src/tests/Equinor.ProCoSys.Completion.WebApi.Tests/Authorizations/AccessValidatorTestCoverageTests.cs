@@ -6,8 +6,8 @@ using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
-using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchCommandTests;
-using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
+using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
+using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
@@ -15,7 +15,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 /// <summary>
 /// This unit test don't test any business logic.
 /// Just a helper for developer to remember to add Unit Test for AccessValidator when implementing
-/// a new IIsProjectCommand, IIsPunchCommand or IIsPunchQuery
+/// a new IIsProjectCommand, IIsPunchItemCommand or IIsPunchItemQuery
 /// </summary>
 [TestClass]
 public class AccessValidatorTestCoverageTests
@@ -36,7 +36,7 @@ public class AccessValidatorTestCoverageTests
     }
 
     [TestMethod]
-    public void Each_IIsPunchCommand_ShouldHaveUnitTest_ForAccessValidator()
+    public void Each_IIsPunchItemCommand_ShouldHaveUnitTest_ForAccessValidator()
     {
         var classes =
             TestHelper.GetClassesImplementingInterface(
@@ -46,13 +46,13 @@ public class AccessValidatorTestCoverageTests
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
-                typeof(AccessValidatorForIIsPunchCommandTests<>));
+                typeof(AccessValidatorForIIsPunchItemCommandTests<>));
 
         AssertAllHasUnitTest(classes, testClassList);
     }
 
     [TestMethod]
-    public void Each_IIsPunchQuery_ShouldHaveUnitTest_ForAccessValidator()
+    public void Each_IIsPunchItemQuery_ShouldHaveUnitTest_ForAccessValidator()
     {
         var classes =
             TestHelper.GetClassesImplementingInterface(
@@ -62,7 +62,7 @@ public class AccessValidatorTestCoverageTests
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
-                typeof(AccessValidatorForIIsPunchQueryTests<>));
+                typeof(AccessValidatorForIIsPunchItemQueryTests<>));
 
         AssertAllHasUnitTest(classes, testClassList);
     }

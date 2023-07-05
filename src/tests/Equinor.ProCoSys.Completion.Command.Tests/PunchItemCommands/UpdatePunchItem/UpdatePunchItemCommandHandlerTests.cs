@@ -19,7 +19,7 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private Mock<IPunchItemRepository> _punchItemRepositoryMock;
-    private PunchItem _existingPunch;
+    private PunchItem _existingPunchItem;
 
     private UpdatePunchItemCommand _command;
     private UpdatePunchItemCommandHandler _dut;
@@ -28,12 +28,12 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
     public void Setup()
     {
         var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
-        _existingPunch = new PunchItem(TestPlantA, project, "X1");
+        _existingPunchItem = new PunchItem(TestPlantA, project, "X1");
         _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunch.Guid))
-            .ReturnsAsync(_existingPunch);
+        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
+            .ReturnsAsync(_existingPunchItem);
 
-        _command = new UpdatePunchItemCommand(_existingPunch.Guid, "newText", _rowVersion);
+        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, "newText", _rowVersion);
 
         _dut = new UpdatePunchItemCommandHandler(
             _punchItemRepositoryMock.Object,
@@ -48,7 +48,7 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_command.Description, _existingPunch.Description);
+        Assert.AreEqual(_command.Description, _existingPunchItem.Description);
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunch.RowVersion.ConvertToString());
+        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -81,6 +81,6 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunch.DomainEvents.Last(), typeof(PunchItemUpdatedEvent));
+        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUpdatedEvent));
     }
 }

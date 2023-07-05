@@ -65,7 +65,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchToRepository()
+    public async Task HandlingCommand_ShouldAddPunchItemToRepository()
     {
         // Act
         await _dut.Handle(_command, default);

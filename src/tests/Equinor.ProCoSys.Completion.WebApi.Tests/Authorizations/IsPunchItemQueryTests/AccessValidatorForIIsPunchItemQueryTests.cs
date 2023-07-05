@@ -3,17 +3,17 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 
 [TestClass]
-public abstract class AccessValidatorForIIsPunchQueryTests<TPunchQuery> : AccessValidatorTestBase
-    where TPunchQuery : IBaseRequest, IIsPunchItemQuery
+public abstract class AccessValidatorForIIsPunchItemQueryTests<TPunchItemQuery> : AccessValidatorTestBase
+    where TPunchItemQuery : IBaseRequest, IIsPunchItemQuery
 {
-    protected abstract TPunchQuery GetPunchItemQueryWithAccessToProject();
-    protected abstract TPunchQuery GetPunchItemQueryWithoutAccessToProject();
+    protected abstract TPunchItemQuery GetPunchItemQueryWithAccessToProject();
+    protected abstract TPunchItemQuery GetPunchItemQueryWithoutAccessToProject();
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToProjectForPunch()
+    public async Task Validate_ShouldReturnTrue_WhenAccessToProjectForPunchItem()
     {
         // Arrange
         var command = GetPunchItemQueryWithAccessToProject();
@@ -26,7 +26,7 @@ public abstract class AccessValidatorForIIsPunchQueryTests<TPunchQuery> : Access
     }
 
     [TestMethod]
-    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProjectForPunch()
+    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProjectForPunchItem()
     {
         // Arrange
         var command = GetPunchItemQueryWithoutAccessToProject();

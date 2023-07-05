@@ -18,7 +18,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     protected override void SetupRepositoryWithOneKnownItem()
     {
         _project = new Project(TestPlant, Guid.NewGuid(), "ProjectName", "Description of project");
-        var punchItem = new PunchItem(TestPlant, _project, "Punch X");
+        var punchItem = new PunchItem(TestPlant, _project, "Punch Item X");
         _knownGuid = punchItem.Guid;
         punchItem.SetProtectedIdForTesting(_knownId);
 
@@ -34,5 +34,5 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _dut = new PunchItemRepository(_contextHelper.ContextMock.Object);
     }
 
-    protected override PunchItem GetNewEntity() => new(TestPlant, _project, "New punch");
+    protected override PunchItem GetNewEntity() => new(TestPlant, _project, "New punch item");
 }

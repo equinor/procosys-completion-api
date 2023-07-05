@@ -64,13 +64,13 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(1, result.Data.Count());
 
-        AssertPunch(result.Data.Single(), _punchItemInProjectA);
+        AssertPunchItem(result.Data.Single(), _punchItemInProjectA);
     }
 
-    private void AssertPunch(PunchItemDto punchDto, PunchItem punchItem)
+    private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)
     {
-        Assert.AreEqual(punchItem.ItemNo, punchDto.ItemNo);
+        Assert.AreEqual(punchItem.ItemNo, punchItemDto.ItemNo);
         var project = GetProjectById(punchItem.ProjectId);
-        Assert.AreEqual(project.Name, punchDto.ProjectName);
+        Assert.AreEqual(project.Name, punchItemDto.ProjectName);
     }
 }

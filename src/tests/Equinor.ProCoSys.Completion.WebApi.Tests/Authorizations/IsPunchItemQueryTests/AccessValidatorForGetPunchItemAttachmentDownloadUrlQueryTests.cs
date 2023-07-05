@@ -2,10 +2,10 @@
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchQueryTests;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemAttachmentDownloadUrlQueryTests : AccessValidatorForIIsPunchQueryTests<GetPunchItemAttachmentDownloadUrlQuery>
+public class AccessValidatorForGetPunchItemAttachmentDownloadUrlQueryTests : AccessValidatorForIIsPunchItemQueryTests<GetPunchItemAttachmentDownloadUrlQuery>
 {
     protected override GetPunchItemAttachmentDownloadUrlQuery GetPunchItemQueryWithAccessToProject()
         => new(PunchItemGuidWithAccessToProject, Guid.Empty);

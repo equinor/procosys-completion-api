@@ -61,19 +61,19 @@ public class UnitOfWorkTests
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
-        var newPunch = new PunchItem(_plant, _project, "Title");
-        dut.PunchItems.Add(newPunch);
+        var newPunchItem = new PunchItem(_plant, _project, "Title");
+        dut.PunchItems.Add(newPunchItem);
 
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, newPunch.CreatedAtUtc);
-        Assert.AreEqual(user.Id, newPunch.CreatedById);
-        Assert.AreEqual(_currentUserOid, newPunch.CreatedByOid);
-        Assert.IsNull(newPunch.ModifiedAtUtc);
-        Assert.IsNull(newPunch.ModifiedById);
-        Assert.IsNull(newPunch.ModifiedByOid);
+        Assert.AreEqual(_currentTime, newPunchItem.CreatedAtUtc);
+        Assert.AreEqual(user.Id, newPunchItem.CreatedById);
+        Assert.AreEqual(_currentUserOid, newPunchItem.CreatedByOid);
+        Assert.IsNull(newPunchItem.ModifiedAtUtc);
+        Assert.IsNull(newPunchItem.ModifiedById);
+        Assert.IsNull(newPunchItem.ModifiedByOid);
     }
 
     [TestMethod]
@@ -90,19 +90,19 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
 
-        var newPunch = new PunchItem(_plant, _project, "Title");
-        dut.PunchItems.Add(newPunch);
+        var newPunchItem = new PunchItem(_plant, _project, "Title");
+        dut.PunchItems.Add(newPunchItem);
 
         await dut.SaveChangesAsync();
 
-        newPunch.Description = "Updated";
+        newPunchItem.Description = "Updated";
             
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, newPunch.ModifiedAtUtc);
-        Assert.AreEqual(user.Id, newPunch.ModifiedById);
-        Assert.AreEqual(_currentUserOid, newPunch.ModifiedByOid);
+        Assert.AreEqual(_currentTime, newPunchItem.ModifiedAtUtc);
+        Assert.AreEqual(user.Id, newPunchItem.ModifiedById);
+        Assert.AreEqual(_currentUserOid, newPunchItem.ModifiedByOid);
     }
 }

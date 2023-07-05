@@ -2,14 +2,17 @@
 
 public class Permissions
 {
-    public const string PUNCHLISTITEM_READ = "PUNCHLISTITEM/READ";
-    public const string PUNCHLISTITEM_CREATE = "PUNCHLISTITEM/CREATE";
-    public const string PUNCHLISTITEM_DELETE = "PUNCHLISTITEM/DELETE";
-    public const string PUNCHLISTITEM_WRITE = "PUNCHLISTITEM/WRITE";
-    public const string PUNCHLISTITEM_ATTACH = "PUNCHLISTITEM/ATTACH";
-    public const string PUNCHLISTITEM_DETACH = "PUNCHLISTITEM/DETACH";
-    public const string PUNCHLISTITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
-    public const string PUNCHLISTITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
+    // These soft strings like PUNCHLISTITEM/READ come from PCS4 Authorization model... 
+    // ... We need to keep them as is. Do not change to PUNCHITEM/READ etc before the Authorization model ...
+    // ... is rewritten for PCS5
+    public const string PUNCHITEM_READ = "PUNCHLISTITEM/READ";
+    public const string PUNCHITEM_CREATE = "PUNCHLISTITEM/CREATE";
+    public const string PUNCHITEM_DELETE = "PUNCHLISTITEM/DELETE";
+    public const string PUNCHITEM_WRITE = "PUNCHLISTITEM/WRITE";
+    public const string PUNCHITEM_ATTACH = "PUNCHLISTITEM/ATTACH";
+    public const string PUNCHITEM_DETACH = "PUNCHLISTITEM/DETACH";
+    public const string PUNCHITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
+    public const string PUNCHITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
 
     public const string APPLICATION_TESTER = "APPLICATION_EXPLORER/EXECUTE";
 }

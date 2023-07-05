@@ -48,8 +48,8 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidA,
             KnownTestData.ProjectNameA,
             KnownTestData.ProjectDescriptionA);
-        var punchA = SeedPunch(dbContext, plant, project, KnownTestData.PunchA);
-        knownTestData.PunchAGuid = punchA.Guid;
+        var punchItemA = SeedPunchItem(dbContext, plant, project, KnownTestData.PunchItemA);
+        knownTestData.PunchItemAGuid = punchItemA.Guid;
 
         project = SeedProject(
             dbContext, 
@@ -57,17 +57,17 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidB,
             KnownTestData.ProjectNameB, 
             KnownTestData.ProjectDescriptionB);
-        var punchB = SeedPunch(dbContext, plant, project, KnownTestData.PunchB);
-        knownTestData.PunchBGuid = punchB.Guid;
+        var punchItemB = SeedPunchItem(dbContext, plant, project, KnownTestData.PunchItemB);
+        knownTestData.PunchItemBGuid = punchItemB.Guid;
 
-        var link = SeedLink(dbContext, nameof(PunchItem), punchA.Guid, "VG", "www.vg.no");
-        knownTestData.LinkInPunchAGuid = link.Guid;
+        var link = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
+        knownTestData.LinkInPunchItemAGuid = link.Guid;
 
-        var comment = SeedComment(dbContext, nameof(PunchItem), punchA.Guid, "Comment");
-        knownTestData.CommentInPunchAGuid = comment.Guid;
+        var comment = SeedComment(dbContext, nameof(PunchItem), punchItemA.Guid, "Comment");
+        knownTestData.CommentInPunchItemAGuid = comment.Guid;
 
-        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchA.Guid, "fil.txt");
-        knownTestData.AttachmentInPunchAGuid = attachment.Guid;
+        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchItemA.Guid, "fil.txt");
+        knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
     }
 
     private static void EnsureCurrentUserIsSeeded(CompletionContext dbContext, ICurrentUserProvider userProvider)
@@ -102,7 +102,7 @@ public static class CompletionContextExtension
         return project;
     }
 
-    private static PunchItem SeedPunch(CompletionContext dbContext, string plant, Project project, string title)
+    private static PunchItem SeedPunchItem(CompletionContext dbContext, string plant, Project project, string title)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
         var punchItem = new PunchItem(plant, project, title);

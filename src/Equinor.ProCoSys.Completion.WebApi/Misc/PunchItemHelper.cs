@@ -14,7 +14,7 @@ public class PunchItemHelper : IPunchItemHelper
 
     public PunchItemHelper(IReadOnlyContext context) => _context = context;
 
-    public async Task<Guid?> GetProjectGuidForPunchAsync(Guid punchItemGuid)
+    public async Task<Guid?> GetProjectGuidForPunchItemAsync(Guid punchItemGuid)
     {
         var project = await (from p in _context.QuerySet<Project>()
             join punchItem in _context.QuerySet<PunchItem>() on p.Id equals punchItem.ProjectId

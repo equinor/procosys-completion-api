@@ -57,14 +57,14 @@ public static class TestHelper
         var baseClassFullName = baseClass.FullName;
         Assert.IsNotNull(baseClassFullName);
 
-        var accessValidatorForIPunchQueryTestClasses =
+        var accessValidatorForIPunchItemQueryTestClasses =
             assembly.GetTypes()
                 .Where(t =>
                     IsAEquinorType(t) &&
                     IsATestClass(t) &&
                     HasBaseClassOfType(t, baseClassFullName))
                 .ToList();
-        return accessValidatorForIPunchQueryTestClasses;
+        return accessValidatorForIPunchItemQueryTestClasses;
     }
 
     public static bool IsAEquinorType(Type type)

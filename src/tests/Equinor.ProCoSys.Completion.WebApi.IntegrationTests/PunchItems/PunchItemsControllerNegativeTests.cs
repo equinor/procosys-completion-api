@@ -16,9 +16,9 @@ public class PunchItemsControllerNegativeTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchAGuid;
-        _linkGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].LinkInPunchAGuid;
-        _attachmentGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].AttachmentInPunchAGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchItemAGuid;
+        _linkGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].LinkInPunchItemAGuid;
+        _attachmentGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].AttachmentInPunchItemAGuid;
 
         await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }
@@ -67,7 +67,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItem_AsWriter_ShouldReturnNotFound_WhenUnknownPunch()
+    public async Task GetPunchItem_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess, 
@@ -141,7 +141,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
-            "Punch1",
+            "PunchItem1",
             Guid.Empty,
             HttpStatusCode.Unauthorized);
 
@@ -150,7 +150,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
-            "Punch1",
+            "PunchItem1",
             Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -160,7 +160,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.Unknown,
-            "Punch1",
+            "PunchItem1",
             Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -170,7 +170,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            "Punch1",
+            "PunchItem1",
             Guid.Empty,
             HttpStatusCode.Forbidden);
 
@@ -179,7 +179,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
-            "Punch1",
+            "PunchItem1",
             Guid.Empty,
             HttpStatusCode.Forbidden);
 
@@ -188,7 +188,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            "Punch1",
+            "PunchItem1",
             TestFactory.ProjectGuidWithAccess,
             HttpStatusCode.Forbidden);
     #endregion
@@ -932,12 +932,12 @@ public class PunchItemsControllerNegativeTests : TestBase
     [TestMethod]
     public async Task OverwriteExistingPunchItemAttachment_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
     {
-        var punchAttachmentUnderTest = await GetPunchItemAttachmentUnderTest();
+        var punchItemAttachmentUnderTest = await GetPunchItemAttachmentUnderTest();
         await PunchItemsControllerTestsHelper.OverwriteExistingPunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
-            new TestFile("T", punchAttachmentUnderTest.FileName),
+            new TestFile("T", punchItemAttachmentUnderTest.FileName),
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
     }
@@ -1020,52 +1020,52 @@ public class PunchItemsControllerNegativeTests : TestBase
 
     private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()
     {
-        var punchUnderTest = await GetPunchItemUnderTest();
+        var punchItemUnderTest = await GetPunchItemUnderTest();
         Assert.AreNotEqual(
             TestFactory.WrongButValidRowVersion,
-            punchUnderTest.RowVersion,
+            punchItemUnderTest.RowVersion,
             "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
 
-        var punchLinkUnderTest = await GetPunchItemLinkUnderTest();
+        var punchItemLinkUnderTest = await GetPunchItemLinkUnderTest();
         Assert.AreNotEqual(
             TestFactory.WrongButValidRowVersion,
-            punchLinkUnderTest.RowVersion,
+            punchItemLinkUnderTest.RowVersion,
             "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
 
-        var punchAttachmentUnderTest = await GetPunchItemAttachmentUnderTest();
+        var punchItemAttachmentUnderTest = await GetPunchItemAttachmentUnderTest();
 
         Assert.AreNotEqual(
             TestFactory.WrongButValidRowVersion,
-            punchAttachmentUnderTest.RowVersion,
+            punchItemAttachmentUnderTest.RowVersion,
             "Incorrect test data. TestFactory.WrongButValidRowVersion need do differ actual RowVersion");
     }
 
     private async Task<AttachmentDto> GetPunchItemAttachmentUnderTest()
     {
-        var punchAttachmentsUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+        var punchItemAttachmentsUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest);
-        var punchAttachmentUnderTest = punchAttachmentsUnderTest.Single(p => p.Guid == _attachmentGuidUnderTest);
+        var punchAttachmentUnderTest = punchItemAttachmentsUnderTest.Single(p => p.Guid == _attachmentGuidUnderTest);
         return punchAttachmentUnderTest;
     }
 
     private async Task<LinkDto> GetPunchItemLinkUnderTest()
     {
-        var punchLinksUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
+        var punchItemLinksUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest);
-        var punchLinkUnderTest = punchLinksUnderTest.Single(p => p.Guid == _linkGuidUnderTest);
+        var punchLinkUnderTest = punchItemLinksUnderTest.Single(p => p.Guid == _linkGuidUnderTest);
         return punchLinkUnderTest;
     }
 
     private async Task<PunchItemDetailsDto> GetPunchItemUnderTest()
     {
-        var punchUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemAsync(
+        var punchItemUnderTest = await PunchItemsControllerTestsHelper.GetPunchItemAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest);
-        return punchUnderTest;
+        return punchItemUnderTest;
     }
 }
