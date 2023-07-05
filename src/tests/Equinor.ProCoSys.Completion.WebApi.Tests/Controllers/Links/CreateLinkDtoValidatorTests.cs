@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Links;
 
 [TestClass]
 public class CreateLinkDtoValidatorTests
@@ -13,7 +13,7 @@ public class CreateLinkDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreateLinkDto("New title","U" );
+        var dto = new CreateLinkDto("New title", "U");
 
         // Act
         var result = await _dut.ValidateAsync(dto);

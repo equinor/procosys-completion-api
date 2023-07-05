@@ -1,7 +1,7 @@
-﻿using Equinor.ProCoSys.Completion.WebApi.Controllers;
+﻿using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 
 [TestClass]
 public class UploadNewAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<UploadNewAttachmentDto>

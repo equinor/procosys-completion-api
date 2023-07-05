@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 
 public record UpdateLinkDto(
     [Required]

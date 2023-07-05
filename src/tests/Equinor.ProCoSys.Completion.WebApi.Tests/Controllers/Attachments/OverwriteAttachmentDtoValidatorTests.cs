@@ -1,16 +1,17 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 
 [TestClass]
 public class OverwriteAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<OverwriteAttachmentDto>
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private Mock<IRowVersionValidator> _rowVersionValidatorMock;
-    
+
     protected override void SetupDut()
     {
         _rowVersionValidatorMock = new Mock<IRowVersionValidator>();

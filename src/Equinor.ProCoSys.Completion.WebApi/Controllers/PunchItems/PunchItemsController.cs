@@ -29,6 +29,9 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
 using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using ServiceResult;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
@@ -77,6 +80,7 @@ public class PunchItemsController : ControllerBase
         string plant,
         [FromBody] CreatePunchItemDto dto)
     {
+        
         var result = await _mediator.Send(new CreatePunchItemCommand(dto.ItemNo, dto.ProjectGuid));
         return this.FromResult(result);
     }

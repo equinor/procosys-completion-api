@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
-using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 

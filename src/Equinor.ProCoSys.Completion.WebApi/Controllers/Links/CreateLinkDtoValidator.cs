@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 
 public class CreateLinkDtoValidator : AbstractValidator<CreateLinkDto>
 {

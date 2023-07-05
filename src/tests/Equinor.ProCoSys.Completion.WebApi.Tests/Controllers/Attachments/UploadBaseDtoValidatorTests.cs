@@ -2,14 +2,14 @@
 using System.Threading.Tasks;
 using System.Threading;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 
 [TestClass]
 public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, new()
@@ -31,7 +31,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
         _blobStorageOptionsMock
             .Setup(x => x.Value)
             .Returns(_blobStorageOptions);
-        
+
         SetupDut();
     }
 
@@ -93,7 +93,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
     {
         var uploadAttachmentDto = new T
         {
-            File = new TestableFormFile("picture.gif", (_blobStorageOptions.MaxSizeMb * 1024 * 1024) + 1)
+            File = new TestableFormFile("picture.gif", _blobStorageOptions.MaxSizeMb * 1024 * 1024 + 1)
         };
 
         var result = _dut.Validate(uploadAttachmentDto);

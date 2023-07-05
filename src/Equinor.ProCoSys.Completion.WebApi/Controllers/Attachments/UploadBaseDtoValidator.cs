@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
 public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBaseDto
 {
@@ -19,7 +19,7 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
 
         RuleFor(x => x.File)
             .NotNull();
-            
+
         RuleFor(x => x.File.FileName)
             .NotEmpty()
             .WithMessage("File name not given!")
@@ -27,7 +27,7 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
             .WithMessage($"File name to long! Max {Attachment.FileNameLengthMax} characters")
             .Must(BeAValidFile)
             .WithMessage(x => $"File {x.File.FileName} is not a valid file for upload!");
-            
+
         RuleFor(x => x.File.Length)
             .Must(BeSmallerThanMaxSize)
             .WithMessage($"Maximum file size is {blobStorageOptions.Value.MaxSizeMb}MB!");
@@ -37,7 +37,7 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
             var suffix = Path.GetExtension(fileName?.ToLower());
             return suffix is not null && !blobStorageOptions.Value.BlockedFileSuffixes.Contains(suffix) && fileName?.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
         }
-            
+
         bool BeSmallerThanMaxSize(long fileSizeInBytes)
         {
             var maxSizeInBytes = blobStorageOptions.Value.MaxSizeMb * 1024 * 1024;

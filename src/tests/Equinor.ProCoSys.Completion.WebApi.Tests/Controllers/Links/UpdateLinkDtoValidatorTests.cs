@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Links;
 
 [TestClass]
 public class UpdateLinkDtoValidatorTests
@@ -55,8 +56,8 @@ public class UpdateLinkDtoValidatorTests
     {
         // Arrange
         var dto = new UpdateLinkDto(
-            new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1), 
-            "U", 
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax + 1),
+            "U",
             _rowVersion);
 
         // Act
@@ -89,7 +90,7 @@ public class UpdateLinkDtoValidatorTests
         // Arrange
         var dto = new UpdateLinkDto(
             "New title",
-            new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1), 
+            new string('x', Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax + 1),
             _rowVersion);
 
         // Act

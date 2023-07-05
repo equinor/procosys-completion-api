@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Comments;
 
 [TestClass]
 public class CreateCommentDtoValidatorTests
