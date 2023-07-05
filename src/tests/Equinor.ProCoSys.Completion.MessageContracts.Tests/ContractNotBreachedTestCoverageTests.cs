@@ -9,18 +9,18 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
 /// <summary>
 /// This unit test don't test any business logic.
-/// Just a helper for developer to remember to add ContractTestBase Unit Test when implementing a new IEventMessage
+/// Just a helper for developer to remember to add ContractTestBase Unit Test when implementing a new IIntegrationEvent
 /// </summary>
 [TestClass]
 public class ContractNotBreachedTestCoverageTests
 {
     [TestMethod]
-    public void Each_IEventMessage_ShouldHaveUnitTest_ForContractBreach()
+    public void Each_IIntegrationEvent_ShouldHaveUnitTest_ForContractBreach()
     {
         var interfaces =
             TestHelper.GetInterfacesImplementingInterface(
                 "Equinor.ProCoSys.Completion.MessageContracts",
-                typeof(IEventMessage));
+                typeof(IIntegrationEvent));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(Assembly.GetExecutingAssembly(), typeof(ContractTestBase<>));
 

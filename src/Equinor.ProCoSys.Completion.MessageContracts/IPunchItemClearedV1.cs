@@ -2,7 +2,7 @@
 
 namespace Equinor.ProCoSys.Completion.MessageContracts;
 
-public interface IPunchItemClearedV1 : IHaveDisplayName, IEventMessage
+public interface IPunchItemClearedV1 : IHaveDisplayName, IIntegrationEvent
 {
     public Guid Guid { get; init; }
     public Guid ModifiedByOid { get; init; }

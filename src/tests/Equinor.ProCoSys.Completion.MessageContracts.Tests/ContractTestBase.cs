@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
-public abstract class ContractTestBase<TContract> where TContract: IEventMessage
+public abstract class ContractTestBase<TContract> where TContract: IIntegrationEvent
 {
     private const string ExpectedNameSpace = "Equinor.ProCoSys.Completion.MessageContracts";
 
