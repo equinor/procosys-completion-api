@@ -7,9 +7,9 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchIt
 public record PunchItemCreatedIntegrationEvent
 (
     string DisplayName,
-    Guid ProjectGuid ,
-    Guid Guid ,
-    string ItemNo ,
+    Guid ProjectGuid,
+    Guid Guid,
+    string ItemNo,
     Guid CreatedByOid,
     DateTime CreatedAtUtc
 ) : IPunchItemCreatedV1
