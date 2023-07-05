@@ -60,19 +60,19 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasForeignKey(x => x.VerifiedById)
             .OnDelete(DeleteBehavior.NoAction);
 
-        // all 3 ClearedXXX fields must either be set or not set
+        // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_cleared",
                 $"({nameof(PunchItem.ClearedAtUtc)} is null and {nameof(PunchItem.ClearedById)} is null) or " +
                 $"({nameof(PunchItem.ClearedAtUtc)} is not null and {nameof(PunchItem.ClearedById)} is not null)"));
 
-        // all 3 VerifiedXXX fields must either be set or not set
+        // both VerifiedAtUtc and VerifiedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_verified",
                 $"({nameof(PunchItem.VerifiedAtUtc)} is null and {nameof(PunchItem.VerifiedById)} is null) or " +
                 $"({nameof(PunchItem.VerifiedAtUtc)} is not null and {nameof(PunchItem.VerifiedById)} is not null)"));
 
-        // all 3 RejectedXXX fields must either be set or not set
+        // both RejectedAtUtc and RejectedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_rejected",
                 $"({nameof(PunchItem.RejectedAtUtc)} is null and {nameof(PunchItem.RejectedById)} is null) or " +
