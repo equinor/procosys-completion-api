@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
 
-public class AttachmentDeletedEventHandler : INotificationHandler<AttachmentDeletedEvent>
+public class AttachmentDeletedEventHandler : INotificationHandler<AttachmentDeletedDomainEvent>
 {
-    public Task Handle(AttachmentDeletedEvent notification, CancellationToken cancellationToken)
+    public Task Handle(AttachmentDeletedDomainEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Attachment.SourceGuid;
 

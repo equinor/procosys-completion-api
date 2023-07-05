@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using MediatR;
 using ServiceResult;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
@@ -45,7 +45,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var punchItem = new PunchItem(_plantProvider.Plant, project, request.ItemNo);
         _punchItemRepository.Add(punchItem);
-        punchItem.AddDomainEvent(new PunchItemCreatedEvent(punchItem, request.ProjectGuid));
+        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, request.ProjectGuid));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 
@@ -39,7 +39,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
         // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
         punchItem.SetRowVersion(request.RowVersion);
         _punchItemRepository.Remove(punchItem);
-        punchItem.AddDomainEvent(new PunchItemDeletedEvent(punchItem));
+        punchItem.AddDomainEvent(new PunchItemDeletedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

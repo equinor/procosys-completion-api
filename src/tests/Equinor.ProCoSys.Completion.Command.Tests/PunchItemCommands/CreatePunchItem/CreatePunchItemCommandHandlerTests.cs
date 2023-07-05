@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
@@ -105,6 +105,6 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_punchItemAddedToRepository.DomainEvents.First(), typeof(PunchItemCreatedEvent));
+        Assert.IsInstanceOfType(_punchItemAddedToRepository.DomainEvents.First(), typeof(PunchItemCreatedDomainEvent));
     }
 }

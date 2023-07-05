@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -81,6 +81,6 @@ public class UpdatePunchItemCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUpdatedEvent));
+        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUpdatedDomainEvent));
     }
 }

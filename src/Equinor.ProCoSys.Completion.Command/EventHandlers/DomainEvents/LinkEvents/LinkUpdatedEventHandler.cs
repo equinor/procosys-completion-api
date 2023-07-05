@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents;
 
-public class LinkUpdatedEventHandler : INotificationHandler<LinkUpdatedEvent>
+public class LinkUpdatedEventHandler : INotificationHandler<LinkUpdatedDomainEvent>
 {
-    public Task Handle(LinkUpdatedEvent notification, CancellationToken cancellationToken)
+    public Task Handle(LinkUpdatedDomainEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.Link.SourceGuid;
 

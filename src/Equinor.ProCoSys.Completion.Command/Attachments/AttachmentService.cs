@@ -6,7 +6,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -57,7 +57,7 @@ public class AttachmentService : IAttachmentService
             _plantProvider.Plant,
             fileName);
         _attachmentRepository.Add(attachment);
-        attachment.AddDomainEvent(new NewAttachmentUploadedEvent(attachment));
+        attachment.AddDomainEvent(new NewAttachmentUploadedDomainEvent(attachment));
 
         await UploadAsync(attachment, content, false, cancellationToken);
 
@@ -84,7 +84,7 @@ public class AttachmentService : IAttachmentService
         attachment.IncreaseRevisionNumber();
 
         attachment.SetRowVersion(rowVersion);
-        attachment.AddDomainEvent(new ExistingAttachmentUploadedAndOverwrittenEvent(attachment));
+        attachment.AddDomainEvent(new ExistingAttachmentUploadedAndOverwrittenDomainEvent(attachment));
         
         await UploadAsync(attachment, content, true, cancellationToken);
 
@@ -122,7 +122,7 @@ public class AttachmentService : IAttachmentService
         // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
         attachment.SetRowVersion(rowVersion);
         _attachmentRepository.Remove(attachment);
-        attachment.AddDomainEvent(new AttachmentDeletedEvent(attachment));
+        attachment.AddDomainEvent(new AttachmentDeletedDomainEvent(attachment));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

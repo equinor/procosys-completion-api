@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 
-public class PunchItemUpdatedEventHandler : INotificationHandler<PunchItemUpdatedEvent>
+public class PunchItemUpdatedEventHandler : INotificationHandler<PunchItemUpdatedDomainEvent>
 {
-    public Task Handle(PunchItemUpdatedEvent notification, CancellationToken cancellationToken)
+    public Task Handle(PunchItemUpdatedDomainEvent notification, CancellationToken cancellationToken)
     {
         var sourceGuid = notification.PunchItem.Guid;
 
