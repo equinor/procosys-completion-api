@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Events\PostSave\**" />
+    <EmbeddedResource Remove="Events\PostSave\**" />
+    <None Remove="Events\PostSave\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Equinor.ProCoSys.Common" Version="1.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
+  </ItemGroup>
+
+</Project>
