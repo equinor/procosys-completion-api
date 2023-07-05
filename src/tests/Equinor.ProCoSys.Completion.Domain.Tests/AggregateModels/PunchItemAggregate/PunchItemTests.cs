@@ -67,7 +67,8 @@ public class PunchItemTests : IModificationAuditableTests
         // Arrange
         Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
         Assert.IsFalse(_dut.ClearedById.HasValue);
-
+        Assert.IsTrue(_dut.IsReadyToBeCleared);
+        
         // Act
         _dut.Clear(_person);
 
@@ -80,9 +81,11 @@ public class PunchItemTests : IModificationAuditableTests
     public void Clear_ShouldSetRejectedFieldsToNull()
     {
         // Arrange
+        _dut.Clear(_person);
         _dut.Reject(_person);
         Assert.IsTrue(_dut.RejectedAtUtc.HasValue);
         Assert.IsTrue(_dut.RejectedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeCleared);
 
         // Act
         _dut.Clear(_person);
@@ -91,6 +94,17 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsFalse(_dut.RejectedAtUtc.HasValue);
         Assert.IsFalse(_dut.RejectedById.HasValue);
     }
+
+    [TestMethod]
+    public void Clear_ShouldThrowException_WhenNotReadyToBeCleared()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsFalse(_dut.IsReadyToBeCleared);
+
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.Clear(_person));
+    }
     #endregion
 
     #region Reject
@@ -98,8 +112,10 @@ public class PunchItemTests : IModificationAuditableTests
     public void Reject_ShouldSetRejectedFields()
     {
         // Arrange
+        _dut.Clear(_person);
         Assert.IsFalse(_dut.RejectedAtUtc.HasValue);
         Assert.IsFalse(_dut.RejectedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeRejected);
 
         // Act
         _dut.Reject(_person);
@@ -116,6 +132,7 @@ public class PunchItemTests : IModificationAuditableTests
         _dut.Clear(_person);
         Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
         Assert.IsTrue(_dut.ClearedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeRejected);
 
         // Act
         _dut.Reject(_person);
@@ -124,6 +141,16 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
         Assert.IsFalse(_dut.ClearedById.HasValue);
     }
+
+    [TestMethod]
+    public void Reject_ShouldThrowException_WhenNotReadyToBeRejected()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.IsReadyToBeRejected);
+
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.Reject(_person));
+    }
     #endregion
 
     #region Verify
@@ -131,8 +158,10 @@ public class PunchItemTests : IModificationAuditableTests
     public void Verify_ShouldSetVerifiedFields()
     {
         // Arrange
+        _dut.Clear(_person);
         Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
         Assert.IsFalse(_dut.VerifiedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeVerified);
 
         // Act
         _dut.Verify(_person);
@@ -140,6 +169,240 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.AreEqual(_now, _dut.VerifiedAtUtc);
         Assert.AreEqual(_person.Id, _dut.VerifiedById);
+    }
+
+    [TestMethod]
+    public void Verify_ShouldThrowException_WhenNotReadyToBeVerified()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.IsReadyToBeVerified);
+
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.Verify(_person));
+    }
+    #endregion
+
+    #region Unclear
+    [TestMethod]
+    public void Unclear_ShouldSetClearedFieldsToNull()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+        Assert.IsTrue(_dut.ClearedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeUncleared);
+
+        // Act
+        _dut.Unclear();
+
+        // Assert
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+        Assert.IsFalse(_dut.ClearedById.HasValue);
+    }
+
+    [TestMethod]
+    public void Unclear_ShouldThrowException_WhenNotReadyToBeUncleared()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.IsReadyToBeUncleared);
+
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.Unclear());
+    }
+    #endregion
+
+    #region Unverify
+    [TestMethod]
+    public void Unverify_ShouldSetVerifiedFields()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        _dut.Verify(_person);
+        Assert.IsTrue(_dut.VerifiedAtUtc.HasValue);
+        Assert.IsTrue(_dut.VerifiedById.HasValue);
+        Assert.IsTrue(_dut.IsReadyToBeUnverified);
+
+        // Act
+        _dut.Unverify();
+
+        // Assert
+        Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
+        Assert.IsFalse(_dut.VerifiedById.HasValue);
+    }
+
+    [TestMethod]
+    public void Unverify_ShouldThrowException_WhenNotReadyToBeUnverified()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.IsReadyToBeUnverified);
+
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.Unverify());
+    }
+    #endregion
+
+    #region IsReadyToBeCleared
+    [TestMethod]
+    public void IsReadyToBeCleared_ShouldBeTrue_WhenNotCleared()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeCleared;
+
+        // Assert
+        Assert.IsTrue(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeCleared_ShouldBeFalse_WhenCleared()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeCleared;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+    #endregion
+
+    #region IsReadyToBeRejected
+    [TestMethod]
+    public void IsReadyToBeRejected_ShouldBeFalse_WhenNotCleared()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeRejected;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeRejected_ShouldBeTrue_WhenCleared()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeRejected;
+
+        // Assert
+        Assert.IsTrue(b);
+    }
+    #endregion
+
+    #region IsReadyToBeVerified
+    [TestMethod]
+    public void IsReadyToBeVerified_ShouldBeFalse_WhenNotCleared()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeVerified;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeVerified_ShouldBeTrue_WhenCleared()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeVerified;
+
+        // Assert
+        Assert.IsTrue(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeVerified_ShouldBeFalse_WhenVerified()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        _dut.Verify(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+        Assert.IsTrue(_dut.VerifiedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeVerified;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+    #endregion
+
+    #region IsReadyToBeUncleared
+    [TestMethod]
+    public void IsReadyToBeUncleared_ShouldBeFalse_WhenNotCleared()
+    {
+        // Arrange
+        Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeUncleared;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeUncleared_ShouldBeTrue_WhenCleared()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeUncleared;
+
+        // Assert
+        Assert.IsTrue(b);
+    }
+    #endregion
+
+    #region IsReadyToBeUnverified
+    [TestMethod]
+    public void IsReadyToBeUnverified_ShouldBeFalse_WhenClearedButNotVerified()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+        Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeUnverified;
+
+        // Assert
+        Assert.IsFalse(b);
+    }
+
+    [TestMethod]
+    public void IsReadyToBeUnverified_ShouldBeTrue_WhenVerified()
+    {
+        // Arrange
+        _dut.Clear(_person);
+        _dut.Verify(_person);
+        Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
+        Assert.IsTrue(_dut.VerifiedAtUtc.HasValue);
+
+        // Act
+        var b = _dut.IsReadyToBeUnverified;
+
+        // Assert
+        Assert.IsTrue(b);
     }
     #endregion
 }

@@ -58,8 +58,18 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public DateTime? VerifiedAtUtc { get; private set; }
     public int? VerifiedById { get; private set; }
 
+    public bool IsReadyToBeCleared => !ClearedAtUtc.HasValue;
+    public bool IsReadyToBeRejected => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
+    public bool IsReadyToBeVerified => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
+    public bool IsReadyToBeUncleared => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
+    public bool IsReadyToBeUnverified => VerifiedAtUtc.HasValue;
+
     public void Clear(Person clearedBy)
     {
+        if (!IsReadyToBeCleared)
+        {
+            throw new Exception($"{nameof(PunchItem)} can not be cleared");
+        }
         ClearedAtUtc = TimeService.UtcNow;
         ClearedById = clearedBy.Id;
         RejectedAtUtc = null;
@@ -68,6 +78,10 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
     public void Reject(Person rejectedBy)
     {
+        if (!IsReadyToBeRejected)
+        {
+            throw new Exception($"{nameof(PunchItem)} can not be rejected");
+        }
         RejectedAtUtc = TimeService.UtcNow;
         RejectedById = rejectedBy.Id;
         ClearedAtUtc = null;
@@ -76,8 +90,32 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
     public void Verify(Person verifiedBy)
     {
+        if (!IsReadyToBeVerified)
+        {
+            throw new Exception($"{nameof(PunchItem)} can not be verified");
+        }
         VerifiedAtUtc = TimeService.UtcNow;
         VerifiedById = verifiedBy.Id;
+    }
+
+    public void Unclear()
+    {
+        if (!IsReadyToBeUncleared)
+        {
+            throw new Exception($"{nameof(PunchItem)} can not be uncleared");
+        }
+        ClearedAtUtc = null;
+        ClearedById = null;
+    }
+
+    public void Unverify()
+    {
+        if (!IsReadyToBeUnverified)
+        {
+            throw new Exception($"{nameof(PunchItem)} can not be unverified");
+        }
+        VerifiedAtUtc = null;
+        VerifiedById = null;
     }
 
     public void Update(string? description) => Description = description;
