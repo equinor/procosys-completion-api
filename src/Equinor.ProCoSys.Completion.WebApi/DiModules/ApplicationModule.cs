@@ -25,10 +25,10 @@ using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -58,7 +58,7 @@ public static class ApplicationModule
                 o.UseBusOutbox();
             });
             
-            x.UsingAzureServiceBus((context,cfg) =>
+            x.UsingAzureServiceBus((_,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
