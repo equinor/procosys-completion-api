@@ -21,8 +21,6 @@ public class ClearPunchItemCommandValidatorTests
         _punchItemValidatorMock = new Mock<IPunchItemValidator>();
         _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
             .ReturnsAsync(true);
-        _punchItemValidatorMock.Setup(p => p.IsReadyToBeClearedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
 
         _dut = new ClearPunchItemCommandValidator(_punchItemValidatorMock.Object);
     }
@@ -86,11 +84,11 @@ public class ClearPunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemIsNotReadyToBeCleared()
+    public async Task Validate_ShouldFail_When_PunchItemIsAlreadyCleared()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.IsReadyToBeClearedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.Setup(x => x.IsClearedAsync(_command.PunchItemGuid, default))
+            .ReturnsAsync(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -98,6 +96,6 @@ public class ClearPunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item can not be cleared!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is already cleared!"));
     }
 }

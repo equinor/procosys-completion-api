@@ -25,27 +25,27 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected Person _currentPerson;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
-    protected IPlantProvider _plantProvider;
-    protected ICurrentUserProvider _currentUserProvider;
-    protected IEventDispatcher _eventDispatcher;
+    protected IPlantProvider _plantProviderMockObject;
+    protected ICurrentUserProvider _currentUserProviderMockObject;
+    protected IEventDispatcher _eventDispatcherMockObject;
 
     [TestInitialize]
     public void SetupBase()
     {
-        _plantProvider = _plantProviderMock.Object;
+        _plantProviderMockObject = _plantProviderMock.Object;
 
         var currentUserProviderMock = new Mock<ICurrentUserProvider>();
         currentUserProviderMock.Setup(x => x.GetCurrentUserOid()).Returns(CurrentUserOid);
-        _currentUserProvider = currentUserProviderMock.Object;
+        _currentUserProviderMockObject = currentUserProviderMock.Object;
 
-        var eventDispatcher = new Mock<IEventDispatcher>();
-        _eventDispatcher = eventDispatcher.Object;
+        var eventDispatcherMock = new Mock<IEventDispatcher>();
+        _eventDispatcherMockObject = eventDispatcherMock.Object;
 
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
             
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
@@ -69,7 +69,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
     protected Project GetProjectById(int projectId)
     {
-        using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         return context.Projects.Single(x => x.Id == projectId);
     }
 

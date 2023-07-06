@@ -27,7 +27,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         _sourceGuid = Guid.NewGuid();
         _createdAttachment = new Attachment("X", _sourceGuid, TestPlantA, "t1.txt");
@@ -57,7 +57,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetAllForSourceAsync_ShouldReturnCorrect_CreatedDtos()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
 
         // Act
@@ -88,7 +88,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         var uri = new Uri("http://blah.blah.com");
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
         var p = _createdAttachment.GetFullBlobPath();
         _azureBlobServiceMock.Setup(a => a.GetDownloadSasUri(_blobContainer, p, It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
@@ -106,7 +106,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetDownloadUriAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
 
         // Act

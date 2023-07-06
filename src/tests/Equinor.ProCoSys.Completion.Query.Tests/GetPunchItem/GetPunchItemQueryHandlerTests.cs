@@ -19,7 +19,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         _createdPunchItem = new PunchItem(TestPlantA, _projectA, "created");
         _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "modified");
@@ -36,9 +36,9 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnNotFound_WhenPunchItemNotFound()
+    public async Task Handle_ShouldReturnNotFound_WhenPunchItemNotFound()
     {
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemQuery(Guid.Empty);
         var dut = new GetPunchItemQueryHandler(context);
@@ -53,10 +53,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectCreatedPunchItem()
+    public async Task Handle_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
             
         var query = new GetPunchItemQuery(_createdPunchItem.Guid);
         var dut = new GetPunchItemQueryHandler(context);
@@ -78,10 +78,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectModifiedPunchItem()
+    public async Task Handle_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemQuery(_modifiedPunchItem.Guid);
         var dut = new GetPunchItemQueryHandler(context);
@@ -107,10 +107,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectClearerPunchItem()
+    public async Task Handle_ShouldReturnCorrectClearerPunchItem_WhenPunchItemCleared()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemQuery(_clearedPunchItem.Guid);
         var dut = new GetPunchItemQueryHandler(context);

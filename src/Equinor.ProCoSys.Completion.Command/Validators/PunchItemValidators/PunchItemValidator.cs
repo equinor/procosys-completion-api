@@ -41,12 +41,12 @@ public class PunchItemValidator : IPunchItemValidator
         return project is not null && project.IsClosed;
     }
 
-    public async Task<bool> IsReadyToBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    public async Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var punchItem = await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid
             select pi).SingleOrDefaultAsync(cancellationToken);
 
-        return punchItem != null && punchItem.IsReadyToBeCleared;
+        return punchItem != null && punchItem.ClearedAtUtc.HasValue;
     }
 }
