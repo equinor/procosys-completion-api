@@ -43,10 +43,23 @@ public class PunchItemValidator : IPunchItemValidator
 
     public async Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
+        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+
+        return punchItem?.ClearedAtUtc != null;
+    }
+
+    public async Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    {
+        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+
+        return punchItem?.VerifiedAtUtc != null;
+    }
+
+    private async Task<PunchItem?> GetPunchItem(Guid punchItemGuid, CancellationToken cancellationToken)
+    {
         var punchItem = await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid
             select pi).SingleOrDefaultAsync(cancellationToken);
-
-        return punchItem != null && punchItem.ClearedAtUtc.HasValue;
+        return punchItem;
     }
 }
