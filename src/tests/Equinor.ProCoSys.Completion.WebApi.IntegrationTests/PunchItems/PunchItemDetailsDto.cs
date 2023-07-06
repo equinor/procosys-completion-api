@@ -18,4 +18,8 @@ public record PunchItemDetailsDto(
     [CanBeNull]
     PersonDto ClearedBy,
     DateTime? ClearedAtUtc,
+    bool IsReadyToBeVerified,
+    [CanBeNull]
+    PersonDto VerifiedBy,
+    DateTime? VerifiedAtUtc,
     string RowVersion);
