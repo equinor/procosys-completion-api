@@ -14,4 +14,7 @@ public record PunchItemDetailsDto(
     bool IsReadyToBeCleared,
     PersonDto? ClearedBy,
     DateTime? ClearedAtUtc,
+    bool IsReadyToBeVerified,
+    PersonDto? VerifiedBy,
+    DateTime? VerifiedAtUtc,
     string RowVersion);
