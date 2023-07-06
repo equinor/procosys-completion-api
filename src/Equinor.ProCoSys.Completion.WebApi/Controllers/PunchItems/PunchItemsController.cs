@@ -1,7 +1,4 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
@@ -19,20 +16,24 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPun
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.Comments;
+using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
-using Equinor.ProCoSys.Completion.Query.Links;
-using Equinor.ProCoSys.Completion.WebApi.Middleware;
-using ServiceResult;
-using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
+using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using ServiceResult;
+using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
@@ -113,6 +114,21 @@ public class PunchItemsController : ControllerBase
     {
         var result = await _mediator.Send(
             new ClearPunchItemCommand(guid, dto.RowVersion));
+        return this.FromResult(result);
+    }
+
+    [AuthorizeAny(Permissions.PUNCHITEM_VERIFY, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Verify")]
+    public async Task<ActionResult<string>> VerifyPunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        [FromRoute] Guid guid,
+        [FromBody] RowVersionDto dto)
+    {
+        var result = await _mediator.Send(
+            new VerifyPunchItemCommand(guid, dto.RowVersion));
         return this.FromResult(result);
     }
 

@@ -26,7 +26,7 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
     {
         var punchItem = new PunchItem("X", new Project("X", Guid.NewGuid(), "Pro", "Desc"), "F");
         punchItem.Clear(_person);
-        //punchItem.Verify(_person);
+        punchItem.Verify(_person);
         punchItem.SetModified(_person);
 
         _punchItemVerifiedEvent = new PunchItemVerifiedDomainEvent(punchItem, _person.Guid);
@@ -62,7 +62,7 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual("Punch item cleared", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual("Punch item verified", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.VerifiedAtUtc, _publishedIntegrationEvent.VerifiedAtUtc);
         Assert.AreEqual(_person.Guid, _publishedIntegrationEvent.VerifiedByOid);
