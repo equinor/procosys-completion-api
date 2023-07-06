@@ -14,15 +14,27 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
     private PunchItem _punchItemInOpenProject;
     private PunchItem _punchItemInClosedProject;
+    private PunchItem _notClearedPunchItem;
+    private PunchItem _clearedButNotVerifiedPunchItem;
+    private PunchItem _verifiedPunchItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, "x1");
         _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2");
+        _notClearedPunchItem = _punchItemInOpenProject;
+        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x3");
+        _clearedButNotVerifiedPunchItem.Clear(_currentPerson);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x4");
+        _verifiedPunchItem.Clear(_currentPerson);
+        _verifiedPunchItem.Verify(_currentPerson);
+
         context.PunchItems.Add(_punchItemInOpenProject);
         context.PunchItems.Add(_punchItemInClosedProject);
+        context.PunchItems.Add(_clearedButNotVerifiedPunchItem);
+        context.PunchItems.Add(_verifiedPunchItem);
 
         context.SaveChangesAsync().Wait();
     }
@@ -32,7 +44,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task Exists_ShouldReturnTrue_WhenPunchItemExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);            
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);            
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -46,7 +58,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task Exists_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);    
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);    
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -62,7 +74,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnTrue_WhenPunchItemIsInClosedProject()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -76,7 +88,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemIsInOpenProject()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -90,7 +102,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -107,7 +119,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnTrue_WhenPunchItemOwnedByVoidedTag()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -121,7 +133,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemOwnedByNonvoidedTag()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -135,7 +147,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PunchItemValidator(context);
 
         // Act
@@ -143,6 +155,108 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
         // Assert
         //Assert.IsFalse(result);
+    }
+    #endregion
+
+    #region IsCleared
+    [TestMethod]
+    public async Task IsCleared_ShouldReturnFalse_WhenNotCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsClearedAsync(_notClearedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task IsCleared_ShouldReturnTrue_WhenCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsClearedAsync(_clearedButNotVerifiedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task IsCleared_ShouldReturnFalse_WhenPunchNotExist()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsClearedAsync(Guid.Empty, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+    #endregion
+
+    #region IsVerified
+    [TestMethod]
+    public async Task IsVerified_ShouldReturnFalse_WhenNotCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsVerifiedAsync(_notClearedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task IsVerified_ShouldReturnFalse_WhenClearedButNotVerified()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsVerifiedAsync(_clearedButNotVerifiedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task IsVerified_ShouldReturnTrue_WhenVerified()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsVerifiedAsync(_verifiedPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task IsVerified_ShouldReturnFalse_WhenPunchNotExist()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context);
+
+        // Act
+        var result = await dut.IsVerifiedAsync(Guid.Empty, default);
+
+        // Assert
+        Assert.IsFalse(result);
     }
     #endregion
 }

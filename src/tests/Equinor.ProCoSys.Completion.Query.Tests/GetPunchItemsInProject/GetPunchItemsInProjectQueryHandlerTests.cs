@@ -19,7 +19,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, "A");
         _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, "B");
@@ -33,7 +33,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnEmptyList_IfNoneFound()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemsInProjectQuery(Guid.Empty);
         var dut = new GetPunchItemsInProjectQueryHandler(context);
@@ -51,7 +51,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectPunchItems()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemsInProjectQuery(_projectA.Guid);
         var dut = new GetPunchItemsInProjectQueryHandler(context);

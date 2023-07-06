@@ -25,14 +25,15 @@ public class Seeder : IHostedService
         {
             var plantProvider = new SeedingPlantProvider("PCS$SEED");
 
+            var userProvider = new SeederUserProvider();
             using (var dbContext = new CompletionContext(
                        scope.ServiceProvider.GetRequiredService<DbContextOptions<CompletionContext>>(),
                        plantProvider,
                        scope.ServiceProvider.GetRequiredService<IEventDispatcher>(),
-                       new SeederUserProvider()))
+                       userProvider))
             {
                 // If the seeder user exists in the database, it's already been seeded. Don't seed again.
-                if (await dbContext.Persons.AnyAsync(p => p.Guid == s_seederUser.Guid))
+                if (await dbContext.Persons.AnyAsync(p => p.Guid == s_seederUser.Guid, cancellationToken: cancellationToken))
                 {
                     return;
                 }
@@ -44,7 +45,7 @@ public class Seeder : IHostedService
                 dbContext.Persons.Add(s_seederUser);
                 await dbContext.SaveChangesAsync(cancellationToken);
 
-                var personRepository = new PersonRepository(dbContext);
+                var personRepository = new PersonRepository(dbContext, userProvider);
 
                 personRepository.AddUsers(250);
                 await dbContext.SaveChangesAsync(cancellationToken);

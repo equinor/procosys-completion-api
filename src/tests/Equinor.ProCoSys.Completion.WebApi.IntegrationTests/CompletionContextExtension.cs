@@ -72,7 +72,7 @@ public static class CompletionContextExtension
 
     private static void EnsureCurrentUserIsSeeded(CompletionContext dbContext, ICurrentUserProvider userProvider)
     {
-        var personRepository = new PersonRepository(dbContext);
+        var personRepository = new PersonRepository(dbContext, userProvider);
         var seeder = personRepository.GetByGuidAsync(userProvider.GetCurrentUserOid()).Result;
         if (seeder is null)
         {
@@ -82,7 +82,7 @@ public static class CompletionContextExtension
 
     private static void SeedCurrentUserAsPerson(CompletionContext dbContext, ICurrentUserProvider userProvider)
     {
-        var personRepository = new PersonRepository(dbContext);
+        var personRepository = new PersonRepository(dbContext, userProvider);
         var person = new Person(userProvider.GetCurrentUserOid(), "Siri", "Seed", "SSEED", "siri@pcs.com");
         personRepository.Add(person);
         dbContext.SaveChangesAsync().Wait();

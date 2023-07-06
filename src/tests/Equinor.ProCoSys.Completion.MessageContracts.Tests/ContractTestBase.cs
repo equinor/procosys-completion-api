@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.MessageContracts;
+namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
-public abstract class ContractTestBase<TContract> where TContract: IEventMessage
+public abstract class ContractTestBase<TContract> where TContract: IIntegrationEvent
 {
     private const string ExpectedNameSpace = "Equinor.ProCoSys.Completion.MessageContracts";
 
     [TestMethod]
-    public abstract void Contract_InterfacePropertiesAndMethods_DoNotChange();
+    public abstract void Contract_Interface_DoNotChange();
     [TestMethod]
     public abstract void Contract_Namespace_DoNotChange();
 
@@ -21,7 +20,7 @@ public abstract class ContractTestBase<TContract> where TContract: IEventMessage
      * If new properties are added to the interface (non breaking), this test should be updated with the new properties.
      * If existing properties are modified (breaking), a new version of the interface should be created.
      */
-    protected void AssertContractNotBreached(Dictionary<string, Type> expectedProperties)
+    protected void AssertPropertiesNotChanged(Dictionary<string, Type> expectedProperties)
     {
         var contractToTestType = typeof(TContract);
 

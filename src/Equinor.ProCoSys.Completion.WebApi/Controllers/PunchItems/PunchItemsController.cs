@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
@@ -97,6 +98,21 @@ public class PunchItemsController : ControllerBase
     {
         var result = await _mediator.Send(
             new UpdatePunchItemCommand(guid, dto.Description, dto.RowVersion));
+        return this.FromResult(result);
+    }
+
+    [AuthorizeAny(Permissions.PUNCHITEM_CLEAR, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Clear")]
+    public async Task<ActionResult<string>> ClearPunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        [FromRoute] Guid guid,
+        [FromBody] RowVersionDto dto)
+    {
+        var result = await _mediator.Send(
+            new ClearPunchItemCommand(guid, dto.RowVersion));
         return this.FromResult(result);
     }
 
