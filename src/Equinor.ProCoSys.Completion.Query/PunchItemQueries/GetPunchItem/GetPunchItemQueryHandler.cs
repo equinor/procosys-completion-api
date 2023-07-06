@@ -28,13 +28,16 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        on punchItem.CreatedById equals createdByUser.Id
                    from modifiedByUser in _context.QuerySet<Person>()
                        .Where(p => p.Id == punchItem.ModifiedById).DefaultIfEmpty() //left join!
+                   from clearedByUser in _context.QuerySet<Person>()
+                       .Where(p => p.Id == punchItem.ClearedById).DefaultIfEmpty() //left join!                   
                    where punchItem.Guid == request.PunchItemGuid
                    select new {
                        PunchItem = punchItem,
                        Project = project,
                        CreatedByUser = createdByUser, 
-                       ModifiedByUser = modifiedByUser
-                })
+                       ModifiedByUser = modifiedByUser,
+                       ClearedByUser = clearedByUser
+                   })
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
@@ -61,6 +64,17 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                 dto.ModifiedByUser.Email);
         }
 
+        PersonDto? clearedBy = null;
+        if (dto.ClearedByUser != null)
+        {
+            clearedBy = new PersonDto(
+                dto.ClearedByUser.Guid,
+                dto.ClearedByUser.FirstName,
+                dto.ClearedByUser.LastName,
+                dto.ClearedByUser.UserName,
+                dto.ClearedByUser.Email);
+        }
+
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
                        dto.Project.Name,
@@ -70,6 +84,9 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        dto.PunchItem.CreatedAtUtc,
                        modifiedBy,
                        dto.PunchItem.ModifiedAtUtc,
+                       dto.PunchItem.IsReadyToBeCleared,
+                       clearedBy,
+                       dto.PunchItem.ClearedAtUtc,
                        dto.PunchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }

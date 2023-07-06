@@ -1018,6 +1018,74 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Conflict);
     #endregion
 
+
+    #region ClearPunchItem
+    [TestMethod]
+    public async Task ClearPunchItem_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task ClearPunchItem_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
+
+    #endregion
     private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()
     {
         var punchItemUnderTest = await GetPunchItemUnderTest();

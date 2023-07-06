@@ -14,31 +14,31 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItem;
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 {
     private PunchItem _createdPunchItem;
-    private Guid _createdPunchItemGuid;
     private PunchItem _modifiedPunchItem;
-    private Guid _modifiedPunchItemGuid;
+    private PunchItem _clearedPunchItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "TitleA");
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "TitleB");
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "created");
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "modified");
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "cleared");
+        _clearedPunchItem.Clear(_currentPerson);
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);
+        context.PunchItems.Add(_clearedPunchItem);
         context.SaveChangesAsync().Wait();
-        _createdPunchItemGuid = _createdPunchItem.Guid;
 
         _modifiedPunchItem.Update("Modified");
         context.SaveChangesAsync().Wait();
-        _modifiedPunchItemGuid = _modifiedPunchItem.Guid;
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnNotFound_WhenPunchItemNotFound()
+    public async Task Handle_ShouldReturnNotFound_WhenPunchItemNotFound()
     {
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemQuery(Guid.Empty);
         var dut = new GetPunchItemQueryHandler(context);
@@ -53,12 +53,12 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectCreatedPunchItem()
+    public async Task Handle_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
             
-        var query = new GetPunchItemQuery(_createdPunchItemGuid);
+        var query = new GetPunchItemQuery(_createdPunchItem.Guid);
         var dut = new GetPunchItemQueryHandler(context);
 
         // Act
@@ -72,15 +72,18 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(punchItemDetailsDto, _createdPunchItem);
         Assert.IsNull(punchItemDetailsDto.ModifiedBy);
         Assert.IsNull(punchItemDetailsDto.ModifiedAtUtc);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsNull(punchItemDetailsDto.ClearedBy);
+        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectModifiedPunchItem()
+    public async Task Handle_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProvider, _eventDispatcher, _currentUserProvider);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetPunchItemQuery(_modifiedPunchItemGuid);
+        var query = new GetPunchItemQuery(_modifiedPunchItem.Guid);
         var dut = new GetPunchItemQueryHandler(context);
 
         // Act
@@ -97,6 +100,35 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(CurrentUserOid, modifiedBy.Guid);
         Assert.IsNotNull(punchItemDetailsDto.ModifiedAtUtc);
         Assert.AreEqual(_modifiedPunchItem.ModifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsNull(punchItemDetailsDto.ClearedBy);
+        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
+    }
+
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnCorrectClearerPunchItem_WhenPunchItemCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var query = new GetPunchItemQuery(_clearedPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var punchDetailsDto = result.Data;
+        AssertPunchItem(punchDetailsDto, _clearedPunchItem);
+        var clearedBy = punchDetailsDto.ClearedBy;
+        Assert.IsNotNull(clearedBy);
+        Assert.AreEqual(CurrentUserOid, clearedBy.Guid);
+        Assert.IsNotNull(punchDetailsDto.ClearedAtUtc);
+        Assert.AreEqual(_clearedPunchItem.ClearedAtUtc, punchDetailsDto.ClearedAtUtc);
     }
 
     private void AssertPunchItem(PunchItemDetailsDto punchItemDetailsDto, PunchItem punchItem)

@@ -76,6 +76,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
     private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
     {
+        // todo 104163 Discuss if we need plant or not
         // Set global query filter on entities inheriting from PlantEntityBase
         // https://gunnarpeipman.com/ef-core-global-query-filters/
         foreach (var type in TypeProvider.GetEntityTypes(typeof(IDomainMarker).GetTypeInfo().Assembly, typeof(PlantEntityBase)))
@@ -176,8 +177,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         if (addedEntries.Any() || modifiedEntries.Any())
         {
             var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-            var currentUser = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
-            if (currentUser is null)
+            var currentPerson = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
+            if (currentPerson is null)
             {
                 throw new Exception(
                     $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");
@@ -185,12 +186,12 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
             foreach (var entry in addedEntries)
             {
-                entry.Entity.SetCreated(currentUser);
+                entry.Entity.SetCreated(currentPerson);
             }
 
             foreach (var entry in modifiedEntries)
             {
-                entry.Entity.SetModified(currentUser);
+                entry.Entity.SetModified(currentPerson);
             }
         }
     }
