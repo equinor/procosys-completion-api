@@ -8,22 +8,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 
-public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreatedDomainEvent>
+public class PunchItemVerifiedEventHandler : INotificationHandler<PunchItemVerifiedDomainEvent>
 {
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly ILogger<PunchItemCreatedEventHandler> _logger;
+    private readonly ILogger<PunchItemVerifiedEventHandler> _logger;
 
-    public PunchItemCreatedEventHandler(IPublishEndpoint publishEndpoint, ILogger<PunchItemCreatedEventHandler> logger)
+    public PunchItemVerifiedEventHandler(IPublishEndpoint publishEndpoint, ILogger<PunchItemVerifiedEventHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
-    
-    public async Task Handle(PunchItemCreatedDomainEvent punchItemCreatedEvent, CancellationToken cancellationToken)
+
+    public async Task Handle(PunchItemVerifiedDomainEvent punchItemVerifiedEvent, CancellationToken cancellationToken)
     {
-        var sessionId = punchItemCreatedEvent.PunchItem.Guid.ToString();
-        
-        await _publishEndpoint.Publish(new PunchItemCreatedIntegrationEvent(punchItemCreatedEvent),
+        var sessionId = punchItemVerifiedEvent.PunchItem.Guid.ToString();
+
+        await _publishEndpoint.Publish(new PunchItemVerifiedIntegrationEvent(punchItemVerifiedEvent),
             context =>
             {
                 context.SetSessionId(sessionId);
