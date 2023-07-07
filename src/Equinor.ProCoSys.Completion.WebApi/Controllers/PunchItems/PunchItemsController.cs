@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttac
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
@@ -115,6 +116,21 @@ public class PunchItemsController : ControllerBase
     {
         var result = await _mediator.Send(
             new ClearPunchItemCommand(guid, dto.RowVersion));
+        return this.FromResult(result);
+    }
+
+    [AuthorizeAny(Permissions.PUNCHITEM_CLEAR, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Unclear")]
+    public async Task<ActionResult<string>> UnclearPunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        [FromRoute] Guid guid,
+        [FromBody] RowVersionDto dto)
+    {
+        var result = await _mediator.Send(
+            new UnclearPunchItemCommand(guid, dto.RowVersion));
         return this.FromResult(result);
     }
 
