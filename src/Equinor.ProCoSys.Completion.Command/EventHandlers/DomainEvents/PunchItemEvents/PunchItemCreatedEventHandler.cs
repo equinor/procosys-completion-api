@@ -18,17 +18,13 @@ public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreate
         _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
-    
+
     public async Task Handle(PunchItemCreatedDomainEvent punchItemCreatedEvent, CancellationToken cancellationToken)
-    {
-        var sessionId = punchItemCreatedEvent.PunchItem.Guid.ToString();
-        
-        await _publishEndpoint.Publish(new PunchItemCreatedIntegrationEvent(punchItemCreatedEvent),
+        => await _publishEndpoint.Publish(new PunchItemCreatedIntegrationEvent(punchItemCreatedEvent),
             context =>
             {
-                context.SetSessionId(sessionId);
+                context.SetSessionId(punchItemCreatedEvent.PunchItem.Guid.ToString());
                 _logger.LogInformation("Publishing: {Message}", context.Message.ToString());
             },
             cancellationToken);
-    }
 }

@@ -20,15 +20,11 @@ public class PunchItemVerifiedEventHandler : INotificationHandler<PunchItemVerif
     }
 
     public async Task Handle(PunchItemVerifiedDomainEvent punchItemVerifiedEvent, CancellationToken cancellationToken)
-    {
-        var sessionId = punchItemVerifiedEvent.PunchItem.Guid.ToString();
-
-        await _publishEndpoint.Publish(new PunchItemVerifiedIntegrationEvent(punchItemVerifiedEvent),
+        => await _publishEndpoint.Publish(new PunchItemVerifiedIntegrationEvent(punchItemVerifiedEvent),
             context =>
             {
-                context.SetSessionId(sessionId);
+                context.SetSessionId(punchItemVerifiedEvent.PunchItem.Guid.ToString());
                 _logger.LogInformation("Publishing: {Message}", context.Message.ToString());
             },
             cancellationToken);
-    }
 }

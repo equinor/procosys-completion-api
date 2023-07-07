@@ -20,15 +20,11 @@ public class PunchItemUnclearedEventHandler : INotificationHandler<PunchItemUncl
     }
 
     public async Task Handle(PunchItemUnclearedDomainEvent punchItemUnclearedEvent, CancellationToken cancellationToken)
-    {
-        var sessionId = punchItemUnclearedEvent.PunchItem.Guid.ToString();
-
-        await _publishEndpoint.Publish(new PunchItemUnclearedIntegrationEvent(punchItemUnclearedEvent),
+        => await _publishEndpoint.Publish(new PunchItemUnclearedIntegrationEvent(punchItemUnclearedEvent),
             context =>
             {
-                context.SetSessionId(sessionId);
+                context.SetSessionId(punchItemUnclearedEvent.PunchItem.Guid.ToString());
                 _logger.LogInformation("Publishing: {Message}", context.Message.ToString());
             },
             cancellationToken);
-    }
 }
