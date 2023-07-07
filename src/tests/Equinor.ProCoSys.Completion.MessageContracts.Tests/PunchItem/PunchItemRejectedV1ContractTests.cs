@@ -13,6 +13,7 @@ public class PunchItemRejectedV1ContractTests : ContractTestBase<IPunchItemRejec
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
+            { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ModifiedByOid", typeof(Guid) },
             { "ModifiedAtUtc", typeof(DateTime) },

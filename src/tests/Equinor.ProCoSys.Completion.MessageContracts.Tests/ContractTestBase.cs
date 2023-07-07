@@ -22,13 +22,8 @@ public abstract class ContractTestBase<TContract> where TContract: IIntegrationE
      */
     protected void AssertPropertiesNotChanged(Dictionary<string, Type> expectedProperties)
     {
-        var contractToTestType = typeof(TContract);
+        var actualProperties = GetAllProperties();
 
-        // Act
-        var actualProperties = contractToTestType.GetProperties()
-            .ToDictionary(p => p.Name, p => p.PropertyType);
-
-        // Assert
         CollectionAssert.AreEquivalent(expectedProperties.Keys, actualProperties.Keys,
             "The number expected properties does not match number of interface properties, " +
             "test needs to be updated if the change is non breaking(non required property added)");
@@ -50,5 +45,23 @@ public abstract class ContractTestBase<TContract> where TContract: IIntegrationE
 
         // Assert 
         Assert.AreEqual(ExpectedNameSpace, contractToTestType.Namespace);
+    }
+
+    private static Dictionary<string, Type> GetAllProperties()
+    {
+        var contractToTestType = typeof(TContract);
+
+        var actualProperties = contractToTestType.GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
+
+        var interfaces = contractToTestType.GetInterfaces();
+        foreach (var @interface in interfaces)
+        {
+            var props = @interface.GetProperties();
+            foreach (var prop in props)
+            {
+                actualProperties.Add(prop.Name, prop.PropertyType);
+            }
+        }
+        return actualProperties;
     }
 }
