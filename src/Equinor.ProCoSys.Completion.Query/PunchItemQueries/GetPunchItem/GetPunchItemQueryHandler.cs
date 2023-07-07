@@ -52,15 +52,15 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
             return new NotFoundResult<PunchItemDetailsDto>(Strings.EntityNotFound(nameof(PunchItem), request.PunchItemGuid));
         }
 
-        var createdBy = CreatePerson(dto.CreatedByUser)!;
+        var createdBy = MapToPersonDto(dto.CreatedByUser)!;
         
-        var modifiedBy = CreatePerson(dto.ModifiedByUser);
+        var modifiedBy = MapToPersonDto(dto.ModifiedByUser);
 
-        var clearedBy = CreatePerson(dto.ClearedByUser);
+        var clearedBy = MapToPersonDto(dto.ClearedByUser);
 
-        var rejectedBy = CreatePerson(dto.RejectedByUser);
+        var rejectedBy = MapToPersonDto(dto.RejectedByUser);
 
-        var verifiedBy = CreatePerson(dto.VerifiedByUser);
+        var verifiedBy = MapToPersonDto(dto.VerifiedByUser);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
@@ -85,7 +85,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
 
-    private static PersonDto? CreatePerson(Person? person)
+    private static PersonDto? MapToPersonDto(Person? person)
         => person == null
             ? null
             : new PersonDto(person.Guid,
