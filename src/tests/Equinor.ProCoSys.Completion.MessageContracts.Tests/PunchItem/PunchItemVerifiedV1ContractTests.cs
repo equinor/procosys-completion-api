@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.PunchItem;
 
 [TestClass]
-public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreatedV1>
+public class PunchItemVerifiedV1ContractTests : ContractTestBase<IPunchItemVerifiedV1>
 {
     [TestMethod]
     public override void Contract_Interface_DoNotChange()
@@ -14,10 +14,10 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
         var expectedProperties = new Dictionary<string, Type>
         {
             { "Guid", typeof(Guid) },
-            { "ProjectGuid", typeof(Guid) },
-            { "ItemNo", typeof(string) },
-            { "CreatedByOid", typeof(Guid) },
-            { "CreatedAtUtc", typeof(DateTime) }
+            { "ModifiedByOid", typeof(Guid) },
+            { "ModifiedAtUtc", typeof(DateTime) },
+            { "VerifiedByOid", typeof(Guid) },
+            { "VerifiedAtUtc", typeof(DateTime) }
         };
 
         // Act

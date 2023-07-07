@@ -372,6 +372,7 @@ public class PunchItemsControllerTests : TestBase
             punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(0, attachments.Count);
     }
+
     [TestMethod]
     public async Task ClearPunchItem_AsWriter_ShouldClearPunchItem()
     {
@@ -395,6 +396,36 @@ public class PunchItemsControllerTests : TestBase
         AssertRowVersionChange(guidAndRowVersion.RowVersion, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsFalse(punchItem.IsReadyToBeCleared);
+    }
+
+    [TestMethod]
+    public async Task VerifyPunchItem_AsWriter_ShouldVerifyPunchItem()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess);
+        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeVerified);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.VerifyPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            rowVersionAfterClear);
+
+        // Assert
+        AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsFalse(punchItem.IsReadyToBeVerified);
     }
 
     private async Task<(
