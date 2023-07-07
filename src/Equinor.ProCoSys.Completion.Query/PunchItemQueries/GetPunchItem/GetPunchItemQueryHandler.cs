@@ -30,6 +30,8 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        .Where(p => p.Id == punchItem.ModifiedById).DefaultIfEmpty() //left join!
                    from clearedByUser in _context.QuerySet<Person>()
                        .Where(p => p.Id == punchItem.ClearedById).DefaultIfEmpty() //left join!                   
+                   from rejectedByUser in _context.QuerySet<Person>()
+                       .Where(p => p.Id == punchItem.RejectedById).DefaultIfEmpty() //left join!                   
                    from verifiedByUser in _context.QuerySet<Person>()
                        .Where(p => p.Id == punchItem.VerifiedById).DefaultIfEmpty() //left join!                   
                    where punchItem.Guid == request.PunchItemGuid
@@ -39,6 +41,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        CreatedByUser = createdByUser, 
                        ModifiedByUser = modifiedByUser,
                        ClearedByUser = clearedByUser,
+                       RejectedByUser = rejectedByUser,
                        VerifiedByUser = verifiedByUser
                    })
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
@@ -49,45 +52,15 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
             return new NotFoundResult<PunchItemDetailsDto>(Strings.EntityNotFound(nameof(PunchItem), request.PunchItemGuid));
         }
 
-        var createdBy = new PersonDto(
-            dto.CreatedByUser.Guid,
-            dto.CreatedByUser.FirstName,
-            dto.CreatedByUser.LastName,
-            dto.CreatedByUser.UserName,
-            dto.CreatedByUser.Email);
+        var createdBy = CreatePerson(dto.CreatedByUser)!;
         
-        PersonDto? modifiedBy = null;
-        if (dto.ModifiedByUser is not null)
-        {
-            modifiedBy = new PersonDto(
-                dto.ModifiedByUser.Guid,
-                dto.ModifiedByUser.FirstName,
-                dto.ModifiedByUser.LastName,
-                dto.ModifiedByUser.UserName,
-                dto.ModifiedByUser.Email);
-        }
+        var modifiedBy = CreatePerson(dto.ModifiedByUser);
 
-        PersonDto? clearedBy = null;
-        if (dto.ClearedByUser != null)
-        {
-            clearedBy = new PersonDto(
-                dto.ClearedByUser.Guid,
-                dto.ClearedByUser.FirstName,
-                dto.ClearedByUser.LastName,
-                dto.ClearedByUser.UserName,
-                dto.ClearedByUser.Email);
-        }
+        var clearedBy = CreatePerson(dto.ClearedByUser);
 
-        PersonDto? verifiedBy = null;
-        if (dto.VerifiedByUser != null)
-        {
-            verifiedBy = new PersonDto(
-                dto.VerifiedByUser.Guid,
-                dto.VerifiedByUser.FirstName,
-                dto.VerifiedByUser.LastName,
-                dto.VerifiedByUser.UserName,
-                dto.VerifiedByUser.Email);
-        }
+        var rejectedBy = CreatePerson(dto.RejectedByUser);
+
+        var verifiedBy = CreatePerson(dto.VerifiedByUser);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
@@ -101,10 +74,22 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        dto.PunchItem.IsReadyToBeCleared,
                        clearedBy,
                        dto.PunchItem.ClearedAtUtc,
+                       dto.PunchItem.IsReadyToBeRejected,
+                       rejectedBy,
+                       dto.PunchItem.RejectedAtUtc,
                        dto.PunchItem.IsReadyToBeVerified,
                        verifiedBy,
                        dto.PunchItem.VerifiedAtUtc,
                        dto.PunchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
+
+    private static PersonDto? CreatePerson(Person? person)
+        => person == null
+            ? null
+            : new PersonDto(person.Guid,
+                person.FirstName,
+                person.LastName,
+                person.UserName,
+                person.Email);
 }

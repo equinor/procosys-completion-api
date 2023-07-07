@@ -19,6 +19,10 @@ public record PunchItemDetailsDto(
     PersonDto ClearedBy,
     DateTime? ClearedAtUtc,
     bool IsReadyToBeVerified,
+    bool IsReadyToBeRejected,
+    [CanBeNull]
+    PersonDto RejectedBy,
+    DateTime? RejectedAtUtc,
     [CanBeNull]
     PersonDto VerifiedBy,
     DateTime? VerifiedAtUtc,
