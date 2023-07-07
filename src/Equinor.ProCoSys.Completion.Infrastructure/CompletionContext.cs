@@ -124,15 +124,29 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         => await base.Database.CommitTransactionAsync(cancellationToken);
 
 
+    /// <summary>
+    /// The UpdateConcurrencyToken method is used to manage concurrency conflicts in Entity Framework. 
+    /// It's responsible for ensuring that Entity Framework correctly checks for concurrency conflicts 
+    /// based on the RowVersion value set in the handler method.
+    /// 
+    /// When SaveChanges is called, Entity Framework compares the original RowVersion value of each 
+    /// modified or deleted entity with the current value in the database. If they match, it means 
+    /// no one else has modified the data since it was fetched, and the changes can be saved. 
+    /// If they don't match, a DbUpdateConcurrencyException is thrown, indicating a concurrency conflict.
+    /// 
+    /// When we manually set the RowVersion in the handler based on the client's data, 
+    /// this change doesn't reflect in the OriginalValues tracked by EF. As a result, 
+    /// EFs built-in concurrency check won't detect conflicts based on the client's RowVersion.
+    /// The UpdateConcurrencyToken method addresses this by updating the OriginalValues to match 
+    /// the manually set RowVersion. This ensures that EFs concurrency check can correctly detect 
+    /// conflicts between the client's RowVersion and the current database value.
+    /// </summary>
     private void UpdateConcurrencyToken()
     {
-        // The custom code inside this method is needed to achieve that EF throw ConcurrencyException ...
-        // ... when client give incorrect RowVersion according to the excepting one.
-        // Without this code block a save with whatever RowVersion pass through OK
         var modifiedEntries = ChangeTracker
             .Entries<EntityBase>()
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted);
-
+        
         foreach (var entry in modifiedEntries)
         {
             var currentRowVersion = entry.CurrentValues.GetValue<byte[]>(nameof(EntityBase.RowVersion));
