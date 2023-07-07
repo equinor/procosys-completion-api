@@ -304,6 +304,21 @@ public static class PunchItemsControllerTestsHelper
             expectedStatusCode,
             expectedMessageOnBadRequest);
 
+    public static async Task<string> RejectPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+        => await PostAsync(
+            userType,
+            plant,
+            $"{Route}/{guid}/Reject",
+            rowVersion,
+            expectedStatusCode,
+            expectedMessageOnBadRequest);
+
     public static async Task<string> VerifyPunchItemAsync(
         UserType userType,
         string plant,
