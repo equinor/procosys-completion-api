@@ -101,6 +101,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 
@@ -131,6 +132,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 
@@ -163,6 +165,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
 
@@ -195,6 +198,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 

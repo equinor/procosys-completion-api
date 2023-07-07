@@ -12,6 +12,7 @@ public record PunchItemDetailsDto(
     PersonDto? ModifiedBy,
     DateTime? ModifiedAtUtc,
     bool IsReadyToBeCleared,
+    bool IsReadyToBeUncleared,
     PersonDto? ClearedBy,
     DateTime? ClearedAtUtc,
     bool IsReadyToBeRejected,

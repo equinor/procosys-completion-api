@@ -72,6 +72,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        modifiedBy,
                        dto.PunchItem.ModifiedAtUtc,
                        dto.PunchItem.IsReadyToBeCleared,
+                       dto.PunchItem.IsReadyToBeUncleared,
                        clearedBy,
                        dto.PunchItem.ClearedAtUtc,
                        dto.PunchItem.IsReadyToBeRejected,
