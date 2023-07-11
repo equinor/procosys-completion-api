@@ -17,7 +17,7 @@ spec:
   components:
     # Backend API
     - name: backend
-      src: ./src/Equinor.ProCoSys.Completion.WebApi # Dockerfile location
+      src: ./src # Dockerfile location
       variables:
         ASPNETCORE_URLS: "http://*:5000"
         ApplicationInsights__ConnectionString: ""
