@@ -1,3 +1,4 @@
+#file: noinspection KubernetesUnknownResourcesInspection
 apiVersion: radix.equinor.com/v1
 kind: RadixApplication
 metadata:
@@ -30,5 +31,9 @@ spec:
         Authenticator__CompletionApiSecret: ""
         Authenticator__DisableProjectUserDataClaims: false
         Authenticator__DisableRestrictionRoleUserDataClaims: false
-      
-      
+  ports:
+    - name: http
+      port: 5000
+  publicPort: http
+    
+    
