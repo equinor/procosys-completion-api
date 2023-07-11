@@ -11,9 +11,9 @@ COPY ["Equinor.ProCoSys.Completion.Domain/Equinor.ProCoSys.Completion.Domain.csp
 COPY ["Equinor.ProCoSys.Completion.MessageContracts/Equinor.ProCoSys.Completion.MessageContracts.csproj", "./"]
 COPY ["Equinor.ProCoSys.Completion.Infrastructure/Equinor.ProCoSys.Completion.Infrastructure.csproj", "./"]
 COPY ["Equinor.ProCoSys.Completion.Query/Equinor.ProCoSys.Completion.Query.csproj", "./"]
-RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi/Equinor.ProCoSys.Completion.WebApi.csproj"
+RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi.csproj"
 COPY . .
-WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
+WORKDIR "/src"
 RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
