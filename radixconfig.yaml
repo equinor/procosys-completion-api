@@ -20,6 +20,8 @@ spec:
       variables:
         ASPNETCORE_URLS: "http://*:5000"
         ApplicationInsights__ConnectionString: ""
+        ConnectionStrings__AppConfig: ""
+        UseAzureAppConfiguration: true
         AzureAd__ClientId: ""
         Authenticator__Instance: ""
         Authenticator__MainApiScope: ""
