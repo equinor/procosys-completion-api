@@ -13,6 +13,7 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
+            { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
             { "ItemNo", typeof(string) },

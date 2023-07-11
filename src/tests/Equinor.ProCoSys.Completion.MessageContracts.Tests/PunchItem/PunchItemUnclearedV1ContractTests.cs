@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.PunchItem;
 
 [TestClass]
-public class PunchItemClearedV1ContractTests : ContractTestBase<IPunchItemClearedV1>
+public class PunchItemUnclearedV1ContractTests : ContractTestBase<IPunchItemUnclearedV1>
 {
     [TestMethod]
     public override void Contract_Interface_DoNotChange()
@@ -16,9 +16,7 @@ public class PunchItemClearedV1ContractTests : ContractTestBase<IPunchItemCleare
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ModifiedByOid", typeof(Guid) },
-            { "ModifiedAtUtc", typeof(DateTime) },
-            { "ClearedByOid", typeof(Guid) },
-            { "ClearedAtUtc", typeof(DateTime) }
+            { "ModifiedAtUtc", typeof(DateTime) }
         };
 
         // Act

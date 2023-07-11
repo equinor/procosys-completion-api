@@ -101,11 +101,14 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 
         AssertNotModified(punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
+        AssertNotRejected(punchItemDetailsDto);
     }
 
     [TestMethod]
@@ -129,12 +132,15 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
-
+        AssertNotRejected(punchItemDetailsDto);
+        
         Assert.AreNotEqual(punchItemDetailsDto.ModifiedAtUtc, punchItemDetailsDto.CreatedAtUtc);
     }
 
@@ -159,11 +165,14 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
+        AssertNotRejected(punchItemDetailsDto);
 
         Assert.AreEqual(punchItemDetailsDto.ClearedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
     }
@@ -189,13 +198,57 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
         AssertVerified(testPunchItem, punchItemDetailsDto);
+        AssertNotRejected(punchItemDetailsDto);
 
         Assert.AreEqual(punchItemDetailsDto.VerifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnCorrectRejectedPunchItem_WhenPunchItemRejected()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _rejectedPunchItem;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var punchItemDetailsDto = result.Data;
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+
+        AssertModified(testPunchItem, punchItemDetailsDto);
+        AssertNotCleared(punchItemDetailsDto);
+        AssertNotVerified(punchItemDetailsDto);
+        AssertRejected(punchItemDetailsDto, testPunchItem);
+
+        Assert.AreEqual(punchItemDetailsDto.RejectedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
+    }
+
+    private void AssertRejected(PunchItemDetailsDto punchItemDetailsDto, PunchItem testPunchItem)
+    {
+        var rejectedBy = punchItemDetailsDto.RejectedBy;
+        Assert.IsNotNull(rejectedBy);
+        Assert.AreEqual(_currentPerson.Guid, rejectedBy.Guid);
+        Assert.IsNotNull(punchItemDetailsDto.RejectedAtUtc);
+        Assert.AreEqual(testPunchItem.RejectedAtUtc, punchItemDetailsDto.RejectedAtUtc);
     }
 
     private void AssertPunchItem(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
@@ -223,6 +276,12 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(CurrentUserOid, modifiedBy.Guid);
         Assert.IsNotNull(punchItemDetailsDto.ModifiedAtUtc);
         Assert.AreEqual(punchItem.ModifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
+    }
+
+    private static void AssertNotRejected(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.IsNull(punchItemDetailsDto.RejectedBy);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
     }
 
     private static void AssertNotVerified(PunchItemDetailsDto punchItemDetailsDto)

@@ -8,22 +8,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 
-public class PunchItemCreatedEventHandler : INotificationHandler<PunchItemCreatedDomainEvent>
+public class PunchItemRejectedEventHandler : INotificationHandler<PunchItemRejectedDomainEvent>
 {
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly ILogger<PunchItemCreatedEventHandler> _logger;
+    private readonly ILogger<PunchItemRejectedEventHandler> _logger;
 
-    public PunchItemCreatedEventHandler(IPublishEndpoint publishEndpoint, ILogger<PunchItemCreatedEventHandler> logger)
+    public PunchItemRejectedEventHandler(IPublishEndpoint publishEndpoint, ILogger<PunchItemRejectedEventHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
 
-    public async Task Handle(PunchItemCreatedDomainEvent punchItemCreatedEvent, CancellationToken cancellationToken)
-        => await _publishEndpoint.Publish(new PunchItemCreatedIntegrationEvent(punchItemCreatedEvent),
+    public async Task Handle(PunchItemRejectedDomainEvent punchItemRejectedEvent, CancellationToken cancellationToken)
+        => await _publishEndpoint.Publish(new PunchItemRejectedIntegrationEvent(punchItemRejectedEvent),
             context =>
             {
-                context.SetSessionId(punchItemCreatedEvent.PunchItem.Guid.ToString());
+                context.SetSessionId(punchItemRejectedEvent.PunchItem.Guid.ToString());
                 _logger.LogInformation("Publishing: {Message}", context.Message.ToString());
             },
             cancellationToken);

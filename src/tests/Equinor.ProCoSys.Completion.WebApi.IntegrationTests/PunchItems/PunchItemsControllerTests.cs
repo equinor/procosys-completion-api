@@ -399,6 +399,66 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task UnclearPunchItem_AsWriter_ShouldUnclearPunchItem()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess);
+        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeUncleared);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.UnclearPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            rowVersionAfterClear);
+
+        // Assert
+        AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsFalse(punchItem.IsReadyToBeUncleared);
+    }
+
+    [TestMethod]
+    public async Task RejectPunchItem_AsWriter_ShouldRejectPunchItem()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess);
+        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeRejected);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            rowVersionAfterClear);
+
+        // Assert
+        AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsFalse(punchItem.IsReadyToBeRejected);
+    }
+
+    [TestMethod]
     public async Task VerifyPunchItem_AsWriter_ShouldVerifyPunchItem()
     {
         // Arrange
