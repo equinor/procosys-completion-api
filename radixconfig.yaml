@@ -7,7 +7,7 @@ spec:
   environments:
     - name: dev
       build:
-        from: main
+        from: radix
 #    - name: feature
 #      build:
 #        from: feature/* # Any repo named feature/*whatever* will trigger this build
