@@ -1,0 +1,32 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: procosys-completion-api
+spec:
+  environments:
+    - name: dev
+      build:
+        from: main
+#    - name: feature
+#      build:
+#        from: feature/* # Any repo named feature/*whatever* will trigger this build
+    - name: test
+      build:
+        from: main
+  components:
+    # Backend API
+    - name: backend
+      src: ./src/Equinor.ProCoSys.Completion.WebApi # Dockerfile location
+      variables:
+        ASPNETCORE_URLS: "http://*:5000"
+        ApplicationInsights__ConnectionString: ""
+        AzureAd__ClientId: ""
+        Authenticator__Instance: ""
+        Authenticator__MainApiScope: ""
+        Authenticator__CompletionApiClientId: ""
+        Authenticator__CompletionApiObjectId: ""
+        Authenticator__CompletionApiSecret: ""
+        Authenticator__DisableProjectUserDataClaims: false
+        Authenticator__DisableRestrictionRoleUserDataClaims: false
+      
+      
