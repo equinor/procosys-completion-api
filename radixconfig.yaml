@@ -31,9 +31,9 @@ spec:
         Authenticator__CompletionApiSecret: ""
         Authenticator__DisableProjectUserDataClaims: false
         Authenticator__DisableRestrictionRoleUserDataClaims: false
-  ports:
-    - name: http
-      port: 5000
-  publicPort: http
+      ports:
+        - name: http
+          port: 5000
+      publicPort: http
     
     
