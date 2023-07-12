@@ -37,7 +37,3 @@ spec:
         - name: http
           port: 5000
       publicPort: http
-      environmentConfig:
-        - environment: dev
-          secretRefs:
-            azureKeyVaults: completion-api-dev
