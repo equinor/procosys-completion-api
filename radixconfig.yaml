@@ -15,9 +15,11 @@ spec:
       build:
         from: main
   components:
-    # Backend API
-    - name: backend
+    - name: webapi
       src: ./src # Dockerfile location
+      secrets:
+        - ConnectionStrings__CompletionContext
+        - FEED_ACCESSTOKEN
       variables:
         ASPNETCORE_URLS: "http://*:5000"
         ApplicationInsights__ConnectionString: ""
@@ -35,5 +37,7 @@ spec:
         - name: http
           port: 5000
       publicPort: http
-    
-    
+      environmentConfig:
+        - environment: dev
+          secretRefs:
+            azureKeyVaults: completion-api-dev
