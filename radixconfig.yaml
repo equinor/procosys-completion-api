@@ -18,6 +18,7 @@ spec:
     - name: webapi
       src: ./src # Dockerfile location
       secrets:
+        - DB_PASS
         - ConnectionStrings__CompletionContext
         - FEED_ACCESSTOKEN
       variables:
