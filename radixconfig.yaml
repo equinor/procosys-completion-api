@@ -8,10 +8,6 @@ spec:
     - name: dev
       build:
         from: radix
-        secrets:
-          - DB_PASS
-          - ConnectionStrings__CompletionContext
-          - FEED_ACCESSTOKEN
 #    - name: feature
 #      build:
 #        from: feature/* # Any repo named feature/*whatever* will trigger this build
@@ -22,10 +18,9 @@ spec:
     - name: webapi
       src: ./src # Dockerfile location
       secrets:
-        - DB_PASS
-        - ConnectionStrings__CompletionContext
         - FEED_ACCESSTOKEN
       variables:
+        FEED_ACCESSTOKEN: ""
         ASPNETCORE_URLS: "http://*:5000"
         ApplicationInsights__ConnectionString: ""
         ConnectionStrings__AppConfig: ""
