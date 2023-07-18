@@ -6,7 +6,7 @@ metadata:
 spec:
   build:
     secrets:
-      - FEED_ACCESSTOKEN
+      - FEED_TOKEN
   environments:
     - name: dev
       build:
@@ -24,7 +24,7 @@ spec:
 #        - FEED_ACCESSTOKEN
 #        - CONNECTIONSTRING
       variables:
-        FEED_ACCESSTOKEN: ""
+        FEED_TOKEN: ""
         ASPNETCORE_URLS: "http://*:5000"
         ApplicationInsights__ConnectionString: ""
         ConnectionStrings__AppConfig: ""
