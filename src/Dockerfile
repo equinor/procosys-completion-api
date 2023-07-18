@@ -12,7 +12,6 @@ COPY ["Equinor.ProCoSys.Completion.MessageContracts/Equinor.ProCoSys.Completion.
 COPY ["Equinor.ProCoSys.Completion.Infrastructure/Equinor.ProCoSys.Completion.Infrastructure.csproj", "Equinor.ProCoSys.Completion.Infrastructure/"]
 COPY ["Equinor.ProCoSys.Completion.Query/Equinor.ProCoSys.Completion.Query.csproj", "Equinor.ProCoSys.Completion.Query/"]
 COPY nuget.config .
-#RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi/Equinor.ProCoSys.Completion.WebApi.csproj"
 COPY . .
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
@@ -32,4 +31,15 @@ RUN dotnet publish "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /ap
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+RUN adduser \
+    --uid 1001 \
+    --home /app \
+    --gecos '' app \
+    --disabled-password \
+    && chown -R app /app
+
+USER 1001
+
+
 ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
