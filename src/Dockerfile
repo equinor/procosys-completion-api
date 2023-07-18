@@ -11,7 +11,7 @@ COPY ["Equinor.ProCoSys.Completion.Domain/Equinor.ProCoSys.Completion.Domain.csp
 COPY ["Equinor.ProCoSys.Completion.MessageContracts/Equinor.ProCoSys.Completion.MessageContracts.csproj", "Equinor.ProCoSys.Completion.MessageContracts/"]
 COPY ["Equinor.ProCoSys.Completion.Infrastructure/Equinor.ProCoSys.Completion.Infrastructure.csproj", "Equinor.ProCoSys.Completion.Infrastructure/"]
 COPY ["Equinor.ProCoSys.Completion.Query/Equinor.ProCoSys.Completion.Query.csproj", "Equinor.ProCoSys.Completion.Query/"]
-COPY ["/nuget.config", "/"]
+COPY nuget.config .
 #RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi/Equinor.ProCoSys.Completion.WebApi.csproj"
 COPY . .
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
@@ -23,7 +23,7 @@ ARG FEED_ACCESSTOKEN
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
 #RUN echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
-RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi.csproj"
+#RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi.csproj"
 RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
