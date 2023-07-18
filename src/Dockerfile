@@ -22,11 +22,8 @@ ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
 ARG FEED_TOKEN
 
 RUN FEED_ACCESSTOKEN_DECODED=$(echo $FEED_TOKEN|base64 -d) && \
-    echo $FEED_ACCESSTOKEN_DECODED && \
-    VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN_DECODED}\"}]}" && \
+    export VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN_DECODED}\"}]}" && \
     wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash && \
-    echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS && \
-#    dotnet restore "Equinor.ProCoSys.Completion.WebApi.csproj" && \
     dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
