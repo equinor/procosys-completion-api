@@ -4,11 +4,12 @@ kind: RadixApplication
 metadata:
   name: procosys-completion-api
 spec:
+  build:
+    secrets:
+      - FEED_ACCESSTOKEN
   environments:
     - name: dev
       build:
-        secrets:
-          - FEED_ACCESSTOKEN
         from: radix
 #    - name: feature
 #      build:
