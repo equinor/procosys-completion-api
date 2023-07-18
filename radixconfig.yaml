@@ -20,9 +20,9 @@ spec:
   components:
     - name: webapi
       src: ./src # Dockerfile location
-      secrets:
-        - FEED_ACCESSTOKEN
-        - CONNECTIONSTRING
+#      secrets:
+#        - FEED_ACCESSTOKEN
+#        - CONNECTIONSTRING
       variables:
         FEED_ACCESSTOKEN: ""
         ASPNETCORE_URLS: "http://*:5000"
