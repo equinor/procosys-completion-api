@@ -19,6 +19,7 @@ public record PunchItemDetailsDto(
     PersonDto? RejectedBy,
     DateTime? RejectedAtUtc,
     bool IsReadyToBeVerified,
+    bool IsReadyToBeUnverified,
     PersonDto? VerifiedBy,
     DateTime? VerifiedAtUtc,
     string RowVersion);

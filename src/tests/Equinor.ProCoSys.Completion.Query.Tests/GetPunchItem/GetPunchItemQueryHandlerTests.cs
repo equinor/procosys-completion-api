@@ -104,6 +104,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertNotModified(punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
@@ -135,6 +136,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
@@ -168,6 +170,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
@@ -201,6 +204,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
@@ -231,8 +235,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
