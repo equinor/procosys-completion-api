@@ -79,6 +79,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        rejectedBy,
                        dto.PunchItem.RejectedAtUtc,
                        dto.PunchItem.IsReadyToBeVerified,
+                       dto.PunchItem.IsReadyToBeUnverified,
                        verifiedBy,
                        dto.PunchItem.VerifiedAtUtc,
                        dto.PunchItem.RowVersion.ConvertToString());

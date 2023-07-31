@@ -402,29 +402,24 @@ public class PunchItemsControllerTests : TestBase
     public async Task UnclearPunchItem_AsWriter_ShouldUnclearPunchItem()
     {
         // Arrange
-        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+        var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
-            UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
-            guidAndRowVersion.RowVersion);
 
-        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
         Assert.IsTrue(punchItem.IsReadyToBeUncleared);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.UnclearPunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
+            guid,
             rowVersionAfterClear);
 
         // Assert
         AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
-        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeUncleared);
     }
 
@@ -432,29 +427,24 @@ public class PunchItemsControllerTests : TestBase
     public async Task RejectPunchItem_AsWriter_ShouldRejectPunchItem()
     {
         // Arrange
-        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+        var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
-            UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
-            guidAndRowVersion.RowVersion);
 
-        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
         Assert.IsTrue(punchItem.IsReadyToBeRejected);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
+            guid,
             rowVersionAfterClear);
 
         // Assert
         AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
-        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeRejected);
     }
 
@@ -462,30 +452,50 @@ public class PunchItemsControllerTests : TestBase
     public async Task VerifyPunchItem_AsWriter_ShouldVerifyPunchItem()
     {
         // Arrange
-        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+        var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess);
-        var rowVersionAfterClear = await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
-            UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
-            guidAndRowVersion.RowVersion);
 
-        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
         Assert.IsTrue(punchItem.IsReadyToBeVerified);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.VerifyPunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
-            guidAndRowVersion.Guid,
+            guid,
             rowVersionAfterClear);
 
         // Assert
         AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
-        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeVerified);
+    }
+
+    [TestMethod]
+    public async Task UnverifyPunchItem_AsWriter_ShouldUnverifyPunchItem()
+    {
+        // Arrange
+        var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            TestFactory.ProjectGuidWithAccess);
+
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeUnverified);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.UnverifyPunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guid,
+            rowVersionAfterVerify);
+
+        // Assert
+        AssertRowVersionChange(rowVersionAfterVerify, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
+        Assert.IsFalse(punchItem.IsReadyToBeUnverified);
     }
 
     private async Task<(
