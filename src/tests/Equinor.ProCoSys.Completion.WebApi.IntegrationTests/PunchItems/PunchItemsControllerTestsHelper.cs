@@ -349,6 +349,21 @@ public static class PunchItemsControllerTestsHelper
             expectedStatusCode,
             expectedMessageOnBadRequest);
 
+    public static async Task<string> UnverifyPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+        => await PostAsync(
+            userType,
+            plant,
+            $"{Route}/{guid}/Unverify",
+            rowVersion,
+            expectedStatusCode,
+            expectedMessageOnBadRequest);
+
     public static async Task<string> UpdatePunchItemLinkAsync(
         UserType userType,
         string plant,
@@ -471,5 +486,42 @@ public static class PunchItemsControllerTestsHelper
         }
 
         return await response.Content.ReadAsStringAsync();
+    }
+
+    public static async Task<(Guid guid, string rowVersion)> CreateVerifiedPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid projectGuid)
+    {
+        var (guid, rowVersionAfterClear) = await CreateClearedPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            projectGuid);
+        var rowVersionAfterVerify = await VerifyPunchItemAsync(
+            userType,
+            plant,
+            guid,
+            rowVersionAfterClear);
+
+        return (guid, rowVersionAfterVerify);
+    }
+
+    public static async Task<(Guid guid, string rowVersion)> CreateClearedPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid projectGuid)
+    {
+        var guidAndRowVersion = await CreatePunchItemAsync(
+            userType,
+            plant,
+            Guid.NewGuid().ToString(),
+            projectGuid);
+        var rowVersionAfterClear = await ClearPunchItemAsync(
+            userType,
+            plant,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        return (guidAndRowVersion.Guid, rowVersionAfterClear);
     }
 }
