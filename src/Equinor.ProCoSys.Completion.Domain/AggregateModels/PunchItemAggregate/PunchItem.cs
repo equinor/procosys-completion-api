@@ -9,6 +9,7 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
+    public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMax = 2000;
 
 #pragma warning disable CS8618
