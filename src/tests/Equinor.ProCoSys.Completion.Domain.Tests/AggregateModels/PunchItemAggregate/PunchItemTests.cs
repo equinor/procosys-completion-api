@@ -14,7 +14,7 @@ public class PunchItemTests : IModificationAuditableTests
     private readonly string _testPlant = "PlantA";
     private readonly int _projectId = 132;
     private Project _project;
-    private readonly string _itemNo = "Item A";
+    private readonly string _itemDescription = "Item A";
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;
@@ -24,7 +24,7 @@ public class PunchItemTests : IModificationAuditableTests
     {
         _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
         _project.SetProtectedIdForTesting(_projectId);
-        _dut = new PunchItem(_testPlant, _project, _itemNo); 
+        _dut = new PunchItem(_testPlant, _project, _itemDescription); 
     }
 
     #region Constructor
@@ -34,18 +34,18 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.AreEqual(_testPlant, _dut.Plant);
         Assert.AreEqual(_projectId, _dut.ProjectId);
-        Assert.AreEqual(_itemNo, _dut.ItemNo);
+        Assert.AreEqual(_itemDescription, _dut.Description);
     }
 
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenProjectNotGiven() =>
         Assert.ThrowsException<ArgumentNullException>(() =>
-            new PunchItem(_testPlant, null!, _itemNo));
+            new PunchItem(_testPlant, null!, _itemDescription));
 
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenProjectInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
-            new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemNo));
+            new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemDescription));
     #endregion
 
     #region Update

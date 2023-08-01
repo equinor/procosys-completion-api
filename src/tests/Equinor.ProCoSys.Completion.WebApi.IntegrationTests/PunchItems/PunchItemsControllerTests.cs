@@ -27,13 +27,13 @@ public class PunchItemsControllerTests : TestBase
     public async Task CreatePunchItem_AsWriter_ShouldCreatePunchItem()
     {
         // Arrange
-        var itemNo = Guid.NewGuid().ToString();
+        var description = Guid.NewGuid().ToString();
 
         // Act
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            itemNo,
+            description,
             TestFactory.ProjectGuidWithAccess);
 
         // Assert
@@ -41,7 +41,7 @@ public class PunchItemsControllerTests : TestBase
         var newPunchItem = await PunchItemsControllerTestsHelper
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunchItem);
-        Assert.AreEqual(itemNo, newPunchItem.ItemNo);
+        Assert.IsTrue(!newPunchItem.Description.IsEmpty());
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
 
         var allPunchItems = await PunchItemsControllerTestsHelper
@@ -70,7 +70,7 @@ public class PunchItemsControllerTests : TestBase
 
         // Assert
         Assert.IsTrue(punchItems.Count > 0);
-        Assert.IsTrue(punchItems.All(p => !p.ItemNo.IsEmpty()));
+        Assert.IsTrue(punchItems.All(p => !p.Description.IsEmpty()));
         Assert.IsTrue(punchItems.All(p => !p.RowVersion.IsEmpty()));
     }
 

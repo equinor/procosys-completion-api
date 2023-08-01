@@ -9,8 +9,6 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
-    public const int ItemNoLengthMin = 3;
-    public const int ItemNoLengthMax = 64;
     public const int DescriptionLengthMax = 2000;
 
 #pragma warning disable CS8618
@@ -20,7 +18,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
     }
 
-    public PunchItem(string plant, Project project, string itemNo)
+    public PunchItem(string plant, Project project, string description)
         : base(plant)
     {
         if (project is null)
@@ -33,16 +31,14 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate item in {project.Plant} to item in {plant}");
         }
         ProjectId = project.Id;
-
-        ItemNo = itemNo;
+        Description = description;
         Guid = Guid.NewGuid();
     }
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
-    // todo #104033 How should we generate ItemNo? End user should not need to add it
-    public string ItemNo { get; private set; }
-    public string? Description { get; set; }
+    public int ItemNo => Id;
+    public string Description { get; set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -118,7 +114,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         VerifiedById = null;
     }
 
-    public void Update(string? description) => Description = description;
+    public void Update(string description) => Description = description;
 
     public void SetCreated(Person createdBy)
     {

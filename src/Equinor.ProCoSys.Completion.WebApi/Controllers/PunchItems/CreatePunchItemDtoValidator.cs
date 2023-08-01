@@ -11,9 +11,8 @@ public class CreatePunchItemDtoValidator : AbstractValidator<CreatePunchItemDto>
 
         RuleFor(dto => dto).NotNull();
 
-        RuleFor(dto => dto.ItemNo)
+        RuleFor(dto => dto.Description)
             .NotNull()
-            .MinimumLength(Domain.AggregateModels.PunchItemAggregate.PunchItem.ItemNoLengthMin)
-            .MaximumLength(Domain.AggregateModels.PunchItemAggregate.PunchItem.ItemNoLengthMax);
+            .MaximumLength(Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax);
     }
 }
