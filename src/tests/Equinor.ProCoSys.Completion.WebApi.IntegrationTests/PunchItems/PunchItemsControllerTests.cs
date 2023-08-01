@@ -42,6 +42,7 @@ public class PunchItemsControllerTests : TestBase
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunchItem);
         Assert.IsTrue(!newPunchItem.Description.IsEmpty());
+        Assert.IsTrue(newPunchItem.ItemNo > 4000000);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
 
         var allPunchItems = await PunchItemsControllerTestsHelper

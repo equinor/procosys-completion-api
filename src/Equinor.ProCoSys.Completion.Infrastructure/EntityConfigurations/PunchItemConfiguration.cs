@@ -24,8 +24,8 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(x => x.Id)
-            // Punch created in PCS5 has Id>4000000. Punch created in PCS4 has Id<4000000
-            .UseIdentityColumn(4000000);
+            // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
+            .UseIdentityColumn(4000001);
 
         builder.Property(x => x.Description)
             .IsRequired()
