@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -70,6 +71,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)
     {
         Assert.AreEqual(punchItem.ItemNo, punchItemDto.ItemNo);
+        Assert.AreEqual(punchItem.Description, punchItemDto.Description);
+        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDto.RowVersion);
         var project = GetProjectById(punchItem.ProjectId);
         Assert.AreEqual(project.Name, punchItemDto.ProjectName);
     }
