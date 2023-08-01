@@ -38,6 +38,14 @@ public class PunchItemTests : IModificationAuditableTests
     }
 
     [TestMethod]
+    public void Constructor_ShouldNotSetIdOrItemNo()
+    {
+        // Assert
+        Assert.AreEqual(0, _dut.Id);
+        Assert.AreEqual(0, _dut.ItemNo);
+    }
+
+    [TestMethod]
     public void Constructor_ShouldThrowException_WhenProjectNotGiven() =>
         Assert.ThrowsException<ArgumentNullException>(() =>
             new PunchItem(_testPlant, null!, _itemDescription));
@@ -46,6 +54,22 @@ public class PunchItemTests : IModificationAuditableTests
     public void Constructor_ShouldThrowException_WhenProjectInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
             new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemDescription));
+    #endregion
+
+    #region ItemNo
+    [TestMethod]
+    public void ItemNo_ShouldReturnId()
+    {
+        // Arrange
+        var id = 5;
+        _dut.SetProtectedIdForTesting(id);
+
+        // Act
+        var itemNo = _dut.ItemNo;
+
+        // Assert
+        Assert.AreEqual(id, itemNo);
+    }
     #endregion
 
     #region Update
