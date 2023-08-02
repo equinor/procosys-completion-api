@@ -96,6 +96,6 @@ public class Seeder : IHostedService
     private class SeederUserProvider : ICurrentUserProvider
     {
         public Guid GetCurrentUserOid() => s_seederUser.Guid;
-        public bool HasCurrentUser => true;
+        public bool HasCurrentUser => throw new NotImplementedException();
     }
 }
