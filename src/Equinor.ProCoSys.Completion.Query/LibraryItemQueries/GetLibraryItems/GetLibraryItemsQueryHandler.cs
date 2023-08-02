@@ -29,6 +29,8 @@ public class GetLibraryItemsQueryHandler : IRequestHandler<GetLibraryItemsQuery,
                 .TagWith($"{nameof(GetLibraryItemsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
 
-        return new SuccessResult<IEnumerable<LibraryItemDto>>(libraryItems);
+        var orderedLibraryItems = libraryItems.OrderBy(l => l.Code);
+
+        return new SuccessResult<IEnumerable<LibraryItemDto>>(orderedLibraryItems);
     }
 }

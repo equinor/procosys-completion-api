@@ -14,16 +14,26 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    private readonly string _type = "A Type";
-    private LibraryItem _libraryItem;
+    private readonly string _type1 = "LibType1";
+    private readonly string _type2 = "LibType2";
+    private LibraryItem _libraryItemA;
+    private LibraryItem _libraryItemB;
+    private LibraryItem _libraryItemC;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _libraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type);
+        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type1);
+        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _type1);
+        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _type1);
+        var otherLibraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "O", "O Desc", _type2);
 
-        context.Library.Add(_libraryItem);
+        context.Library.Add(_libraryItemC);
+        context.Library.Add(_libraryItemA);
+        context.Library.Add(_libraryItemB);
+        context.Library.Add(otherLibraryItem);
+
         context.SaveChangesAsync().Wait();
     }
 
@@ -46,12 +56,12 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectLibraryItems()
+    public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(_type);
+        var query = new GetLibraryItemsQuery(_type1);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -60,9 +70,28 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
+        Assert.AreEqual(3, result.Data.Count());
+    }
 
-        AssertLibraryItem(result.Data.Single(), _libraryItem);
+    [TestMethod]
+    public async Task Handler_ShouldReturnCorrectOrderedLibraryItems()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var query = new GetLibraryItemsQuery(_type1);
+        var dut = new GetLibraryItemsQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        AssertLibraryItem(result.Data.ElementAt(0), _libraryItemA);
+        AssertLibraryItem(result.Data.ElementAt(1), _libraryItemB);
+        AssertLibraryItem(result.Data.ElementAt(2), _libraryItemC);
     }
 
     private void AssertLibraryItem(LibraryItemDto libraryItemDto, LibraryItem libraryItem)
