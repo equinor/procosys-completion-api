@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemAttachmentDownloadUrl;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 
 [TestClass]
 public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase

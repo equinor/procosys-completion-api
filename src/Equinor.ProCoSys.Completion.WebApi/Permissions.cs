@@ -14,5 +14,7 @@ public class Permissions
     public const string PUNCHITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
     public const string PUNCHITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
 
+    public const string LIBRARY_READ = "LIBRARY_GENERAL/READ";
+
     public const string APPLICATION_TESTER = "APPLICATION_EXPLORER/EXECUTE";
 }

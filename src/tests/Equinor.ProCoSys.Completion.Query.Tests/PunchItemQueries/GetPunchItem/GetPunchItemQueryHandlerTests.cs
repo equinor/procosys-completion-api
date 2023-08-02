@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItem;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 
 [TestClass]
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
@@ -143,7 +143,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
         AssertNotRejected(punchItemDetailsDto);
-        
+
         Assert.AreNotEqual(punchItemDetailsDto.ModifiedAtUtc, punchItemDetailsDto.CreatedAtUtc);
     }
 

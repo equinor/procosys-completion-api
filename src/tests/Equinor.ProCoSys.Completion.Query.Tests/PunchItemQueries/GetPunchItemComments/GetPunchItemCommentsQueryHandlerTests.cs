@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemComments;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemComments;
 
 [TestClass]
 public class GetPunchItemCommentsQueryHandlerTests : TestsBase
@@ -25,8 +25,8 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
 
         _commentDto = new CommentDto(
             _query.PunchItemGuid,
-            Guid.NewGuid(), 
-            "T", 
+            Guid.NewGuid(),
+            "T",
             new PersonDto(Guid.NewGuid(), "First", "Last", "UN", "Email"),
             new DateTime(2023, 6, 11, 1, 2, 3));
         var commentDtos = new List<CommentDto>

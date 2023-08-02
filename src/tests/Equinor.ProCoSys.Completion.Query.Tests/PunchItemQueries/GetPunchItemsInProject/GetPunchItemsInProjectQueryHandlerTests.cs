@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemsInProject;
 
 [TestClass]
 public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase

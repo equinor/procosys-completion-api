@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemLinks;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemLinks;
 
 [TestClass]
 public class GetPunchItemLinksQueryHandlerTests : TestsBase
