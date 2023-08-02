@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

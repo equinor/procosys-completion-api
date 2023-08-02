@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using MediatR;
