@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -19,19 +20,29 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
     }
 
-    public PunchItem(string plant, Project project, string description)
+    public PunchItem(
+        string plant,
+        Project project,
+        string description,
+        LibraryItem raisedByOrg,
+        LibraryItem clearingByOrg)
         : base(plant)
     {
-        if (project is null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
-
         if (project.Plant != plant)
         {
             throw new ArgumentException($"Can't relate item in {project.Plant} to item in {plant}");
         }
+        if (raisedByOrg.Plant != plant)
+        {
+            throw new ArgumentException($"Can't relate item in {raisedByOrg.Plant} to item in {plant}");
+        }
+        if (clearingByOrg.Plant != plant)
+        {
+            throw new ArgumentException($"Can't relate item in {clearingByOrg.Plant} to item in {plant}");
+        }
         ProjectId = project.Id;
+        RaisedByOrgId = raisedByOrg.Id;
+        ClearingByOrgId = clearingByOrg.Id;
         Description = description;
         Guid = Guid.NewGuid();
     }
@@ -40,6 +51,11 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int ProjectId { get; private set; }
     public int ItemNo => Id;
     public string Description { get; set; }
+    public int RaisedByOrgId { get; private set; }
+    public int ClearingByOrgId { get; private set; }
+    public int? SortingId { get; private set; }
+    public int? TypeId { get; private set; }
+    public int? PriorityId { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -129,5 +145,35 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
         ModifiedByOid = modifiedBy.Guid;
+    }
+
+    public void SetSortingId(LibraryItem sorting)
+    {
+        if (sorting.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate item in {sorting.Plant} to item in {Plant}");
+        }
+
+        SortingId = sorting.Id;
+    }
+
+    public void SetTypeId(LibraryItem type)
+    {
+        if (type.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate item in {type.Plant} to item in {Plant}");
+        }
+
+        TypeId = type.Id;
+    }
+
+    public void SetPriorityId(LibraryItem priority)
+    {
+        if (priority.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate item in {priority.Plant} to item in {Plant}");
+        }
+
+        PriorityId = priority.Id;
     }
 }

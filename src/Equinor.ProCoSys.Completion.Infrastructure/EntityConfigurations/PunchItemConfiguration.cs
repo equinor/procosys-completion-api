@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
@@ -61,6 +62,36 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasForeignKey(x => x.VerifiedById)
             .OnDelete(DeleteBehavior.NoAction);
 
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.RaisedByOrgId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.ClearingByOrgId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.SortingId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.TypeId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_cleared",
@@ -107,6 +138,11 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.VerifiedAtUtc,
                 x.RejectedById,
                 x.RejectedAtUtc,
+                x.RaisedByOrgId,
+                x.ClearingByOrgId,
+                x.SortingId,
+                x.TypeId,
+                x.PriorityId,
                 x.RowVersion
             });
 
