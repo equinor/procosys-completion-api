@@ -16,10 +16,10 @@ public abstract class AccessValidatorForIIsPunchItemQueryTests<TPunchItemQuery> 
     public async Task Validate_ShouldReturnTrue_WhenAccessToProjectForPunchItem()
     {
         // Arrange
-        var command = GetPunchItemQueryWithAccessToProject();
+        var query = GetPunchItemQueryWithAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(query);
 
         // Assert
         Assert.IsTrue(result);
@@ -29,10 +29,10 @@ public abstract class AccessValidatorForIIsPunchItemQueryTests<TPunchItemQuery> 
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProjectForPunchItem()
     {
         // Arrange
-        var command = GetPunchItemQueryWithoutAccessToProject();
+        var query = GetPunchItemQueryWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(query);
 
         // Assert
         Assert.IsFalse(result);
