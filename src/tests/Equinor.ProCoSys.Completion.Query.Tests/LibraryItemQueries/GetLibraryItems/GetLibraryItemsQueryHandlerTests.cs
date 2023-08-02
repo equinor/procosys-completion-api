@@ -1,32 +1,29 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
+using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryItems;
 
 [TestClass]
-public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
+public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    private PunchItem _punchItemInProjectA;
-    private PunchItem _punchItemInProjectB;
+    private readonly string _type = "A Type";
+    private LibraryItem _libraryItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, "A");
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, "B");
+        _libraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type);
 
-        context.PunchItems.Add(_punchItemInProjectA);
-        context.PunchItems.Add(_punchItemInProjectB);
+        context.Library.Add(_libraryItem);
         context.SaveChangesAsync().Wait();
     }
 
@@ -36,8 +33,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetPunchItemsInProjectQuery(Guid.Empty);
-        var dut = new GetPunchItemsInProjectQueryHandler(context);
+        var query = new GetLibraryItemsQuery("Blah");
+        var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -49,13 +46,13 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectPunchItems()
+    public async Task Handler_ShouldReturnCorrectLibraryItems()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetPunchItemsInProjectQuery(_projectA.Guid);
-        var dut = new GetPunchItemsInProjectQueryHandler(context);
+        var query = new GetLibraryItemsQuery(_type);
+        var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -65,15 +62,12 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(1, result.Data.Count());
 
-        AssertPunchItem(result.Data.Single(), _punchItemInProjectA);
+        AssertLibraryItem(result.Data.Single(), _libraryItem);
     }
 
-    private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)
+    private void AssertLibraryItem(LibraryItemDto libraryItemDto, LibraryItem libraryItem)
     {
-        Assert.AreEqual(punchItem.ItemNo, punchItemDto.ItemNo);
-        Assert.AreEqual(punchItem.Description, punchItemDto.Description);
-        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDto.RowVersion);
-        var project = GetProjectById(punchItem.ProjectId);
-        Assert.AreEqual(project.Name, punchItemDto.ProjectName);
+        Assert.AreEqual(libraryItem.Code, libraryItemDto.Code);
+        Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
     }
 }

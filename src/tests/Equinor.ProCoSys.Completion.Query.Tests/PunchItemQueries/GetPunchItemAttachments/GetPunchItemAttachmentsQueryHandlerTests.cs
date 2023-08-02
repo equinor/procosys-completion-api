@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItemAttachments;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemAttachments;
 
 [TestClass]
 public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
@@ -25,7 +25,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
 
         _attachmentDto = new AttachmentDto(
             _query.PunchItemGuid,
-            Guid.NewGuid(), 
+            Guid.NewGuid(),
             "full/path",
             "F.txt",
             new PersonDto(Guid.NewGuid(), "First1", "Last1", "UN1", "Email1"),
@@ -58,7 +58,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         Assert.AreEqual(_attachmentDto.FileName, attachment.FileName);
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
         Assert.AreEqual(_attachmentDto.RowVersion, attachment.RowVersion);
-        
+
         var createdBy = attachment.CreatedBy;
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(_attachmentDto.CreatedBy.Guid, createdBy.Guid);
