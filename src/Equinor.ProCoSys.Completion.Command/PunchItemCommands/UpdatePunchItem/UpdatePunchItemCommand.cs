@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
 public class UpdatePunchItemCommand : IRequest<Result<string>>, IIsPunchItemCommand
 {
-    public UpdatePunchItemCommand(Guid punchItemGuid, string? description, string rowVersion)
+    public UpdatePunchItemCommand(Guid punchItemGuid, string description, string rowVersion)
     {
         PunchItemGuid = punchItemGuid;
         Description = description;
@@ -14,6 +14,6 @@ public class UpdatePunchItemCommand : IRequest<Result<string>>, IIsPunchItemComm
     }
 
     public Guid PunchItemGuid { get; }
-    public string? Description { get; }
+    public string Description { get; }
     public string RowVersion { get; }
 }

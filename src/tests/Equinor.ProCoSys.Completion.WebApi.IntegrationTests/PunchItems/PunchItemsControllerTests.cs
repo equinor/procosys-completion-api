@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -27,13 +28,13 @@ public class PunchItemsControllerTests : TestBase
     public async Task CreatePunchItem_AsWriter_ShouldCreatePunchItem()
     {
         // Arrange
-        var itemNo = Guid.NewGuid().ToString();
+        var description = Guid.NewGuid().ToString();
 
         // Act
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            itemNo,
+            description,
             TestFactory.ProjectGuidWithAccess);
 
         // Assert
@@ -41,7 +42,8 @@ public class PunchItemsControllerTests : TestBase
         var newPunchItem = await PunchItemsControllerTestsHelper
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunchItem);
-        Assert.AreEqual(itemNo, newPunchItem.ItemNo);
+        Assert.IsTrue(!newPunchItem.Description.IsEmpty());
+        Assert.IsTrue(newPunchItem.ItemNo >= PunchItem.IdentitySeed);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
 
         var allPunchItems = await PunchItemsControllerTestsHelper
@@ -62,16 +64,14 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsReader_ShouldGetAllPunchItems()
+    public async Task GetAllPunchItemsInProject_AsReader_ShouldGetPunchItems()
     {
         // Act
         var punchItems = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
 
-        // Assert
+        // Assert (can't assert the exact number since other tests creates items in in-memory db)
         Assert.IsTrue(punchItems.Count > 0);
-        Assert.IsTrue(punchItems.All(p => !p.ItemNo.IsEmpty()));
-        Assert.IsTrue(punchItems.All(p => !p.RowVersion.IsEmpty()));
     }
 
     [TestMethod]

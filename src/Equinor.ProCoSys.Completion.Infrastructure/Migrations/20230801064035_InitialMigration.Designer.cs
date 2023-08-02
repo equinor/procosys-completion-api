@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    [Migration("20230705052939_InitialMigration")]
+    [Migration("20230801064035_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -448,7 +448,13 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 4000001L);
+
+                    b.Property<DateTime?>("ClearedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ClearedById")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
@@ -460,16 +466,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ItemNo")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime?>("ModifiedAtUtc")
                         .HasColumnType("datetime2");
@@ -498,28 +500,57 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("RejectedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RejectedById")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<DateTime?>("VerifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("VerifiedById")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ClearedById");
 
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
                         .HasDatabaseName("IX_PunchItems_Guid");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "ItemNo", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "RowVersion" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Id", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RowVersion" });
 
                     b.HasIndex("ModifiedById");
 
                     b.HasIndex("ProjectId")
                         .HasDatabaseName("IX_PunchItems_ProjectId");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ProjectId"), new[] { "ItemNo", "RowVersion" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ProjectId"), new[] { "Id", "RowVersion" });
 
-                    b.ToTable("PunchItems");
+                    b.HasIndex("RejectedById");
+
+                    b.HasIndex("VerifiedById");
+
+                    b.ToTable("PunchItems", t =>
+                        {
+                            t.HasCheckConstraint("punch_item_check_cleared", "(ClearedAtUtc is null and ClearedById is null) or (ClearedAtUtc is not null and ClearedById is not null)");
+
+                            t.HasCheckConstraint("punch_item_check_cleared_rejected", "not (ClearedAtUtc is not null and RejectedAtUtc is not null)");
+
+                            t.HasCheckConstraint("punch_item_check_cleared_verified", "not (ClearedAtUtc is null and VerifiedAtUtc is not null)");
+
+                            t.HasCheckConstraint("punch_item_check_rejected", "(RejectedAtUtc is null and RejectedById is null) or (RejectedAtUtc is not null and RejectedById is not null)");
+
+                            t.HasCheckConstraint("punch_item_check_verified", "(VerifiedAtUtc is null and VerifiedById is null) or (VerifiedAtUtc is not null and VerifiedById is not null)");
+                        });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
@@ -759,6 +790,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
                         .WithMany()
+                        .HasForeignKey("ClearedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
+                        .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -773,6 +809,16 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
+                        .WithMany()
+                        .HasForeignKey("RejectedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
+                        .WithMany()
+                        .HasForeignKey("VerifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
                 });
 #pragma warning restore 612, 618
         }

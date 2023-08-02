@@ -43,7 +43,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             throw new Exception($"Could not find ProCoSys project with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var punchItem = new PunchItem(_plantProvider.Plant, project, request.ItemNo);
+        var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description);
         _punchItemRepository.Add(punchItem);
         punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, request.ProjectGuid));
 

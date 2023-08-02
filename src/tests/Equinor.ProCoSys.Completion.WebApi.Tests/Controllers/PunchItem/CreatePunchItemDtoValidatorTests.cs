@@ -24,7 +24,7 @@ public class CreatePunchItemDtoValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenItemNoNotGiven()
+    public async Task Validate_ShouldFail_WhenDescriptionNotGiven()
     {
         // Arrange
         var dto = new CreatePunchItemDto(null!, Guid.NewGuid());
@@ -35,30 +35,15 @@ public class CreatePunchItemDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Item No' must not be empty."));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Description' must not be empty."));
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenItemNoIsTooShort()
-    {
-        // Arrange
-        var dto = new CreatePunchItemDto("N", Guid.Empty);
-
-        // Act
-        var result = await _dut.ValidateAsync(dto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith($"The length of 'Item No' must be"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenItemNoIsTooLongAsync()
+    public async Task Validate_ShouldFail_WhenDescriptionIsTooLongAsync()
     {
         // Arrange
         var dto = new CreatePunchItemDto(
-            new string('x', Domain.AggregateModels.PunchItemAggregate.PunchItem.ItemNoLengthMax + 1),
+            new string('x', Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax + 1),
             Guid.NewGuid());
 
         // Act
@@ -67,6 +52,6 @@ public class CreatePunchItemDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Item No' must be"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Description' must be"));
     }
 }

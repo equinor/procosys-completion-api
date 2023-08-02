@@ -23,11 +23,12 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.Property(x => x.ItemNo)
-            .HasMaxLength(PunchItem.ItemNoLengthMax)
-            .IsRequired();
+        builder.Property(x => x.Id)
+            // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
+            .UseIdentityColumn(PunchItem.IdentitySeed);
 
         builder.Property(x => x.Description)
+            .IsRequired()
             .HasMaxLength(PunchItem.DescriptionLengthMax);
 
         builder
@@ -93,7 +94,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasDatabaseName("IX_PunchItems_Guid")
             .IncludeProperties(x => new
             {
-                x.ItemNo,
+                x.Id,
                 x.Description,
                 x.ProjectId,
                 x.CreatedById,
@@ -114,7 +115,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasDatabaseName("IX_PunchItems_ProjectId")
             .IncludeProperties(x => new
             {
-                x.ItemNo,
+                x.Id,
                 x.RowVersion
             });
     }

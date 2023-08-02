@@ -82,14 +82,14 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
-        string itemNo,
+        string description,
         Guid projectGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            itemNo,
+            description,
             projectGuid = projectGuid.ToString()
         };
 

@@ -16,7 +16,7 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
-            { "ItemNo", typeof(string) },
+            { "ItemNo", typeof(int) },
             { "CreatedByOid", typeof(Guid) },
             { "CreatedAtUtc", typeof(DateTime) }
         };

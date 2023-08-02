@@ -6,12 +6,12 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
-    public CreatePunchItemCommand(string itemNo, Guid projectGuid)
+    public CreatePunchItemCommand(string description, Guid projectGuid)
     {
-        ItemNo = itemNo;
+        Description = description;
         ProjectGuid = projectGuid;
     }
 
-    public string ItemNo { get; }
+    public string Description { get; }
     public Guid ProjectGuid { get; }
 }

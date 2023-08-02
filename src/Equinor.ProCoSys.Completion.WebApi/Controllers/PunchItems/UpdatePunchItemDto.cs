@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public record UpdatePunchItemDto(
     [Required]
-    string? Description,
+    string Description,
     [Required]
     string RowVersion);
