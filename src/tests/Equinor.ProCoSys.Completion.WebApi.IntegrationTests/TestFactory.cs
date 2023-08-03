@@ -45,6 +45,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static Guid ProjectGuidWithAccess => KnownTestData.ProjectGuidA;
     public static string ProjectNameWithoutAccess => KnownTestData.ProjectNameB;
     public static Guid ProjectGuidWithoutAccess => KnownTestData.ProjectGuidB;
+    public static Guid RaisedByOrgGuid => KnownTestData.RaisedByOrgGuid;
+    public static Guid ClearingByOrgGuid => KnownTestData.ClearingByOrgGuid;
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
 

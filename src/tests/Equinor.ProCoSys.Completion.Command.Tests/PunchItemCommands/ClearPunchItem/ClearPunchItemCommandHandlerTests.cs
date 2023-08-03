@@ -1,14 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
-using Equinor.ProCoSys.Completion.Test.Common;
-using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -16,37 +10,19 @@ using Moq;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem;
 
 [TestClass]
-public class ClearPunchItemCommandHandlerTests : TestsBase
+public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
-    private readonly int _currentPersonId = 13;
-    private readonly string _rowVersion = "AAAAAAAAABA=";
-
-    private Mock<IPunchItemRepository> _punchItemRepositoryMock;
-    private PunchItem _existingPunchItem;
-
     private ClearPunchItemCommand _command;
     private ClearPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        var person = new Person(Guid.NewGuid(), "F", "L", "UN", "@");
-        person.SetProtectedIdForTesting(_currentPersonId);
-
-        var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
-        _existingPunchItem = new PunchItem(TestPlantA, project, "X1");
-        _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
-            .ReturnsAsync(_existingPunchItem);
-        var personRepositoryMock = new Mock<IPersonRepository>();
-
-        personRepositoryMock.Setup(r => r.GetCurrentPersonAsync())
-            .ReturnsAsync(person);
         _command = new ClearPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
 
         _dut = new ClearPunchItemCommandHandler(
             _punchItemRepositoryMock.Object,
-            personRepositoryMock.Object,
+            _personRepositoryMock.Object,
             _unitOfWorkMock.Object,
             new Mock<ILogger<ClearPunchItemCommandHandler>>().Object);
     }

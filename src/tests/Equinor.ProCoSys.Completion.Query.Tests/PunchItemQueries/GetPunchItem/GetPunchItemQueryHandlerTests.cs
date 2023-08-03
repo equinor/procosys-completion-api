@@ -24,11 +24,11 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "created");
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "modified");
-        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "cleared");
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "verified");
-        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "rejected");
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);

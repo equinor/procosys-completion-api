@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -14,25 +10,14 @@ using Moq;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
 [TestClass]
-public class UpdatePunchItemCommandHandlerTests : TestsBase
+public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
-    private readonly string _rowVersion = "AAAAAAAAABA=";
-
-    private Mock<IPunchItemRepository> _punchItemRepositoryMock;
-    private PunchItem _existingPunchItem;
-
     private UpdatePunchItemCommand _command;
     private UpdatePunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        var project = new Project(TestPlantA, Guid.NewGuid(), "P", "D");
-        _existingPunchItem = new PunchItem(TestPlantA, project, "X1");
-        _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
-            .ReturnsAsync(_existingPunchItem);
-
         _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, "newText", _rowVersion);
 
         _dut = new UpdatePunchItemCommandHandler(
