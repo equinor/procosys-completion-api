@@ -147,6 +147,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ModifiedByOid = modifiedBy.Guid;
     }
 
+    // todo add unit tests
     public void SetSortingId(LibraryItem sorting)
     {
         if (sorting.Plant != Plant)
@@ -157,6 +158,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         SortingId = sorting.Id;
     }
 
+    // todo add unit tests
     public void SetTypeId(LibraryItem type)
     {
         if (type.Plant != Plant)
@@ -167,6 +169,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         TypeId = type.Id;
     }
 
+    // todo add unit tests
     public void SetPriorityId(LibraryItem priority)
     {
         if (priority.Plant != Plant)
