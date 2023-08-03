@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemsInProject;
 
@@ -22,8 +22,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, "A");
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, "B");
+        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, "A", _raisedByOrg, _clearingByOrg);
+        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, "B", _raisedByOrg, _clearingByOrg);
 
         context.PunchItems.Add(_punchItemInProjectA);
         context.PunchItems.Add(_punchItemInProjectB);

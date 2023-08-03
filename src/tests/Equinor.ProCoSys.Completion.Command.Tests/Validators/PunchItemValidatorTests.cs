@@ -22,12 +22,12 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, "x1");
-        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2");
+        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, "x1", _raisedByOrg, _clearingByOrg);
+        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, "x2", _raisedByOrg, _clearingByOrg);
         _notClearedPunchItem = _punchItemInOpenProject;
-        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x3");
+        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x3", _raisedByOrg, _clearingByOrg);
         _clearedButNotVerifiedPunchItem.Clear(_currentPerson);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x4");
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "x4", _raisedByOrg, _clearingByOrg);
         _verifiedPunchItem.Clear(_currentPerson);
         _verifiedPunchItem.Verify(_currentPerson);
 

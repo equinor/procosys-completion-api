@@ -61,32 +61,32 @@ public class Seeder : IHostedService
             Guid.NewGuid(),
             "COM",
             "Commissioning",
-            LibraryTypes.COMPLETION_ORGANIZATION.ToString()));
-        libraryRepository.AddLibraryItems(_testPlant, LibraryTypes.COMPLETION_ORGANIZATION, 50);
+            LibraryType.COMPLETION_ORGANIZATION.ToString()));
+        libraryRepository.AddLibraryItems(_testPlant, LibraryType.COMPLETION_ORGANIZATION, 50);
 
         libraryRepository.Add(new LibraryItem(
             _testPlant,
             Guid.NewGuid(),
             "01",
             "Low priority",
-            LibraryTypes.PUNCHLIST_PRIORITY.ToString()));
-        libraryRepository.AddLibraryItems(_testPlant, LibraryTypes.PUNCHLIST_PRIORITY, 50);
+            LibraryType.PUNCHLIST_PRIORITY.ToString()));
+        libraryRepository.AddLibraryItems(_testPlant, LibraryType.PUNCHLIST_PRIORITY, 50);
 
         libraryRepository.Add(new LibraryItem(
             _testPlant,
             Guid.NewGuid(),
             "01",
             "Damage",
-            LibraryTypes.PUNCHLIST_TYPE.ToString()));
-        libraryRepository.AddLibraryItems(_testPlant, LibraryTypes.PUNCHLIST_TYPE, 50);
+            LibraryType.PUNCHLIST_TYPE.ToString()));
+        libraryRepository.AddLibraryItems(_testPlant, LibraryType.PUNCHLIST_TYPE, 50);
 
         libraryRepository.Add(new LibraryItem(
             _testPlant,
             Guid.NewGuid(),
             "01",
             "01",
-            LibraryTypes.PUNCHLIST_SORTING.ToString()));
-        libraryRepository.AddLibraryItems(_testPlant, LibraryTypes.PUNCHLIST_SORTING, 50);
+            LibraryType.PUNCHLIST_SORTING.ToString()));
+        libraryRepository.AddLibraryItems(_testPlant, LibraryType.PUNCHLIST_SORTING, 50);
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

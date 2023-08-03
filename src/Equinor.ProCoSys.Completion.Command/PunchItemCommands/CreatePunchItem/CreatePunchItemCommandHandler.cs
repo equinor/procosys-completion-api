@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using MediatR;
 using ServiceResult;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
@@ -18,18 +19,21 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
     private readonly IPlantProvider _plantProvider;
     private readonly IPunchItemRepository _punchItemRepository;
+    private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IProjectRepository _projectRepository;
 
     public CreatePunchItemCommandHandler(
         IPlantProvider plantProvider,
         IPunchItemRepository punchItemRepository,
+        ILibraryItemRepository libraryItemRepository,
         IUnitOfWork unitOfWork,
         IProjectRepository projectRepository,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
         _plantProvider = plantProvider;
         _punchItemRepository = punchItemRepository;
+        _libraryItemRepository = libraryItemRepository;
         _unitOfWork = unitOfWork;
         _projectRepository = projectRepository;
         _logger = logger;
@@ -40,10 +44,13 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         var project = await _projectRepository.GetByGuidAsync(request.ProjectGuid);
         if (project is null)
         {
-            throw new Exception($"Could not find ProCoSys project with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
+            throw new Exception($"Could not find {nameof(Project)} with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description);
+        var raisedByOrg = await GetLibraryItem(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var clearingByOrg = await GetLibraryItem(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+
+        var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description, raisedByOrg, clearingByOrg);
         _punchItemRepository.Add(punchItem);
         punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, request.ProjectGuid));
 
@@ -52,5 +59,17 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo, punchItem.Guid);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
+    }
+
+    private async Task<LibraryItem> GetLibraryItem(Guid libraryGuid, LibraryType type)
+    {
+        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, type);
+        if (libraryItem is null)
+        {
+            throw new Exception(
+                $"Could not find {nameof(LibraryItem)} of type {type} with Guid {libraryGuid} in plant {_plantProvider.Plant}");
+        }
+
+        return libraryItem;
     }
 }
