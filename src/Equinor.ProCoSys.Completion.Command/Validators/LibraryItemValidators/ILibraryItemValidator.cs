@@ -8,6 +8,6 @@ namespace Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 public interface ILibraryItemValidator
 {
     Task<bool> ExistsAsync(Guid libraryItemGuid, CancellationToken cancellationToken);
-    Task<bool> HasTypeAsync(Guid libraryItemGuid, LibraryTypes type, CancellationToken cancellationToken);
+    Task<bool> HasTypeAsync(Guid libraryItemGuid, LibraryType type, CancellationToken cancellationToken);
     Task<bool> IsVoidedAsync(Guid libraryItemGuid, CancellationToken cancellationToken);
 }

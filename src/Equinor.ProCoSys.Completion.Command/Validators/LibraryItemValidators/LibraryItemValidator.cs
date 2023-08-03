@@ -21,7 +21,7 @@ public class LibraryItemValidator : ILibraryItemValidator
 
     public async Task<bool> HasTypeAsync(
         Guid libraryItemGuid,
-        LibraryTypes type,
+        LibraryType type,
         CancellationToken cancellationToken)
     {
         var libraryItem = await(from p in _context.QuerySet<LibraryItem>()

@@ -36,10 +36,10 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .MustAsync((command, cancellationToken)
                 => BeALibraryItemOfTypeAsync(
                     command.RaisedByOrgGuid, 
-                    LibraryTypes.COMPLETION_ORGANIZATION,
+                    LibraryType.COMPLETION_ORGANIZATION,
                     cancellationToken))
             .WithMessage(command =>
-                $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}! " +
+                $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
                 $"Guid={command.RaisedByOrgGuid}")
 
             // validate given ClearingByOrg
@@ -54,10 +54,10 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .MustAsync((command, cancellationToken)
                 => BeALibraryItemOfTypeAsync(
                     command.ClearingByOrgGuid,
-                    LibraryTypes.COMPLETION_ORGANIZATION,
+                    LibraryType.COMPLETION_ORGANIZATION,
                     cancellationToken))
             .WithMessage(command =>
-                $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}! " +
+                $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
                 $"Guid={command.ClearingByOrgGuid}");
 
         async Task<bool> BeAnExistingProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
@@ -69,7 +69,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         async Task<bool> BeAnExistingLibraryItemAsync(Guid guid, CancellationToken cancellationToken)
             => await libraryItemValidator.ExistsAsync(guid, cancellationToken);
 
-        async Task<bool> BeALibraryItemOfTypeAsync(Guid guid, LibraryTypes type, CancellationToken cancellationToken)
+        async Task<bool> BeALibraryItemOfTypeAsync(Guid guid, LibraryType type, CancellationToken cancellationToken)
             => await libraryItemValidator.HasTypeAsync(guid, type, cancellationToken);
 
         async Task<bool> NotBeAVoidedLibraryItemAsync(Guid guid, CancellationToken cancellationToken)

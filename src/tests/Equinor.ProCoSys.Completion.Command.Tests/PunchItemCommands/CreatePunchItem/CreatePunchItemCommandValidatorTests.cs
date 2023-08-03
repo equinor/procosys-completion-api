@@ -31,12 +31,12 @@ public class CreatePunchItemCommandValidatorTests
             .ReturnsAsync(true);
         _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
                 _command.RaisedByOrgGuid,
-                LibraryTypes.COMPLETION_ORGANIZATION,
+                LibraryType.COMPLETION_ORGANIZATION,
                 default))
             .ReturnsAsync(true);
         _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
                 _command.ClearingByOrgGuid,
-                LibraryTypes.COMPLETION_ORGANIZATION,
+                LibraryType.COMPLETION_ORGANIZATION,
                 default))
             .ReturnsAsync(true);
 
@@ -124,7 +124,7 @@ public class CreatePunchItemCommandValidatorTests
     {
         // Arrange
         _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.RaisedByOrgGuid,
-                LibraryTypes.COMPLETION_ORGANIZATION,
+                LibraryType.COMPLETION_ORGANIZATION,
                 default))
             .ReturnsAsync(false);
 
@@ -135,7 +135,7 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
-            $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}!"));
+            $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
     }
 
     [TestMethod]
@@ -175,7 +175,7 @@ public class CreatePunchItemCommandValidatorTests
     {
         // Arrange
         _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.ClearingByOrgGuid,
-                LibraryTypes.COMPLETION_ORGANIZATION,
+                LibraryType.COMPLETION_ORGANIZATION,
                 default))
             .ReturnsAsync(false);
 
@@ -186,6 +186,6 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
-            $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}!"));
+            $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
     }
 }
