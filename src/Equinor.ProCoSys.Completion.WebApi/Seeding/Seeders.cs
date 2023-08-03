@@ -25,7 +25,7 @@ public static class Seeders
         }
     }
 
-    public static void AddLibraryItems(this ILibraryItemRepository libraryItemRepository, string plant, LibraryTypes type, int entryCount)
+    public static void AddLibraryItems(this ILibraryItemRepository libraryItemRepository, string plant, LibraryType type, int entryCount)
     {
         for (var i = 0; i < entryCount; i++)
         {

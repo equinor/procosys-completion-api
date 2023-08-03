@@ -30,15 +30,15 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         if (project.Plant != plant)
         {
-            throw new ArgumentException($"Can't relate item in {project.Plant} to item in {plant}");
+            throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
         }
         if (raisedByOrg.Plant != plant)
         {
-            throw new ArgumentException($"Can't relate item in {raisedByOrg.Plant} to item in {plant}");
+            throw new ArgumentException($"Can't relate {nameof(raisedByOrg)} in {raisedByOrg.Plant} to item in {plant}");
         }
         if (clearingByOrg.Plant != plant)
         {
-            throw new ArgumentException($"Can't relate item in {clearingByOrg.Plant} to item in {plant}");
+            throw new ArgumentException($"Can't relate {nameof(clearingByOrg)} in {clearingByOrg.Plant} to item in {plant}");
         }
         ProjectId = project.Id;
         RaisedByOrgId = raisedByOrg.Id;
@@ -151,7 +151,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         if (sorting.Plant != Plant)
         {
-            throw new ArgumentException($"Can't relate item in {sorting.Plant} to item in {Plant}");
+            throw new ArgumentException($"Can't relate {nameof(sorting)} in {sorting.Plant} to item in {Plant}");
         }
 
         SortingId = sorting.Id;
@@ -161,7 +161,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         if (type.Plant != Plant)
         {
-            throw new ArgumentException($"Can't relate item in {type.Plant} to item in {Plant}");
+            throw new ArgumentException($"Can't relate {nameof(type)} in {type.Plant} to item in {Plant}");
         }
 
         TypeId = type.Id;
@@ -171,7 +171,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         if (priority.Plant != Plant)
         {
-            throw new ArgumentException($"Can't relate item in {priority.Plant} to item in {Plant}");
+            throw new ArgumentException($"Can't relate {nameof(priority)} in {priority.Plant} to item in {Plant}");
         }
 
         PriorityId = priority.Id;

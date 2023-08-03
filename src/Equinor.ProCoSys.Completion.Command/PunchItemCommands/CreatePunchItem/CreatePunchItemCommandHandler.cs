@@ -47,8 +47,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             throw new Exception($"Could not find {nameof(Project)} with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var raisedByOrg = await GetLibraryItem(request.RaisedByOrgGuid, LibraryTypes.COMPLETION_ORGANIZATION);
-        var clearingByOrg = await GetLibraryItem(request.ClearingByOrgGuid, LibraryTypes.COMPLETION_ORGANIZATION);
+        var raisedByOrg = await GetLibraryItem(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var clearingByOrg = await GetLibraryItem(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
 
         var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description, raisedByOrg, clearingByOrg);
         _punchItemRepository.Add(punchItem);
@@ -61,7 +61,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
     }
 
-    private async Task<LibraryItem> GetLibraryItem(Guid libraryGuid, LibraryTypes type)
+    private async Task<LibraryItem> GetLibraryItem(Guid libraryGuid, LibraryType type)
     {
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, type);
         if (libraryItem is null)

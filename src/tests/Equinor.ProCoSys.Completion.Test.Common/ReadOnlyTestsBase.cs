@@ -74,13 +74,13 @@ public abstract class ReadOnlyTestsBase : TestsBase
             RaisedByOrgGuid, 
             RaisedByOrgCode,
             $"{RaisedByOrgCode} desc",
-            LibraryTypes.COMPLETION_ORGANIZATION.ToString());
+            LibraryType.COMPLETION_ORGANIZATION.ToString());
         _clearingByOrg = new LibraryItem(
             TestPlantA,
             ClearingByOrgGuid,
             ClearingByOrgCode,
             $"{ClearingByOrgCode} desc",
-            LibraryTypes.COMPLETION_ORGANIZATION.ToString());
+            LibraryType.COMPLETION_ORGANIZATION.ToString());
 
         AddLibraryItem(context, _raisedByOrg);
         AddLibraryItem(context, _clearingByOrg);

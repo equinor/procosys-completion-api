@@ -57,10 +57,10 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
 
         _libraryItemRepositoryMock = new Mock<ILibraryItemRepository>();
         _libraryItemRepositoryMock
-            .Setup(x => x.GetByGuidAndTypeAsync(_existingRaisedByOrg.Guid, LibraryTypes.COMPLETION_ORGANIZATION))
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingRaisedByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
             .ReturnsAsync(_existingRaisedByOrg);
         _libraryItemRepositoryMock
-            .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryTypes.COMPLETION_ORGANIZATION))
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
             .ReturnsAsync(_existingClearingByOrg);
 
         _command = new CreatePunchItemCommand(
@@ -113,7 +113,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldThrewException_WhenProjectNotExists()
+    public async Task HandlingCommand_ShouldThrowException_WhenProjectNotExists()
     {
         // Arrange
         _projectRepositoryMock
@@ -125,11 +125,11 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldThrewException_WhenRaisedByOrgNotExists()
+    public async Task HandlingCommand_ShouldThrowException_WhenRaisedByOrgNotExists()
     {
         // Arrange
         _libraryItemRepositoryMock
-            .Setup(x => x.GetByGuidAndTypeAsync(_existingRaisedByOrg.Guid, LibraryTypes.COMPLETION_ORGANIZATION))
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingRaisedByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
             .ReturnsAsync((LibraryItem)null);
 
         // Act and Assert
@@ -137,11 +137,11 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldThrewException_WhenClearingByOrgNotExists()
+    public async Task HandlingCommand_ShouldThrowException_WhenClearingByOrgNotExists()
     {
         // Arrange
         _libraryItemRepositoryMock
-            .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryTypes.COMPLETION_ORGANIZATION))
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
             .ReturnsAsync((LibraryItem)null);
 
         // Act and Assert

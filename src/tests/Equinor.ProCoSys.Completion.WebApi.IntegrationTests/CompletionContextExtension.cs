@@ -55,14 +55,14 @@ public static class CompletionContextExtension
             plant,
             KnownTestData.RaisedByOrgGuid,
             KnownTestData.RaisedByOrgCode,
-            LibraryTypes.COMPLETION_ORGANIZATION);
+            LibraryType.COMPLETION_ORGANIZATION);
 
         var clearingByOrg = SeedLibrary(
             dbContext,
             plant,
             KnownTestData.ClearingByOrgGuid,
             KnownTestData.ClearingByOrgCode,
-            LibraryTypes.COMPLETION_ORGANIZATION);
+            LibraryType.COMPLETION_ORGANIZATION);
 
         var punchItemA = SeedPunchItem(
             dbContext,
@@ -182,7 +182,7 @@ public static class CompletionContextExtension
         string plant,
         Guid guid,
         string code,
-        LibraryTypes type)
+        LibraryType type)
     {
         var libraryItemRepository = new LibraryItemRepository(dbContext);
         var libraryItem = new LibraryItem(plant, guid, code, $"{code} desc", type.ToString());

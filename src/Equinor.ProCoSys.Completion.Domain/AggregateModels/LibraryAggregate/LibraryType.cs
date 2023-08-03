@@ -2,7 +2,7 @@
 
 // ReSharper disable InconsistentNaming
 // Keep enum names to match types in ProCoSys 4
-public enum LibraryTypes
+public enum LibraryType
 {
     COMPLETION_ORGANIZATION,
     // In ProCoSys 4 PUNCHLIST_PRIORITY is COMM_PRIORITY classified as PUNCH_PRIORITY.

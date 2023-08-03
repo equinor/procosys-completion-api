@@ -138,7 +138,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldThrewException_WhenPersonNotInCache()
+    public async Task HandlingCommand_ShouldThrowException_WhenPersonNotInCache()
     {
         // Arrange
         _personCacheMock.Setup(x => x.GetAsync(_azureOid)).ReturnsAsync((ProCoSysPerson)null);
