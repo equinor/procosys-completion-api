@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -13,6 +15,7 @@ public class CreatePunchItemCommandValidatorTests
     private CreatePunchItemCommandValidator _dut;
     private CreatePunchItemCommand _command;
     private Mock<IProjectValidator> _projectValidatorMock;
+    private Mock<ILibraryItemValidator> _libraryItemValidatorMock;
 
     [TestInitialize]
     public void Setup_OkState()
@@ -21,7 +24,25 @@ public class CreatePunchItemCommandValidatorTests
         _projectValidatorMock = new Mock<IProjectValidator>();
         _projectValidatorMock.Setup(x => x.ExistsAsync(_command.ProjectGuid, default))
             .ReturnsAsync(true);
-        _dut = new CreatePunchItemCommandValidator(_projectValidatorMock.Object);
+        _libraryItemValidatorMock = new Mock<ILibraryItemValidator>();
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.RaisedByOrgGuid, default))
+            .ReturnsAsync(true);
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.ClearingByOrgGuid, default))
+            .ReturnsAsync(true);
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
+                _command.RaisedByOrgGuid,
+                LibraryTypes.COMPLETION_ORGANIZATION,
+                default))
+            .ReturnsAsync(true);
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
+                _command.ClearingByOrgGuid,
+                LibraryTypes.COMPLETION_ORGANIZATION,
+                default))
+            .ReturnsAsync(true);
+
+        _dut = new CreatePunchItemCommandValidator(
+            _projectValidatorMock.Object,
+            _libraryItemValidatorMock.Object);
     }
 
     [TestMethod]
@@ -47,7 +68,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project with this Guid does not exist!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project does not exist!"));
     }
 
     [TestMethod]
@@ -64,5 +85,107 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project is closed!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_RaisedByOrgNotExists()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.RaisedByOrgGuid, default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_RaisedByOrgIsVoided()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.RaisedByOrgGuid, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_RaisedByOrgIsNotACompletionOrganization()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.RaisedByOrgGuid,
+                LibraryTypes.COMPLETION_ORGANIZATION,
+                default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
+            $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_ClearingByOrgGuidNotExists()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.ClearingByOrgGuid, default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_ClearingByOrgGuidIsVoided()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.ClearingByOrgGuid, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_ClearingByOrgIsNotACompletionOrganization()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.ClearingByOrgGuid,
+                LibraryTypes.COMPLETION_ORGANIZATION,
+                default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
+            $"Library item is not a {LibraryTypes.COMPLETION_ORGANIZATION}!"));
     }
 }
