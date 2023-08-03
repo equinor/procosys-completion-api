@@ -86,7 +86,11 @@ public class PunchItemsController : ControllerBase
         [FromBody] CreatePunchItemDto dto)
     {
         
-        var result = await _mediator.Send(new CreatePunchItemCommand(dto.Description, dto.ProjectGuid));
+        var result = await _mediator.Send(new CreatePunchItemCommand(
+            dto.Description,
+            dto.ProjectGuid,
+            dto.RaisedByOrgGuid, 
+            dto.ClearingByOrgGuid));
         return this.FromResult(result);
     }
 

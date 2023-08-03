@@ -7,4 +7,8 @@ public record CreatePunchItemDto(
     [Required]
     string Description, 
     [Required]
-    Guid ProjectGuid);
+    Guid ProjectGuid,
+    [Required]
+    Guid RaisedByOrgGuid,
+    [Required]
+    Guid ClearingByOrgGuid);
