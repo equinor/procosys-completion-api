@@ -41,12 +41,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
     public static string Unknown => "UNKNOWN";
-    public static string ProjectNameWithAccess => KnownTestData.ProjectNameA;
-    public static Guid ProjectGuidWithAccess => KnownTestData.ProjectGuidA;
-    public static string ProjectNameWithoutAccess => KnownTestData.ProjectNameB;
-    public static Guid ProjectGuidWithoutAccess => KnownTestData.ProjectGuidB;
-    public static Guid RaisedByOrgGuid => KnownTestData.RaisedByOrgGuid;
-    public static Guid ClearingByOrgGuid => KnownTestData.ClearingByOrgGuid;
+    public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidWithAccess[KnownPlantData.PlantA];
+    public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidWithoutAccess[KnownPlantData.PlantA];
+    public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
+    public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
 
@@ -185,7 +183,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         dbContext.CreateNewDatabaseWithCorrectSchema();
 
         SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantA);
-        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
+        //SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
     }
 
     private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider scopeServiceProvider, string plant)
@@ -248,13 +246,11 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             new()
             {
                 ProCoSysGuid = ProjectGuidWithAccess,
-                Name = ProjectNameWithAccess,
                 HasAccess = true
             },
             new()
             {
-                ProCoSysGuid = ProjectGuidWithoutAccess,
-                Name = ProjectNameWithoutAccess
+                ProCoSysGuid = ProjectGuidWithoutAccess
             }
         };
 
