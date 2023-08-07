@@ -185,7 +185,7 @@ public static class CompletionContextExtension
         LibraryType type)
     {
         var libraryItemRepository = new LibraryItemRepository(dbContext);
-        var libraryItem = new LibraryItem(plant, guid, code, $"{code} desc", type.ToString());
+        var libraryItem = new LibraryItem(plant, guid, code, $"{code} desc", type);
         libraryItemRepository.Add(libraryItem);
         dbContext.SaveChangesAsync().Wait();
         return libraryItem;

@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 using Equinor.ProCoSys.Completion.Domain;
@@ -111,6 +112,7 @@ public static class ApplicationModule
 
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
+        services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
         services.AddScoped<IRowVersionValidator, RowVersionValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();

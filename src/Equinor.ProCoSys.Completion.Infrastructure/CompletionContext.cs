@@ -60,6 +60,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     }
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
+    public static LibraryTypeConverter LibraryTypeConverter { get; } = new();
 
     public virtual DbSet<Person> Persons => Set<Person>();
     public virtual DbSet<PunchItem> PunchItems => Set<PunchItem>();

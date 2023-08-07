@@ -27,10 +27,10 @@ public class PunchItemTests : IModificationAuditableTests
         _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
         _project.SetProtectedIdForTesting(123);
 
-        _raisedByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, null!);
+        _raisedByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _raisedByOrg.SetProtectedIdForTesting(124);
 
-        _clearingByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, null!);
+        _clearingByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg.SetProtectedIdForTesting(125);
 
         _dut = new PunchItem(_testPlant, _project, _itemDescription, _raisedByOrg, _clearingByOrg); 
@@ -59,17 +59,32 @@ public class PunchItemTests : IModificationAuditableTests
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenProjectInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
-            new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemDescription, _raisedByOrg, _clearingByOrg));
+            new PunchItem(
+                _testPlant,
+                new Project("OtherPlant", Guid.NewGuid(), "P", "D"),
+                _itemDescription,
+                _raisedByOrg,
+                _clearingByOrg));
 
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenRaisedByOrgInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
-            new PunchItem(_testPlant, _project, _itemDescription, new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, null!), _clearingByOrg));
+            new PunchItem(
+                _testPlant,
+                _project,
+                _itemDescription,
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION),
+                _clearingByOrg));
 
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenClearingByOrgInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
-            new PunchItem(_testPlant, _project, _itemDescription, _raisedByOrg, new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, null!)));
+            new PunchItem(
+                _testPlant,
+                _project,
+                _itemDescription,
+                _raisedByOrg,
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION)));
     #endregion
 
     #region ItemNo

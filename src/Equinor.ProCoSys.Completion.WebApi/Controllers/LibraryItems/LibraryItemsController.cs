@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
@@ -27,7 +28,7 @@ public class LibraryItemsController : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [Required]
-        [FromQuery] string type)
+        [FromQuery] LibraryType type)
     {
         var result = await _mediator.Send(new GetLibraryItemsQuery(type));
         return this.FromResult(result);
