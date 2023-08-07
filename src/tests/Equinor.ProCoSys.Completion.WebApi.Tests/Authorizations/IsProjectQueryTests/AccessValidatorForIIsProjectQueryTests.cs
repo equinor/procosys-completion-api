@@ -9,14 +9,14 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectQuery
 public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : AccessValidatorTestBase
     where TProjectQuery : IBaseRequest, IIsProjectQuery
 {
-    protected abstract TProjectQuery GetProjectRequestWithAccessToProjectToTest();
-    protected abstract TProjectQuery GetProjectRequestWithoutAccessToProjectToTest();
+    protected abstract TProjectQuery GetProjectQueryWithAccessToProjectToTest();
+    protected abstract TProjectQuery GetProjectQueryWithoutAccessToProjectToTest();
 
     [TestMethod]
     public async Task Validate_ShouldReturnTrue_WhenAccessToProject()
     {
         // Arrange
-        var query = GetProjectRequestWithAccessToProjectToTest();
+        var query = GetProjectQueryWithAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(query);
@@ -29,7 +29,7 @@ public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : Ac
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var query = GetProjectRequestWithoutAccessToProjectToTest();
+        var query = GetProjectQueryWithoutAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(query);
