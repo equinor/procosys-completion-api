@@ -183,7 +183,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         dbContext.CreateNewDatabaseWithCorrectSchema();
 
         SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantA);
-        //SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
+        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
     }
 
     private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider scopeServiceProvider, string plant)
