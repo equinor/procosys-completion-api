@@ -143,6 +143,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             "PunchItem1",
             Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -151,6 +153,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             "PunchItem1",
+            Guid.Empty,
+            Guid.Empty,
             Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -162,6 +166,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             "PunchItem1",
             Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -172,6 +178,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             "PunchItem1",
             Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -180,6 +188,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             "PunchItem1",
+            Guid.Empty,
+            Guid.Empty,
             Guid.Empty,
             HttpStatusCode.Forbidden);
 
@@ -190,6 +200,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             "PunchItem1",
             TestFactory.ProjectGuidWithAccess,
+            Guid.Empty,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
     #endregion
 
@@ -332,7 +344,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
 
         // Act
@@ -1152,7 +1166,9 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
 
         // Act
@@ -1230,7 +1246,9 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
 
         // Act
@@ -1308,7 +1326,9 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
 
         // Act
@@ -1386,7 +1406,9 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterVerify, TestFactory.WrongButValidRowVersion);
 
         // Act

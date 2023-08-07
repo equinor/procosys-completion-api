@@ -35,7 +35,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             description,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         // Assert
         AssertValidGuidAndRowVersion(guidAndRowVersion);
@@ -105,7 +107,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(punchItem);
 
@@ -381,7 +385,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(punchItem);
         Assert.IsTrue(punchItem.IsReadyToBeCleared);
@@ -405,7 +411,9 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
@@ -430,7 +438,9 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
@@ -455,7 +465,9 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
@@ -480,7 +492,9 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsNotNull(punchItem);
@@ -506,7 +520,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var linkGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
             UserType.Writer,
@@ -525,7 +541,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var commentGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Writer,
@@ -543,7 +561,9 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess);
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
 
         var attachmentGuidAndRowVersion = await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
             UserType.Writer,

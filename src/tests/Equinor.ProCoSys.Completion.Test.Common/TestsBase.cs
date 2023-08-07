@@ -1,9 +1,9 @@
 ﻿using System;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 

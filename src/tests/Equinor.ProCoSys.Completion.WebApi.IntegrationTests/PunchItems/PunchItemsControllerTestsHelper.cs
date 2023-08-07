@@ -84,13 +84,17 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         string description,
         Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
             description,
-            projectGuid = projectGuid.ToString()
+            projectGuid = projectGuid.ToString(),
+            raisedByOrgGuid = raisedByOrgGuid.ToString(),
+            clearingByOrgGuid = clearingByOrgGuid.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
@@ -491,12 +495,16 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<(Guid guid, string rowVersion)> CreateVerifiedPunchItemAsync(
         UserType userType,
         string plant,
-        Guid projectGuid)
+        Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid)
     {
         var (guid, rowVersionAfterClear) = await CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            projectGuid);
+            projectGuid,
+            raisedByOrgGuid,
+            clearingByOrgGuid);
         var rowVersionAfterVerify = await VerifyPunchItemAsync(
             userType,
             plant,
@@ -509,13 +517,17 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<(Guid guid, string rowVersion)> CreateClearedPunchItemAsync(
         UserType userType,
         string plant,
-        Guid projectGuid)
+        Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid)
     {
         var guidAndRowVersion = await CreatePunchItemAsync(
             userType,
             plant,
             Guid.NewGuid().ToString(),
-            projectGuid);
+            projectGuid,
+            raisedByOrgGuid,
+            clearingByOrgGuid);
         var rowVersionAfterClear = await ClearPunchItemAsync(
             userType,
             plant,

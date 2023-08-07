@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItem;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 
 [TestClass]
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
@@ -24,11 +24,11 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "created");
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "modified");
-        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "cleared");
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "verified");
-        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "rejected");
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);
@@ -143,7 +143,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
         AssertNotRejected(punchItemDetailsDto);
-        
+
         Assert.AreNotEqual(punchItemDetailsDto.ModifiedAtUtc, punchItemDetailsDto.CreatedAtUtc);
     }
 

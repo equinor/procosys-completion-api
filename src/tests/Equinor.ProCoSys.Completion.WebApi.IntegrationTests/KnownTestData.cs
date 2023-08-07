@@ -17,6 +17,11 @@ public class KnownTestData
     public static string ProjectDescriptionB => "Test - Project B";
     public static string PunchItemB => "PunchItem-B";
 
+    public static string RaisedByOrgCode => "COM";
+    public static Guid RaisedByOrgGuid => new("cccccccc-cccc-cccc-cccc-cccccccccccc");
+    public static string ClearingByOrgCode => "ENG";
+    public static Guid ClearingByOrgGuid => new("dddddddd-dddd-dddd-dddd-dddddddddddd");
+
     public Guid PunchItemAGuid { get; set; }
     public Guid PunchItemBGuid { get; set; }
     public Guid LinkInPunchItemAGuid { get; set; }

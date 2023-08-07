@@ -17,7 +17,7 @@ public class CreatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new CreatePunchItemCommand("Test title", Guid.NewGuid());
+        _command = new CreatePunchItemCommand("Test title", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
         _projectValidatorMock = new Mock<IProjectValidator>();
         _projectValidatorMock.Setup(x => x.ExistsAsync(_command.ProjectGuid, default))
             .ReturnsAsync(true);

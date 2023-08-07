@@ -3,10 +3,11 @@ using System.Linq;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +49,28 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidA,
             KnownTestData.ProjectNameA,
             KnownTestData.ProjectDescriptionA);
-        var punchItemA = SeedPunchItem(dbContext, plant, project, KnownTestData.PunchItemA);
+
+        var raisedByOrg = SeedLibrary(
+            dbContext,
+            plant,
+            KnownTestData.RaisedByOrgGuid,
+            KnownTestData.RaisedByOrgCode,
+            LibraryType.COMPLETION_ORGANIZATION);
+
+        var clearingByOrg = SeedLibrary(
+            dbContext,
+            plant,
+            KnownTestData.ClearingByOrgGuid,
+            KnownTestData.ClearingByOrgCode,
+            LibraryType.COMPLETION_ORGANIZATION);
+
+        var punchItemA = SeedPunchItem(
+            dbContext,
+            plant,
+            project,
+            raisedByOrg,
+            clearingByOrg,
+            KnownTestData.PunchItemA);
         knownTestData.PunchItemAGuid = punchItemA.Guid;
 
         project = SeedProject(
@@ -57,7 +79,13 @@ public static class CompletionContextExtension
             KnownTestData.ProjectGuidB,
             KnownTestData.ProjectNameB, 
             KnownTestData.ProjectDescriptionB);
-        var punchItemB = SeedPunchItem(dbContext, plant, project, KnownTestData.PunchItemB);
+        var punchItemB = SeedPunchItem(
+            dbContext,
+            plant,
+            project,
+            raisedByOrg,
+            clearingByOrg,
+            KnownTestData.PunchItemB);
         knownTestData.PunchItemBGuid = punchItemB.Guid;
 
         var link = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
@@ -102,10 +130,16 @@ public static class CompletionContextExtension
         return project;
     }
 
-    private static PunchItem SeedPunchItem(CompletionContext dbContext, string plant, Project project, string title)
+    private static PunchItem SeedPunchItem(
+        CompletionContext dbContext,
+        string plant,
+        Project project,
+        LibraryItem raisedByOrg,
+        LibraryItem clearingByOrg,
+        string title)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
-        var punchItem = new PunchItem(plant, project, title);
+        var punchItem = new PunchItem(plant, project, title, raisedByOrg, clearingByOrg);
         punchItemRepository.Add(punchItem);
         dbContext.SaveChangesAsync().Wait();
         return punchItem;
@@ -141,5 +175,19 @@ public static class CompletionContextExtension
         attachmentRepository.Add(attachment);
         dbContext.SaveChangesAsync().Wait();
         return attachment;
+    }
+
+    private static LibraryItem SeedLibrary(
+        CompletionContext dbContext,
+        string plant,
+        Guid guid,
+        string code,
+        LibraryType type)
+    {
+        var libraryItemRepository = new LibraryItemRepository(dbContext);
+        var libraryItem = new LibraryItem(plant, guid, code, $"{code} desc", type.ToString());
+        libraryItemRepository.Add(libraryItem);
+        dbContext.SaveChangesAsync().Wait();
+        return libraryItem;
     }
 }

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,11 +15,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchItem>
 {
     private Project _project;
+    private LibraryItem _raisedByOrg;
+    private LibraryItem _clearingByOrg;
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        _project = new Project(TestPlant, Guid.NewGuid(), "ProjectName", "Description of project");
-        var punchItem = new PunchItem(TestPlant, _project, "Punch Item X");
+        _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
+        _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, null!);
+        _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, null!);
+        var punchItem = new PunchItem(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
         _knownGuid = punchItem.Guid;
         punchItem.SetProtectedIdForTesting(_knownId);
 
@@ -34,5 +39,5 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _dut = new PunchItemRepository(_contextHelper.ContextMock.Object);
     }
 
-    protected override PunchItem GetNewEntity() => new(TestPlant, _project, "New punch item");
+    protected override PunchItem GetNewEntity() => new(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
 }
