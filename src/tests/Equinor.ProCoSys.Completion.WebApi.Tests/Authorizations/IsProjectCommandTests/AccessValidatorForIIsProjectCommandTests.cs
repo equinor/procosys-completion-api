@@ -6,17 +6,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 
 [TestClass]
-public abstract class AccessValidatorForIIsProjectCommandTests<TProjectRequest> : AccessValidatorTestBase
-    where TProjectRequest : IBaseRequest, IIsProjectCommand
+public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> : AccessValidatorTestBase
+    where TProjectCommand : IBaseRequest, IIsProjectCommand
 {
-    protected abstract TProjectRequest GetProjectRequestWithAccessToProjectToTest();
-    protected abstract TProjectRequest GetProjectRequestWithoutAccessToProjectToTest();
+    protected abstract TProjectCommand GetProjectCommandWithAccessToProjectToTest();
+    protected abstract TProjectCommand GetProjectCommandWithoutAccessToProjectToTest();
 
     [TestMethod]
     public async Task Validate_ShouldReturnTrue_WhenAccessToProject()
     {
         // Arrange
-        var command = GetProjectRequestWithAccessToProjectToTest();
+        var command = GetProjectCommandWithAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(command);
@@ -29,7 +29,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectRequest> 
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var command = GetProjectRequestWithoutAccessToProjectToTest();
+        var command = GetProjectCommandWithoutAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(command);

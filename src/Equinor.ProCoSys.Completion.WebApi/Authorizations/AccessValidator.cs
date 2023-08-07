@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
+using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using MediatR;
@@ -41,11 +43,24 @@ public class AccessValidator : IAccessValidator
         }
 
         var userOid = _currentUserProvider.GetCurrentUserOid();
-        if (request is IIsProjectCommand projectCommand &&
-            !_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
+        if (request is IIsProjectCommand projectCommand)
         {
-            _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectCommandProjectGuid}", userOid, projectCommand.ProjectGuid);
-            return false;
+            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
+            {
+                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectCommandProjectGuid}",
+                    userOid, projectCommand.ProjectGuid);
+                return false;
+            }
+        }
+
+        if (request is IIsProjectQuery projectQuery)
+        {
+            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectQuery.ProjectGuid))
+            {
+                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectCommandProjectGuid}",
+                    userOid, projectQuery.ProjectGuid);
+                return false;
+            }
         }
 
         if (request is IIsPunchItemCommand punchItemCommand)
