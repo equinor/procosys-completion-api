@@ -100,7 +100,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item does not exist!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("RaisedByOrg library item does not exist!"));
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item is voided!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("RaisedByOrg library item is voided!"));
     }
 
     [TestMethod]
@@ -135,7 +135,7 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
-            $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
+            $"RaisedByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
     }
 
     [TestMethod]
@@ -151,7 +151,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item does not exist!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("ClearingByOrg library item does not exist!"));
     }
 
     [TestMethod]
@@ -167,7 +167,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Library item is voided!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("ClearingByOrg library item is voided!"));
     }
 
     [TestMethod]
@@ -186,6 +186,6 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
-            $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
+            $"ClearingByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
     }
 }

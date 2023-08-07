@@ -28,36 +28,36 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .MustAsync((command, cancellationToken)
                 => BeAnExistingLibraryItemAsync(command.RaisedByOrgGuid, cancellationToken))
             .WithMessage(command
-                => $"Library item does not exist! Guid={command.RaisedByOrgGuid}")
+                => $"RaisedByOrg library item does not exist! Guid={command.RaisedByOrgGuid}")
             .MustAsync((command, cancellationToken)
                 => NotBeAVoidedLibraryItemAsync(command.RaisedByOrgGuid, cancellationToken))
             .WithMessage(command
-                => $"Library item is voided! Guid={command.RaisedByOrgGuid}")
+                => $"RaisedByOrg library item is voided! Guid={command.RaisedByOrgGuid}")
             .MustAsync((command, cancellationToken)
                 => BeALibraryItemOfTypeAsync(
                     command.RaisedByOrgGuid, 
                     LibraryType.COMPLETION_ORGANIZATION,
                     cancellationToken))
             .WithMessage(command =>
-                $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
+                $"RaisedByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
                 $"Guid={command.RaisedByOrgGuid}")
 
             // validate given ClearingByOrg
             .MustAsync((command, cancellationToken)
                 => BeAnExistingLibraryItemAsync(command.ClearingByOrgGuid, cancellationToken))
             .WithMessage(command
-                => $"Library item does not exist! Guid={command.ClearingByOrgGuid}")
+                => $"ClearingByOrg library item does not exist! Guid={command.ClearingByOrgGuid}")
             .MustAsync((command, cancellationToken)
                 => NotBeAVoidedLibraryItemAsync(command.ClearingByOrgGuid, cancellationToken))
             .WithMessage(command
-                => $"Library item is voided! Guid={command.ClearingByOrgGuid}")
+                => $"ClearingByOrg library item is voided! Guid={command.ClearingByOrgGuid}")
             .MustAsync((command, cancellationToken)
                 => BeALibraryItemOfTypeAsync(
                     command.ClearingByOrgGuid,
                     LibraryType.COMPLETION_ORGANIZATION,
                     cancellationToken))
             .WithMessage(command =>
-                $"Library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
+                $"ClearingByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
                 $"Guid={command.ClearingByOrgGuid}");
 
         async Task<bool> BeAnExistingProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)

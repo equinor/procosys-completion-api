@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    private readonly LibraryType _type = LibraryType.PUNCHLIST_SORTING;
+    private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
     private LibraryItem _libraryItemA;
     private LibraryItem _libraryItemB;
     private LibraryItem _libraryItemC;
@@ -23,9 +23,9 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type);
-        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _type);
-        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _type);
+        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _sortingType);
+        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _sortingType);
+        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _sortingType);
         var otherLibraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "O", "O Desc", LibraryType.PUNCHLIST_PRIORITY);
 
         context.Library.Add(_libraryItemC);
@@ -60,7 +60,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(_type);
+        var query = new GetLibraryItemsQuery(_sortingType);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -78,7 +78,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(_type);
+        var query = new GetLibraryItemsQuery(_sortingType);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
