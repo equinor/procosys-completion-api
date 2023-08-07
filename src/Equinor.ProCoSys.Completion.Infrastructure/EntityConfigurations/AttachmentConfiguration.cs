@@ -14,6 +14,10 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
         builder.ConfigureConcurrencyToken();
 
         builder
+            .HasIndex(x => x.Guid)
+            .IsUnique();
+
+        builder
             .Property(x => x.CreatedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 

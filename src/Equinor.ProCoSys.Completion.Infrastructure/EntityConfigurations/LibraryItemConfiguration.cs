@@ -31,6 +31,7 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
 
         builder
             .HasIndex(x => x.Guid)
+            .IsUnique()
             .HasDatabaseName("IX_LibraryItems_Guid")
             .IncludeProperties(x => new
             {
