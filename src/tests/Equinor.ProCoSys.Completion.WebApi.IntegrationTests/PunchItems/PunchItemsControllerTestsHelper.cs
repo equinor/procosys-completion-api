@@ -82,15 +82,19 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
-        string itemNo,
+        string description,
         Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            itemNo,
-            projectGuid = projectGuid.ToString()
+            description,
+            projectGuid = projectGuid.ToString(),
+            raisedByOrgGuid = raisedByOrgGuid.ToString(),
+            clearingByOrgGuid = clearingByOrgGuid.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
@@ -349,6 +353,21 @@ public static class PunchItemsControllerTestsHelper
             expectedStatusCode,
             expectedMessageOnBadRequest);
 
+    public static async Task<string> UnverifyPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+        => await PostAsync(
+            userType,
+            plant,
+            $"{Route}/{guid}/Unverify",
+            rowVersion,
+            expectedStatusCode,
+            expectedMessageOnBadRequest);
+
     public static async Task<string> UpdatePunchItemLinkAsync(
         UserType userType,
         string plant,
@@ -471,5 +490,50 @@ public static class PunchItemsControllerTestsHelper
         }
 
         return await response.Content.ReadAsStringAsync();
+    }
+
+    public static async Task<(Guid guid, string rowVersion)> CreateVerifiedPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid)
+    {
+        var (guid, rowVersionAfterClear) = await CreateClearedPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            projectGuid,
+            raisedByOrgGuid,
+            clearingByOrgGuid);
+        var rowVersionAfterVerify = await VerifyPunchItemAsync(
+            userType,
+            plant,
+            guid,
+            rowVersionAfterClear);
+
+        return (guid, rowVersionAfterVerify);
+    }
+
+    public static async Task<(Guid guid, string rowVersion)> CreateClearedPunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid projectGuid,
+        Guid raisedByOrgGuid,
+        Guid clearingByOrgGuid)
+    {
+        var guidAndRowVersion = await CreatePunchItemAsync(
+            userType,
+            plant,
+            Guid.NewGuid().ToString(),
+            projectGuid,
+            raisedByOrgGuid,
+            clearingByOrgGuid);
+        var rowVersionAfterClear = await ClearPunchItemAsync(
+            userType,
+            plant,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        return (guidAndRowVersion.Guid, rowVersionAfterClear);
     }
 }

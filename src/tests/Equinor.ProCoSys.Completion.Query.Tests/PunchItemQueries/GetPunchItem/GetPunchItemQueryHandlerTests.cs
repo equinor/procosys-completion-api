@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.GetPunchItem;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 
 [TestClass]
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
@@ -23,11 +24,11 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "created");
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "modified");
-        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "cleared");
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "verified");
-        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "rejected");
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);
@@ -104,6 +105,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertNotModified(punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
@@ -135,12 +137,13 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
         AssertNotRejected(punchItemDetailsDto);
-        
+
         Assert.AreNotEqual(punchItemDetailsDto.ModifiedAtUtc, punchItemDetailsDto.CreatedAtUtc);
     }
 
@@ -168,6 +171,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
@@ -201,6 +205,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertCleared(testPunchItem, punchItemDetailsDto);
@@ -231,8 +236,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertPunchItem(testPunchItem, punchItemDetailsDto);
 
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
         AssertModified(testPunchItem, punchItemDetailsDto);
         AssertNotCleared(punchItemDetailsDto);
@@ -254,6 +261,8 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunchItem(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
     {
         Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
+        Assert.AreEqual(punchItem.Description, punchItemDetailsDto.Description);
+        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDetailsDto.RowVersion);
         var project = GetProjectById(punchItem.ProjectId);
         Assert.AreEqual(project.Name, punchItemDetailsDto.ProjectName);
 

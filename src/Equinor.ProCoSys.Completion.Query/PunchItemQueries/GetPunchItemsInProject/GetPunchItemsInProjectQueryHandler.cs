@@ -29,6 +29,7 @@ public class GetPunchItemsInProjectQueryHandler : IRequestHandler<GetPunchItemsI
                        punchItem.Guid,
                        project.Name,
                        punchItem.ItemNo,
+                       punchItem.Description,
                        punchItem.RowVersion.ConvertToString())
                 )
                 .TagWith($"{nameof(GetPunchItemsInProjectQueryHandler)}.{nameof(Handle)}")

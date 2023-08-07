@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,7 +17,7 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
         builder.ToTable(t => t.IsTemporal());
 
         builder.Property(x => x.SourceType)
-            .HasMaxLength(Comment.SourceTypeLengthMax)
+            .HasMaxLength(Link.SourceTypeLengthMax)
             .IsRequired();
 
         builder.Property(x => x.Title)

@@ -15,6 +15,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
@@ -85,7 +86,11 @@ public class PunchItemsController : ControllerBase
         [FromBody] CreatePunchItemDto dto)
     {
         
-        var result = await _mediator.Send(new CreatePunchItemCommand(dto.ItemNo, dto.ProjectGuid));
+        var result = await _mediator.Send(new CreatePunchItemCommand(
+            dto.Description,
+            dto.ProjectGuid,
+            dto.RaisedByOrgGuid, 
+            dto.ClearingByOrgGuid));
         return this.FromResult(result);
     }
 
@@ -161,6 +166,21 @@ public class PunchItemsController : ControllerBase
     {
         var result = await _mediator.Send(
             new VerifyPunchItemCommand(guid, dto.RowVersion));
+        return this.FromResult(result);
+    }
+
+    [AuthorizeAny(Permissions.PUNCHITEM_VERIFY, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Unverify")]
+    public async Task<ActionResult<string>> UnverifyPunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        [FromRoute] Guid guid,
+        [FromBody] RowVersionDto dto)
+    {
+        var result = await _mediator.Send(
+            new UnverifyPunchItemCommand(guid, dto.RowVersion));
         return this.FromResult(result);
     }
 

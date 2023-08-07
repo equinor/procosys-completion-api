@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
@@ -12,9 +13,10 @@ public class PunchItemTests : IModificationAuditableTests
 {
     private PunchItem _dut;
     private readonly string _testPlant = "PlantA";
-    private readonly int _projectId = 132;
     private Project _project;
-    private readonly string _itemNo = "Item A";
+    private LibraryItem _raisedByOrg;
+    private LibraryItem _clearingByOrg;
+    private readonly string _itemDescription = "Item A";
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;
@@ -23,8 +25,15 @@ public class PunchItemTests : IModificationAuditableTests
     public void Setup()
     {
         _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
-        _project.SetProtectedIdForTesting(_projectId);
-        _dut = new PunchItem(_testPlant, _project, _itemNo); 
+        _project.SetProtectedIdForTesting(123);
+
+        _raisedByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, null!);
+        _raisedByOrg.SetProtectedIdForTesting(124);
+
+        _clearingByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, null!);
+        _clearingByOrg.SetProtectedIdForTesting(125);
+
+        _dut = new PunchItem(_testPlant, _project, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
 
     #region Constructor
@@ -33,19 +42,50 @@ public class PunchItemTests : IModificationAuditableTests
     {
         // Assert
         Assert.AreEqual(_testPlant, _dut.Plant);
-        Assert.AreEqual(_projectId, _dut.ProjectId);
-        Assert.AreEqual(_itemNo, _dut.ItemNo);
+        Assert.AreEqual(_project.Id, _dut.ProjectId);
+        Assert.AreEqual(_itemDescription, _dut.Description);
+        Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
+        Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
     }
 
     [TestMethod]
-    public void Constructor_ShouldThrowException_WhenProjectNotGiven() =>
-        Assert.ThrowsException<ArgumentNullException>(() =>
-            new PunchItem(_testPlant, null!, _itemNo));
+    public void Constructor_ShouldNotSetIdOrItemNo()
+    {
+        // Assert
+        Assert.AreEqual(0, _dut.Id);
+        Assert.AreEqual(0, _dut.ItemNo);
+    }
 
     [TestMethod]
     public void Constructor_ShouldThrowException_WhenProjectInOtherPlant()
         => Assert.ThrowsException<ArgumentException>(() =>
-            new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemNo));
+            new PunchItem(_testPlant, new Project("OtherPlant", Guid.NewGuid(), "P", "D"), _itemDescription, _raisedByOrg, _clearingByOrg));
+
+    [TestMethod]
+    public void Constructor_ShouldThrowException_WhenRaisedByOrgInOtherPlant()
+        => Assert.ThrowsException<ArgumentException>(() =>
+            new PunchItem(_testPlant, _project, _itemDescription, new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, null!), _clearingByOrg));
+
+    [TestMethod]
+    public void Constructor_ShouldThrowException_WhenClearingByOrgInOtherPlant()
+        => Assert.ThrowsException<ArgumentException>(() =>
+            new PunchItem(_testPlant, _project, _itemDescription, _raisedByOrg, new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, null!)));
+    #endregion
+
+    #region ItemNo
+    [TestMethod]
+    public void ItemNo_ShouldReturnId()
+    {
+        // Arrange
+        var id = 5;
+        _dut.SetProtectedIdForTesting(id);
+
+        // Act
+        var itemNo = _dut.ItemNo;
+
+        // Assert
+        Assert.AreEqual(id, itemNo);
+    }
     #endregion
 
     #region Update

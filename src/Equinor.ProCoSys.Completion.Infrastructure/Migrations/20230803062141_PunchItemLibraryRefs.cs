@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ClearRejectVerify : Migration
+    public partial class PunchItemLibraryRefs : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,11 +14,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 name: "IX_PunchItems_Guid",
                 table: "PunchItems");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "ClearedAtUtc",
+            migrationBuilder.AddColumn<int>(
+                name: "ClearingByOrgId",
                 table: "PunchItems",
-                type: "datetime2",
-                nullable: true)
+                type: "int",
+                nullable: false,
+                defaultValue: 0)
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
                 .Annotation("SqlServer:TemporalHistoryTableSchema", null)
@@ -27,7 +27,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.AddColumn<int>(
-                name: "ClearedById",
+                name: "PriorityId",
                 table: "PunchItems",
                 type: "int",
                 nullable: true)
@@ -37,11 +37,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodEndColumnName", "PeriodEnd")
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "RejectedAtUtc",
+            migrationBuilder.AddColumn<int>(
+                name: "RaisedByOrgId",
                 table: "PunchItems",
-                type: "datetime2",
-                nullable: true)
+                type: "int",
+                nullable: false,
+                defaultValue: 0)
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
                 .Annotation("SqlServer:TemporalHistoryTableSchema", null)
@@ -49,7 +50,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.AddColumn<int>(
-                name: "RejectedById",
+                name: "SortingId",
                 table: "PunchItems",
                 type: "int",
                 nullable: true)
@@ -59,19 +60,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodEndColumnName", "PeriodEnd")
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "VerifiedAtUtc",
-                table: "PunchItems",
-                type: "datetime2",
-                nullable: true)
-                .Annotation("SqlServer:IsTemporal", true)
-                .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
-                .Annotation("SqlServer:TemporalHistoryTableSchema", null)
-                .Annotation("SqlServer:TemporalPeriodEndColumnName", "PeriodEnd")
-                .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
-
             migrationBuilder.AddColumn<int>(
-                name: "VerifiedById",
+                name: "TypeId",
                 table: "PunchItems",
                 type: "int",
                 nullable: true)
@@ -82,70 +72,69 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PunchItems_ClearedById",
+                name: "IX_PunchItems_ClearingByOrgId",
                 table: "PunchItems",
-                column: "ClearedById");
+                column: "ClearingByOrgId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PunchItems_Guid",
                 table: "PunchItems",
                 column: "Guid")
-                .Annotation("SqlServer:Include", new[] { "ItemNo", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RowVersion" });
+                .Annotation("SqlServer:Include", new[] { "Id", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RaisedByOrgId", "ClearingByOrgId", "SortingId", "TypeId", "PriorityId", "RowVersion" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_PunchItems_RejectedById",
+                name: "IX_PunchItems_PriorityId",
                 table: "PunchItems",
-                column: "RejectedById");
+                column: "PriorityId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PunchItems_VerifiedById",
+                name: "IX_PunchItems_RaisedByOrgId",
                 table: "PunchItems",
-                column: "VerifiedById");
+                column: "RaisedByOrgId");
 
-            migrationBuilder.AddCheckConstraint(
-                name: "punch_item_check_cleared",
+            migrationBuilder.CreateIndex(
+                name: "IX_PunchItems_SortingId",
                 table: "PunchItems",
-                sql: "(ClearedAtUtc is null and ClearedById is null) or (ClearedAtUtc is not null and ClearedById is not null)");
+                column: "SortingId");
 
-            migrationBuilder.AddCheckConstraint(
-                name: "punch_item_check_cleared_rejected",
+            migrationBuilder.CreateIndex(
+                name: "IX_PunchItems_TypeId",
                 table: "PunchItems",
-                sql: "not (ClearedAtUtc is not null and RejectedAtUtc is not null)");
-
-            migrationBuilder.AddCheckConstraint(
-                name: "punch_item_check_cleared_verified",
-                table: "PunchItems",
-                sql: "not (ClearedAtUtc is null and VerifiedAtUtc is not null)");
-
-            migrationBuilder.AddCheckConstraint(
-                name: "punch_item_check_rejected",
-                table: "PunchItems",
-                sql: "(RejectedAtUtc is null and RejectedById is null) or (RejectedAtUtc is not null and RejectedById is not null)");
-
-            migrationBuilder.AddCheckConstraint(
-                name: "punch_item_check_verified",
-                table: "PunchItems",
-                sql: "(VerifiedAtUtc is null and VerifiedById is null) or (VerifiedAtUtc is not null and VerifiedById is not null)");
+                column: "TypeId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_PunchItems_Persons_ClearedById",
+                name: "FK_PunchItems_Library_ClearingByOrgId",
                 table: "PunchItems",
-                column: "ClearedById",
-                principalTable: "Persons",
+                column: "ClearingByOrgId",
+                principalTable: "Library",
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_PunchItems_Persons_RejectedById",
+                name: "FK_PunchItems_Library_PriorityId",
                 table: "PunchItems",
-                column: "RejectedById",
-                principalTable: "Persons",
+                column: "PriorityId",
+                principalTable: "Library",
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_PunchItems_Persons_VerifiedById",
+                name: "FK_PunchItems_Library_RaisedByOrgId",
                 table: "PunchItems",
-                column: "VerifiedById",
-                principalTable: "Persons",
+                column: "RaisedByOrgId",
+                principalTable: "Library",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_PunchItems_Library_SortingId",
+                table: "PunchItems",
+                column: "SortingId",
+                principalTable: "Library",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_PunchItems_Library_TypeId",
+                table: "PunchItems",
+                column: "TypeId",
+                principalTable: "Library",
                 principalColumn: "Id");
         }
 
@@ -153,19 +142,27 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_PunchItems_Persons_ClearedById",
+                name: "FK_PunchItems_Library_ClearingByOrgId",
                 table: "PunchItems");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_PunchItems_Persons_RejectedById",
+                name: "FK_PunchItems_Library_PriorityId",
                 table: "PunchItems");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_PunchItems_Persons_VerifiedById",
+                name: "FK_PunchItems_Library_RaisedByOrgId",
+                table: "PunchItems");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_PunchItems_Library_SortingId",
+                table: "PunchItems");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_PunchItems_Library_TypeId",
                 table: "PunchItems");
 
             migrationBuilder.DropIndex(
-                name: "IX_PunchItems_ClearedById",
+                name: "IX_PunchItems_ClearingByOrgId",
                 table: "PunchItems");
 
             migrationBuilder.DropIndex(
@@ -173,35 +170,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 table: "PunchItems");
 
             migrationBuilder.DropIndex(
-                name: "IX_PunchItems_RejectedById",
+                name: "IX_PunchItems_PriorityId",
                 table: "PunchItems");
 
             migrationBuilder.DropIndex(
-                name: "IX_PunchItems_VerifiedById",
+                name: "IX_PunchItems_RaisedByOrgId",
                 table: "PunchItems");
 
-            migrationBuilder.DropCheckConstraint(
-                name: "punch_item_check_cleared",
+            migrationBuilder.DropIndex(
+                name: "IX_PunchItems_SortingId",
                 table: "PunchItems");
 
-            migrationBuilder.DropCheckConstraint(
-                name: "punch_item_check_cleared_rejected",
-                table: "PunchItems");
-
-            migrationBuilder.DropCheckConstraint(
-                name: "punch_item_check_cleared_verified",
-                table: "PunchItems");
-
-            migrationBuilder.DropCheckConstraint(
-                name: "punch_item_check_rejected",
-                table: "PunchItems");
-
-            migrationBuilder.DropCheckConstraint(
-                name: "punch_item_check_verified",
+            migrationBuilder.DropIndex(
+                name: "IX_PunchItems_TypeId",
                 table: "PunchItems");
 
             migrationBuilder.DropColumn(
-                name: "ClearedAtUtc",
+                name: "ClearingByOrgId",
                 table: "PunchItems")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
@@ -210,7 +195,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.DropColumn(
-                name: "ClearedById",
+                name: "PriorityId",
                 table: "PunchItems")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
@@ -219,7 +204,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.DropColumn(
-                name: "RejectedAtUtc",
+                name: "RaisedByOrgId",
                 table: "PunchItems")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
@@ -228,7 +213,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.DropColumn(
-                name: "RejectedById",
+                name: "SortingId",
                 table: "PunchItems")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
@@ -237,16 +222,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
 
             migrationBuilder.DropColumn(
-                name: "VerifiedAtUtc",
-                table: "PunchItems")
-                .Annotation("SqlServer:IsTemporal", true)
-                .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
-                .Annotation("SqlServer:TemporalHistoryTableSchema", null)
-                .Annotation("SqlServer:TemporalPeriodEndColumnName", "PeriodEnd")
-                .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
-
-            migrationBuilder.DropColumn(
-                name: "VerifiedById",
+                name: "TypeId",
                 table: "PunchItems")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "PunchItemsHistory")
@@ -258,7 +234,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 name: "IX_PunchItems_Guid",
                 table: "PunchItems",
                 column: "Guid")
-                .Annotation("SqlServer:Include", new[] { "ItemNo", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "RowVersion" });
+                .Annotation("SqlServer:Include", new[] { "Id", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RowVersion" });
         }
     }
 }

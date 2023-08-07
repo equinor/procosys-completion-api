@@ -9,7 +9,7 @@ public record PunchItemCreatedIntegrationEvent
     string DisplayName,
     Guid ProjectGuid,
     Guid Guid,
-    string ItemNo,
+    int ItemNo,
     Guid CreatedByOid,
     DateTime CreatedAtUtc
 ) : IPunchItemCreatedV1

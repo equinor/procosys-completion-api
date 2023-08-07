@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
@@ -23,11 +24,12 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.Property(x => x.ItemNo)
-            .HasMaxLength(PunchItem.ItemNoLengthMax)
-            .IsRequired();
+        builder.Property(x => x.Id)
+            // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
+            .UseIdentityColumn(PunchItem.IdentitySeed);
 
         builder.Property(x => x.Description)
+            .IsRequired()
             .HasMaxLength(PunchItem.DescriptionLengthMax);
 
         builder
@@ -58,6 +60,36 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasOne<Person>()
             .WithMany()
             .HasForeignKey(x => x.VerifiedById)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.RaisedByOrgId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.ClearingByOrgId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.SortingId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.TypeId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
             .OnDelete(DeleteBehavior.NoAction);
 
         // both ClearedAtUtc and ClearedById fields must either be set or not set
@@ -93,7 +125,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasDatabaseName("IX_PunchItems_Guid")
             .IncludeProperties(x => new
             {
-                x.ItemNo,
+                x.Id,
                 x.Description,
                 x.ProjectId,
                 x.CreatedById,
@@ -106,6 +138,11 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.VerifiedAtUtc,
                 x.RejectedById,
                 x.RejectedAtUtc,
+                x.RaisedByOrgId,
+                x.ClearingByOrgId,
+                x.SortingId,
+                x.TypeId,
+                x.PriorityId,
                 x.RowVersion
             });
 
@@ -114,7 +151,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasDatabaseName("IX_PunchItems_ProjectId")
             .IncludeProperties(x => new
             {
-                x.ItemNo,
+                x.Id,
                 x.RowVersion
             });
     }

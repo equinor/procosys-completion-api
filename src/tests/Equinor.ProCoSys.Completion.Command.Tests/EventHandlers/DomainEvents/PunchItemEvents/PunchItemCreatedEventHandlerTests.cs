@@ -1,15 +1,12 @@
-﻿using System;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading;
-using Microsoft.Extensions.Logging;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchItemEvents;
 
@@ -24,11 +21,9 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
     [TestInitialize]
     public void Setup()
     {
-        var projectGuid = Guid.NewGuid();
-        var punchItem = new PunchItem("X", new Project("X", projectGuid, "Pro", "Desc"), "F");
-        punchItem.SetCreated(_person);
+        _punchItem.SetCreated(_person);
 
-        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(punchItem, projectGuid);
+        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem, _project.Guid);
         _publishEndpointMock = new Mock<IPublishEndpoint>();
         _dut = new PunchItemCreatedEventHandler(_publishEndpointMock.Object, new Mock<ILogger<PunchItemCreatedEventHandler>>().Object);
         _publishEndpointMock

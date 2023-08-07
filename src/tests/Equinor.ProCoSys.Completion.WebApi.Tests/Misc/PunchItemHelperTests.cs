@@ -21,7 +21,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
         // Save to get real id on project
         context.SaveChangesAsync().Wait();
 
-        var punchItem = new PunchItem(TestPlantA, _projectA, "Title");
+        var punchItem = new PunchItem(TestPlantA, _projectA, "Title", _raisedByOrg, _clearingByOrg);
         context.PunchItems.Add(punchItem);
         context.SaveChangesAsync().Wait();
         _punchItemGuid = punchItem.Guid;

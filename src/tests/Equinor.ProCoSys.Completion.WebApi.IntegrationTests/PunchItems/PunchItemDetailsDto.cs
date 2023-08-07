@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public record PunchItemDetailsDto(
     Guid Guid,
     string ProjectName,
-    string ItemNo,
+    int ItemNo,
     string Description,
     PersonDto CreatedBy,
     DateTime CreatedAtUtc,
@@ -20,6 +20,7 @@ public record PunchItemDetailsDto(
     PersonDto ClearedBy,
     DateTime? ClearedAtUtc,
     bool IsReadyToBeVerified,
+    bool IsReadyToBeUnverified,
     bool IsReadyToBeRejected,
     [CanBeNull]
     PersonDto RejectedBy,

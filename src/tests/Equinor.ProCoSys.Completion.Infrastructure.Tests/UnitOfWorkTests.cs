@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Equinor.ProCoSys.Common.Misc;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests;
 
@@ -18,6 +19,8 @@ public class UnitOfWorkTests
 {
     private readonly string _plant = "PCS$TESTPLANT";
     private Project _project;
+    private LibraryItem _raisedByOrg;
+    private LibraryItem _clearingByOrg;
     private readonly Guid _currentUserOid = new("12345678-1234-1234-1234-123456789123");
     private readonly DateTime _currentTime = new(2020, 2, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -30,7 +33,9 @@ public class UnitOfWorkTests
     [TestInitialize]
     public void Setup()
     {
-        _project = new(_plant, Guid.NewGuid(), "Project", "Description of Project");
+        _project = new(_plant, Guid.NewGuid(), null!, null!);
+        _raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, null!);
+        _clearingByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, null!);
 
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -61,7 +66,7 @@ public class UnitOfWorkTests
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
-        var newPunchItem = new PunchItem(_plant, _project, "Title");
+        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         // Act
@@ -90,7 +95,7 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
 
-        var newPunchItem = new PunchItem(_plant, _project, "Title");
+        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         await dut.SaveChangesAsync();
