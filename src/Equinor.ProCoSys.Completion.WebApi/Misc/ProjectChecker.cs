@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Caches;
 using MediatR;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Query;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 
@@ -32,9 +33,19 @@ public class ProjectChecker : IProjectChecker
         var plant = _plantProvider.Plant;
         var userOid = _currentUserProvider.GetCurrentUserOid();
 
-        if (request is IIsProjectCommand projectRequest && !await _permissionCache.IsAValidProjectForUserAsync(plant, userOid, projectRequest.ProjectGuid))
+        if (request is IIsProjectCommand projectCommand)
         {
-            throw new InValidProjectException($"Project '{projectRequest.ProjectGuid}' is not a valid project in '{plant}'");
+            if (!await _permissionCache.IsAValidProjectForUserAsync(plant, userOid, projectCommand.ProjectGuid))
+            {
+                throw new InValidProjectException($"Project '{projectCommand.ProjectGuid}' is not a valid project in '{plant}'");
+            }
+        }
+        else if (request is IIsProjectQuery projectQuery)
+        {
+            if (!await _permissionCache.IsAValidProjectForUserAsync(plant, userOid, projectQuery.ProjectGuid))
+            {
+                throw new InValidProjectException($"Project '{projectQuery.ProjectGuid}' is not a valid project in '{plant}'");
+            }
         }
     }
 }
