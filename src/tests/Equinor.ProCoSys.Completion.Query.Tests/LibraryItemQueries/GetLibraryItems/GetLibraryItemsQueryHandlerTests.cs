@@ -14,8 +14,8 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    private readonly string _type1 = "LibType1";
-    private readonly string _type2 = "LibType2";
+    private readonly LibraryType _type1 = LibraryType.COMPLETION_ORGANIZATION;
+    private readonly LibraryType _type2 = LibraryType.PUNCHLIST_PRIORITY;
     private LibraryItem _libraryItemA;
     private LibraryItem _libraryItemB;
     private LibraryItem _libraryItemC;
@@ -43,7 +43,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery("Blah");
+        var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_SORTING);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act

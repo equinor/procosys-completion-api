@@ -50,9 +50,9 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
             .Setup(x => x.GetByGuidAsync(_existingProject.Guid))
             .ReturnsAsync(_existingProject);
 
-        _existingRaisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, null!);
+        _existingRaisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _existingRaisedByOrg.SetProtectedIdForTesting(_raisedByOrgIdOnExisting);
-        _existingClearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, null!);
+        _existingClearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _existingClearingByOrg.SetProtectedIdForTesting(_clearingByOrgIdOnExisting);
 
         _libraryItemRepositoryMock = new Mock<ILibraryItemRepository>();

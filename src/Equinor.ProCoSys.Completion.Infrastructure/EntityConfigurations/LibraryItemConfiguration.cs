@@ -25,6 +25,7 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
             .IsRequired();
 
         builder.Property(x => x.Type)
+            .HasConversion(CompletionContext.LibraryTypeConverter)
             .HasMaxLength(LibraryItem.TypeLengthMax)
             .IsRequired();
 

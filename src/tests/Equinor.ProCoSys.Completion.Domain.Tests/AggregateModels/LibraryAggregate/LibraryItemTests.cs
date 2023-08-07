@@ -13,7 +13,7 @@ public class LibraryItemTests : IModificationAuditableTests
     private readonly string _code = "X";
     private readonly Guid _guid = Guid.NewGuid();
     private readonly string _description = "X Desc";
-    private readonly string _type = "X Type";
+    private readonly LibraryType _type = LibraryType.COMPLETION_ORGANIZATION;
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;

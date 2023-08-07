@@ -28,7 +28,7 @@ public class LibraryItemValidator : ILibraryItemValidator
             where p.Guid == libraryItemGuid
             select p).SingleOrDefaultAsync(cancellationToken);
 
-        return libraryItem is not null && libraryItem.Type == type.ToString();
+        return libraryItem is not null && libraryItem.Type == type;
     }
 
     public async Task<bool> IsVoidedAsync(Guid libraryItemGuid, CancellationToken cancellationToken)
