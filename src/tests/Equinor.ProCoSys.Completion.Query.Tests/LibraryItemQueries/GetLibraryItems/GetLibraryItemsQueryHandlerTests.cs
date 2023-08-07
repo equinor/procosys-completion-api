@@ -14,8 +14,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    private readonly LibraryType _type1 = LibraryType.COMPLETION_ORGANIZATION;
-    private readonly LibraryType _type2 = LibraryType.PUNCHLIST_PRIORITY;
+    private readonly LibraryType _type = LibraryType.PUNCHLIST_SORTING;
     private LibraryItem _libraryItemA;
     private LibraryItem _libraryItemB;
     private LibraryItem _libraryItemC;
@@ -24,10 +23,10 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type1);
-        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _type1);
-        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _type1);
-        var otherLibraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "O", "O Desc", _type2);
+        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _type);
+        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _type);
+        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _type);
+        var otherLibraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "O", "O Desc", LibraryType.PUNCHLIST_PRIORITY);
 
         context.Library.Add(_libraryItemC);
         context.Library.Add(_libraryItemA);
@@ -43,7 +42,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_SORTING);
+        var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_TYPE);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -61,7 +60,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(_type1);
+        var query = new GetLibraryItemsQuery(_type);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -79,7 +78,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLibraryItemsQuery(_type1);
+        var query = new GetLibraryItemsQuery(_type);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
