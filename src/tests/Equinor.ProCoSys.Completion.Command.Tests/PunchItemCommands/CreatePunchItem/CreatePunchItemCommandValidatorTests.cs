@@ -300,4 +300,55 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
             $"Sorting library item is not a {LibraryType.PUNCHLIST_SORTING}!"));
     }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_TypeGuidNotExists()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.TypeGuid!.Value, default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Type library item does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_TypeGuidIsVoided()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.TypeGuid!.Value, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Type library item is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_TypeIsNotAType()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.TypeGuid!.Value,
+                LibraryType.PUNCHLIST_TYPE,
+                default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
+            $"Type library item is not a {LibraryType.PUNCHLIST_TYPE}!"));
+    }
 }

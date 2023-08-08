@@ -127,7 +127,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         Assert.AreEqual(_existingProject.Id, _punchItemAddedToRepository.ProjectId);
         Assert.AreEqual(_existingRaisedByOrg.Id, _punchItemAddedToRepository.RaisedByOrgId);
         Assert.AreEqual(_existingClearingByOrg.Id, _punchItemAddedToRepository.ClearingByOrgId);
-        Assert.AreEqual(_existingPriority.Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingPriority.Id, _punchItemAddedToRepository.PriorityId);
         Assert.AreEqual(_existingSorting.Id, _punchItemAddedToRepository.SortingId);
         Assert.AreEqual(_existingType.Id, _punchItemAddedToRepository.TypeId);
     }
