@@ -10,13 +10,13 @@ public class KnownPlantData
     public static string PlantATitle => "Plant A";
     public static string PlantBTitle => "Plant B";
 
-    public static Dictionary<string, Guid> ProjectGuidWithAccess = new()
+    public static Dictionary<string, Guid> ProjectGuidA = new()
     {
         { PlantA, new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa11") },
         { PlantB, new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa22") }
     };
 
-    public static Dictionary<string, Guid> ProjectGuidWithoutAccess = new()
+    public static Dictionary<string, Guid> ProjectGuidB = new()
     {
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbaa11") },
         { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbaa22") }

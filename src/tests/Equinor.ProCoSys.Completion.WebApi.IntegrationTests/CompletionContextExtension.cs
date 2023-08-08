@@ -46,7 +46,7 @@ public static class CompletionContextExtension
         var project = SeedProject(
             dbContext,
             plant,
-            KnownPlantData.ProjectGuidWithAccess[plant],
+            KnownPlantData.ProjectGuidA[plant],
             "ProjectNameA",
             "ProjectDescriptionA");
 
@@ -76,7 +76,7 @@ public static class CompletionContextExtension
         project = SeedProject(
             dbContext, 
             plant,
-            KnownPlantData.ProjectGuidWithoutAccess[plant],
+            KnownPlantData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
         var punchItemB = SeedPunchItem(

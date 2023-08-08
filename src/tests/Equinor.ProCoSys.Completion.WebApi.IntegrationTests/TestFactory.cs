@@ -41,8 +41,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
     public static string Unknown => "UNKNOWN";
-    public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidWithAccess[KnownPlantData.PlantA];
-    public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidWithoutAccess[KnownPlantData.PlantA];
+    public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
+    public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
     public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
     public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
