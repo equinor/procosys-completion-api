@@ -33,4 +33,22 @@ public class KnownPlantData
         { PlantA, new("dddddddd-dddd-dddd-dddd-ddddddddaa11") },
         { PlantB, new("dddddddd-dddd-dddd-dddd-ddddddddaa22") }
     };
+
+    public static Dictionary<string, Guid> PriorityGuid = new()
+    {
+        { PlantA, new("eeeeeeee-eeee-eeee-eeee-eeeeeeeeaa11") },
+        { PlantB, new("eeeeeeee-eeee-eeee-eeee-eeeeeeeeaa22") }
+    };
+
+    public static Dictionary<string, Guid> SortingGuid = new()
+    {
+        { PlantA, new("ffffffff-ffff-ffff-ffff-ffffffffaa11") },
+        { PlantB, new("ffffffff-ffff-ffff-ffff-ffffffffaa22") }
+    };
+
+    public static Dictionary<string, Guid> TypeGuid = new()
+    {
+        { PlantA, new("aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbb11") },
+        { PlantB, new("aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbb22") }
+    };
 }

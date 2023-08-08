@@ -64,6 +64,27 @@ public static class CompletionContextExtension
             "ENG",
             LibraryType.COMPLETION_ORGANIZATION);
 
+        SeedLibrary(
+            dbContext,
+            plant,
+            KnownPlantData.PriorityGuid[plant],
+            "P1",
+            LibraryType.PUNCHLIST_PRIORITY);
+
+        SeedLibrary(
+            dbContext,
+            plant,
+            KnownPlantData.SortingGuid[plant],
+            "A",
+            LibraryType.PUNCHLIST_SORTING);
+
+        SeedLibrary(
+            dbContext,
+            plant,
+            KnownPlantData.TypeGuid[plant],
+            "Painting",
+            LibraryType.PUNCHLIST_TYPE);
+
         var punchItemA = SeedPunchItem(
             dbContext,
             plant,
