@@ -10,16 +10,25 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
         string description,
         Guid projectGuid,
         Guid raisedByOrgGuid,
-        Guid clearingByOrgGuid)
+        Guid clearingByOrgGuid,
+        Guid? priorityGuid = null,
+        Guid? sortingGuid = null,
+        Guid? typeGuid = null)
     {
         Description = description;
         ProjectGuid = projectGuid;
         RaisedByOrgGuid = raisedByOrgGuid;
         ClearingByOrgGuid = clearingByOrgGuid;
+        PriorityGuid = priorityGuid;
+        SortingGuid = sortingGuid;
+        TypeGuid = typeGuid;
     }
 
     public string Description { get; }
     public Guid ProjectGuid { get; }
     public Guid RaisedByOrgGuid { get; }
     public Guid ClearingByOrgGuid { get; }
+    public Guid? PriorityGuid { get; }
+    public Guid? SortingGuid { get; }
+    public Guid? TypeGuid { get; }
 }
