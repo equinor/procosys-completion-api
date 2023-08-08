@@ -24,6 +24,33 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
+        builder.HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.RaisedByOrgId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.ClearingByOrgId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.SortingId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.TypeId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne<LibraryItem>()
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.Property(x => x.Id)
             // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
             .UseIdentityColumn(PunchItem.IdentitySeed);
@@ -122,6 +149,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
 
         builder
             .HasIndex(x => x.Guid)
+            .IsUnique()
             .HasDatabaseName("IX_PunchItems_Guid")
             .IncludeProperties(x => new
             {

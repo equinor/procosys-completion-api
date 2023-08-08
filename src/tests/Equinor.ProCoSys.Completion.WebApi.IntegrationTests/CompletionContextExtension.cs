@@ -46,22 +46,22 @@ public static class CompletionContextExtension
         var project = SeedProject(
             dbContext,
             plant,
-            KnownTestData.ProjectGuidA,
-            KnownTestData.ProjectNameA,
-            KnownTestData.ProjectDescriptionA);
+            KnownPlantData.ProjectGuidA[plant],
+            "ProjectNameA",
+            "ProjectDescriptionA");
 
         var raisedByOrg = SeedLibrary(
             dbContext,
             plant,
-            KnownTestData.RaisedByOrgGuid,
-            KnownTestData.RaisedByOrgCode,
+            KnownPlantData.RaisedByOrgGuid[plant],
+            "COM",
             LibraryType.COMPLETION_ORGANIZATION);
 
         var clearingByOrg = SeedLibrary(
             dbContext,
             plant,
-            KnownTestData.ClearingByOrgGuid,
-            KnownTestData.ClearingByOrgCode,
+            KnownPlantData.ClearingByOrgGuid[plant],
+            "ENG",
             LibraryType.COMPLETION_ORGANIZATION);
 
         var punchItemA = SeedPunchItem(
@@ -70,22 +70,22 @@ public static class CompletionContextExtension
             project,
             raisedByOrg,
             clearingByOrg,
-            KnownTestData.PunchItemA);
+            "PunchItemA");
         knownTestData.PunchItemAGuid = punchItemA.Guid;
 
         project = SeedProject(
             dbContext, 
-            plant, 
-            KnownTestData.ProjectGuidB,
-            KnownTestData.ProjectNameB, 
-            KnownTestData.ProjectDescriptionB);
+            plant,
+            KnownPlantData.ProjectGuidB[plant],
+            "ProjectNameB", 
+            "ProjectDescriptionB");
         var punchItemB = SeedPunchItem(
             dbContext,
             plant,
             project,
             raisedByOrg,
             clearingByOrg,
-            KnownTestData.PunchItemB);
+            "PunchItemB");
         knownTestData.PunchItemBGuid = punchItemB.Guid;
 
         var link = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");

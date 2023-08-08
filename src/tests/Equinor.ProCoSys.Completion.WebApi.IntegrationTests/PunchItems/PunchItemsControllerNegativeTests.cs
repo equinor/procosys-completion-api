@@ -107,7 +107,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectGuidWithoutAccess,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectGuidWithoutAccess,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -178,6 +178,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             "PunchItem1",
             Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToProject()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithAccess,
+            "PunchItem1",
+            TestFactory.ProjectGuidWithoutAccess,
             Guid.Empty,
             Guid.Empty,
             HttpStatusCode.Forbidden);

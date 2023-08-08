@@ -14,6 +14,10 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
+        builder
+            .HasIndex(x => x.Guid)
+            .IsUnique();
+
         builder.ToTable(t => t.IsTemporal());
 
         builder.Property(x => x.SourceType)
