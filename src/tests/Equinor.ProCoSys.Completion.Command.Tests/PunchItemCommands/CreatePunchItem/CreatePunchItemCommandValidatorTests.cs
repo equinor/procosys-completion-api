@@ -20,29 +20,39 @@ public class CreatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new CreatePunchItemCommand("Test title", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        _command = new CreatePunchItemCommand(
+            "Test title",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid());
         _projectValidatorMock = new Mock<IProjectValidator>();
         _projectValidatorMock.Setup(x => x.ExistsAsync(_command.ProjectGuid, default))
             .ReturnsAsync(true);
         _libraryItemValidatorMock = new Mock<ILibraryItemValidator>();
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.RaisedByOrgGuid, default))
-            .ReturnsAsync(true);
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.ClearingByOrgGuid, default))
-            .ReturnsAsync(true);
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
-                _command.RaisedByOrgGuid,
-                LibraryType.COMPLETION_ORGANIZATION,
-                default))
-            .ReturnsAsync(true);
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
-                _command.ClearingByOrgGuid,
-                LibraryType.COMPLETION_ORGANIZATION,
-                default))
-            .ReturnsAsync(true);
+
+        SetupOkLibraryItem(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        SetupOkLibraryItem(_command.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        SetupOkLibraryItem(_command.PriorityGuid!.Value, LibraryType.PUNCHLIST_PRIORITY);
+        SetupOkLibraryItem(_command.SortingGuid!.Value, LibraryType.PUNCHLIST_SORTING);
+        SetupOkLibraryItem(_command.TypeGuid!.Value, LibraryType.PUNCHLIST_TYPE);
 
         _dut = new CreatePunchItemCommandValidator(
             _projectValidatorMock.Object,
             _libraryItemValidatorMock.Object);
+    }
+
+    private void SetupOkLibraryItem(Guid guid, LibraryType libraryType)
+    {
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(guid, default))
+            .ReturnsAsync(true);
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
+                guid,
+                libraryType,
+                default))
+            .ReturnsAsync(true);
     }
 
     [TestMethod]
@@ -187,5 +197,107 @@ public class CreatePunchItemCommandValidatorTests
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
             $"ClearingByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PriorityGuidNotExists()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.PriorityGuid!.Value, default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Priority library item does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PriorityGuidIsVoided()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.PriorityGuid!.Value, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Priority library item is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PriorityIsNotAPriority()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.PriorityGuid!.Value,
+                LibraryType.PUNCHLIST_PRIORITY,
+                default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
+            $"Priority library item is not a {LibraryType.PUNCHLIST_PRIORITY}!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_SortingGuidNotExists()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.SortingGuid!.Value, default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Sorting library item does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_SortingGuidIsVoided()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.SortingGuid!.Value, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Sorting library item is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_SortingIsNotASorting()
+    {
+        // Arrange
+        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.SortingGuid!.Value,
+                LibraryType.PUNCHLIST_SORTING,
+                default))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
+            $"Sorting library item is not a {LibraryType.PUNCHLIST_SORTING}!"));
     }
 }

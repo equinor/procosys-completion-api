@@ -21,13 +21,12 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     private Mock<IProjectRepository> _projectRepositoryMock;
     private Mock<ILibraryItemRepository> _libraryItemRepositoryMock;
 
-    private readonly int _projectIdOnExisting = 10;
-    private readonly int _raisedByOrgIdOnExisting = 11;
-    private readonly int _clearingByOrgIdOnExisting = 12;
-
     private Project _existingProject;
     private LibraryItem _existingRaisedByOrg;
     private LibraryItem _existingClearingByOrg;
+    private LibraryItem _existingPriority;
+    private LibraryItem _existingSorting;
+    private LibraryItem _existingType;
     private PunchItem _punchItemAddedToRepository;
 
     private CreatePunchItemCommandHandler _dut;
@@ -36,6 +35,12 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
+        var projectIdOnExisting = 10;
+        var raisedByOrgIdOnExisting = 11;
+        var clearingByOrgIdOnExisting = 12;
+        var priorityIdOnExisting = 13;
+        var sortingIdOnExisting = 14;
+        var typeIdOnExisting = 15;
         _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
         _punchItemRepositoryMock
             .Setup(x => x.Add(It.IsAny<PunchItem>()))
@@ -44,16 +49,26 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
                 _punchItemAddedToRepository = punchItem;
             });
         _existingProject = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
-        _existingProject.SetProtectedIdForTesting(_projectIdOnExisting);
+        _existingProject.SetProtectedIdForTesting(projectIdOnExisting);
         _projectRepositoryMock = new Mock<IProjectRepository>();
         _projectRepositoryMock
             .Setup(x => x.GetByGuidAsync(_existingProject.Guid))
             .ReturnsAsync(_existingProject);
 
         _existingRaisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _existingRaisedByOrg.SetProtectedIdForTesting(_raisedByOrgIdOnExisting);
+        _existingRaisedByOrg.SetProtectedIdForTesting(raisedByOrgIdOnExisting);
+
         _existingClearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _existingClearingByOrg.SetProtectedIdForTesting(_clearingByOrgIdOnExisting);
+        _existingClearingByOrg.SetProtectedIdForTesting(clearingByOrgIdOnExisting);
+        
+        _existingPriority = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY);
+        _existingPriority.SetProtectedIdForTesting(priorityIdOnExisting);
+        
+        _existingSorting = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING);
+        _existingSorting.SetProtectedIdForTesting(sortingIdOnExisting);
+        
+        _existingType = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE);
+        _existingType.SetProtectedIdForTesting(typeIdOnExisting);
 
         _libraryItemRepositoryMock = new Mock<ILibraryItemRepository>();
         _libraryItemRepositoryMock
@@ -62,12 +77,24 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         _libraryItemRepositoryMock
             .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
             .ReturnsAsync(_existingClearingByOrg);
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingPriority.Guid, LibraryType.PUNCHLIST_PRIORITY))
+            .ReturnsAsync(_existingPriority);
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingSorting.Guid, LibraryType.PUNCHLIST_SORTING))
+            .ReturnsAsync(_existingSorting);
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingType.Guid, LibraryType.PUNCHLIST_TYPE))
+            .ReturnsAsync(_existingType);
 
         _command = new CreatePunchItemCommand(
             "P123",
             _existingProject.Guid,
             _existingRaisedByOrg.Guid,
-            _existingClearingByOrg.Guid);
+            _existingClearingByOrg.Guid,
+            _existingPriority.Guid,
+            _existingSorting.Guid,
+            _existingType.Guid);
 
         _dut = new CreatePunchItemCommandHandler(
             _plantProviderMock.Object,
@@ -89,7 +116,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemToRepository()
+    public async Task HandlingCommand_WithAllValues_ShouldAddCorrectPunchItemToRepository()
     {
         // Act
         await _dut.Handle(_command, default);
@@ -97,9 +124,36 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         // Assert
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.AreEqual(_command.Description, _punchItemAddedToRepository.Description);
-        Assert.AreEqual(_projectIdOnExisting, _punchItemAddedToRepository.ProjectId);
-        Assert.AreEqual(_raisedByOrgIdOnExisting, _punchItemAddedToRepository.RaisedByOrgId);
-        Assert.AreEqual(_clearingByOrgIdOnExisting, _punchItemAddedToRepository.ClearingByOrgId);
+        Assert.AreEqual(_existingProject.Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingRaisedByOrg.Id, _punchItemAddedToRepository.RaisedByOrgId);
+        Assert.AreEqual(_existingClearingByOrg.Id, _punchItemAddedToRepository.ClearingByOrgId);
+        Assert.AreEqual(_existingPriority.Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingSorting.Id, _punchItemAddedToRepository.SortingId);
+        Assert.AreEqual(_existingType.Id, _punchItemAddedToRepository.TypeId);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_WithRequiredValues_ShouldAddCorrectPunchItemToRepository()
+    {
+        // Arrange
+        var command = new CreatePunchItemCommand(
+            "P123",
+            _existingProject.Guid,
+            _existingRaisedByOrg.Guid,
+            _existingClearingByOrg.Guid);
+
+        // Act
+        await _dut.Handle(command, default);
+
+        // Assert
+        Assert.IsNotNull(_punchItemAddedToRepository);
+        Assert.AreEqual(_command.Description, _punchItemAddedToRepository.Description);
+        Assert.AreEqual(_existingProject.Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingRaisedByOrg.Id, _punchItemAddedToRepository.RaisedByOrgId);
+        Assert.AreEqual(_existingClearingByOrg.Id, _punchItemAddedToRepository.ClearingByOrgId);
+        Assert.IsFalse(_punchItemAddedToRepository.PriorityId.HasValue);
+        Assert.IsFalse(_punchItemAddedToRepository.SortingId.HasValue);
+        Assert.IsFalse(_punchItemAddedToRepository.TypeId.HasValue);
     }
 
     [TestMethod]
@@ -142,6 +196,42 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         // Arrange
         _libraryItemRepositoryMock
             .Setup(x => x.GetByGuidAndTypeAsync(_existingClearingByOrg.Guid, LibraryType.COMPLETION_ORGANIZATION))
+            .ReturnsAsync((LibraryItem)null);
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldThrowException_WhenPriorityNotExists()
+    {
+        // Arrange
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingPriority.Guid, LibraryType.PUNCHLIST_PRIORITY))
+            .ReturnsAsync((LibraryItem)null);
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldThrowException_WhenSortingNotExists()
+    {
+        // Arrange
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingSorting.Guid, LibraryType.PUNCHLIST_SORTING))
+            .ReturnsAsync((LibraryItem)null);
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldThrowException_WhenTypeNotExists()
+    {
+        // Arrange
+        _libraryItemRepositoryMock
+            .Setup(x => x.GetByGuidAndTypeAsync(_existingType.Guid, LibraryType.PUNCHLIST_TYPE))
             .ReturnsAsync((LibraryItem)null);
 
         // Act and Assert

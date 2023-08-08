@@ -516,4 +516,52 @@ public class PunchItemTests : IModificationAuditableTests
             _dut.SetPriority(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
     #endregion
+
+    #region SetSorting
+    [TestMethod]
+    public void SetSorting_ShouldSetSortingId()
+    {
+        // Act
+        _dut.SetSorting(_sorting);
+
+        // Assert
+        Assert.AreEqual(_sorting.Id, _dut.SortingId);
+    }
+
+    [TestMethod]
+    public void SetSorting_ShouldThrowException_WhenSortingInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetSorting(
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING)));
+
+    [TestMethod]
+    public void SetSorting_ShouldThrowException_WhenSortingIsIncorrectType() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetSorting(
+                new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+    #endregion
+
+    #region SetType
+    [TestMethod]
+    public void SetType_ShouldSetTypeId()
+    {
+        // Act
+        _dut.SetType(_type);
+
+        // Assert
+        Assert.AreEqual(_type.Id, _dut.TypeId);
+    }
+
+    [TestMethod]
+    public void SetType_ShouldThrowException_WhenTypeInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetType(
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
+    [TestMethod]
+    public void SetType_ShouldThrowException_WhenTypeIsIncorrectType() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetType(
+                new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING)));
+    #endregion
 }
