@@ -25,7 +25,7 @@ public class PunchItemCommandHandlerTestsBase : TestsBase
         var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
         var raisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _existingPunchItem = new PunchItem(TestPlantA, project, null!, raisedByOrg, clearingByOrg);
+        _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(), null!, raisedByOrg, clearingByOrg);
 
         _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
         _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))

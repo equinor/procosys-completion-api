@@ -8,8 +8,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectComma
 public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForIIsProjectCommandTests<CreatePunchItemCommand>
 {
     protected override CreatePunchItemCommand GetProjectCommandWithAccessToProjectToTest()
-        => new(null!, ProjectGuidWithAccess, Guid.Empty, Guid.Empty);
+        => new(null!, ProjectGuidWithAccess, Guid.Empty, Guid.Empty, Guid.Empty);
 
     protected override CreatePunchItemCommand GetProjectCommandWithoutAccessToProjectToTest()
-        => new(null!, ProjectGuidWithoutAccess, Guid.Empty, Guid.Empty);
+        => new(null!, ProjectGuidWithoutAccess, Guid.Empty, Guid.Empty, Guid.Empty);
 }

@@ -66,7 +66,7 @@ public class UnitOfWorkTests
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         // Act
@@ -95,7 +95,7 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
 
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         await dut.SaveChangesAsync();

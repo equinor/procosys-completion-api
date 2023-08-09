@@ -43,6 +43,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string Unknown => "UNKNOWN";
     public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
     public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
+    public static Guid ChecklistGuid => KnownPlantData.ChecklistGuid[KnownPlantData.PlantA];
     public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
     public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
     public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
