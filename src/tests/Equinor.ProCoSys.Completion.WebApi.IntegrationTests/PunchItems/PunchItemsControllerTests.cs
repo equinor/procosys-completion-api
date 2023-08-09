@@ -37,7 +37,10 @@ public class PunchItemsControllerTests : TestBase
             description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.RaisedByOrgGuid,
-            TestFactory.ClearingByOrgGuid);
+            TestFactory.ClearingByOrgGuid,
+            TestFactory.PriorityGuid,
+            TestFactory.SortingGuid,
+            TestFactory.TypeGuid);
 
         // Assert
         AssertValidGuidAndRowVersion(guidAndRowVersion);

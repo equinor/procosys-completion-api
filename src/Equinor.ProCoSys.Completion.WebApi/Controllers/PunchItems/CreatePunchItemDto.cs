@@ -11,4 +11,7 @@ public record CreatePunchItemDto(
     [Required]
     Guid RaisedByOrgGuid,
     [Required]
-    Guid ClearingByOrgGuid);
+    Guid ClearingByOrgGuid,
+    Guid? PriorityGuid = null,
+    Guid? SortingGuid = null,
+    Guid? TypeGuid = null);

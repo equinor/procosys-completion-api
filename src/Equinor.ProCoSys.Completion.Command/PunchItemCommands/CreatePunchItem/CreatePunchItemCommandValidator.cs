@@ -58,7 +58,70 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
                     cancellationToken))
             .WithMessage(command =>
                 $"ClearingByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
-                $"Guid={command.ClearingByOrgGuid}");
+                $"Guid={command.ClearingByOrgGuid}")
+
+            // validate Priority, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingLibraryItemAsync(command.PriorityGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Priority library item does not exist! Guid={command.PriorityGuid!.Value}")
+            .When(command => command.PriorityGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAVoidedLibraryItemAsync(command.PriorityGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Priority library item is voided! Guid={command.PriorityGuid!.Value}")
+            .When(command => command.PriorityGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => BeALibraryItemOfTypeAsync(
+                    command.PriorityGuid!.Value,
+                    LibraryType.PUNCHLIST_PRIORITY,
+                    cancellationToken))
+            .WithMessage(command =>
+                $"Priority library item is not a {LibraryType.PUNCHLIST_PRIORITY}! " +
+                $"Guid={command.PriorityGuid!.Value}")
+            .When(command => command.PriorityGuid.HasValue, ApplyConditionTo.CurrentValidator)
+
+            // validate Sorting, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingLibraryItemAsync(command.SortingGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Sorting library item does not exist! Guid={command.SortingGuid!.Value}")
+            .When(command => command.SortingGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAVoidedLibraryItemAsync(command.SortingGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Sorting library item is voided! Guid={command.SortingGuid!.Value}")
+            .When(command => command.SortingGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => BeALibraryItemOfTypeAsync(
+                    command.SortingGuid!.Value,
+                    LibraryType.PUNCHLIST_SORTING,
+                    cancellationToken))
+            .WithMessage(command =>
+                $"Sorting library item is not a {LibraryType.PUNCHLIST_SORTING}! " +
+                $"Guid={command.SortingGuid!.Value}")
+            .When(command => command.SortingGuid.HasValue, ApplyConditionTo.CurrentValidator)
+
+            // validate Type, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingLibraryItemAsync(command.TypeGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Type library item does not exist! Guid={command.TypeGuid!.Value}")
+            .When(command => command.TypeGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAVoidedLibraryItemAsync(command.TypeGuid!.Value, cancellationToken))
+            .WithMessage(command
+                => $"Type library item is voided! Guid={command.TypeGuid!.Value}")
+            .When(command => command.TypeGuid.HasValue, ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => BeALibraryItemOfTypeAsync(
+                    command.TypeGuid!.Value,
+                    LibraryType.PUNCHLIST_TYPE,
+                    cancellationToken))
+            .WithMessage(command =>
+                $"Type library item is not a {LibraryType.PUNCHLIST_TYPE}! " +
+                $"Guid={command.TypeGuid!.Value}")
+            .When(command => command.TypeGuid.HasValue, ApplyConditionTo.CurrentValidator);
 
         async Task<bool> BeAnExistingProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
             => await projectValidator.ExistsAsync(command.ProjectGuid, cancellationToken);

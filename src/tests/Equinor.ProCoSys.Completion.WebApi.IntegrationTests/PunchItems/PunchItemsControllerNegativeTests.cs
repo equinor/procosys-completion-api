@@ -145,7 +145,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Unauthorized);
+            expectedStatusCode: HttpStatusCode.Unauthorized);
 
     [TestMethod]
     public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
@@ -156,8 +156,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "is not a valid plant");
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
@@ -168,8 +168,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "is not a valid plant");
 
     [TestMethod]
     public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -180,7 +180,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToProject()
@@ -191,7 +191,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.ProjectGuidWithoutAccess,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -202,7 +202,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task CreatePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -213,7 +213,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.ProjectGuidWithAccess,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            expectedStatusCode: HttpStatusCode.Forbidden);
     #endregion
 
     #region UpdatePunchItem

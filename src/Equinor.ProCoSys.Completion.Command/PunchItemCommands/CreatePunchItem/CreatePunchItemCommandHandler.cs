@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using MediatR;
-using ServiceResult;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
@@ -47,10 +47,15 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             throw new Exception($"Could not find {nameof(Project)} with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var raisedByOrg = await GetLibraryItem(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
-        var clearingByOrg = await GetLibraryItem(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var raisedByOrg = await GetLibraryItemAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var clearingByOrg = await GetLibraryItemAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
 
         var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description, raisedByOrg, clearingByOrg);
+
+        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY);
+        await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING);
+        await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE);
+
         _punchItemRepository.Add(punchItem);
         punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, request.ProjectGuid));
 
@@ -61,7 +66,31 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
     }
 
-    private async Task<LibraryItem> GetLibraryItem(Guid libraryGuid, LibraryType type)
+    private async Task SetLibraryItemAsync(PunchItem punchItem, Guid? guid, LibraryType libraryType)
+    {
+        if (!guid.HasValue)
+        {
+            return;
+        }
+        var libraryItem = await GetLibraryItemAsync(guid.Value, libraryType);
+
+        switch (libraryType)
+        {
+            case LibraryType.PUNCHLIST_PRIORITY:
+                punchItem.SetPriority(libraryItem);
+                break;
+            case LibraryType.PUNCHLIST_SORTING:
+                punchItem.SetSorting(libraryItem);
+                break;
+            case LibraryType.PUNCHLIST_TYPE:
+                punchItem.SetType(libraryItem);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
+        }
+    }
+
+    private async Task<LibraryItem> GetLibraryItemAsync(Guid libraryGuid, LibraryType type)
     {
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, type);
         if (libraryItem is null)

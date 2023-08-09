@@ -86,6 +86,9 @@ public static class PunchItemsControllerTestsHelper
         Guid projectGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
+        Guid? priorityGuid = null,
+        Guid? sortingGuid = null,
+        Guid? typeGuid = null,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
@@ -94,7 +97,10 @@ public static class PunchItemsControllerTestsHelper
             description,
             projectGuid = projectGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
-            clearingByOrgGuid = clearingByOrgGuid.ToString()
+            clearingByOrgGuid = clearingByOrgGuid.ToString(),
+            priorityGuid = priorityGuid?.ToString(),
+            sortingGuid = sortingGuid?.ToString(),
+            typeGuid = typeGuid?.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);

@@ -36,9 +36,17 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         {
             throw new ArgumentException($"Can't relate {nameof(raisedByOrg)} in {raisedByOrg.Plant} to item in {plant}");
         }
+        if (raisedByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
+        {
+            throw new ArgumentException($"Can't relate a {raisedByOrg.Type} as {nameof(raisedByOrg)}");
+        }
         if (clearingByOrg.Plant != plant)
         {
             throw new ArgumentException($"Can't relate {nameof(clearingByOrg)} in {clearingByOrg.Plant} to item in {plant}");
+        }
+        if (clearingByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
+        {
+            throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
         }
         ProjectId = project.Id;
         RaisedByOrgId = raisedByOrg.Id;
@@ -147,34 +155,43 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ModifiedByOid = modifiedBy.Guid;
     }
 
-    // todo add unit tests
-    public void SetSortingId(LibraryItem sorting)
+    public void SetSorting(LibraryItem sorting)
     {
         if (sorting.Plant != Plant)
         {
             throw new ArgumentException($"Can't relate {nameof(sorting)} in {sorting.Plant} to item in {Plant}");
         }
+        if (sorting.Type != LibraryType.PUNCHLIST_SORTING)
+        {
+            throw new ArgumentException($"Can't relate a {sorting.Type} as {nameof(sorting)}");
+        }
 
         SortingId = sorting.Id;
     }
 
-    // todo add unit tests
-    public void SetTypeId(LibraryItem type)
+    public void SetType(LibraryItem type)
     {
         if (type.Plant != Plant)
         {
             throw new ArgumentException($"Can't relate {nameof(type)} in {type.Plant} to item in {Plant}");
         }
+        if (type.Type != LibraryType.PUNCHLIST_TYPE)
+        {
+            throw new ArgumentException($"Can't relate a {type.Type} as {nameof(type)}");
+        }
 
         TypeId = type.Id;
     }
 
-    // todo add unit tests
-    public void SetPriorityId(LibraryItem priority)
+    public void SetPriority(LibraryItem priority)
     {
         if (priority.Plant != Plant)
         {
             throw new ArgumentException($"Can't relate {nameof(priority)} in {priority.Plant} to item in {Plant}");
+        }
+        if (priority.Type != LibraryType.PUNCHLIST_PRIORITY)
+        {
+            throw new ArgumentException($"Can't relate a {priority.Type} as {nameof(priority)}");
         }
 
         PriorityId = priority.Id;
