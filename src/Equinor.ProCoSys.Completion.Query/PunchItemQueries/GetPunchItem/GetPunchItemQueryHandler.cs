@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
@@ -34,15 +35,30 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        .Where(p => p.Id == punchItem.RejectedById).DefaultIfEmpty() //left join!                   
                    from verifiedByUser in _context.QuerySet<Person>()
                        .Where(p => p.Id == punchItem.VerifiedById).DefaultIfEmpty() //left join!                   
+                   join raisedByOrgItem in _context.QuerySet<LibraryItem>()
+                       on punchItem.RaisedByOrgId equals raisedByOrgItem.Id
+                   join clearingByOrgItem in _context.QuerySet<LibraryItem>()
+                       on punchItem.ClearingByOrgId equals clearingByOrgItem.Id
+                   from priorityItem in _context.QuerySet<LibraryItem>()
+                       .Where(l => l.Id == punchItem.PriorityId).DefaultIfEmpty() //left join!
+                   from sortingItem in _context.QuerySet<LibraryItem>()
+                       .Where(l => l.Id == punchItem.SortingId).DefaultIfEmpty() //left join!
+                   from typeItem in _context.QuerySet<LibraryItem>()
+                       .Where(l => l.Id == punchItem.TypeId).DefaultIfEmpty() //left join!
                    where punchItem.Guid == request.PunchItemGuid
                    select new {
                        PunchItem = punchItem,
                        Project = project,
-                       CreatedByUser = createdByUser, 
-                       ModifiedByUser = modifiedByUser,
-                       ClearedByUser = clearedByUser,
-                       RejectedByUser = rejectedByUser,
-                       VerifiedByUser = verifiedByUser
+                       CreatedBy = createdByUser, 
+                       ModifiedBy = modifiedByUser,
+                       ClearedBy = clearedByUser,
+                       RejectedBy = rejectedByUser,
+                       VerifiedBy = verifiedByUser,
+                       RaisedByOrg = raisedByOrgItem,
+                       ClearingByOrg = clearingByOrgItem,
+                       Priority = priorityItem,
+                       Sorting = sortingItem,
+                       Type = typeItem
                    })
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
@@ -52,15 +68,16 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
             return new NotFoundResult<PunchItemDetailsDto>(Strings.EntityNotFound(nameof(PunchItem), request.PunchItemGuid));
         }
 
-        var createdBy = MapToPersonDto(dto.CreatedByUser)!;
-        
-        var modifiedBy = MapToPersonDto(dto.ModifiedByUser);
-
-        var clearedBy = MapToPersonDto(dto.ClearedByUser);
-
-        var rejectedBy = MapToPersonDto(dto.RejectedByUser);
-
-        var verifiedBy = MapToPersonDto(dto.VerifiedByUser);
+        var createdBy = MapToPersonDto(dto.CreatedBy)!;
+        var modifiedBy = MapToPersonDto(dto.ModifiedBy);
+        var clearedBy = MapToPersonDto(dto.ClearedBy);
+        var rejectedBy = MapToPersonDto(dto.RejectedBy);
+        var verifiedBy = MapToPersonDto(dto.VerifiedBy);
+        var raisedByOrg = MapToLibraryItemDto(dto.RaisedByOrg)!;
+        var clearingByOrg = MapToLibraryItemDto(dto.ClearingByOrg)!;
+        var sorting = MapToLibraryItemDto(dto.Sorting);
+        var priority = MapToLibraryItemDto(dto.Priority);
+        var type = MapToLibraryItemDto(dto.Type);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
@@ -82,12 +99,22 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        dto.PunchItem.IsReadyToBeUnverified,
                        verifiedBy,
                        dto.PunchItem.VerifiedAtUtc,
+                       raisedByOrg,
+                       clearingByOrg,
+                       priority,
+                       sorting,
+                       type,
                        dto.PunchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
 
+    private LibraryItemDto? MapToLibraryItemDto(LibraryItem? libraryItem)
+        => libraryItem is null
+            ? null
+            : new LibraryItemDto(libraryItem.Guid, libraryItem.Code, libraryItem.Description);
+
     private static PersonDto? MapToPersonDto(Person? person)
-        => person == null
+        => person is null
             ? null
             : new PersonDto(person.Guid,
                 person.FirstName,

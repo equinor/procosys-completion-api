@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;

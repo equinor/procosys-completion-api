@@ -28,4 +28,12 @@ public record PunchItemDetailsDto(
     [CanBeNull]
     PersonDto VerifiedBy,
     DateTime? VerifiedAtUtc,
+    LibraryItemDto RaisedByOrg,
+    LibraryItemDto ClearingByOrg,
+    [CanBeNull]
+    LibraryItemDto Priority,
+    [CanBeNull]
+    LibraryItemDto Sorting,
+    [CanBeNull]
+    LibraryItemDto Type,
     string RowVersion);
