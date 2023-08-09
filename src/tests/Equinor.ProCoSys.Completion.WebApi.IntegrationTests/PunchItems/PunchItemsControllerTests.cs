@@ -19,7 +19,7 @@ public class PunchItemsControllerTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchItemAGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemGuid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
     }
@@ -66,6 +66,12 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         Assert.AreEqual(_punchItemGuidUnderTest, punchItem.Guid);
         Assert.IsNotNull(punchItem.RowVersion);
+        Assert.IsNotNull(punchItem.CreatedBy);
+        Assert.IsNotNull(punchItem.RaisedByOrg);
+        Assert.IsNotNull(punchItem.ClearingByOrg);
+        Assert.IsNotNull(punchItem.Priority);
+        Assert.IsNotNull(punchItem.Sorting);
+        Assert.IsNotNull(punchItem.Type);
     }
 
     [TestMethod]

@@ -22,4 +22,9 @@ public record PunchItemDetailsDto(
     bool IsReadyToBeUnverified,
     PersonDto? VerifiedBy,
     DateTime? VerifiedAtUtc,
+    LibraryItemDto RaisedByOrg,
+    LibraryItemDto ClearingByOrg,
+    LibraryItemDto? Priority,
+    LibraryItemDto? Sorting,
+    LibraryItemDto? Type,
     string RowVersion);

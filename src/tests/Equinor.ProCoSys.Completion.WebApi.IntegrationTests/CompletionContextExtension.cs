@@ -64,35 +64,38 @@ public static class CompletionContextExtension
             "ENG",
             LibraryType.COMPLETION_ORGANIZATION);
 
-        SeedLibrary(
+        var priority = SeedLibrary(
             dbContext,
             plant,
             KnownPlantData.PriorityGuid[plant],
             "P1",
             LibraryType.PUNCHLIST_PRIORITY);
 
-        SeedLibrary(
+        var sorting = SeedLibrary(
             dbContext,
             plant,
             KnownPlantData.SortingGuid[plant],
             "A",
             LibraryType.PUNCHLIST_SORTING);
 
-        SeedLibrary(
+        var type = SeedLibrary(
             dbContext,
             plant,
             KnownPlantData.TypeGuid[plant],
             "Painting",
             LibraryType.PUNCHLIST_TYPE);
 
-        var punchItemA = SeedPunchItem(
+        var punchItem = SeedPunchItem(
             dbContext,
             plant,
             project,
             raisedByOrg,
             clearingByOrg,
-            "PunchItemA");
-        knownTestData.PunchItemAGuid = punchItemA.Guid;
+            "PunchItemA",
+            priority,
+            sorting,
+            type);
+        knownTestData.PunchItemGuid = punchItem.Guid;
 
         project = SeedProject(
             dbContext, 
@@ -100,22 +103,21 @@ public static class CompletionContextExtension
             KnownPlantData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
-        var punchItemB = SeedPunchItem(
+        SeedPunchItem(
             dbContext,
             plant,
             project,
             raisedByOrg,
             clearingByOrg,
             "PunchItemB");
-        knownTestData.PunchItemBGuid = punchItemB.Guid;
 
-        var link = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
+        var link = SeedLink(dbContext, nameof(PunchItem), punchItem.Guid, "VG", "www.vg.no");
         knownTestData.LinkInPunchItemAGuid = link.Guid;
 
-        var comment = SeedComment(dbContext, nameof(PunchItem), punchItemA.Guid, "Comment");
+        var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
         knownTestData.CommentInPunchItemAGuid = comment.Guid;
 
-        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchItemA.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchItem.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
     }
 
@@ -157,10 +159,25 @@ public static class CompletionContextExtension
         Project project,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg,
-        string title)
+        string title,
+        LibraryItem priority = null,
+        LibraryItem sorting = null,
+        LibraryItem type = null)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
         var punchItem = new PunchItem(plant, project, title, raisedByOrg, clearingByOrg);
+        if (priority is not null)
+        {
+            punchItem.SetPriority(priority);
+        }
+        if (sorting is not null)
+        {
+            punchItem.SetSorting(sorting);
+        }
+        if (type is not null)
+        {
+            punchItem.SetType(type);
+        }
         punchItemRepository.Add(punchItem);
         dbContext.SaveChangesAsync().Wait();
         return punchItem;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
+namespace Equinor.ProCoSys.Completion.Query;
 
 public record LibraryItemDto(
     Guid Guid,
