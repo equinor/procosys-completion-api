@@ -14,6 +14,8 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
+    // perform these tests in other plant than TestPlantA since ReadOnlyTestsBase creates LibraryItem's there
+    private readonly string _testPlant = "PlantX";
     private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
     private LibraryItem _libraryItemA;
     private LibraryItem _libraryItemB;
@@ -21,12 +23,16 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
+        _plantProviderMock
+            .Setup(x => x.Plant)
+            .Returns(_testPlant);
+
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _libraryItemA = new LibraryItem(TestPlantA, Guid.NewGuid(), "A", "A Desc", _sortingType);
-        _libraryItemB = new LibraryItem(TestPlantA, Guid.NewGuid(), "B", "B Desc", _sortingType);
-        _libraryItemC = new LibraryItem(TestPlantA, Guid.NewGuid(), "C", "C Desc", _sortingType);
-        var otherLibraryItem = new LibraryItem(TestPlantA, Guid.NewGuid(), "O", "O Desc", LibraryType.PUNCHLIST_PRIORITY);
+        _libraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", _sortingType);
+        _libraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", _sortingType);
+        _libraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", _sortingType);
+        var otherLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "O", "O Desc", LibraryType.PUNCHLIST_PRIORITY);
 
         context.Library.Add(_libraryItemC);
         context.Library.Add(_libraryItemA);
