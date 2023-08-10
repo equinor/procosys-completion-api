@@ -56,7 +56,12 @@ public class GlobalExceptionHandler
         }
         catch (InValidProjectException ipe)
         {
-            var errors = new Dictionary<string, string[]> {{"ProjectName", new[] {ipe.Message}}};
+            var errors = new Dictionary<string, string[]> {{"Project", new[] {ipe.Message}}};
+            await context.WriteBadRequestAsync(errors, _logger);
+        }
+        catch (InValidCheckListException ice)
+        {
+            var errors = new Dictionary<string, string[]> { { "CheckList", new[] { ice.Message } } };
             await context.WriteBadRequestAsync(errors, _logger);
         }
         catch (ValidationException fe)
