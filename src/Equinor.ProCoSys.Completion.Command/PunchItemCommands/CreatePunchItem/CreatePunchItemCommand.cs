@@ -9,7 +9,7 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
     public CreatePunchItemCommand(
         string description,
         Guid projectGuid,
-        Guid checklistGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
         Guid? priorityGuid = null,
@@ -18,7 +18,7 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
     {
         Description = description;
         ProjectGuid = projectGuid;
-        ChecklistGuid = checklistGuid;
+        CheckListGuid = checkListGuid;
         RaisedByOrgGuid = raisedByOrgGuid;
         ClearingByOrgGuid = clearingByOrgGuid;
         PriorityGuid = priorityGuid;
@@ -28,7 +28,7 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
 
     public string Description { get; }
     public Guid ProjectGuid { get; }
-    public Guid ChecklistGuid { get; }
+    public Guid CheckListGuid { get; }
     public Guid RaisedByOrgGuid { get; }
     public Guid ClearingByOrgGuid { get; }
     public Guid? PriorityGuid { get; }

@@ -53,7 +53,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         var punchItem = new PunchItem(
             _plantProvider.Plant,
             project,
-            request.ChecklistGuid,
+            request.CheckListGuid,
             request.Description,
             raisedByOrg,
             clearingByOrg);

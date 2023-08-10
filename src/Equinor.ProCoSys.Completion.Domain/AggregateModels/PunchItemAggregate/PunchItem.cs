@@ -23,7 +23,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public PunchItem(
         string plant,
         Project project,
-        Guid checklistGuid,
+        Guid checkListGuid,
         string description,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg)
@@ -50,7 +50,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
         }
         ProjectId = project.Id;
-        ChecklistGuid = checklistGuid;
+        CheckListGuid = checkListGuid;
         RaisedByOrgId = raisedByOrg.Id;
         ClearingByOrgId = clearingByOrg.Id;
         Description = description;
@@ -59,8 +59,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
-    // Guid to Checklist in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal Checklist table when Checklist migrated to Completion
-    public Guid ChecklistGuid { get; private set; }
+    // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
+    public Guid CheckListGuid { get; private set; }
     public int ItemNo => Id;
     public string Description { get; set; }
     public int RaisedByOrgId { get; private set; }
