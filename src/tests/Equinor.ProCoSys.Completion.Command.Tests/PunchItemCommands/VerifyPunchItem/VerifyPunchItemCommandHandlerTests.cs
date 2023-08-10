@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.VerifyPunchItem;
 
@@ -23,10 +23,10 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _command = new VerifyPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
 
         _dut = new VerifyPunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _personRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<VerifyPunchItemCommandHandler>>().Object);
+            _punchItemRepositoryMock,
+            _personRepositoryMock,
+            _unitOfWorkMock,
+             Substitute.For<ILogger<VerifyPunchItemCommandHandler>>());
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        _unitOfWorkMock.Verify(r => r.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]

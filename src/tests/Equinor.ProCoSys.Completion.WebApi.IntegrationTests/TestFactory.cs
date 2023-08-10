@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -33,10 +33,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly List<Action> _teardownList = new();
     private readonly List<IDisposable> _disposables = new();
 
-    public readonly Mock<IAzureBlobService> BlobStorageMock = new();
-    private readonly Mock<IPersonApiService> _personApiServiceMock = new();
-    private readonly Mock<IPermissionApiService> _permissionApiServiceMock = new();
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
+    public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
+    private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
+    private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
+    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
@@ -140,10 +140,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.PostConfigureAll<JwtBearerOptions>(jwtBearerOptions =>
                 jwtBearerOptions.ForwardAuthenticate = IntegrationTestAuthHandler.TestAuthenticationScheme);
 
-            services.AddScoped(_ => _personApiServiceMock.Object);
-            services.AddScoped(_ => _permissionApiServiceMock.Object);
-            services.AddScoped(_ => BlobStorageMock.Object);
-            services.AddScoped(_ => _publishEndpointMock.Object);
+            services.AddScoped(_ => _personApiServiceMock);
+            services.AddScoped(_ => _permissionApiServiceMock);
+            services.AddScoped(_ => BlobStorageMock);
+            services.AddScoped(_ => _publishEndpointMock);
         });
 
         builder.ConfigureServices(services =>
@@ -229,10 +229,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         
     private void SetupPermissionMock(string plant, ITestUser testUser)
     {
-        _permissionApiServiceMock.Setup(p => p.GetPermissionsForCurrentUserAsync(plant))
+        _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.Permissions));
                         
-        _permissionApiServiceMock.Setup(p => p.GetAllOpenProjectsForCurrentUserAsync(plant))
+        _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.AccessableProjects));
     }
 
@@ -297,22 +297,22 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         {
             if (testUser.AuthProCoSysPerson is not null)
             {
-                _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
                     .Returns(Task.FromResult(testUser.AuthProCoSysPerson));
             }
             else
             {
-                _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
                     .Returns(Task.FromResult((ProCoSysPerson)null));
             }
-            _permissionApiServiceMock.Setup(p => p.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid)))
+            _permissionApiServiceMock.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid))
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
         // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Authenticator:CompletionApiObjectId"];
-        _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(apiObjectId)))
+        _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId))
             .Returns(Task.FromResult(new ProCoSysPerson
             {
                 AzureOid = apiObjectId,

@@ -1,7 +1,7 @@
 ﻿using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests;
 
@@ -10,19 +10,19 @@ public class ContextHelper
     public ContextHelper()
     {
         DbOptions = new DbContextOptions<CompletionContext>();
-        EventDispatcherMock = new Mock<IEventDispatcher>();
-        PlantProviderMock = new Mock<IPlantProvider>();
-        CurrentUserProviderMock = new Mock<ICurrentUserProvider>();
-        ContextMock = new Mock<CompletionContext>(
+        EventDispatcherMock = Substitute.For<IEventDispatcher>();
+        PlantProviderMock = Substitute.For<IPlantProvider>();
+        CurrentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        ContextMock = Substitute.For<CompletionContext>(
             DbOptions,
-            PlantProviderMock.Object,
-            EventDispatcherMock.Object,
-            CurrentUserProviderMock.Object);
+            PlantProviderMock,
+            EventDispatcherMock,
+            CurrentUserProviderMock);
     }
 
-    public DbContextOptions<CompletionContext> DbOptions { get; }
-    public Mock<IEventDispatcher> EventDispatcherMock { get; }
-    public Mock<IPlantProvider> PlantProviderMock { get; }
-    public Mock<CompletionContext> ContextMock { get; }
-    public Mock<ICurrentUserProvider> CurrentUserProviderMock { get; }
+    private DbContextOptions<CompletionContext> DbOptions { get; }
+    private IEventDispatcher EventDispatcherMock { get; }
+    private IPlantProvider PlantProviderMock { get; }
+    public CompletionContext ContextMock { get; }
+    private ICurrentUserProvider CurrentUserProviderMock { get; }
 }

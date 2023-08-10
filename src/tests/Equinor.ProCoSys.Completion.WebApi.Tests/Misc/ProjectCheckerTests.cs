@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using Equinor.ProCoSys.Completion.Command;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Misc;
@@ -17,32 +17,32 @@ public class ProjectCheckerTests
     private readonly string _plant = "Plant";
     private readonly Guid _projectGuid = Guid.NewGuid();
 
-    private Mock<IPlantProvider> _plantProviderMock;
-    private Mock<ICurrentUserProvider> _currentUserProviderMock;
-    private Mock<IPermissionCache> _permissionCacheMock;
+    private IPlantProvider _plantProviderMock;
+    private ICurrentUserProvider _currentUserProviderMock;
+    private IPermissionCache _permissionCacheMock;
     private TestRequest _testRequest;
     private ProjectChecker _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _plantProviderMock = new Mock<IPlantProvider>();
-        _plantProviderMock.SetupGet(p => p.Plant).Returns(_plant);
+        _plantProviderMock = Substitute.For<IPlantProvider>();
+        _plantProviderMock.Plant.Returns(_plant);
 
-        _currentUserProviderMock = new Mock<ICurrentUserProvider>();
-        _currentUserProviderMock.Setup(c => c.GetCurrentUserOid()).Returns(_currentUserOid);
+        _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        _currentUserProviderMock.GetCurrentUserOid().Returns(_currentUserOid);
 
-        _permissionCacheMock = new Mock<IPermissionCache>();
+        _permissionCacheMock = Substitute.For<IPermissionCache>();
 
         _testRequest = new TestRequest(_projectGuid);
-        _dut = new ProjectChecker(_plantProviderMock.Object, _currentUserProviderMock.Object, _permissionCacheMock.Object);
+        _dut = new ProjectChecker(_plantProviderMock, _currentUserProviderMock, _permissionCacheMock);
     }
 
     [TestMethod]
     public async Task EnsureValidProjectAsync_ShouldValidateOK()
     {
         // Arrange
-        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid)).ReturnsAsync(true);
+        _permissionCacheMock.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid).Returns(true);
 
         // Act
         await _dut.EnsureValidProjectAsync(_testRequest);
@@ -52,7 +52,7 @@ public class ProjectCheckerTests
     public async Task EnsureValidProjectAsync_ShouldThrowInvalidException_WhenProjectIsNotValid()
     {
         // Arrange
-        _permissionCacheMock.Setup(p => p.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid)).ReturnsAsync(false);
+        _permissionCacheMock.IsAValidProjectForUserAsync(_plant, _currentUserOid, _projectGuid).Returns(false);
 
         // Act
         await Assert.ThrowsExceptionAsync<InValidProjectException>(() => _dut.EnsureValidProjectAsync(_testRequest));

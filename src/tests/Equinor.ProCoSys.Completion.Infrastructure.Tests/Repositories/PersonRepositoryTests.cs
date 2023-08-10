@@ -6,15 +6,15 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
-using Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
 [TestClass]
 public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
 {
-    private readonly Mock<ICurrentUserProvider> _userProviderMock = new();
+    private readonly ICurrentUserProvider _userProviderMock = Substitute.For<ICurrentUserProvider>();
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
@@ -36,10 +36,10 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Persons)
-            .Returns(_dbSetMock.Object);
+            .Persons
+            .Returns(_dbSetMock);
 
-        _dut = new PersonRepository(_contextHelper.ContextMock.Object, _userProviderMock.Object);
+        _dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock);
     }
 
     protected override Person GetNewEntity() => new (Guid.NewGuid(), "New", "Person", "NP", "@");

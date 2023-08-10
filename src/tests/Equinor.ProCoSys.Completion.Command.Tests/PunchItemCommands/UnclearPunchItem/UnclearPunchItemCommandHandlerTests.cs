@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnclearPunchItem;
 
@@ -23,9 +23,9 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         _command = new UnclearPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
 
         _dut = new UnclearPunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<UnclearPunchItemCommandHandler>>().Object);
+            _punchItemRepositoryMock,
+            _unitOfWorkMock,
+            Substitute.For<ILogger<UnclearPunchItemCommandHandler>>());
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        _unitOfWorkMock.Verify(r => r.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]

@@ -5,66 +5,70 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItem;
-
-[TestClass]
-public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItem
 {
-    private DeletePunchItemCommand _command;
-    private DeletePunchItemCommandHandler _dut;
-
-    [TestInitialize]
-    public void Setup()
+    [TestClass]
+    public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
     {
-        _command = new DeletePunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+        private DeletePunchItemCommand _command;
+        private DeletePunchItemCommandHandler _dut;
+        private ILogger<DeletePunchItemCommandHandler> _logger;
 
-        _dut = new DeletePunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<DeletePunchItemCommandHandler>>().Object);
-    }
+        [TestInitialize]
+        public void Setup()
+        {
+            _command = new DeletePunchItemCommand(_existingPunchItem.Guid, _rowVersion);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldDeletePunchItemFromRepository()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
+            
+            _dut = new DeletePunchItemCommandHandler(
+                _punchItemRepositoryMock,
+                _unitOfWorkMock,
+                _logger);
+        }
 
-        // Assert
-        _punchItemRepositoryMock.Verify(r => r.Remove(_existingPunchItem), Times.Once);
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldDeletePunchItemFromRepository()
+        {
+            // Act
+            await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSave()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            // Assert
+            _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem);
+        }
 
-        // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSave()
+        {
+            // Act
+            await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSetAndReturnRowVersion()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            // Assert
+            await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        }
 
-        // Assert
-        // In real life EF Core will create a new RowVersion when save.
-        // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSetAndReturnRowVersion()
+        {
+            // Act
+            await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemDeletedEvent()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            // Assert
+            // In real life EF Core will create a new RowVersion when save.
+            // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
+            Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        }
 
-        // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemDeletedDomainEvent));
+        [TestMethod]
+        public async Task HandlingCommand_ShouldAddPunchItemDeletedEvent()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemDeletedDomainEvent));
+        }
     }
 }

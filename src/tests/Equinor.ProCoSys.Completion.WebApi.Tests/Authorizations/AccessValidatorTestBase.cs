@@ -3,8 +3,8 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Equinor.ProCoSys.Common.Misc;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
@@ -17,32 +17,32 @@ public class AccessValidatorTestBase
     protected readonly Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
     protected readonly Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
 
-    private Mock<IProjectAccessChecker> _projectAccessCheckerMock;
-    private Mock<ILogger<AccessValidator>> _loggerMock;
-    private Mock<ICurrentUserProvider> _currentUserProviderMock;
+    private IProjectAccessChecker _projectAccessCheckerMock;
+    private ILogger<AccessValidator> _loggerMock;
+    private ICurrentUserProvider _currentUserProviderMock;
 
     [TestInitialize]
     public void Setup()
     {
-        _currentUserProviderMock = new Mock<ICurrentUserProvider>();
+        _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
 
-        _projectAccessCheckerMock = new Mock<IProjectAccessChecker>();
+        _projectAccessCheckerMock = Substitute.For<IProjectAccessChecker>();
 
-        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess)).Returns(false);
-        _projectAccessCheckerMock.Setup(p => p.HasCurrentUserAccessToProject(ProjectGuidWithAccess)).Returns(true);
+        _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess).Returns(false);
+        _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
-        var punchItemHelperMock = new Mock<IPunchItemHelper>();
-        punchItemHelperMock.Setup(p => p.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProject))
-            .ReturnsAsync(ProjectGuidWithAccess);
-        punchItemHelperMock.Setup(p => p.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject))
-            .ReturnsAsync(ProjectGuidWithoutAccess);
+        var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
+        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProject)
+            .Returns(ProjectGuidWithAccess);
+        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject)
+            .Returns(ProjectGuidWithoutAccess);
 
-        _loggerMock = new Mock<ILogger<AccessValidator>>();
+        _loggerMock = Substitute.For<ILogger<AccessValidator>>();
 
         _dut = new AccessValidator(
-            _currentUserProviderMock.Object,
-            _projectAccessCheckerMock.Object,
-            punchItemHelperMock.Object,
-            _loggerMock.Object);
+            _currentUserProviderMock,
+            _projectAccessCheckerMock,
+            punchItemHelperMock,
+            _loggerMock);
     }
 }

@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentDomainEvents
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Comments;
 
@@ -15,25 +15,22 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Comments;
 public class CommentServiceTests : TestsBase
 {
     private readonly Guid _sourceGuid = Guid.NewGuid();
-    private Mock<ICommentRepository> _commentRepositoryMock;
+    private ICommentRepository _commentRepository;
     private CommentService _dut;
     private Comment _commentAddedToRepository;
 
     [TestInitialize]
     public void Setup()
     {
-        _commentRepositoryMock = new Mock<ICommentRepository>();
-        _commentRepositoryMock
-            .Setup(x => x.Add(It.IsAny<Comment>()))
-            .Callback<Comment>(comment =>
+        _commentRepository = Substitute.For<ICommentRepository>();
+        _commentRepository.When(x => x.Add(Arg.Any<Comment>()))
+            .Do(info =>
             {
-                _commentAddedToRepository = comment;
+                _commentAddedToRepository = info.Arg<Comment>();
             });
 
-        _dut = new CommentService(
-            _commentRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<CommentService>>().Object);
+        var logger = Substitute.For<ILogger<CommentService>>();
+        _dut = new CommentService(_commentRepository, _unitOfWorkMock, logger);
     }
 
     #region AddAsync
@@ -61,7 +58,7 @@ public class CommentServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _sourceGuid, "T", default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]

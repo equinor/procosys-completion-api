@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
@@ -15,21 +15,20 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, new()
 {
     protected UploadBaseDtoValidator<T> _dut;
-    protected Mock<IOptionsSnapshot<BlobStorageOptions>> _blobStorageOptionsMock;
+    protected IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
     private BlobStorageOptions _blobStorageOptions;
 
     [TestInitialize]
     public void Setup()
     {
-        _blobStorageOptionsMock = new Mock<IOptionsSnapshot<BlobStorageOptions>>();
+        _blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
         _blobStorageOptions = new BlobStorageOptions
         {
             MaxSizeMb = 2,
             BlobContainer = "bc",
             BlockedFileSuffixes = new[] { ".exe", ".zip" }
         };
-        _blobStorageOptionsMock
-            .Setup(x => x.Value)
+        _blobStorageOptionsMock.Value
             .Returns(_blobStorageOptions);
 
         SetupDut();

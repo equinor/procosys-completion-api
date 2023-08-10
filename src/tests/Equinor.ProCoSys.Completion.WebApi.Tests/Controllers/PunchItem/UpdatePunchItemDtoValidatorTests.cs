@@ -2,7 +2,7 @@
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 
@@ -12,15 +12,15 @@ public class UpdatePunchItemDtoValidatorTests
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private UpdatePunchItemDtoValidator _dut;
-    private Mock<IRowVersionValidator> _rowVersionValidatorMock;
+    private IRowVersionValidator _rowVersionValidatorMock;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = new Mock<IRowVersionValidator>();
-        _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(true);
+        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
-        _dut = new UpdatePunchItemDtoValidator(_rowVersionValidatorMock.Object);
+        _dut = new UpdatePunchItemDtoValidator(_rowVersionValidatorMock);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class UpdatePunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenIllegalRowVersion()
     {
         // Arrange
-        _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(false);
+        _rowVersionValidatorMock.IsValid(_rowVersion).Returns(false);
         var dto = new UpdatePunchItemDto(null, _rowVersion);
 
         // Act
