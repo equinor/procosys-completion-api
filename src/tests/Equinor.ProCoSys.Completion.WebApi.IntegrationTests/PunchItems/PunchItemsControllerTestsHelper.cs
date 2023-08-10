@@ -84,7 +84,7 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         string description,
         Guid projectGuid,
-        Guid checklistGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
         Guid? priorityGuid = null,
@@ -97,7 +97,7 @@ public static class PunchItemsControllerTestsHelper
         {
             description,
             projectGuid = projectGuid.ToString(),
-            checklistGuid = checklistGuid.ToString(),
+            checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
             clearingByOrgGuid = clearingByOrgGuid.ToString(),
             priorityGuid = priorityGuid?.ToString(),
@@ -504,7 +504,7 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid projectGuid,
-        Guid checklistGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
     {
@@ -512,7 +512,7 @@ public static class PunchItemsControllerTestsHelper
             UserType.Writer,
             TestFactory.PlantWithAccess,
             projectGuid,
-            checklistGuid,
+            checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
         var rowVersionAfterVerify = await VerifyPunchItemAsync(
@@ -528,7 +528,7 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid projectGuid,
-        Guid checklistGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
     {
@@ -537,7 +537,7 @@ public static class PunchItemsControllerTestsHelper
             plant,
             Guid.NewGuid().ToString(),
             projectGuid,
-            checklistGuid,
+            checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
         var rowVersionAfterClear = await ClearPunchItemAsync(

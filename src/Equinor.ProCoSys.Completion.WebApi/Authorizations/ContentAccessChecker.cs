@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
-using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 

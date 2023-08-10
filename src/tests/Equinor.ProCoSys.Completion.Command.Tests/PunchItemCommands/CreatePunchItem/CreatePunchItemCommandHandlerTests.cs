@@ -22,7 +22,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     private Mock<ILibraryItemRepository> _libraryItemRepositoryMock;
 
     private Project _existingProject;
-    private readonly Guid _existingChecklistGuid = Guid.NewGuid();
+    private readonly Guid _existingCheckListGuid = Guid.NewGuid();
     private LibraryItem _existingRaisedByOrg;
     private LibraryItem _existingClearingByOrg;
     private LibraryItem _existingPriority;
@@ -91,7 +91,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         _command = new CreatePunchItemCommand(
             "P123",
             _existingProject.Guid,
-            _existingChecklistGuid,
+            _existingCheckListGuid,
             _existingRaisedByOrg.Guid,
             _existingClearingByOrg.Guid,
             _existingPriority.Guid,
@@ -141,7 +141,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
         var command = new CreatePunchItemCommand(
             "P123",
             _existingProject.Guid,
-            _existingChecklistGuid, 
+            _existingCheckListGuid, 
             _existingRaisedByOrg.Guid,
             _existingClearingByOrg.Guid);
 

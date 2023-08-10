@@ -363,7 +363,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess, 
-            TestFactory.ChecklistGuid,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -1186,7 +1186,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.ChecklistGuid,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1267,7 +1267,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.ChecklistGuid,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1348,7 +1348,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.ChecklistGuid,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1429,7 +1429,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.ChecklistGuid,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterVerify, TestFactory.WrongButValidRowVersion);
