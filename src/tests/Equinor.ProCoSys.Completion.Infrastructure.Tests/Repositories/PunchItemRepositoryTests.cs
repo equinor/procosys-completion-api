@@ -23,7 +23,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        var punchItem = new PunchItem(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
+        var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
         _knownGuid = punchItem.Guid;
         punchItem.SetProtectedIdForTesting(_knownId);
 
@@ -39,5 +39,5 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _dut = new PunchItemRepository(_contextHelper.ContextMock.Object);
     }
 
-    protected override PunchItem GetNewEntity() => new(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
+    protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
 }

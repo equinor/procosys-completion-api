@@ -89,6 +89,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
+            KnownPlantData.CheckListGuid[plant],
             raisedByOrg,
             clearingByOrg,
             "PunchItemA",
@@ -107,6 +108,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
+            KnownPlantData.CheckListGuid[plant],
             raisedByOrg,
             clearingByOrg,
             "PunchItemB");
@@ -157,6 +159,7 @@ public static class CompletionContextExtension
         CompletionContext dbContext,
         string plant,
         Project project,
+        Guid checkListGuid,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg,
         string title,
@@ -165,7 +168,7 @@ public static class CompletionContextExtension
         LibraryItem type = null)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
-        var punchItem = new PunchItem(plant, project, title, raisedByOrg, clearingByOrg);
+        var punchItem = new PunchItem(plant, project, checkListGuid, title, raisedByOrg, clearingByOrg);
         if (priority is not null)
         {
             punchItem.SetPriority(priority);

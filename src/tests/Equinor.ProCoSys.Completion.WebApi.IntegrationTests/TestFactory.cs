@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
+using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,6 +38,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly Mock<IAzureBlobService> BlobStorageMock = new();
     private readonly Mock<IPersonApiService> _personApiServiceMock = new();
     private readonly Mock<IPermissionApiService> _permissionApiServiceMock = new();
+    private readonly Mock<ICheckListApiService> _checkListApiServiceMock = new();
     private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
@@ -43,6 +46,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string Unknown => "UNKNOWN";
     public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
     public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
+    public static Guid CheckListGuid => KnownPlantData.CheckListGuid[KnownPlantData.PlantA];
     public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
     public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
     public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
@@ -142,6 +146,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
             services.AddScoped(_ => _personApiServiceMock.Object);
             services.AddScoped(_ => _permissionApiServiceMock.Object);
+            services.AddScoped(_ => _checkListApiServiceMock.Object);
             services.AddScoped(_ => BlobStorageMock.Object);
             services.AddScoped(_ => _publishEndpointMock.Object);
         });
@@ -234,6 +239,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         
         _permissionApiServiceMock.Setup(p => p.GetAllOpenProjectsForCurrentUserAsync(plant))
             .Returns(Task.FromResult(testUser.AccessableProjects));
+
+        _permissionApiServiceMock.Setup(p => p.GetRestrictionRolesForCurrentUserAsync(plant))
+            .Returns(Task.FromResult(testUser.Restrictions));
     }
 
     private void SetupTestUsers()
@@ -257,11 +265,16 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             }
         };
 
+        var restrictions = new List<string>
+        {
+            ClaimsTransformation.NoRestrictions
+        };
+
         SetupAnonymousUser();
 
-        SetupWriterUser(accessablePlants, accessableProjects);
+        SetupWriterUser(accessablePlants, accessableProjects, restrictions);
 
-        SetupReaderUser(accessablePlants, accessableProjects);
+        SetupReaderUser(accessablePlants, accessableProjects, restrictions);
     
         SetupNoPermissionUser();
             
@@ -344,13 +357,15 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
                 },
                 Permissions = new List<string>(),
-                AccessableProjects = new List<AccessableProject>()
+                AccessableProjects = new List<AccessableProject>(),
+                Restrictions = new List<string>()
             });
 
     // Authenticated client with necessary roles to read PunchItems
     private void SetupReaderUser(
         List<AccessablePlant> commonAccessablePlants,
-        List<AccessableProject> accessableProjects)
+        List<AccessableProject> accessableProjects,
+        List<string> restrictions)
         => _testUsers.Add(UserType.Reader,
             new TestUser
             {
@@ -368,13 +383,16 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 {
                     Permissions.PUNCHITEM_READ
                 },
-                AccessableProjects = accessableProjects
+                AccessableProjects = accessableProjects,
+                Restrictions = restrictions
+
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
-        List<AccessableProject> accessableProjects)
+        List<AccessableProject> accessableProjects,
+        List<string> restrictions)
         => _testUsers.Add(UserType.Writer,
             new TestUser
             {
@@ -399,7 +417,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ
                 },
-                AccessableProjects = accessableProjects
+                AccessableProjects = accessableProjects,
+                Restrictions = restrictions
             });
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());

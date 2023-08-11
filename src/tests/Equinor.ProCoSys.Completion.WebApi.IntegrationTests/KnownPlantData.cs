@@ -51,4 +51,10 @@ public class KnownPlantData
         { PlantA, new("aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbb11") },
         { PlantB, new("aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbb22") }
     };
+
+    public static Dictionary<string, Guid> CheckListGuid = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb11") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb22") }
+    };
 }

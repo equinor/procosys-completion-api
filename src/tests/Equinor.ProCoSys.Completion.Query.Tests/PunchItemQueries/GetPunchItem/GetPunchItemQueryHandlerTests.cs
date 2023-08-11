@@ -31,14 +31,14 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         _createdPunchItem.SetPriority(_priority);
         _createdPunchItem.SetSorting(_sorting);
         _createdPunchItem.SetType(_type);
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
 
         _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType = _createdPunchItem;
         _punchItemWithoutPriority = _punchItemWithoutSorting = _punchItemWithoutType = _modifiedPunchItem;
