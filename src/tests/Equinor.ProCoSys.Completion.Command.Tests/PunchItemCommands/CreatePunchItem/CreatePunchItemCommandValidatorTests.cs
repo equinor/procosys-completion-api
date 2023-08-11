@@ -27,6 +27,7 @@ public class CreatePunchItemCommandValidatorTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
+            Guid.NewGuid(),
             Guid.NewGuid());
         _projectValidatorMock = Substitute.For<IProjectValidator>();
         _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(true);
