@@ -22,9 +22,9 @@ public class MainApiCheckListService : ICheckListApiService
 
     public async Task<string?> GetCheckListAsync(string plant, Guid checkListGuid)
     {
-        var url = $"{_baseAddress}CheckList/ByGuid" +
+        var url = $"{_baseAddress}CheckListResponsible/ByGuid" +
                   $"?plantId={plant}" +
-                  $"&checkListGuid={checkListGuid:N}" +
+                  $"&proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
         return await _mainApiClient.TryQueryAndDeserializeAsync<string?>(url);
