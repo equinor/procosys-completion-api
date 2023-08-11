@@ -15,7 +15,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
         => new(null!, ProjectGuidWithoutAccess, Guid.Empty, Guid.Empty, Guid.Empty);
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToProjectButNotContent()
+    public async Task Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
     {
         // Arrange
         var command = new CreatePunchItemCommand(
