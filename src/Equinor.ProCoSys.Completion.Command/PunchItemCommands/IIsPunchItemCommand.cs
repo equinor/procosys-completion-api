@@ -1,7 +1,7 @@
 ﻿using System;
 using MediatR;
 
-namespace Equinor.ProCoSys.Completion.Command;
+namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 
 public interface IIsPunchItemCommand : IBaseRequest
 {

@@ -34,8 +34,8 @@ public class UnitOfWorkTests
     public void Setup()
     {
         _project = new(_plant, Guid.NewGuid(), null!, null!);
-        _raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, null!);
-        _clearingByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, null!);
+        _raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+        _clearingByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
 
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -66,7 +66,7 @@ public class UnitOfWorkTests
         _currentUserProviderMock
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         // Act
@@ -95,7 +95,7 @@ public class UnitOfWorkTests
             .Setup(x => x.GetCurrentUserOid())
             .Returns(_currentUserOid);
 
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         await dut.SaveChangesAsync();

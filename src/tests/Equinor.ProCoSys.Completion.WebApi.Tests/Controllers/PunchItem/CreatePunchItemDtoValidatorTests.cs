@@ -14,7 +14,7 @@ public class CreatePunchItemDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreatePunchItemDto("New item", Guid.Empty, Guid.Empty, Guid.Empty);
+        var dto = new CreatePunchItemDto("New item", Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -27,7 +27,7 @@ public class CreatePunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenDescriptionNotGiven()
     {
         // Arrange
-        var dto = new CreatePunchItemDto(null!, Guid.Empty, Guid.Empty, Guid.Empty);
+        var dto = new CreatePunchItemDto(null!, Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -44,7 +44,7 @@ public class CreatePunchItemDtoValidatorTests
         // Arrange
         var dto = new CreatePunchItemDto(
             new string('x', Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax + 1),
-            Guid.Empty, Guid.Empty, Guid.Empty);
+            Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
 
         // Act
         var result = await _dut.ValidateAsync(dto);

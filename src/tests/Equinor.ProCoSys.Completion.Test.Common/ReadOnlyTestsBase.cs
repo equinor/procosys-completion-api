@@ -14,22 +14,15 @@ namespace Equinor.ProCoSys.Completion.Test.Common;
 
 public abstract class ReadOnlyTestsBase : TestsBase
 {
-    protected readonly string ProjectNameA = "ProA";
-    protected readonly string ProjectNameB = "ProB";
-    protected readonly string ProjectNameC = "ProC";
-    protected readonly string RaisedByOrgCode = "COM";
-    protected readonly string ClearingByOrgCode = "ENG";
-    protected static readonly Guid ProjectGuidA = Guid.NewGuid();
-    protected static readonly Guid ProjectGuidB = Guid.NewGuid();
-    protected static readonly Guid ProjectGuidC = Guid.NewGuid();
-    protected static readonly Guid RaisedByOrgGuid = Guid.NewGuid();
-    protected static readonly Guid ClearingByOrgGuid = Guid.NewGuid();
     protected Project _projectA;
     protected Project _projectB;
     protected Project _closedProjectC;
     protected Person _currentPerson;
     protected LibraryItem _raisedByOrg;
     protected LibraryItem _clearingByOrg;
+    protected LibraryItem _priority;
+    protected LibraryItem _sorting;
+    protected LibraryItem _type;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
@@ -61,9 +54,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
             AddPerson(context, _currentPerson);
         }
 
-        _projectA = new(TestPlantA, ProjectGuidA, ProjectNameA, $"{ProjectNameA} desc");
-        _projectB = new(TestPlantA, ProjectGuidB, ProjectNameB, $"{ProjectNameB} desc");
-        _closedProjectC = new(TestPlantA, ProjectGuidC, ProjectNameC, $"{ProjectNameC} desc") {IsClosed = true};
+        _projectA = new(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
+        _projectB = new(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
+        _closedProjectC = new(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
 
         AddProject(context, _projectA);
         AddProject(context, _projectB);
@@ -71,19 +64,40 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
         _raisedByOrg = new LibraryItem(
             TestPlantA,
-            RaisedByOrgGuid, 
-            RaisedByOrgCode,
-            $"{RaisedByOrgCode} desc",
-            LibraryType.COMPLETION_ORGANIZATION.ToString());
+            Guid.NewGuid(), 
+            "COM",
+            "COM desc",
+            LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(
             TestPlantA,
-            ClearingByOrgGuid,
-            ClearingByOrgCode,
-            $"{ClearingByOrgCode} desc",
-            LibraryType.COMPLETION_ORGANIZATION.ToString());
+            Guid.NewGuid(),
+            "ENG",
+            "ENG desc",
+            LibraryType.COMPLETION_ORGANIZATION);
+        _priority = new LibraryItem(
+            TestPlantA,
+            Guid.NewGuid(),
+            "P1",
+            "P1 desc",
+            LibraryType.PUNCHLIST_PRIORITY);
+        _sorting = new LibraryItem(
+            TestPlantA,
+            Guid.NewGuid(),
+            "A",
+            "A desc",
+            LibraryType.PUNCHLIST_SORTING);
+        _type = new LibraryItem(
+            TestPlantA,
+            Guid.NewGuid(),
+            "Paint",
+            "Paint desc",
+            LibraryType.PUNCHLIST_TYPE);
 
         AddLibraryItem(context, _raisedByOrg);
         AddLibraryItem(context, _clearingByOrg);
+        AddLibraryItem(context, _priority);
+        AddLibraryItem(context, _sorting);
+        AddLibraryItem(context, _type);
 
         SetupNewDatabase(_dbContextOptions);
     }

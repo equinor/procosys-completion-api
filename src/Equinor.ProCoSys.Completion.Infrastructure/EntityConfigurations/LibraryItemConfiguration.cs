@@ -25,11 +25,13 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
             .IsRequired();
 
         builder.Property(x => x.Type)
+            .HasConversion(CompletionContext.LibraryTypeConverter)
             .HasMaxLength(LibraryItem.TypeLengthMax)
             .IsRequired();
 
         builder
             .HasIndex(x => x.Guid)
+            .IsUnique()
             .HasDatabaseName("IX_LibraryItems_Guid")
             .IncludeProperties(x => new
             {

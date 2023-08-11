@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Command;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 
-public class GetPunchItemsInProjectQuery : IRequest<Result<IEnumerable<PunchItemDto>>>, IIsProjectCommand
+public class GetPunchItemsInProjectQuery : IRequest<Result<IEnumerable<PunchItemDto>>>, IIsProjectQuery
 {
     public GetPunchItemsInProjectQuery(Guid projectGuid) => ProjectGuid = projectGuid;
 

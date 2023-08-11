@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 using Equinor.ProCoSys.Completion.Domain;
@@ -23,6 +24,7 @@ using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using MassTransit;
@@ -87,6 +89,8 @@ public static class ApplicationModule
         services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
+        services.AddScoped<IContentAccessChecker, ContentAccessChecker>();
+        services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<IProjectChecker, ProjectChecker>();
         services.AddScoped<IPunchItemHelper, PunchItemHelper>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
@@ -111,6 +115,7 @@ public static class ApplicationModule
 
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
+        services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
         services.AddScoped<IRowVersionValidator, RowVersionValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();

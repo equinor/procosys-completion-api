@@ -16,9 +16,9 @@ public class PunchItemsControllerNegativeTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].PunchItemAGuid;
-        _linkGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].LinkInPunchItemAGuid;
-        _attachmentGuidUnderTest = TestFactory.Instance.SeededData[KnownPlantData.PlantA].AttachmentInPunchItemAGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemGuid;
+        _linkGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].LinkInPunchItemAGuid;
+        _attachmentGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].AttachmentInPunchItemAGuid;
 
         await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }
@@ -107,7 +107,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectGuidWithoutAccess,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
-            TestFactory.ProjectGuidWithoutAccess,
+            Guid.Empty,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -145,7 +145,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Unauthorized);
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.Unauthorized);
 
     [TestMethod]
     public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
@@ -156,8 +157,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "is not a valid plant");
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
@@ -168,8 +170,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "is not a valid plant");
 
     [TestMethod]
     public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -180,7 +183,20 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task CreatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToProject()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithAccess,
+            "PunchItem1",
+            TestFactory.ProjectGuidWithoutAccess,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -191,7 +207,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task CreatePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -202,7 +219,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.ProjectGuidWithAccess,
             Guid.Empty,
             Guid.Empty,
-            HttpStatusCode.Forbidden);
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.Forbidden);
     #endregion
 
     #region UpdatePunchItem
@@ -344,7 +362,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
+            TestFactory.ProjectGuidWithAccess, 
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -1167,6 +1186,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1247,6 +1267,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1327,6 +1348,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1407,6 +1429,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterVerify, TestFactory.WrongButValidRowVersion);

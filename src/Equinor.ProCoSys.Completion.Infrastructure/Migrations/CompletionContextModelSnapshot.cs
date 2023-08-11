@@ -91,6 +91,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("Guid")
+                        .IsUnique();
+
                     b.HasIndex("SourceGuid")
                         .HasDatabaseName("IX_Attachments_SourceGuid");
 
@@ -161,6 +164,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
+
+                    b.HasIndex("Guid")
+                        .IsUnique();
 
                     b.HasIndex("SourceGuid")
                         .HasDatabaseName("IX_Comments_SourceGuid");
@@ -251,6 +257,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
+                        .IsUnique()
                         .HasDatabaseName("IX_LibraryItems_Guid");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Code", "Description", "Type" });
@@ -336,6 +343,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
+
+                    b.HasIndex("Guid")
+                        .IsUnique();
 
                     b.HasIndex("ModifiedById");
 
@@ -503,17 +513,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("Guid")
+                        .IsUnique();
+
                     b.HasIndex("ModifiedById");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_Projects_Name_ASC");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Name"), new[] { "Plant" });
-
-                    b.HasIndex("Plant")
-                        .HasDatabaseName("IX_Projects_Plant_ASC");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Plant"), new[] { "Name", "IsClosed", "CreatedAtUtc", "ModifiedAtUtc" });
 
                     b.ToTable("Projects");
 
@@ -536,6 +539,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 4000001L);
+
+                    b.Property<Guid>("CheckListGuid")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("ClearedAtUtc")
                         .HasColumnType("datetime2");
@@ -628,6 +634,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
+                        .IsUnique()
                         .HasDatabaseName("IX_PunchItems_Guid");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Id", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RaisedByOrgId", "ClearingByOrgId", "SortingId", "TypeId", "PriorityId", "RowVersion" });

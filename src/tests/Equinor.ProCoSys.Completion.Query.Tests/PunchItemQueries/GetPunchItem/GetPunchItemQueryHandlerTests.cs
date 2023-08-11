@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -19,16 +20,28 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private PunchItem _clearedPunchItem;
     private PunchItem _rejectedPunchItem;
     private PunchItem _verifiedPunchItem;
+    private PunchItem _punchItemWithPriority;
+    private PunchItem _punchItemWithSorting;
+    private PunchItem _punchItemWithType;
+    private PunchItem _punchItemWithoutPriority;
+    private PunchItem _punchItemWithoutSorting;
+    private PunchItem _punchItemWithoutType;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _createdPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
-        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, "Desc", _raisedByOrg, _clearingByOrg);
+        _createdPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _createdPunchItem.SetPriority(_priority);
+        _createdPunchItem.SetSorting(_sorting);
+        _createdPunchItem.SetType(_type);
+        _modifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+
+        _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType = _createdPunchItem;
+        _punchItemWithoutPriority = _punchItemWithoutSorting = _punchItemWithoutType = _modifiedPunchItem;
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);
@@ -111,6 +124,9 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         AssertNotCleared(punchItemDetailsDto);
         AssertNotVerified(punchItemDetailsDto);
         AssertNotRejected(punchItemDetailsDto);
+
+        AssertRaisedByOrg(punchItemDetailsDto);
+        AssertClearingByOrg(punchItemDetailsDto);
     }
 
     [TestMethod]
@@ -322,5 +338,155 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(punchItemDetailsDto.VerifiedAtUtc);
         Assert.AreEqual(punchItem.VerifiedAtUtc, punchItemDetailsDto.VerifiedAtUtc);
         Assert.AreNotEqual(punchItemDetailsDto.VerifiedAtUtc, punchItemDetailsDto.ClearedAtUtc);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithPriority()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithPriority;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Priority;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_priority, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithSorting()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithSorting;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Sorting;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_sorting, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithType()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithType;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Type;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_type, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutPriority()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutPriority;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Priority;
+        Assert.IsNull(libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutSorting()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutSorting;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Sorting;
+        Assert.IsNull(libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutType()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutType;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var libraryItemDto = result.Data.Type;
+        Assert.IsNull(libraryItemDto);
+    }
+
+    private void AssertRaisedByOrg(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var libraryItemDto = punchItemDetailsDto.RaisedByOrg;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_raisedByOrg, libraryItemDto);
+    }
+
+    private void AssertClearingByOrg(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var libraryItemDto = punchItemDetailsDto.ClearingByOrg;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_clearingByOrg, libraryItemDto);
+    }
+
+    private void AssertLibraryItem(LibraryItem libraryItem, LibraryItemDto libraryItemDto)
+    {
+        Assert.AreEqual(libraryItem.Guid, libraryItemDto.Guid);
+        Assert.AreEqual(libraryItem.Code, libraryItemDto.Code);
+        Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
     }
 }

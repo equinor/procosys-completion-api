@@ -29,7 +29,7 @@ public static class Seeders
     {
         for (var i = 0; i < entryCount; i++)
         {
-            var project = new LibraryItem(plant, Guid.NewGuid(), $"Code-{i}", $"Description-{i}", type.ToString());
+            var project = new LibraryItem(plant, Guid.NewGuid(), $"Code-{i}", $"Description-{i}", type);
             libraryItemRepository.Add(project);
         }
     }

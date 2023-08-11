@@ -84,8 +84,12 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         string description,
         Guid projectGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
+        Guid? priorityGuid = null,
+        Guid? sortingGuid = null,
+        Guid? typeGuid = null,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
@@ -93,8 +97,12 @@ public static class PunchItemsControllerTestsHelper
         {
             description,
             projectGuid = projectGuid.ToString(),
+            checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
-            clearingByOrgGuid = clearingByOrgGuid.ToString()
+            clearingByOrgGuid = clearingByOrgGuid.ToString(),
+            priorityGuid = priorityGuid?.ToString(),
+            sortingGuid = sortingGuid?.ToString(),
+            typeGuid = typeGuid?.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
@@ -496,6 +504,7 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid projectGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
     {
@@ -503,6 +512,7 @@ public static class PunchItemsControllerTestsHelper
             UserType.Writer,
             TestFactory.PlantWithAccess,
             projectGuid,
+            checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
         var rowVersionAfterVerify = await VerifyPunchItemAsync(
@@ -518,6 +528,7 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid projectGuid,
+        Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
     {
@@ -526,6 +537,7 @@ public static class PunchItemsControllerTestsHelper
             plant,
             Guid.NewGuid().ToString(),
             projectGuid,
+            checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
         var rowVersionAfterClear = await ClearPunchItemAsync(

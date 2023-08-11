@@ -12,8 +12,7 @@ public class LibraryItemRepository : EntityWithGuidRepository<LibraryItem>, ILib
     {
     }
 
-    // todo Has value conversions been considered or do we explicitly want LibraryItem.Type to be a string for ease of use other places in the code?
     public Task<LibraryItem?> GetByGuidAndTypeAsync(Guid libraryGuid, LibraryType type)
-        => DefaultQuery.SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type.ToString());
+        => DefaultQuery.SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type);
 
 }

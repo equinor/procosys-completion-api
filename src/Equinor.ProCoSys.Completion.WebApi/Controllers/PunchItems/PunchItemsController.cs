@@ -85,12 +85,15 @@ public class PunchItemsController : ControllerBase
         string plant,
         [FromBody] CreatePunchItemDto dto)
     {
-        
         var result = await _mediator.Send(new CreatePunchItemCommand(
             dto.Description,
             dto.ProjectGuid,
+            dto.CheckListGuid,
             dto.RaisedByOrgGuid, 
-            dto.ClearingByOrgGuid));
+            dto.ClearingByOrgGuid,
+            dto.PriorityGuid,
+            dto.SortingGuid,
+            dto.TypeGuid));
         return this.FromResult(result);
     }
 

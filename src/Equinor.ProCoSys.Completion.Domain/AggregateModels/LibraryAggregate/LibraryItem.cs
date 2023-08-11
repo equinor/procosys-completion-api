@@ -19,7 +19,7 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, 
     {
     }
 
-    public LibraryItem(string plant, Guid guid, string code, string description, string type)
+    public LibraryItem(string plant, Guid guid, string code, string description, LibraryType type)
         : base(plant)
     {
         Guid = guid;
@@ -32,7 +32,7 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, 
     public Guid Guid { get; private set; }
     public string Code { get; private set; }
     public string Description { get; private set; }
-    public string Type { get; private set; }
+    public LibraryType Type { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }

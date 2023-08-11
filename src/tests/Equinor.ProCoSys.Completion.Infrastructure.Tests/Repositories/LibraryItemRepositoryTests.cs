@@ -15,7 +15,7 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
     protected override void SetupRepositoryWithOneKnownItem()
     {
         _knownGuid = Guid.NewGuid();
-        var libraryItem = new LibraryItem(TestPlant, _knownGuid, "A", "A Desc", "A Type");
+        var libraryItem = new LibraryItem(TestPlant, _knownGuid, "A", "A Desc", LibraryType.COMPLETION_ORGANIZATION);
         libraryItem.SetProtectedIdForTesting(_knownId);
         var library = new List<LibraryItem> { libraryItem };
 
@@ -29,5 +29,5 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
         _dut = new LibraryItemRepository(_contextHelper.ContextMock.Object);
     }
 
-    protected override LibraryItem GetNewEntity() => new(TestPlant, Guid.NewGuid(), "B", "B Desc", "B Type");
+    protected override LibraryItem GetNewEntity() => new(TestPlant, Guid.NewGuid(), "B", "B Desc", LibraryType.COMPLETION_ORGANIZATION);
 }
