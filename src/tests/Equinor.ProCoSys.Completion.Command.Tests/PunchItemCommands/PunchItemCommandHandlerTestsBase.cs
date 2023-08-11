@@ -12,8 +12,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 {
     public class PunchItemCommandHandlerTestsBase : TestsBase
     {
-        protected int _currentPersonId = 13;
-        protected string _rowVersion = "AAAAAAAAABA=";
+        protected const int CurrentPersonId = 13;
+        protected const string RowVersion = "AAAAAAAAABA=";
         protected IPersonRepository _personRepositoryMock;
         protected IPunchItemRepository _punchItemRepositoryMock;
         protected PunchItem _existingPunchItem;
@@ -27,12 +27,12 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
             _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(),null!, raisedByOrg, clearingByOrg);
 
-        _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
-            .ReturnsAsync(_existingPunchItem);
+        _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
+        _punchItemRepositoryMock.GetByGuidAsync(_existingPunchItem.Guid)
+            .Returns(_existingPunchItem);
 
             _currentPerson = new Person(Guid.NewGuid(), null!, null!, null!, null!);
-            _currentPerson.SetProtectedIdForTesting(_currentPersonId);
+            _currentPerson.SetProtectedIdForTesting(CurrentPersonId);
 
             _personRepositoryMock = Substitute.For<IPersonRepository>();
             _personRepositoryMock.GetCurrentPersonAsync()

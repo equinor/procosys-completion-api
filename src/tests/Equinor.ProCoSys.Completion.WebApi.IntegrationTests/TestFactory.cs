@@ -26,9 +26,9 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public sealed class TestFactory : WebApplicationFactory<Startup>
 {
-    private readonly string _writerOid = "00000000-0000-0000-0000-000000000001";
-    private readonly string _readerOid = "00000000-0000-0000-0000-000000000003";
-    private readonly string _noPermissionUserOid = "00000000-0000-0000-0000-000000000666";
+    private const string WriterOid = "00000000-0000-0000-0000-000000000001";
+    private const string ReaderOid = "00000000-0000-0000-0000-000000000003";
+    private const string NoPermissionUserOid = "00000000-0000-0000-0000-000000000666";
     private readonly string _connectionString;
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
@@ -38,7 +38,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    private readonly Mock<ICheckListApiService> _checkListApiServiceMock = new();
+    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
@@ -240,7 +240,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.AccessableProjects));
 
-        _permissionApiServiceMock.Setup(p => p.GetRestrictionRolesForCurrentUserAsync(plant))
+        _permissionApiServiceMock.GetRestrictionRolesForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.Restrictions));
     }
 
@@ -349,7 +349,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Access",
                         UserName = "NO",
                         Email = "no@pcs.com",
-                        Oid = _noPermissionUserOid
+                        Oid = NoPermissionUserOid
                     },
                 AccessablePlants = new List<AccessablePlant>
                 {
@@ -376,7 +376,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Read",
                         UserName = "RR",
                         Email = "rr@pcs.com",
-                        Oid = _readerOid
+                        Oid = ReaderOid
                     },
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
@@ -403,7 +403,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Write",
                         UserName = "WW",
                         Email = "ww@pcs.com",
-                        Oid = _writerOid
+                        Oid = WriterOid
                     },
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>
@@ -423,10 +423,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());
 
-    private void AuthenticateUser(ITestUser user)
+    private static void AuthenticateUser(ITestUser user)
         => user.HttpClient.DefaultRequestHeaders.Add("Authorization", user.Profile.CreateBearerToken());
 
-    private void UpdatePlantInHeader(HttpClient client, string plant)
+    private static void UpdatePlantInHeader(HttpClient client, string plant)
     {
         if (client.DefaultRequestHeaders.Contains(CurrentPlantMiddleware.PlantHeader))
         {

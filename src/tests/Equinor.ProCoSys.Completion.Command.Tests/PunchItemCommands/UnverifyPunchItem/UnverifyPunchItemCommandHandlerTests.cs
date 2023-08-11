@@ -21,7 +21,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         _existingPunchItem.Clear(_currentPerson);
         _existingPunchItem.Verify(_currentPerson);
 
-        _command = new UnverifyPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+        _command = new UnverifyPunchItemCommand(_existingPunchItem.Guid, RowVersion);
 
         _dut = new UnverifyPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -63,8 +63,8 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(RowVersion, result.Data);
+        Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]

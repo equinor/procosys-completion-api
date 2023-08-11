@@ -20,7 +20,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         _existingPunchItem.Clear(_currentPerson);
 
-        _command = new RejectPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+        _command = new RejectPunchItemCommand(_existingPunchItem.Guid, RowVersion);
 
         _dut = new RejectPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -37,7 +37,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         Assert.AreEqual(_utcNow, _existingPunchItem.RejectedAtUtc);
-        Assert.AreEqual(_currentPersonId, _existingPunchItem.RejectedById);
+        Assert.AreEqual(CurrentPersonId, _existingPunchItem.RejectedById);
     }
 
     [TestMethod]
@@ -59,8 +59,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(RowVersion, result.Data);
+        Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]

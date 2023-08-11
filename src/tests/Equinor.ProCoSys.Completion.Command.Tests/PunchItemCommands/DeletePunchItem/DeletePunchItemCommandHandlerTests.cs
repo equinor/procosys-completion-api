@@ -19,7 +19,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         [TestInitialize]
         public void Setup()
         {
-            _command = new DeletePunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+            _command = new DeletePunchItemCommand(_existingPunchItem.Guid, RowVersion);
 
             _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
             
@@ -58,7 +58,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             // Assert
             // In real life EF Core will create a new RowVersion when save.
             // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-            Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+            Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
         }
 
         [TestMethod]
