@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
@@ -310,11 +310,11 @@ public class PunchItemsControllerTests : TestBase
         var uri = new Uri("http://blah.blah.com");
         var fullBlobPath = attachments.ElementAt(0).FullBlobPath;
         TestFactory.Instance.BlobStorageMock
-            .Setup(a => a.GetDownloadSasUri(
-                It.IsAny<string>(),
+            .GetDownloadSasUri(
+                Arg.Any<string>(),
                 fullBlobPath,
-                It.IsAny<DateTimeOffset>(),
-                It.IsAny<DateTimeOffset>()))
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<DateTimeOffset>())
             .Returns(uri);
 
 

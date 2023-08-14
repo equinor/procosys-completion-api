@@ -6,40 +6,40 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
 public class ContentAccessCheckerTests
 {
-    private readonly string _plant = "X";
-    private readonly string _responsible = "EQ";
+    private const string Plant = "X";
+    private const string Responsible = "EQ";
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private ContentAccessChecker _dut;
-    private Mock<IRestrictionRolesChecker> _restrictionRolesCheckerMock;
-    private Mock<ICheckListApiService> _checkListApiServiceMock;
-    private Mock<IPlantProvider> _plantProviderMock;
+    private IRestrictionRolesChecker _restrictionRolesCheckerMock;
+    private ICheckListApiService _checkListApiServiceMock;
+    private IPlantProvider _plantProviderMock;
 
     [TestInitialize]
     public void Setup()
     {
-        _restrictionRolesCheckerMock = new Mock<IRestrictionRolesChecker>();
-        _checkListApiServiceMock = new Mock<ICheckListApiService>();
-        _plantProviderMock = new Mock<IPlantProvider>();
-        _plantProviderMock.Setup(p => p.Plant).Returns(_plant);
+        _restrictionRolesCheckerMock = Substitute.For<IRestrictionRolesChecker>();
+        _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+        _plantProviderMock = Substitute.For<IPlantProvider>();
+        _plantProviderMock.Plant.Returns(Plant);
             
         _dut = new ContentAccessChecker(
-            _restrictionRolesCheckerMock.Object,
-            _checkListApiServiceMock.Object,
-            _plantProviderMock.Object);
+            _restrictionRolesCheckerMock,
+            _checkListApiServiceMock,
+            _plantProviderMock);
     }
 
     [TestMethod]
     public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasNoRestrictions()
     {
         // Arrange
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitNoRestrictions()).Returns(true);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(true);
         
         // Act
         var result = await _dut.HasCurrentUserAccessToCheckListAsync(Guid.Empty);
@@ -52,9 +52,9 @@ public class ContentAccessCheckerTests
     public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
     {
         // Arrange
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitNoRestrictions()).Returns(false);
-        _checkListApiServiceMock.Setup(c => c.GetCheckListAsync(_plant, _checkListGuid)).ReturnsAsync(_responsible);
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitAccessToContent(_responsible)).Returns(true);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(Responsible);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(Responsible).Returns(true);
 
         // Act
         var result = await _dut.HasCurrentUserAccessToCheckListAsync(_checkListGuid);
@@ -67,9 +67,9 @@ public class ContentAccessCheckerTests
     public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
     {
         // Arrange
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitNoRestrictions()).Returns(false);
-        _checkListApiServiceMock.Setup(c => c.GetCheckListAsync(_plant, _checkListGuid)).ReturnsAsync(_responsible);
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitAccessToContent(_responsible)).Returns(false);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(Responsible);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(Responsible).Returns(false);
 
         // Act
         var result = await _dut.HasCurrentUserAccessToCheckListAsync(_checkListGuid);
@@ -82,8 +82,8 @@ public class ContentAccessCheckerTests
     public async Task HasCurrentUserAccessToCheckListAsync_ShouldThrowInValidCheckListException_WhenCheckListDoNotExists()
     {
         // Arrange
-        _restrictionRolesCheckerMock.Setup(r => r.HasCurrentUserExplicitNoRestrictions()).Returns(false);
-        _checkListApiServiceMock.Setup(c => c.GetCheckListAsync(_plant, _checkListGuid)).ReturnsAsync((string)null);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns((string)null);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<InValidCheckListException>(

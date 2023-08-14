@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.VerifyPunchItem;
 
@@ -20,13 +20,13 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         _existingPunchItem.Clear(_currentPerson);
         
-        _command = new VerifyPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+        _command = new VerifyPunchItemCommand(_existingPunchItem.Guid, RowVersion);
 
         _dut = new VerifyPunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _personRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<VerifyPunchItemCommandHandler>>().Object);
+            _punchItemRepositoryMock,
+            _personRepositoryMock,
+            _unitOfWorkMock,
+             Substitute.For<ILogger<VerifyPunchItemCommandHandler>>());
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         Assert.AreEqual(_utcNow, _existingPunchItem.VerifiedAtUtc);
-        Assert.AreEqual(_currentPersonId, _existingPunchItem.VerifiedById);
+        Assert.AreEqual(CurrentPersonId, _existingPunchItem.VerifiedById);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        _unitOfWorkMock.Verify(r => r.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -59,8 +59,8 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(RowVersion, result.Data);
+        Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]

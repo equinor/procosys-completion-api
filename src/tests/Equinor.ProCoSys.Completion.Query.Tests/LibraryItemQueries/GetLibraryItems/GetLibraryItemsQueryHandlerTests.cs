@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryItems;
 
@@ -23,10 +24,8 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        _plantProviderMock
-            .Setup(x => x.Plant)
-            .Returns(_testPlant);
-
+        _plantProviderMock.Plant.Returns(_testPlant);
+        
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         _libraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", _sortingType);

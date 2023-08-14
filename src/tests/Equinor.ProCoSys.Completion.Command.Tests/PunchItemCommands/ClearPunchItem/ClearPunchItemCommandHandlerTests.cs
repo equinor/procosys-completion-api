@@ -5,69 +5,70 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem;
-
-[TestClass]
-public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem
 {
-    private ClearPunchItemCommand _command;
-    private ClearPunchItemCommandHandler _dut;
-
-    [TestInitialize]
-    public void Setup()
+    [TestClass]
+    public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
     {
-        _command = new ClearPunchItemCommand(_existingPunchItem.Guid, _rowVersion);
+        private ClearPunchItemCommand _command;
+        private ClearPunchItemCommandHandler _dut;
 
-        _dut = new ClearPunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _personRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<ClearPunchItemCommandHandler>>().Object);
-    }
+        [TestInitialize]
+        public void Setup()
+        {
+            _command = new ClearPunchItemCommand(_existingPunchItem.Guid, RowVersion);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldClearPunchItem()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            _dut = new ClearPunchItemCommandHandler(
+                _punchItemRepositoryMock,
+                _personRepositoryMock,
+                _unitOfWorkMock,
+                Substitute.For<ILogger<ClearPunchItemCommandHandler>>());
+        }
 
-        // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem.ClearedAtUtc);
-        Assert.AreEqual(_currentPersonId, _existingPunchItem.ClearedById);
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldClearPunchItem()
+        {
+            // Act
+            await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSave()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            // Assert
+            Assert.AreEqual(_utcNow, _existingPunchItem.ClearedAtUtc);
+            Assert.AreEqual(CurrentPersonId, _existingPunchItem.ClearedById);
+        }
 
-        // Assert
-        _unitOfWorkMock.Verify(r => r.SaveChangesAsync(default), Times.Once);
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSave()
+        {
+            // Act
+            await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSetAndReturnRowVersion()
-    {
-        // Act
-        var result = await _dut.Handle(_command, default);
+            // Assert
+          await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        }
 
-        // Assert
-        // In real life EF Core will create a new RowVersion when save.
-        // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
-    }
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSetAndReturnRowVersion()
+        {
+            // Act
+            var result = await _dut.Handle(_command, default);
 
-    [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemClearedDomainEvent()
-    {
-        // Act
-        await _dut.Handle(_command, default);
+            // Assert
+            // In real life EF Core will create a new RowVersion when save.
+            // Since UnitOfWorkMock is a Substitute this will not happen here, so we assert that RowVersion is set from command
+            Assert.AreEqual(RowVersion, result.Data);
+            Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        }
 
-        // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemClearedDomainEvent));
+        [TestMethod]
+        public async Task HandlingCommand_ShouldAddPunchItemClearedDomainEvent()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemClearedDomainEvent));
+        }
     }
 }

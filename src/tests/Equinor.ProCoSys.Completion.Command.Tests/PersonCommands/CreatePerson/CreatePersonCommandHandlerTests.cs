@@ -10,16 +10,16 @@ using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PersonCommands.CreatePerson;
 
 [TestClass]
 public class CreatePersonCommandHandlerTests : TestsBase
 {
-    private Mock<IPersonCache> _personCacheMock;
-    private Mock<IPersonRepository> _personRepositoryMock;
-    private Mock<IOptionsMonitor<ApplicationOptions>> _optionsMock;
+    private IPersonCache _personCacheMock;
+    private IPersonRepository _personRepositoryMock;
+    private IOptionsMonitor<ApplicationOptions> _optionsMock;
     private const string UserName = "VP";
     private const string FistName = "Vippe";
     private const string LastName = "Tangen";
@@ -38,15 +38,17 @@ public class CreatePersonCommandHandlerTests : TestsBase
 
     [TestInitialize]
     public void Setup()
-    {
-        _personRepositoryMock = new Mock<IPersonRepository>();
+    { 
+        _personRepositoryMock = Substitute.For<IPersonRepository>();
         _personRepositoryMock
-            .Setup(x => x.Add(It.IsAny<Person>()))
-            .Callback<Person>(person =>
+            .When(x => x.Add(Arg.Any<Person>()))
+            .Do(info =>
             {
+                var person = info.Arg<Person>();
                 _personAddedToRepository = person;
                 person.SetProtectedIdForTesting(PersonIdOnNew);
             });
+
             
         _proCoSysPerson = new ProCoSysPerson
         {
@@ -57,13 +59,13 @@ public class CreatePersonCommandHandlerTests : TestsBase
             AzureOid = AzureOid,
             ServicePrincipal = false
         };
-        _personCacheMock = new Mock<IPersonCache>();
+        _personCacheMock = Substitute.For<IPersonCache>();
         _personCacheMock
-            .Setup(x => x.GetAsync(_azureOid))
-            .ReturnsAsync(_proCoSysPerson);
+            .GetAsync(_azureOid)
+            .Returns(_proCoSysPerson);
 
-        _optionsMock = new Mock<IOptionsMonitor<ApplicationOptions>>();
-        _optionsMock.Setup(o => o.CurrentValue).Returns(
+        _optionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
+        _optionsMock.CurrentValue.Returns(
             new ApplicationOptions
             {
                 ServicePrincipalMail = SpEmail
@@ -72,11 +74,11 @@ public class CreatePersonCommandHandlerTests : TestsBase
         _command = new CreatePersonCommand(_azureOid);
 
         _dut = new CreatePersonCommandHandler(
-            _personCacheMock.Object,
-            _personRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _optionsMock.Object,
-            new Mock<ILogger<CreatePersonCommandHandler>>().Object);
+            _personCacheMock,
+            _personRepositoryMock,
+            _unitOfWorkMock,
+            _optionsMock,
+            Substitute.For<ILogger<CreatePersonCommandHandler>>());
     }
 
     [TestMethod]
@@ -117,8 +119,8 @@ public class CreatePersonCommandHandlerTests : TestsBase
     public async Task HandlingCommand_ShouldNotAddPersonToRepository_WhenPersonAlreadyExists()
     {
         // Arrange
-        _personRepositoryMock.Setup(p => p.GetByGuidAsync(_azureOid))
-            .ReturnsAsync(new Person(_azureOid, FistName, LastName, UserName, Email));
+        _personRepositoryMock.GetByGuidAsync(_azureOid)
+            .Returns(new Person(_azureOid, FistName, LastName, UserName, Email));
 
         // Act
         await _dut.Handle(_command, default);
@@ -134,14 +136,14 @@ public class CreatePersonCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
     public async Task HandlingCommand_ShouldThrowException_WhenPersonNotInCache()
     {
         // Arrange
-        _personCacheMock.Setup(x => x.GetAsync(_azureOid)).ReturnsAsync((ProCoSysPerson)null);
+        _personCacheMock.GetAsync(_azureOid).Returns((ProCoSysPerson)null);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));

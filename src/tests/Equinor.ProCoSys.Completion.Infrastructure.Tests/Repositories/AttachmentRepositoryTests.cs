@@ -6,7 +6,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -14,12 +15,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attachment>
 {
     private new AttachmentRepository _dut;
-    private readonly string _knownFileName = "a.txt";
+    private const string KnownFileName = "a.txt";
     private readonly Guid _knownSourceGuid = Guid.NewGuid();
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var attachment = new Attachment("Whatever", _knownSourceGuid, TestPlant, _knownFileName);
+        var attachment = new Attachment("Whatever", _knownSourceGuid, TestPlant, KnownFileName);
         _knownGuid = attachment.Guid;
         attachment.SetProtectedIdForTesting(_knownId);
 
@@ -29,10 +30,10 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Attachments)
-            .Returns(_dbSetMock.Object);
+            .Attachments
+            .Returns(_dbSetMock);
 
-        _dut = new AttachmentRepository(_contextHelper.ContextMock.Object);
+        _dut = new AttachmentRepository(_contextHelper.ContextMock);
         base._dut = _dut;
     }
 
@@ -41,10 +42,10 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     [TestMethod]
     public async Task GetAttachmentWithFileNameForSource_KnownFileName_ShouldReturnAttachment()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, _knownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, KnownFileName);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(_knownFileName, result.FileName);
+        Assert.AreEqual(KnownFileName, result.FileName);
     }
 
     [TestMethod]
@@ -58,7 +59,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     [TestMethod]
     public async Task GetAttachmentWithFileNameForSource_UnknownSource_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(Guid.NewGuid(), _knownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(Guid.NewGuid(), KnownFileName);
 
         Assert.IsNull(result);
     }

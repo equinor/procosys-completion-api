@@ -5,7 +5,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -23,10 +24,10 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Library)
-            .Returns(_dbSetMock.Object);
+            .Library
+            .Returns(_dbSetMock);
 
-        _dut = new LibraryItemRepository(_contextHelper.ContextMock.Object);
+        _dut = new LibraryItemRepository(_contextHelper.ContextMock);
     }
 
     protected override LibraryItem GetNewEntity() => new(TestPlant, Guid.NewGuid(), "B", "B Desc", LibraryType.COMPLETION_ORGANIZATION);

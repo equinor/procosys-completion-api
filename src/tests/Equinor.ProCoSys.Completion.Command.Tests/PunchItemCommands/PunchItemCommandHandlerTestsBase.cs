@@ -6,37 +6,37 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands;
-
-public class PunchItemCommandHandlerTestsBase : TestsBase
+namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 {
-    protected int _currentPersonId = 13;
-    protected string _rowVersion = "AAAAAAAAABA=";
-    protected Mock<IPersonRepository> _personRepositoryMock;
-    protected Mock<IPunchItemRepository> _punchItemRepositoryMock;
-    protected PunchItem _existingPunchItem;
-    protected Person _currentPerson;
-
-    [TestInitialize]
-    public void PunchItemCommandHandlerTestsBaseSetup()
+    public class PunchItemCommandHandlerTestsBase : TestsBase
     {
-        var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
-        var raisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(), null!, raisedByOrg, clearingByOrg);
+        protected const int CurrentPersonId = 13;
+        protected const string RowVersion = "AAAAAAAAABA=";
+        protected IPersonRepository _personRepositoryMock;
+        protected IPunchItemRepository _punchItemRepositoryMock;
+        protected PunchItem _existingPunchItem;
+        protected Person _currentPerson;
 
-        _punchItemRepositoryMock = new Mock<IPunchItemRepository>();
-        _punchItemRepositoryMock.Setup(r => r.GetByGuidAsync(_existingPunchItem.Guid))
-            .ReturnsAsync(_existingPunchItem);
+        [TestInitialize]
+        public void PunchItemCommandHandlerTestsBaseSetup()
+        {
+            var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
+            var raisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+            var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+            _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(),null!, raisedByOrg, clearingByOrg);
 
-        _currentPerson = new Person(Guid.NewGuid(), null!, null!, null!, null!);
-        _currentPerson.SetProtectedIdForTesting(_currentPersonId);
+        _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
+        _punchItemRepositoryMock.GetByGuidAsync(_existingPunchItem.Guid)
+            .Returns(_existingPunchItem);
 
-        _personRepositoryMock = new Mock<IPersonRepository>();
+            _currentPerson = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+            _currentPerson.SetProtectedIdForTesting(CurrentPersonId);
 
-        _personRepositoryMock.Setup(r => r.GetCurrentPersonAsync())
-            .ReturnsAsync(_currentPerson);
+            _personRepositoryMock = Substitute.For<IPersonRepository>();
+            _personRepositoryMock.GetCurrentPersonAsync()
+                .Returns(_currentPerson);
+        }
     }
 }

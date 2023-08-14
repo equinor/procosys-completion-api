@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItemLink;
 
@@ -12,8 +12,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
 public class DeletePunchItemLinkCommandValidatorTests
 {
     private DeletePunchItemLinkCommandValidator _dut;
-    private Mock<IPunchItemValidator> _punchItemValidatorMock;
-    private Mock<ILinkService> _linkServiceMock;
+    private IPunchItemValidator _punchItemValidatorMock;
+    private ILinkService _linkServiceMock;
 
     private DeletePunchItemLinkCommand _command;
 
@@ -21,16 +21,15 @@ public class DeletePunchItemLinkCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "r1");
-        _punchItemValidatorMock = new Mock<IPunchItemValidator>();
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
-        _linkServiceMock = new Mock<ILinkService>();
-        _linkServiceMock.Setup(x => x.ExistsAsync(_command.LinkGuid))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+        _linkServiceMock = Substitute.For<ILinkService>();
+        _linkServiceMock.ExistsAsync(_command.LinkGuid).Returns(true);
 
         _dut = new DeletePunchItemLinkCommandValidator(
-            _punchItemValidatorMock.Object,
-            _linkServiceMock.Object);
+            _punchItemValidatorMock,
+            _linkServiceMock);
     }
 
     [TestMethod]
@@ -47,8 +46,8 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -63,8 +62,8 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_LinkNotExists()
     {
         // Arrange
-        _linkServiceMock.Setup(x => x.ExistsAsync(_command.LinkGuid))
-            .ReturnsAsync(false);
+        _linkServiceMock.ExistsAsync(_command.LinkGuid)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -79,8 +78,8 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -95,8 +94,8 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
