@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.6" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.9.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.0.16" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
@@ -34,6 +37,10 @@
 
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TieImport\" />
   </ItemGroup>
 
 </Project>
