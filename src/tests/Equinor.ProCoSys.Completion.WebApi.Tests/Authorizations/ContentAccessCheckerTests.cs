@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 public class ContentAccessCheckerTests
 {
     private const string Plant = "X";
-    private const string Responsible = "EQ";
+    private readonly ProCoSys4CheckList _proCoSys4CheckList = new ("EQ", false, Guid.NewGuid());
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private ContentAccessChecker _dut;
     private IRestrictionRolesChecker _restrictionRolesCheckerMock;
@@ -53,8 +53,8 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(Responsible);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(Responsible).Returns(true);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(_proCoSys4CheckList);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
 
         // Act
         var result = await _dut.HasCurrentUserAccessToCheckListAsync(_checkListGuid);
@@ -68,8 +68,8 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(Responsible);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(Responsible).Returns(false);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(_proCoSys4CheckList);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
 
         // Act
         var result = await _dut.HasCurrentUserAccessToCheckListAsync(_checkListGuid);
@@ -83,7 +83,7 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns((string)null);
+        _checkListApiServiceMock.GetCheckListAsync(Plant, _checkListGuid).Returns(null as ProCoSys4CheckList);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<InValidCheckListException>(
