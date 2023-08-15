@@ -31,11 +31,11 @@ public class ContentAccessChecker : IContentAccessChecker
         }
 
         var plant = _plantProvider.Plant;
-        var responsibleCode = await _checkListApiService.GetCheckListAsync(plant, checkListGuid);
-        if (responsibleCode == null)
+        var checkList = await _checkListApiService.GetCheckListAsync(plant, checkListGuid);
+        if (checkList is null)
         {
             throw new InValidCheckListException($"CheckList '{checkListGuid}' is not a valid CheckList in '{plant}'");
         }
-        return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(responsibleCode);
+        return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);
     }
 }

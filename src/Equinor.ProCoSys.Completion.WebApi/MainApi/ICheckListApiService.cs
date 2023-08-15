@@ -5,5 +5,5 @@ namespace Equinor.ProCoSys.Completion.WebApi.MainApi;
 
 public interface ICheckListApiService
 {
-    Task<string?> GetCheckListAsync(string plant, Guid checkListGuid);
+    Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid);
 }

@@ -61,7 +61,7 @@ public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMod
         {
             if (_isDeletedInSource && !value)
             {
-                // this is an Undelete, which don't make sence
+                // this is an Undelete, which don't make sense
                 throw new Exception("Changing IsDeletedInSource from true to false is not supported!");
             }
 

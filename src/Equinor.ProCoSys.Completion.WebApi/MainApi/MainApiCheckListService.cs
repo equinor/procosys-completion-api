@@ -20,13 +20,13 @@ public class MainApiCheckListService : ICheckListApiService
         _baseAddress = new Uri(options.Value.BaseAddress);
     }
 
-    public async Task<string?> GetCheckListAsync(string plant, Guid checkListGuid)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid)
     {
-        var url = $"{_baseAddress}CheckListResponsible/ByGuid" +
+        var url = $"{_baseAddress}CheckList/ForProCoSys5" +
                   $"?plantId={plant}" +
                   $"&proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await _mainApiClient.TryQueryAndDeserializeAsync<string?>(url);
+        return await _mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
     }
 }
