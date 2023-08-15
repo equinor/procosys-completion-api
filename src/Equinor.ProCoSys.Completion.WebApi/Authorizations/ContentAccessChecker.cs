@@ -32,7 +32,7 @@ public class ContentAccessChecker : IContentAccessChecker
 
         var plant = _plantProvider.Plant;
         var checkList = await _checkListApiService.GetCheckListAsync(plant, checkListGuid);
-        if (checkList == null)
+        if (checkList is null)
         {
             throw new InValidCheckListException($"CheckList '{checkListGuid}' is not a valid CheckList in '{plant}'");
         }
