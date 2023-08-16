@@ -6,7 +6,7 @@ using Equinor.TI.TIE.Adapter.Base.Message;
 
 namespace AdapterConsoleApp.Configuration
 {
-    public class ConfigurationOptions
+    public class TieImportOptions
     {
         public string AdapterTieUri { get; set; } = string.Empty;
         public string AzureClientId { get; set; } = string.Empty;

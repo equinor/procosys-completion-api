@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using AdapterConsoleApp.Adapter;
 using AdapterConsoleApp.Configuration;
 using Equinor.ProCoSys.Completion.Command;
@@ -33,6 +34,7 @@ using Equinor.TI.TIE.Adapter.Base.Setup;
 using Equinor.TI.TIE.Adapter.TIE1.Config;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
+using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
@@ -206,19 +208,15 @@ public class Startup
 
 
         //-------------------------------------------- START JSOI --------------------------------------------
-        var configOptions = new ConfigurationOptions();
-        //Configuration.Bind(configOptions);
+        var configOptions = new TieImportOptions();
+        Configuration.Bind("TieImport", configOptions);
         //services.Configure<ConfigurationOptions>(c => Configuration.Bind(c));
-        configOptions.AdapterParallelMessageHandling = true;
-        configOptions.AdapterMessageChunkSize = 1;
-        configOptions.AdapterIdleTimeBetweenBatch = 1000;
-        configOptions.AdapterIdleTimeOnNoMessages = 5000;
-        configOptions.AdapterSites = "TSTG";
 
         services.AddAdapterHosting();
 
         // TIE authentication config
         var tiClientOptions = GetTiClientOptions(configOptions);
+        var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
 
         services.AddAdapter()  // From TieAdapter NuGet
             .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
@@ -246,8 +244,8 @@ public class Startup
             .WithConfigModifier(config =>
             {
                 config.TieErrorShouldBeThrown = (c, ex) => true;
-                //config.Tie1Info.TokenProvider =
-                //    new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
+                config.Tie1Info.TokenProvider =
+                    new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
             })
             .FromTie1()
             .To<Tie1MessageHandler>()
@@ -256,7 +254,7 @@ public class Startup
 
     }
 
-    private static TIClientOptions GetTiClientOptions(ConfigurationOptions configOptions) =>
+    private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
         new TIClientOptions
         {
             // The application/source system you want to send in data on behalf of.
@@ -278,6 +276,27 @@ public class Startup
             TieId = configOptions.AzureTieApiId
         };
 
+
+    private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
+        TieImportOptions configOptions) =>
+        new KeyVaultCertificateTokenProviderOptions
+        {
+            // Url to your Azure KeyVault.
+            // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
+            // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
+            KeyVaultUrl = configOptions.AzureKeyVaultUrl,
+
+            // The certificate name
+            Certificate = configOptions.AzureCertificateName,
+
+            // Optional action if the provider fails to read the certificate
+            // Optional action if the provider fails to read the certificate
+            ActionOnReadError = ex =>
+            {
+                //_logger.Info($"Certificate error: {ex.Message}");
+                return Task.CompletedTask;
+            }
+        };
     //-------------------------------------------- END JSOI --------------------------------------------
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
