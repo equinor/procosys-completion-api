@@ -9,82 +9,81 @@ using System.Threading.Tasks;
 using AdapterConsoleApp.Adapter;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
 
-namespace Equinor.ProCoSys.Completion.WebApi.DiModules
+namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
+
+public static class TieImportModule
 {
-    public static class TieImportModule
+    public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
     {
-        public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
-        {
-            var configOptions = new TieImportOptions();
-            configuration.Bind("TieImport", configOptions);
+        var configOptions = new TieImportOptions();
+        configuration.Bind("TieImport", configOptions);
 
-            services.AddAdapterHosting();
+        services.AddAdapterHosting();
 
-            var tiClientOptions = GetTiClientOptions(configOptions);
-            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
+        var tiClientOptions = GetTiClientOptions(configOptions);
+        var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
 
-            services.AddAdapter()
-                .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
-                .WithStaticConfigRetriever(
-                    new TieAdapterConfig
+        services.AddAdapter()
+            .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
+            .WithStaticConfigRetriever(
+                new TieAdapterConfig
+                {
+                    Name = "ProCoSys_Import",
+                    Id = "ProCoSys_Import",
+                    VerboseLogging = true,
+                    MaxParallellism = 10,
+                    ShouldRetrieveFullMessage = true,
+                    MessageHandleBehavior = configOptions.AdapterMessageHandleBehavior,
+                    MessageChunkSize = configOptions.AdapterMessageChunkSize,
+                    IdleTimeBetweenBatch = configOptions.AdapterIdleTimeBetweenBatch,
+                    IdleTimeOnNoMessages = configOptions.AdapterIdleTimeOnNoMessages,
+                    Partitions = configOptions.AdapterPartitions,
+                    Tie1Info = new Tie1Info
                     {
-                        Name = "ProCoSys_Import",
-                        Id = "ProCoSys_Import",
-                        VerboseLogging = true,
-                        MaxParallellism = 10,
-                        ShouldRetrieveFullMessage = true,
-                        MessageHandleBehavior = configOptions.AdapterMessageHandleBehavior,
-                        MessageChunkSize = configOptions.AdapterMessageChunkSize,
-                        IdleTimeBetweenBatch = configOptions.AdapterIdleTimeBetweenBatch,
-                        IdleTimeOnNoMessages = configOptions.AdapterIdleTimeOnNoMessages,
-                        Partitions = configOptions.AdapterPartitions,
-                        Tie1Info = new Tie1Info
-                        {
-                            ClientOptions = tiClientOptions,
-                            UseDefaultProvider = false,
-                            TokenProvider = null // --> see .WithConfigModifier()
-                        }
+                        ClientOptions = tiClientOptions,
+                        UseDefaultProvider = false,
+                        TokenProvider = null // --> see .WithConfigModifier()
                     }
-                )
-                .WithConfigModifier(config =>
-                {
-                    config.TieErrorShouldBeThrown = (c, ex) => true;
-                    config.Tie1Info.TokenProvider =
-                        new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
-                })
-                .FromTie1()
-                .To<Tie1MessageHandler>()
-                .AsBackgroundService()
-                .Done();
-        }
-
-        private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
-            new()
-            {
-                Application = configOptions.AdapterApplication,
-                ApplicationAzureAppId = configOptions.AzureClientId,
-                ApplicationTenantId = configOptions.AzureTenantId,
-                TieUri = configOptions.AdapterTieUri,
-                TieId = configOptions.AzureTieApiId
-            };
-
-
-        private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
-            TieImportOptions configOptions) =>
-            new()
-            {
-                // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
-                // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
-                KeyVaultUrl = configOptions.AzureKeyVaultUrl,
-
-                Certificate = configOptions.AzureCertificateName,
-
-                ActionOnReadError = ex =>
-                {
-                    //TODO: JSOI - Figure out how to get logger object
-                    //_logger.LogInformation($"Certificate error: {ex.Message}");
-                    return Task.CompletedTask;
                 }
-            };
+            )
+            .WithConfigModifier(config =>
+            {
+                config.TieErrorShouldBeThrown = (c, ex) => true;
+                config.Tie1Info.TokenProvider =
+                    new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
+            })
+            .FromTie1()
+            .To<Tie1MessageHandler>()
+            .AsBackgroundService()
+            .Done();
     }
+
+    private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
+        new()
+        {
+            Application = configOptions.AdapterApplication,
+            ApplicationAzureAppId = configOptions.AzureClientId,
+            ApplicationTenantId = configOptions.AzureTenantId,
+            TieUri = configOptions.AdapterTieUri,
+            TieId = configOptions.AzureTieApiId
+        };
+
+
+    private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
+        TieImportOptions configOptions) =>
+        new()
+        {
+            // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
+            // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
+            KeyVaultUrl = configOptions.AzureKeyVaultUrl,
+
+            Certificate = configOptions.AzureCertificateName,
+
+            ActionOnReadError = ex =>
+            {
+                //TODO: JSOI - Figure out how to get logger object
+                //_logger.LogInformation($"Certificate error: {ex.Message}");
+                return Task.CompletedTask;
+            }
+        };
 }
