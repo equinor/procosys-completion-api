@@ -20,11 +20,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.DiModules
 
             services.AddAdapterHosting();
 
-            // TIE authentication config
             var tiClientOptions = GetTiClientOptions(configOptions);
             var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
 
-            services.AddAdapter()  // From TieAdapter NuGet
+            services.AddAdapter()
                 .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
                 .WithStaticConfigRetriever(
                     new TieAdapterConfig
@@ -62,22 +61,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.DiModules
         private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
             new()
             {
-                // The application/source system you want to send in data on behalf of.
-                // This matches the user name/ALIAS name previously used in TIE1
                 Application = configOptions.AdapterApplication,
-
-                // The application id / "client id" of the application registration for your principal.
                 ApplicationAzureAppId = configOptions.AzureClientId,
-
-                // Equinor Azure AD tenant ID.
                 ApplicationTenantId = configOptions.AzureTenantId,
-
-                // The uri to the TIE 1.5 API. Either https://qa-tie-proxy.equinor.com or https://tie-proxy.equinor.com
                 TieUri = configOptions.AdapterTieUri,
-
-                // The id of the TIE 1.5 API.
-                // 246de5ab-6c09-4df7-aaab-370df915deea for the QA environment
-                // 95e98a4a-840e-4209-bd03-411e03d475b4 for the production environment 
                 TieId = configOptions.AzureTieApiId
             };
 
@@ -86,16 +73,12 @@ namespace Equinor.ProCoSys.Completion.WebApi.DiModules
             TieImportOptions configOptions) =>
             new()
             {
-                // Url to your Azure KeyVault.
                 // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
                 // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
                 KeyVaultUrl = configOptions.AzureKeyVaultUrl,
 
-                // The certificate name
                 Certificate = configOptions.AzureCertificateName,
 
-                // Optional action if the provider fails to read the certificate
-                // Optional action if the provider fails to read the certificate
                 ActionOnReadError = ex =>
                 {
                     //TODO: JSOI - Figure out how to get logger object
