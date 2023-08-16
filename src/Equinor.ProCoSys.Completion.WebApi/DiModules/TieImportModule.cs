@@ -1,12 +1,12 @@
-﻿using AdapterConsoleApp.Configuration;
-using Equinor.TI.TIE.Adapter.Base.Setup;
+﻿using Equinor.TI.TIE.Adapter.Base.Setup;
 using Equinor.TI.TIE.Adapter.TIE1.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 using System.Threading.Tasks;
-using AdapterConsoleApp.Adapter;
+using Equinor.ProCoSys.Completion.WebApi.TieImport.Adapter;
+using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DiModules;

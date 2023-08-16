@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-//using AdapterConsoleApp.ApplicationInsights;
-using AdapterConsoleApp.Configuration;
-//using CommonServiceLocator;
+using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
-//using Import.ProCoSys;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
+//using AdapterConsoleApp.ApplicationInsights;
+//using CommonServiceLocator;
+//using Import.ProCoSys;
 
-namespace AdapterConsoleApp.Adapter;
+namespace Equinor.ProCoSys.Completion.WebApi.TieImport.Adapter;
 
 public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>
 {

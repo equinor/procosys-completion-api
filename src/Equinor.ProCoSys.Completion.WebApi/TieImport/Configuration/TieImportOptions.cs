@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using Equinor.TI.TIE.Adapter.Base.Message;
 
-namespace AdapterConsoleApp.Configuration;
+namespace Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 
 public class TieImportOptions
 {

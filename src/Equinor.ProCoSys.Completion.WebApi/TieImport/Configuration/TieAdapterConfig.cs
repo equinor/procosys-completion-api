@@ -1,6 +1,6 @@
 ﻿using Equinor.TI.TIE.Adapter.TIE1.Config;
 
-namespace AdapterConsoleApp.Configuration;
+namespace Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 
 public class TieAdapterConfig : BaseTie1AdapterConfig<TieAdapterPartitionConfig>
 {
