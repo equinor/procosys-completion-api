@@ -35,12 +35,18 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
 
     private MessageHandleResult<Tie1Receipt> HandleMessage(Tie1Message message)
     {
-        //TODO: Add custom application insights tracking 
+        //TODO: 105593 Add custom application insights tracking 
         //_telemetryHelper.TrackMessageReceivedEvent(message.Message);
-
         _logger.LogInformation($"Got message with GUID={message.Message.Guid} ({message.Message.Site})");
 
         //TODO: Route message to handling code and obtain a result from the handling
+
+        //TODO: 105593 Add custom application insights tracking 
+        //_telemetryHelper.TrackMessageProcessedEvent(
+        //    message.Message,
+        //    GetReceiptStatus(result).ToString(),
+        //    _processingTimeStopwatch.ElapsedMilliseconds,
+        //    result.Logs);
 
         return new MessageHandleResult<Tie1Receipt>
         {
