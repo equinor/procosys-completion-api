@@ -6,4 +6,5 @@ namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 public interface IPunchItemHelper
 {
     Task<Guid?> GetProjectGuidForPunchItemAsync(Guid punchItemGuid);
+    Task<Guid?> GetCheckListGuidForPunchItemAsync(Guid punchItemGuid);
 }
