@@ -74,22 +74,10 @@ public static class TieImportModule
             throw new Exception("TestSettings error: only one MessageListener should be enabled.");
         }
 
-        //// Override default Tie1 message listener for testing purposes
-        //if (configOptions.TestEnableMockTie1Listener)
-        //{
-        //    services.AddTransient<IMessageListener<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, MockTie1MessageListener<TieAdapterConfig, TieAdapterPartitionConfig>>();
-        //}
-
         if (configOptions.TestEnableTestFileMessageListener)
         {
             services.AddTransient<IMessageListener<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, TestFileMessageListener<TieAdapterConfig, TieAdapterPartitionConfig>>();
         }
-
-        //// Override default message handler for testing purposes
-        //if (configOptions.TestEnableMockTie1MessageHandler)
-        //{
-        //    services.AddTransient<IMessageHandler<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, MockTie1MessageHandler>();
-        //}
     }
 
     private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
