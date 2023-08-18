@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
+using Equinor.ProCoSys.Completion.WebApi.TieImport.Mocks;
+using Equinor.TI.TIE.Adapter.Base.Message;
+using Equinor.TI.TIE.Adapter.TIE1.Message;
+using System;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
 
@@ -17,6 +21,7 @@ public static class TieImportModule
     {
         var configOptions = new TieImportOptions();
         configuration.Bind("TieImport", configOptions);
+        services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddAdapterHosting();
 
@@ -56,6 +61,35 @@ public static class TieImportModule
             .To<Tie1MessageHandler>()
             .AsBackgroundService()
             .Done();
+
+        // Apply test/mock settings, if any
+        services.SetTestSettings(configOptions);
+    }
+
+    private static void SetTestSettings(this IServiceCollection services, TieImportOptions configOptions)
+    {
+        if (configOptions.TestEnableMockTie1Listener &&
+            configOptions.TestEnableTestFileMessageListener)
+        {
+            throw new Exception("TestSettings error: only one MessageListener should be enabled.");
+        }
+
+        //// Override default Tie1 message listener for testing purposes
+        //if (configOptions.TestEnableMockTie1Listener)
+        //{
+        //    services.AddTransient<IMessageListener<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, MockTie1MessageListener<TieAdapterConfig, TieAdapterPartitionConfig>>();
+        //}
+
+        if (configOptions.TestEnableTestFileMessageListener)
+        {
+            services.AddTransient<IMessageListener<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, TestFileMessageListener<TieAdapterConfig, TieAdapterPartitionConfig>>();
+        }
+
+        //// Override default message handler for testing purposes
+        //if (configOptions.TestEnableMockTie1MessageHandler)
+        //{
+        //    services.AddTransient<IMessageHandler<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, MockTie1MessageHandler>();
+        //}
     }
 
     private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
