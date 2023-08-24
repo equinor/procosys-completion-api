@@ -49,7 +49,7 @@ public class ImportSchemaMapper : IImportSchemaMapper
         //https://www.milanjovanovic.tech/blog/adding-validation-to-the-options-pattern-in-asp-net-core
         var appId = settings.CurrentValue.ClientId;
         var tenantId = settings.CurrentValue.TenantId;
-        var appKey = settings.CurrentValue.ClientSecret; // YOUR_CLIENT_SECRET - todo: from Key vault
+        var appKey = settings.CurrentValue.ClientSecret;
 
         // Create a source for retrieving schema data from the API. A token provider connection string is needed.
         ISchemaSource source = new ApiSource(new ApiSourceOptions
