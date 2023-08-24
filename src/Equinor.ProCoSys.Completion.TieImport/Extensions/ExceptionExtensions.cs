@@ -1,6 +1,7 @@
-﻿using Statoil.TI.InterfaceServices.Message;
+﻿using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+using Statoil.TI.InterfaceServices.Message;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+namespace Equinor.ProCoSys.Completion.TieImport.Extensions;
 
 public static class ExceptionExtensions
 {

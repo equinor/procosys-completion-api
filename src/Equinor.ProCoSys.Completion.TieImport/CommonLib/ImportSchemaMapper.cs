@@ -1,4 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.CommonLibrary.Mapper.Legacy;

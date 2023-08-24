@@ -1,6 +1,6 @@
 ﻿using Statoil.TI.InterfaceServices.Message;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+namespace Equinor.ProCoSys.Completion.TieImport.Extensions;
 public static class TIObjectExtensions
 {
     public static string GetLogFriendlyString(this TIBaseObject tiObject)
