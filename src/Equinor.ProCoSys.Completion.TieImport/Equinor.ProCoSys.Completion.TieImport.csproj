@@ -12,6 +12,7 @@
     <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Legacy" Version="0.26.0" />
     <PackageReference Include="Equinor.TI.CommonLibrary.SchemaModel" Version="0.1.6" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="Statoil.TI.InterfaceServices" Version="1.5.7" />
   </ItemGroup>
 

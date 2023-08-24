@@ -1,8 +1,13 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+﻿using System.ComponentModel.Design;
+using System.Configuration.Internal;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.CommonLibrary.Mapper.Legacy;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
@@ -10,12 +15,14 @@ namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
 public class ImportSchemaMapper : IImportSchemaMapper
 {
     private readonly ILogger<ImportSchemaMapper> _logger;
+    private readonly IOptionsMonitor<MapperSettings> _mapperOptions;
     private readonly LegacySchemaMapper _legacySchemaMapper;
 
-    public ImportSchemaMapper(ILogger<ImportSchemaMapper> logger)
+    public ImportSchemaMapper(ILogger<ImportSchemaMapper> logger, IOptionsMonitor<MapperSettings> mapperOptions)
     {
         _logger = logger;
-        _legacySchemaMapper = CreateLegacySchemaMapper(new MapperSettings());
+        _mapperOptions = mapperOptions;
+        _legacySchemaMapper = CreateLegacySchemaMapper(_mapperOptions);
     }
 
     public MappingResult Map(TIInterfaceMessage message)
@@ -40,16 +47,19 @@ public class ImportSchemaMapper : IImportSchemaMapper
         }
     }
 
+
     /// <summary>
     /// Creates schema mapper which handle instances of TIInterfaceMessage (legacy message class).
     /// </summary>
-    private LegacySchemaMapper CreateLegacySchemaMapper(MapperSettings settings)
+    private LegacySchemaMapper CreateLegacySchemaMapper(IOptionsMonitor<MapperSettings> settings)
     {
         _logger.LogInformation( "Initializing CommonLib LegacySchemaMapper.");
 
-        var appId = settings.ClientId;
-        var tenantId = settings.TenantId;
-        var appKey = settings.ClientSecret; // YOUR_CLIENT_SECRET - todo: from Key vault
+        //TODO: Add validation using Required attribute in the options class instead??
+        //https://www.milanjovanovic.tech/blog/adding-validation-to-the-options-pattern-in-asp-net-core
+        var appId = settings.CurrentValue.ClientId;
+        var tenantId = settings.CurrentValue.TenantId;
+        var appKey = settings.CurrentValue.ClientSecret; // YOUR_CLIENT_SECRET - todo: from Key vault
 
         // Create a source for retrieving schema data from the API. A token provider connection string is needed.
         ISchemaSource source = new ApiSource(new ApiSourceOptions
@@ -58,13 +68,13 @@ public class ImportSchemaMapper : IImportSchemaMapper
         });
 
         // Add caching functionality
-        source = new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(settings.CacheDurationDays));
+        source = new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(settings.CurrentValue.CacheDurationDays));
 
         // Create an instance of a mapper that will map messages between [many] to [1] schema.
         var mapper = new SourceSchemaSelector
         {
-            SchemaFromList = settings.SchemaFrom,
-            SchemaTo = settings.SchemaTo,
+            SchemaFromList = settings.CurrentValue.SchemaFrom, //TODO: Consider switching array to something else or do null check
+            SchemaTo = settings.CurrentValue.SchemaTo, //TODO: Consider switching array to something else or do null check
             Source = source
         };
 
