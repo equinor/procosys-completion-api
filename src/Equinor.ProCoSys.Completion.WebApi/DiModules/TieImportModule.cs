@@ -29,7 +29,7 @@ public static class TieImportModule
         configuration.Bind("TieImport", configOptions);
         //services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
-        services.AddOptions<MapperSettings>()
+        services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
             .ValidateDataAnnotations()
             .ValidateOnStart(); //TODO: Add required keyword on TieImportOptions class

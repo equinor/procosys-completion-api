@@ -6,7 +6,7 @@ public class MappingResult
 {
     public TIInterfaceMessage? Message { get; }
 
-    public TIMessageResult ErrorResult { get; }
+    public TIMessageResult? ErrorResult { get; }
 
     public bool Success => Message != null;
 

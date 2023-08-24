@@ -2,7 +2,7 @@
 
 namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
 
-public class MapperSettings
+public class CommonLibOptions
 {
     public int CacheDurationDays { get; set; }
     public List<string> SchemaFrom { get; set; } = new();

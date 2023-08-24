@@ -1,5 +1,4 @@
-﻿using Statoil.TI.InterfaceServices.Logging;
-using Statoil.TI.InterfaceServices.Message;
+﻿using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 

@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.Design;
-using System.Configuration.Internal;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+﻿using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.CommonLibrary.Mapper.Legacy;
@@ -15,14 +11,12 @@ namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
 public class ImportSchemaMapper : IImportSchemaMapper
 {
     private readonly ILogger<ImportSchemaMapper> _logger;
-    private readonly IOptionsMonitor<MapperSettings> _mapperOptions;
     private readonly LegacySchemaMapper _legacySchemaMapper;
 
-    public ImportSchemaMapper(ILogger<ImportSchemaMapper> logger, IOptionsMonitor<MapperSettings> mapperOptions)
+    public ImportSchemaMapper(ILogger<ImportSchemaMapper> logger, IOptionsMonitor<CommonLibOptions> mapperOptions)
     {
         _logger = logger;
-        _mapperOptions = mapperOptions;
-        _legacySchemaMapper = CreateLegacySchemaMapper(_mapperOptions);
+        _legacySchemaMapper = CreateLegacySchemaMapper(mapperOptions);
     }
 
     public MappingResult Map(TIInterfaceMessage message)
@@ -37,12 +31,8 @@ public class ImportSchemaMapper : IImportSchemaMapper
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                $"Message not mapped: {ex.Message}" +
-                $"{Environment.NewLine}" +
-                $"{message.AsXmlString()}",
-                ex);
-
+            _logger.LogError(ex, "Message not mapped: {ExceptionMessage}{MessageAsXmlString}", 
+                ex.Message + Environment.NewLine, message.AsXmlString());
             return new MappingResult(ex.ToMessageResult());
         }
     }
@@ -51,7 +41,7 @@ public class ImportSchemaMapper : IImportSchemaMapper
     /// <summary>
     /// Creates schema mapper which handle instances of TIInterfaceMessage (legacy message class).
     /// </summary>
-    private LegacySchemaMapper CreateLegacySchemaMapper(IOptionsMonitor<MapperSettings> settings)
+    private LegacySchemaMapper CreateLegacySchemaMapper(IOptionsMonitor<CommonLibOptions> settings)
     {
         _logger.LogInformation( "Initializing CommonLib LegacySchemaMapper.");
 
@@ -73,8 +63,8 @@ public class ImportSchemaMapper : IImportSchemaMapper
         // Create an instance of a mapper that will map messages between [many] to [1] schema.
         var mapper = new SourceSchemaSelector
         {
-            SchemaFromList = settings.CurrentValue.SchemaFrom, //TODO: Consider switching array to something else or do null check
-            SchemaTo = settings.CurrentValue.SchemaTo, //TODO: Consider switching array to something else or do null check
+            SchemaFromList = settings.CurrentValue.SchemaFrom,
+            SchemaTo = settings.CurrentValue.SchemaTo,
             Source = source
         };
 
@@ -91,9 +81,7 @@ public class ImportSchemaMapper : IImportSchemaMapper
             return;
         }
 
-        _logger.LogWarning(
-            $"Mapping of message with GUID={message.Guid} produced {mapResult.Warnings.Count} warnings: " +
-            $"{Environment.NewLine}" +
-            $"{string.Join(Environment.NewLine, mapResult.Warnings)}");
+        _logger.LogWarning("Mapping of message with GUID={MessageGuid} produced {WarningsCount} warnings: {Warnings}",
+                message.Guid, mapResult.Warnings.Count + Environment.NewLine, string.Join(Environment.NewLine, mapResult.Warnings));
     }
 }

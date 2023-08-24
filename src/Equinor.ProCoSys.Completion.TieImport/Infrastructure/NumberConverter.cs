@@ -3,8 +3,8 @@
 namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 public class NumberConverter
 {
-    private static readonly CultureInfo CultureWithComma = new CultureInfo("nb-NO");
-    private static readonly CultureInfo CultureWithPoint = new CultureInfo("en-US");
+    private static readonly CultureInfo CultureWithComma = new("nb-NO");
+    private static readonly CultureInfo CultureWithPoint = new("en-US");
 
     public static bool IsConvertableToDecimal(string value) => ConvertToDecimal(value) != null;
 
@@ -13,6 +13,6 @@ public class NumberConverter
         => decimal.TryParse(value, NumberStyles.Float, CultureWithPoint, out var result)
             ? result
             : (decimal.TryParse(value, NumberStyles.Float, CultureWithComma, out result)
-                ? (decimal?)result
+                ? result
                 : null);
 }

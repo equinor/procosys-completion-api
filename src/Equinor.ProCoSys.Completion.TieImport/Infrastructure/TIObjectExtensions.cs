@@ -59,48 +59,48 @@ public static class TIObjectExtensions
 
     public static bool IsMethodDelete(this TIBaseObject tiObject) => IsMethod(tiObject, "Delete");
 
-    public static TIAttribute GetAttributeCaseInsensitive(this TIBaseObject tiObject, string attributeName)
-        => tiObject?.Attributes == null || attributeName == null
+    public static TIAttribute? GetAttributeCaseInsensitive(this TIBaseObject tiObject, string attributeName)
+        => tiObject?.Attributes == null || string.IsNullOrWhiteSpace(attributeName)
             ? null
             : tiObject
                 .Attributes
                 .FirstOrDefault(a => a.Name.Equals(attributeName, StringComparison.InvariantCultureIgnoreCase));
 
-    public static string GetAttributeValueAsString(this TIBaseObject tiObject, string attributeName) =>
-        tiObject.GetAttributeCaseInsensitive(attributeName).GetValueAsString();
+    public static string? GetAttributeValueAsString(this TIBaseObject tiObject, string attributeName) =>
+        tiObject.GetAttributeCaseInsensitive(attributeName)!.GetValueAsString();
 
-    public static string GetAttributeValueAsStringUpperCase(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).GetValueAsStringUpperCase();
+    public static string? GetAttributeValueAsStringUpperCase(this TIBaseObject tiObject, string attributeName)
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.GetValueAsStringUpperCase();
 
     public static DateTime? GetAttributeValueAsDateTime(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).GetValueAsDateTime();
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.GetValueAsDateTime();
 
     public static bool? GetAttributeValueAsBool(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).GetValueAsBool();
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.GetValueAsBool();
 
     public static double? GetAttributeValueAsDouble(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).GetValueAsDouble();
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.GetValueAsDouble();
 
     public static bool HasAttributeValue(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).HasValue();
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.HasValue();
 
     public static bool HasAttributeValueBlankingSignal(this TIBaseObject tiObject, string attributeName)
-        => tiObject.GetAttributeCaseInsensitive(attributeName).HasBlankingSignal();
+        => tiObject.GetAttributeCaseInsensitive(attributeName)!.HasBlankingSignal();
 
     public static bool
         AttributeValueIsDifferentFrom(this TIBaseObject tiObject, string attributeName, string attributeValue)
-        => HasAttributeValue(tiObject, attributeName) && !GetAttributeValueAsString(tiObject, attributeName)
+        => HasAttributeValue(tiObject, attributeName) && !GetAttributeValueAsString(tiObject, attributeName)!
                .Equals(attributeValue, StringComparison.InvariantCulture);
 
-    public static TIRelationship GetRelationship(this TIObject tiObject, string relationshipName)
-        => tiObject.Relationships == null || relationshipName == null
+    public static TIRelationship? GetRelationship(this TIObject tiObject, string relationshipName)
+        => tiObject.Relationships == null || string.IsNullOrWhiteSpace(relationshipName)
             ? null
             : tiObject
                 .Relationships
                 .FirstOrDefault(a => a.Name.Equals(relationshipName, StringComparison.InvariantCultureIgnoreCase));
 
-    public static TISubObject GetSubObject(this TIObject tiObject, string subObjectClass)
-        => tiObject.SubObjects == null || subObjectClass == null
+    public static TISubObject? GetSubObject(this TIObject tiObject, string subObjectClass)
+        => tiObject.SubObjects == null || string.IsNullOrWhiteSpace(subObjectClass)
             ? null
             : tiObject
                 .SubObjects

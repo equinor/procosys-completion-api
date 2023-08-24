@@ -1,7 +1,7 @@
 ﻿namespace Equinor.ProCoSys.Completion.TieImport.Extensions;
 public static class StringExtensions
 {
-    public static bool ContainsAnyOf(this string value, IEnumerable<string> candidates) => value != null && candidates.Any(value.Contains);
+    public static bool ContainsAnyOf(this string value, IEnumerable<string> candidates) => candidates.Any(value.Contains);
 
     public static bool GetValueAsBool(this string value)
     {
@@ -10,18 +10,16 @@ public static class StringExtensions
             return false;
         }
 
-        switch (value.Trim().ToUpper())
+        return value.Trim().ToUpper() switch
         {
-            case "Y":
-            case "YES":
-            case "JA":
-            case "J":
-            case "1":
-            case "+":
-            case "TRUE":
-                return true;
-            default:
-                return false;
-        }
+            "Y" => true,
+            "YES" => true,
+            "JA" => true,
+            "J" => true,
+            "1" => true,
+            "+" => true,
+            "TRUE" => true,
+            _ => false
+        };
     }
 }
