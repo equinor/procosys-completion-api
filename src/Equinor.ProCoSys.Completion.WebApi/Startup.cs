@@ -25,6 +25,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
+using Equinor.ProCoSys.Completion.WebApi.DiModules;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
 
@@ -196,6 +197,12 @@ public class Startup
             services.AddSingleton<IPcsBusSender>(new DisabledServiceBusSender());
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
+
+        var startTieImport = Configuration.GetValue<bool>("StartTieImport");
+        if (startTieImport)
+        {
+            services.AddTieImportModule(Configuration);
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

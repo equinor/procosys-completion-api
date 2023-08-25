@@ -11,6 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.3" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.6" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.9.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.0.16" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
@@ -23,6 +26,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
+    <PackageReference Include="Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader" Version="1.5.7" />
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
 
