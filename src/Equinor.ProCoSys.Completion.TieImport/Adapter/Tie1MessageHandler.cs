@@ -50,7 +50,7 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
 
         return new MessageHandleResult<Tie1Receipt>
         {
-            //Empty for now
+            Receipt = Tie1Receipt.Create(message.Message, ReceiptStatus.Successful, "Always successful for now...")
         };
     }
 }
