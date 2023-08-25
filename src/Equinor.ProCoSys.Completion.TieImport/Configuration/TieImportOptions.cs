@@ -1,24 +1,33 @@
-﻿using Equinor.TI.TIE.Adapter.Base.Message;
+﻿using System.ComponentModel.DataAnnotations;
+using Equinor.TI.TIE.Adapter.Base.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Configuration;
 
 public class TieImportOptions
 {
+    [Required]
     public string AdapterTieUri { get; set; } = string.Empty;
+    [Required]
     public string AzureClientId { get; set; } = string.Empty;
+    [Required] 
     public string AzureTenantId { get; set; } = string.Empty;
+    [Required]
     public string AzureTieApiId { get; set; } = string.Empty;
+    [Required]
     public string AzureKeyVaultUrl { get; set; } = string.Empty;
+    [Required]
     public string AzureCertificateName { get; set; } = string.Empty;
 
     /// <summary>
     /// See usage in <see cref="AdapterMessageHandleBehavior"/>.
     /// </summary>
+    [Required]
     public bool AdapterParallelMessageHandling { get; set; }
 
     /// <summary>
     /// Number of messages to handle in each batch from TIE.
     /// </summary>
+    [Required]
     public int AdapterMessageChunkSize { get; set; }
 
     /// <summary>
@@ -34,11 +43,13 @@ public class TieImportOptions
     /// <summary>
     /// TIE application for source system message routing. See <see cref="AdapterApplication"/>.
     /// </summary>
+    [Required]
     public string AdapterApplication { get; set; } = string.Empty;
 
     /// <summary>
     /// Comma-separated list of TIE site names to handle. See <see cref="AdapterPartitions"/>.
     /// </summary>
+    [Required]
     public string AdapterSites { get; set; } = string.Empty;
 
     /// <summary>

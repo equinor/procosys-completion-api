@@ -25,16 +25,14 @@ public static class TieImportModule
         services.AddOptions<TieImportOptions>()
             .BindConfiguration("TieImport")
             .ValidateDataAnnotations()
-            .ValidateOnStart(); //TODO: Add required keyword on TieImportOptions class
+            .ValidateOnStart();
         configuration.Bind("TieImport", configOptions);
-        //services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
             .ValidateDataAnnotations()
-            .ValidateOnStart(); //TODO: Add required keyword on TieImportOptions class
+            .ValidateOnStart();
 
-        //TODO: Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddAdapterHosting();
 

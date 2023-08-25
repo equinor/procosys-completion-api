@@ -45,8 +45,6 @@ public class ImportSchemaMapper : IImportSchemaMapper
     {
         _logger.LogInformation( "Initializing CommonLib LegacySchemaMapper.");
 
-        //TODO: Add validation using Required attribute in the options class instead??
-        //https://www.milanjovanovic.tech/blog/adding-validation-to-the-options-pattern-in-asp-net-core
         var appId = settings.CurrentValue.ClientId;
         var tenantId = settings.CurrentValue.TenantId;
         var appKey = settings.CurrentValue.ClientSecret;
