@@ -16,4 +16,8 @@
     <PackageReference Include="Statoil.TI.InterfaceServices" Version="1.5.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
+  </ItemGroup>
+
 </Project>
