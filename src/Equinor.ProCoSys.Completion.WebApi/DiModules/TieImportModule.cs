@@ -5,14 +5,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.TieImport.Adapter;
-using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
-using Equinor.ProCoSys.Completion.WebApi.TieImport.Mocks;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using System;
+using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+using Equinor.ProCoSys.Completion.TieImport.Configuration;
+using Equinor.ProCoSys.Completion.TieImport.Mocks;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
 
