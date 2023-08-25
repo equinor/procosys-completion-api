@@ -540,6 +540,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 4000001L);
 
+                    b.Property<Guid>("CheckListGuid")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("ClearedAtUtc")
                         .HasColumnType("datetime2");
 

@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Links;
 
@@ -17,7 +17,7 @@ public class LinkServiceTests : TestsBase
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly Guid _sourceGuid = Guid.NewGuid();
-    private Mock<ILinkRepository> _linkRepositoryMock;
+    private ILinkRepository _linkRepositoryMock;
     private LinkService _dut;
     private Link _linkAddedToRepository;
     private Link _existingLink;
@@ -25,21 +25,21 @@ public class LinkServiceTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _linkRepositoryMock = new Mock<ILinkRepository>();
+        _linkRepositoryMock = Substitute.For<ILinkRepository>();
         _linkRepositoryMock
-            .Setup(x => x.Add(It.IsAny<Link>()))
-            .Callback<Link>(link =>
+            .When(x=> x.Add(Arg.Any<Link>()))
+            .Do(info =>
             {
-                _linkAddedToRepository = link;
+                _linkAddedToRepository = info.Arg<Link>();
             });
         _existingLink = new Link("Whatever", _sourceGuid, "T", "www");
-        _linkRepositoryMock.Setup(l => l.GetByGuidAsync(_existingLink.Guid))
-            .ReturnsAsync(_existingLink);
+        _linkRepositoryMock.GetByGuidAsync(_existingLink.Guid)
+            .Returns(_existingLink);
 
         _dut = new LinkService(
-            _linkRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<LinkService>>().Object);
+            _linkRepositoryMock,
+            _unitOfWorkMock,
+            Substitute.For<ILogger<LinkService>>());
     }
 
     #region AddAsync
@@ -69,7 +69,7 @@ public class LinkServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _sourceGuid, "T", "www", default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, "T", "www", _rowVersion, default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class LinkServiceTests : TestsBase
         await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
 
         // Assert
-        _linkRepositoryMock.Verify(r => r.Remove(_existingLink), Times.Once);
+        _linkRepositoryMock.Received(1).Remove(_existingLink);
     }
 
     [TestMethod]
@@ -185,7 +185,7 @@ public class LinkServiceTests : TestsBase
         await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]

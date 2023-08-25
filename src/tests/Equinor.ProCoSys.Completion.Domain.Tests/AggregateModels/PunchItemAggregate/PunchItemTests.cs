@@ -20,6 +20,7 @@ public class PunchItemTests : IModificationAuditableTests
     private LibraryItem _type;
     private LibraryItem _sorting;
     private readonly string _itemDescription = "Item A";
+    private readonly Guid _checkListGuid = Guid.NewGuid();
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;
@@ -45,7 +46,7 @@ public class PunchItemTests : IModificationAuditableTests
         _sorting = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING);
         _sorting.SetProtectedIdForTesting(128);
 
-        _dut = new PunchItem(_testPlant, _project, _itemDescription, _raisedByOrg, _clearingByOrg); 
+        _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
 
     #region Constructor
@@ -55,6 +56,7 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.AreEqual(_testPlant, _dut.Plant);
         Assert.AreEqual(_project.Id, _dut.ProjectId);
+        Assert.AreEqual(_checkListGuid, _dut.CheckListGuid);
         Assert.AreEqual(_itemDescription, _dut.Description);
         Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
         Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
@@ -74,6 +76,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 new Project("OtherPlant", Guid.NewGuid(), "P", "D"),
+                Guid.Empty, 
                 _itemDescription,
                 _raisedByOrg,
                 _clearingByOrg));
@@ -84,6 +87,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 _project,
+                Guid.Empty,
                 _itemDescription,
                 new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION),
                 _clearingByOrg));
@@ -94,6 +98,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 _project,
+                Guid.Empty,
                 _itemDescription,
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE),
                 _clearingByOrg));
@@ -104,6 +109,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 _project,
+                Guid.Empty,
                 _itemDescription,
                 _raisedByOrg,
                 new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION)));
@@ -114,6 +120,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 _project,
+                Guid.Empty, 
                 _itemDescription,
                 _raisedByOrg,
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));

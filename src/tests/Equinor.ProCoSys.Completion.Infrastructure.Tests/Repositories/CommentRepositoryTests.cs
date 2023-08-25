@@ -5,7 +5,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -23,10 +24,10 @@ public class CommentRepositoryTests : EntityWithGuidRepositoryTestBase<Comment>
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Comments)
-            .Returns(_dbSetMock.Object);
+            .Comments
+            .Returns(_dbSetMock);
 
-        _dut = new CommentRepository(_contextHelper.ContextMock.Object);
+        _dut = new CommentRepository(_contextHelper.ContextMock);
     }
 
     protected override Comment GetNewEntity() => new("Whatever", Guid.NewGuid(), "New comment");

@@ -7,7 +7,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -23,7 +24,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        var punchItem = new PunchItem(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
+        var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
         _knownGuid = punchItem.Guid;
         punchItem.SetProtectedIdForTesting(_knownId);
 
@@ -33,11 +34,11 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.PunchItems)
-            .Returns(_dbSetMock.Object);
+            .PunchItems
+            .Returns(_dbSetMock);
 
-        _dut = new PunchItemRepository(_contextHelper.ContextMock.Object);
+        _dut = new PunchItemRepository(_contextHelper.ContextMock);
     }
 
-    protected override PunchItem GetNewEntity() => new(TestPlant, _project, null!, _raisedByOrg, _clearingByOrg);
+    protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
 }

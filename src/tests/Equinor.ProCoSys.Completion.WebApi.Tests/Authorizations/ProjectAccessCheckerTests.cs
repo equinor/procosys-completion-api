@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
@@ -21,10 +21,10 @@ public class ProjectAccessCheckerTests
         var claimsIdentity = new ClaimsIdentity();
         claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetProjectClaimValue(_projectGuid)));
         principal.AddIdentity(claimsIdentity);
-        var claimsPrincipalProviderMock = new Mock<IClaimsPrincipalProvider>();
-        claimsPrincipalProviderMock.Setup(c => c.GetCurrentClaimsPrincipal()).Returns(principal);
+        var claimsPrincipalProviderMock = Substitute.For<IClaimsPrincipalProvider>();
+        claimsPrincipalProviderMock.GetCurrentClaimsPrincipal().Returns(principal);
             
-        _dut = new ProjectAccessChecker(claimsPrincipalProviderMock.Object);
+        _dut = new ProjectAccessChecker(claimsPrincipalProviderMock);
     }
 
     [TestMethod]

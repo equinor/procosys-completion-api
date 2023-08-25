@@ -9,6 +9,8 @@ public record CreatePunchItemDto(
     [Required]
     Guid ProjectGuid,
     [Required]
+    Guid CheckListGuid,
+    [Required]
     Guid RaisedByOrgGuid,
     [Required]
     Guid ClearingByOrgGuid,

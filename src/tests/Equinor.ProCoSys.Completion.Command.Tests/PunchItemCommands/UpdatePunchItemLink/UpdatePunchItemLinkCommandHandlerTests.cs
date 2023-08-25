@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemLink;
 
@@ -14,22 +14,22 @@ public class UpdatePunchItemLinkCommandHandlerTests : TestsBase
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private UpdatePunchItemLinkCommandHandler _dut;
     private UpdatePunchItemLinkCommand _command;
-    private Mock<ILinkService> _linkServiceMock;
+    private ILinkService _linkServiceMock;
 
     [TestInitialize]
     public void Setup()
     {
         _command = new UpdatePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "T", "U", _rowVersion);
 
-        _linkServiceMock = new Mock<ILinkService>();
-        _linkServiceMock.Setup(l => l.UpdateAsync(
+        _linkServiceMock = Substitute.For<ILinkService>();
+        _linkServiceMock.UpdateAsync(
             _command.LinkGuid,
             _command.Title,
             _command.Url,
             _command.RowVersion,
-            default)).ReturnsAsync(_rowVersion);
+            default).Returns(_rowVersion);
 
-        _dut = new UpdatePunchItemLinkCommandHandler(_linkServiceMock.Object);
+        _dut = new UpdatePunchItemLinkCommandHandler(_linkServiceMock);
     }
 
     [TestMethod]
@@ -50,11 +50,11 @@ public class UpdatePunchItemLinkCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        _linkServiceMock.Verify(u => u.UpdateAsync(
+        await _linkServiceMock.Received(1).UpdateAsync(
             _command.LinkGuid,
             _command.Title,
             _command.Url,
             _command.RowVersion,
-            default), Times.Exactly(1));
+            default);
     }
 }

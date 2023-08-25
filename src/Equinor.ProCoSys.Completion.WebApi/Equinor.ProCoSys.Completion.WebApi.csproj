@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.3" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.6" />
     <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.9.0" />
     <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.9.0" />

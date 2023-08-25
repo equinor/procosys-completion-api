@@ -50,7 +50,13 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         var raisedByOrg = await GetLibraryItemAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = await GetLibraryItemAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
 
-        var punchItem = new PunchItem(_plantProvider.Plant, project, request.Description, raisedByOrg, clearingByOrg);
+        var punchItem = new PunchItem(
+            _plantProvider.Plant,
+            project,
+            request.CheckListGuid,
+            request.Description,
+            raisedByOrg,
+            clearingByOrg);
 
         await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY);
         await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING);

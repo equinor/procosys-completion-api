@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
@@ -11,18 +11,18 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunc
 public class UpdatePunchItemCommandValidatorTests
 {
     private UpdatePunchItemCommandValidator _dut;
-    private Mock<IPunchItemValidator> _punchItemValidatorMock;
+    private IPunchItemValidator _punchItemValidatorMock;
     private UpdatePunchItemCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
         _command = new UpdatePunchItemCommand(Guid.NewGuid(), "New description", "r");
-        _punchItemValidatorMock = new Mock<IPunchItemValidator>();
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
-        _dut = new UpdatePunchItemCommandValidator(_punchItemValidatorMock.Object);
+        _dut = new UpdatePunchItemCommandValidator(_punchItemValidatorMock);
     }
 
     [TestMethod]
@@ -39,8 +39,8 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -55,8 +55,8 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -71,8 +71,8 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
