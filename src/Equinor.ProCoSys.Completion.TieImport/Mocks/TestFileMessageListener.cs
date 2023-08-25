@@ -85,8 +85,7 @@ public class TestFileMessageListener<TTie1AdapterConfig, TTie1AdapterPartitionCo
 
     public Task<AckResult> Ack(Tie1Receipt receipt)
     {
-        _logger.LogInformation(
-            $"Receipt written to TestFileMessageListener. Message GUID={receipt.Message.Guid} ({receipt.Message.Site}). Status: {receipt.Status}. Comment: {receipt.Comment}");
+        _logger.LogInformation("Receipt written to TestFileMessageListener. Message GUID={MessageGuid} ({Site}). Status: {Status}. Comment: {Comment}", receipt.Message.Guid, receipt.Message.Site, receipt.Status, receipt.Comment);
 
         return Task.FromResult(AckResult.CreateOk());
     }
