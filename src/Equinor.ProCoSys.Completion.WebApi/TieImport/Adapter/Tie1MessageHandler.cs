@@ -52,7 +52,7 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
         //_telemetryHelper.TrackMessageReceivedEvent(message.Message);
         _logger.LogInformation($"Got message with GUID={message.Message.Guid} ({message.Message.Site})");
 
-        //TODO: Route message to handling code and obtain a result from the handling
+        //TODO: Remember Object Fixers
         var result = _commonLibMapper.Map(message.Message);
         if (result.Message is null)
         {
