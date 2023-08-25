@@ -48,7 +48,7 @@ public class TestFileMessageListener<TTie1AdapterConfig, TTie1AdapterPartitionCo
             }
         }
 
-        _logger.LogInformation($"Found {_testFiles.Count} test files for site/partition {partition.Key}.");
+        _logger.LogInformation("Found {TestfileCount} test files for site/partition {PartitionKey}.", _testFiles.Count, partition.Key);
 
         return Task.CompletedTask;
     }
@@ -60,7 +60,7 @@ public class TestFileMessageListener<TTie1AdapterConfig, TTie1AdapterPartitionCo
     {
         if (!_testFiles.Any())
         {
-            _logger.LogInformation($"No more files to process for site {partition.Key}. Disabling partition.");
+            _logger.LogInformation("No more files to process for site {PartitionKey}. Disabling partition.", partition.Key);
 
             partition.Disabled = true;
             return Task.FromResult(ListenResult<Tie1Message>.CreateOk(new List<Tie1Message>())); // empty result
@@ -74,7 +74,7 @@ public class TestFileMessageListener<TTie1AdapterConfig, TTie1AdapterPartitionCo
             var message = ConvertFileToMessageObject(file);
             tie1Messages.Add(new Tie1Message { Message = message });
 
-            _logger.LogInformation($"Sending message from file [{file}]. Message GUID={message.Guid} ({partition.Key})");
+            _logger.LogInformation("Sending message from file [{Filename}]. Message GUID={MessageGuid} ({PartitionKey})", file, message.Guid, partition.Key);
 
             // remove processed file from the list
             _testFiles.Remove(file);

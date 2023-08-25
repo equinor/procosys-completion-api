@@ -36,7 +36,7 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
     {
         //TODO: 105593 Add custom application insights tracking 
         //_telemetryHelper.TrackMessageReceivedEvent(message.Message);
-        _logger.LogInformation($"Got message with GUID={message.Message.Guid} ({message.Message.Site})");
+        _logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid, message.Message.Site);
 
         //TODO: Route message to handling code and obtain a result from the handling
         var result = _commonLibMapper.Map(message.Message);
