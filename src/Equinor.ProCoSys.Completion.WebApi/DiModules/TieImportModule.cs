@@ -12,6 +12,7 @@ using Equinor.ProCoSys.Completion.WebApi.TieImport.Mocks;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using System;
+using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 
@@ -38,6 +39,7 @@ public static class TieImportModule
         //TODO: Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IMessageInspector, MessageInspector>();
+        services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
 
         var tiClientOptions = GetTiClientOptions(configOptions);
