@@ -80,7 +80,7 @@ public class ImportHandler : IImportHandler
             {
                 LogImportStarting(tiObject);
 
-                var importResult = DoImportHandlingStuff(message, tiObject);
+                var importResult = ImportObject(message, tiObject);
 
                 //---------------------------------Code in old ImportHandler
                 importResult.AppendTo(tiMessageResult, tiObject);
@@ -116,21 +116,19 @@ public class ImportHandler : IImportHandler
         _logger.LogInformation("Error is causing rest of message to be dropped.");
     }
 
-    private ImportResult DoImportHandlingStuff(TIInterfaceMessage message, TIObject tiObject)
+    private ImportResult? ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
-        ImportResult importResult;
-
         //TODO: CollectWarnings
         TIEProCoSysMapperCustomMapper.MapRelationsUntilTieMapperGetsFixed(tiObject);
         TIEProCoSysMapperCustomMapper.CustomMap(tiObject, message);
 
         //------------------------TIEProCoSysServer.LoadObject
         _messageInspector.CheckForScriptInjection(tiObject);
-        //result = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject);
-        //if (result != null)
-        //{
-        //    return result;
-        //}
+        var importResult = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger); //TODO: Remove _logger parameter
+        if (ImportResultHasError(importResult))
+        {
+            return importResult;
+        }
 
         //SiteSpecificHandler.HandleSiteSpecific(tiObject, null, message, null);
 
@@ -142,7 +140,35 @@ public class ImportHandler : IImportHandler
             return importResult!;
         }
 
-        PreparePcsObject(message, tiObject, pcsObject);
+        //----------Start PreparePcsObject
+        // Assign the method on the pcsObject.
+        TIEPCSCommonConverters.FillInCommandVerbToPerformFromTieObject(
+            tiObject,
+            message,
+            pcsObject);
+
+        // Get and translate what to do (MODIFY, DELETE etc), this is generic for any type.
+        // This comes from the object or message header.
+        // Set its ImportOptions.
+        _messageInspector.UpdateImportOptions(pcsObject, message);
+
+        // Make sure that Name is set on input on object for further logging purposes.
+        if (string.IsNullOrWhiteSpace(tiObject.ObjectName))
+        {
+            tiObject.ObjectName = ((PcsaObjectIn)pcsObject).Name;
+        }
+
+        // Do eventual custom preparations of the object before shipping it to ProCoSys.
+        //TODO: JSOI
+        //try
+        //{
+        //    TIEProCoSysImportCustomImport.CustomImport(pcsObject, tieObject, message);
+        //}
+        //catch (Exception ex)
+        //{
+        //    Logger.Error($"CustomImport failed: {ex.Message}", ex);
+        //}
+        //----------End PreparePcsObject
 
         //var commandResult = LoadObject(pcsObject);
         //----------------------------Below is LoadObject code...
@@ -174,6 +200,7 @@ public class ImportHandler : IImportHandler
         var dummyCommandResultSuccess = true; //Temp for now
         if (!dummyCommandResultSuccess)
         {
+            return ImportResult.Error(); //JSOI TEMP
             //    importResult = _commandFailureHandler.HandleFailureResult(commandResult);
             //    return ImportResult;
         }
@@ -194,33 +221,7 @@ public class ImportHandler : IImportHandler
 
     private void PreparePcsObject(TIInterfaceMessage message, TIObject tieObject, IPcsObjectIn pcsObject)
     {
-        // Assign the method on the pcsObject.
-        TIEPCSCommonConverters.FillInCommandVerbToPerformFromTieObject(
-            tieObject,
-            message,
-            pcsObject);
 
-        // Get and translate what to do (MODIFY, DELETE etc), this is generic for any type.
-        // This comes from the object or message header.
-        // Set its ImportOptions.
-        _messageInspector.UpdateImportOptions(pcsObject, message);
-
-        // Make sure that Name is set on input on object for further logging purposes.
-        if (string.IsNullOrWhiteSpace(tieObject.ObjectName))
-        {
-            tieObject.ObjectName = ((PcsaObjectIn)pcsObject).Name;
-        }
-
-        // Do eventual custom preparations of the object before shipping it to ProCoSys.
-        //TODO: JSOI
-        //try
-        //{
-        //    TIEProCoSysImportCustomImport.CustomImport(pcsObject, tieObject, message);
-        //}
-        //catch (Exception ex)
-        //{
-        //    Logger.Error($"CustomImport failed: {ex.Message}", ex);
-        //}
     }
 
     private IPcsObjectIn CreateIPcsObjectIn(TIObject tieObject, out ImportResult? result)

@@ -1,5 +1,6 @@
 ﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
+using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
@@ -9,29 +10,29 @@ namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 public static class TIEPCSCommonConverters
 {
     /// <summary>
-    /// Fills in method on the PcsObjectIn from the method/action on TIE object/message
+    /// Checks that the TIE object has the bare common minimum to be interpreted/converted further on
     /// </summary>
-    /// <param name="tieObject"></param>
-    /// <param name="message"></param>
-    /// <param name="pcsObjectToBeFilledIn"></param>
-    public static void FillInCommandVerbToPerformFromTieObject(TIObject tieObject, TIInterfaceMessage message, IPcsObjectIn pcsObjectToBeFilledIn)
+    public static ImportResult? ValidateTieObjectCommonMinimumRequirements(TIObject tieObject, ILogger logger)
     {
-
-        switch (GetCommandVerbToPerformFromTieObject(tieObject, message))
+        var attMissing = new List<string>();
+        if (string.IsNullOrEmpty(tieObject.ObjectClass))
         {
-            case "UPDATE":
-                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Update;
-                break;
-            case "CREATE":
-                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Create;
-                break;
-            case "MODIFY":
-                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Modify;
-                break;
-            case "DELETE":
-                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Delete;
-                break;
+            attMissing.Add("Class");
         }
+
+        if (string.IsNullOrEmpty(tieObject.Site))
+        {
+            attMissing.Add("Site");
+        }
+
+        if (attMissing.Count > 0)
+        {
+            var message = $"Missing required attribute(s): {string.Join(",", attMissing)}";
+            logger.LogError(message);
+            return ImportResult.SingleError(message);
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -84,6 +85,32 @@ public static class TIEPCSCommonConverters
                 break;
         }
         return lstrCommandVerb;
+    }
+
+    /// <summary>
+    /// Fills in method on the PcsObjectIn from the method/action on TIE object/message
+    /// </summary>
+    /// <param name="tieObject"></param>
+    /// <param name="message"></param>
+    /// <param name="pcsObjectToBeFilledIn"></param>
+    public static void FillInCommandVerbToPerformFromTieObject(TIObject tieObject, TIInterfaceMessage message, IPcsObjectIn pcsObjectToBeFilledIn)
+    {
+
+        switch (GetCommandVerbToPerformFromTieObject(tieObject, message))
+        {
+            case "UPDATE":
+                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Update;
+                break;
+            case "CREATE":
+                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Create;
+                break;
+            case "MODIFY":
+                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Modify;
+                break;
+            case "DELETE":
+                pcsObjectToBeFilledIn.ImportMethod = ImportMethod.Delete;
+                break;
+        }
     }
 
     public static void UpdatePcsObjectImportOptionsFromTieMetadataAndConfiguration(IPcsObjectIn pcsObject, TIInterfaceMessage message, ImportOptions importOptionsDefault, ImportOptions importOptionsIgnore)
