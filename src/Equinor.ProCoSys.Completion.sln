@@ -42,7 +42,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.MessageContracts", "Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj", "{79D4BB02-C123-4B54-9AEE-6C09EEA0AD44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.MessageContracts.Tests", "tests\Equinor.ProCoSys.Completion.MessageContracts.Tests\Equinor.ProCoSys.Completion.MessageContracts.Tests.csproj", "{C318C627-9419-42FC-B652-660795962C7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.MessageContracts.Tests", "tests\Equinor.ProCoSys.Completion.MessageContracts.Tests\Equinor.ProCoSys.Completion.MessageContracts.Tests.csproj", "{C318C627-9419-42FC-B652-660795962C7F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.ForeignApi", "Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj", "{EB1FE5B6-D6D1-40CC-9F08-52156C83C363}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.ForeignApiTests", "tests\Equinor.ProCoSys.Completion.ForeignApiTests\Equinor.ProCoSys.Completion.ForeignApiTests.csproj", "{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,6 +110,14 @@ Global
 		{C318C627-9419-42FC-B652-660795962C7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C318C627-9419-42FC-B652-660795962C7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C318C627-9419-42FC-B652-660795962C7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB1FE5B6-D6D1-40CC-9F08-52156C83C363}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB1FE5B6-D6D1-40CC-9F08-52156C83C363}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB1FE5B6-D6D1-40CC-9F08-52156C83C363}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB1FE5B6-D6D1-40CC-9F08-52156C83C363}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,6 +131,7 @@ Global
 		{D5E807A2-A6FB-4583-8D4C-1EBAB61B1CAF} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{75BF00C3-7FC9-49AD-9EF5-51DB36CEDE60} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{C318C627-9419-42FC-B652-660795962C7F} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
+		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C79730D0-E4C2-474A-9D04-1C07256B6DF3}
