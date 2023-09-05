@@ -9,8 +9,8 @@ using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -325,6 +325,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Authenticator:CompletionApiObjectId"];
+        if (apiObjectId is null)
+        {
+            throw new Exception("Config missing: Authenticator:CompletionApiObjectId");
+        }
         _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId))
             .Returns(Task.FromResult(new ProCoSysPerson
             {
@@ -335,6 +339,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Email = "noreply@pcs.com",
                 ServicePrincipal = true
             }));
+        _checkListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuid)
+            .Returns(new ProCoSys4CheckList("RC", false, ProjectGuidWithAccess));
     }
 
     // Authenticated client without any roles

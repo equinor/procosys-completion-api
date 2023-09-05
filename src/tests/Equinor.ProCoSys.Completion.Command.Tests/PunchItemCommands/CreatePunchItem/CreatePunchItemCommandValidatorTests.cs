@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItem;
 
@@ -15,6 +16,7 @@ public class CreatePunchItemCommandValidatorTests
     private CreatePunchItemCommandValidator _dut;
     private CreatePunchItemCommand _command;
     private IProjectValidator _projectValidatorMock;
+    private ICheckListValidator _checkListValidatorMock;
     private ILibraryItemValidator _libraryItemValidatorMock;
 
     [TestInitialize]
@@ -31,6 +33,10 @@ public class CreatePunchItemCommandValidatorTests
             Guid.NewGuid());
         _projectValidatorMock = Substitute.For<IProjectValidator>();
         _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(true);
+        _checkListValidatorMock = Substitute.For<ICheckListValidator>();
+        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid).Returns(true);
+        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid).Returns(true);
+
         _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
 
         SetupOkLibraryItem(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
@@ -41,6 +47,7 @@ public class CreatePunchItemCommandValidatorTests
 
         _dut = new CreatePunchItemCommandValidator(
             _projectValidatorMock,
+            _checkListValidatorMock,
             _libraryItemValidatorMock);
     }
 
@@ -331,5 +338,50 @@ public class CreatePunchItemCommandValidatorTests
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
             $"Type library item is not a {LibraryType.PUNCHLIST_TYPE}!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_CheckListNotExists()
+    {
+        // Arrange
+        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Check list does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_TagOwningCheckListIsVoided()
+    {
+        // Arrange
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.CheckListGuid).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Tag owning check list is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_CheckListNotInGivenProject()
+    {
+        // Arrange
+        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Check list is not in given project!"));
     }
 }
