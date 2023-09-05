@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -12,12 +13,13 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 {
     public CreatePunchItemCommandValidator(
         IProjectValidator projectValidator,
+        ICheckListValidator checkListValidator,
         ILibraryItemValidator libraryItemValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
-        // todo 105393 validate given checklistguid
+        // todo 105393 unit tests for checklist rules
         // must exists
         // tag not voided
         // same projectguid as given projectguid
@@ -28,6 +30,14 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .WithMessage(command => $"Project does not exist! Guid={command.ProjectGuid}")
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
+
+            // validate given CheckList
+            .MustAsync(BeAnExistingCheckListAsync)
+            .WithMessage(command => $"Check list does not exist! Guid={command.CheckListGuid}")
+            .MustAsync(NotBeInAVoidedTagForCheckListAsync)
+            .WithMessage(command => $"Tag owning check list is voided! Guid={command.CheckListGuid}")
+            .MustAsync(CheckListMustBeInProjectAsync)
+            .WithMessage(command => $"Check list is not in given project! Guid={command.CheckListGuid} Project Guid={command.ProjectGuid}")
 
             // validate given RaisedByOrg
             .MustAsync((command, cancellationToken)
@@ -133,6 +143,15 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 
         async Task<bool> NotBeAClosedProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
             => !await projectValidator.IsClosedAsync(command.ProjectGuid, cancellationToken);
+
+        async Task<bool> BeAnExistingCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+            => await checkListValidator.ExistsAsync(command.CheckListGuid);
+
+        async Task<bool> NotBeInAVoidedTagForCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(command.CheckListGuid);
+
+        async Task<bool> CheckListMustBeInProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+            => await checkListValidator.InProjectAsync(command.CheckListGuid, command.ProjectGuid);
 
         async Task<bool> BeAnExistingLibraryItemAsync(Guid guid, CancellationToken cancellationToken)
             => await libraryItemValidator.ExistsAsync(guid, cancellationToken);
