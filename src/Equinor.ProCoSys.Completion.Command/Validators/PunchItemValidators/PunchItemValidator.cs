@@ -6,29 +6,36 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Common;
 using System;
+using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
 
 namespace Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
 
 public class PunchItemValidator : IPunchItemValidator
 {
     private readonly IReadOnlyContext _context;
+    private readonly ICheckListValidator _checkListValidator;
 
-    public PunchItemValidator(IReadOnlyContext context) => _context = context;
+    public PunchItemValidator(IReadOnlyContext context, ICheckListValidator checkListValidator)
+    {
+        _context = context;
+        _checkListValidator = checkListValidator;
+    }
 
     public async Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken) =>
         await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid
             select pi).AnyAsync(cancellationToken);
 
-    public Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    public async Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        // todo #103935 update code below to query tag table to check if tag for punch item is voided .. remember unit test
-        //var tag = await (from pi in _context.QuerySet<PunchItem>()
-        //    join t in _context.QuerySet<Tag>() on pi.TagId equals t.Id 
-        //    where pi.Guid == punchItemGuid
-        //    select t).SingleOrDefaultAsync(cancellationToken);
-        //return tag is not null && tag.IsVoided;
-        return Task.FromResult(false);
+        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+
+        if (punchItem == null)
+        {
+            return false;
+        }
+
+        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(punchItem.CheckListGuid);
     }
 
     public async Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
