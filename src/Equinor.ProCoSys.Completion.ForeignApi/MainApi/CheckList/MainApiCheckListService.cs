@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Client;
 using Microsoft.Extensions.Options;
 
-namespace Equinor.ProCoSys.Completion.WebApi.MainApi;
+namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class MainApiCheckListService : ICheckListApiService
 {

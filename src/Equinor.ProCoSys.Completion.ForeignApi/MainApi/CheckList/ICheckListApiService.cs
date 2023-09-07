@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System;
 
-namespace Equinor.ProCoSys.Completion.WebApi.MainApi;
+namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public interface ICheckListApiService
 {

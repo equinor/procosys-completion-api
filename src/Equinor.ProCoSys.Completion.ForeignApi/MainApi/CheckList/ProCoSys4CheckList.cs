@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.WebApi.MainApi;
+namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public record ProCoSys4CheckList(
     string ResponsibleCode,
