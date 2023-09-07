@@ -28,9 +28,9 @@ public class PunchItemValidator : IPunchItemValidator
 
     public async Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
 
-        if (punchItem == null)
+        if (punchItem is null)
         {
             return false;
         }
@@ -50,19 +50,19 @@ public class PunchItemValidator : IPunchItemValidator
 
     public async Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
 
-        return punchItem?.ClearedAtUtc != null;
+        return punchItem?.ClearedAtUtc is not null;
     }
 
     public async Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var punchItem = await GetPunchItem(punchItemGuid, cancellationToken);
+        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
 
-        return punchItem?.VerifiedAtUtc != null;
+        return punchItem?.VerifiedAtUtc is not null;
     }
 
-    private async Task<PunchItem?> GetPunchItem(Guid punchItemGuid, CancellationToken cancellationToken)
+    private async Task<PunchItem?> GetPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var punchItem = await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid

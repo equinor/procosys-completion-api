@@ -33,7 +33,7 @@ public class ContentAccessChecker : IContentAccessChecker
         var checkList = await _checkListCache.GetCheckListAsync(plant, checkListGuid);
         if (checkList is null)
         {
-            throw new Exception($"CheckList '{checkListGuid}' is not a valid CheckList in '{plant}'");
+            throw new Exception($"CheckList '{checkListGuid}' not found in '{plant}'");
         }
         return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);
     }
