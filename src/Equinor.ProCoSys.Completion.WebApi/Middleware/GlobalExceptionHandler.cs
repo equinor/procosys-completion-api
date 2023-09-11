@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -52,21 +50,6 @@ public class GlobalExceptionHandler
                 }
             }
 
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (InValidProjectException ipe)
-        {
-            var errors = new Dictionary<string, string[]> {{"Project", new[] {ipe.Message}}};
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (InValidCheckListException ice)
-        {
-            var errors = new Dictionary<string, string[]> { { "CheckList", new[] { ice.Message } } };
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (ValidationException fe)
-        {
-            var errors = new Dictionary<string, string[]> { { "Exception", new[] { fe.Message } } };
             await context.WriteBadRequestAsync(errors, _logger);
         }
         catch (ConcurrencyException)
