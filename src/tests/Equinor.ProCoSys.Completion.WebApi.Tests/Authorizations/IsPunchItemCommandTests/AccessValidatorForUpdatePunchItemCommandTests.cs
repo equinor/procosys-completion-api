@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
@@ -6,8 +7,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 [TestClass]
 public class AccessValidatorForUpdatePunchItemCommandTests : AccessValidatorForIIsPunchItemCommandTests<UpdatePunchItemCommand>
 {
-    protected override UpdatePunchItemCommand GetPunchItemCommandWithAccessToProject()
-        => new(PunchItemGuidWithAccessToProject, null!, null!);
+    protected override UpdatePunchItemCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+        => new(PunchItemGuidWithAccessToProjectAndContent, null!, null!);
+
+    protected override UpdatePunchItemCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+        => new(PunchItemGuidWithAccessToProjectButNotContent, null!, null!);
 
     protected override UpdatePunchItemCommand GetPunchItemCommandWithoutAccessToProject()
         => new(PunchItemGuidWithoutAccessToProject, null!, null!);

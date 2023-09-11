@@ -1,4 +1,6 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
+using System;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
@@ -6,8 +8,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 [TestClass]
 public class AccessValidatorForOverwriteExistingPunchItemAttachmentCommandTests : AccessValidatorForIIsPunchItemCommandTests<OverwriteExistingPunchItemAttachmentCommand>
 {
-    protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithAccessToProject()
-        => new(PunchItemGuidWithAccessToProject, null!, null!, null!);
+    protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+        => new(PunchItemGuidWithAccessToProjectAndContent, null!, null!, null!);
+
+    protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+        => new(PunchItemGuidWithAccessToProjectButNotContent, null!, null!, null!);
 
     protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
         => new(PunchItemGuidWithoutAccessToProject, null!, null!, null!);
