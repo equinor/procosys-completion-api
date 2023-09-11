@@ -71,7 +71,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess, 
-            Guid.Empty, 
+            Guid.NewGuid(), 
             HttpStatusCode.NotFound);
     #endregion
 
@@ -132,7 +132,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest);
+            HttpStatusCode.BadRequest,
+            "Project does not exist");
+
     #endregion
 
     #region CreatePunchItem
@@ -277,6 +279,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task UpdatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            "Punch item updated",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task UpdatePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
             UserType.Reader,
@@ -344,6 +357,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task DeletePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.DeletePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task DeletePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -432,6 +455,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task CreatePunchItemLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            "T",
+            "U",
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task CreatePunchItemLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
             UserType.Reader,
@@ -484,6 +518,15 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemLinks_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
     #endregion
 
     #region UpdatePunchItemLink
@@ -548,6 +591,19 @@ public class PunchItemsControllerNegativeTests : TestBase
             "U",
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            Guid.Empty, 
+            "T",
+            "U",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task UpdatePunchItemLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -628,6 +684,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task DeletePunchItemLink_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.DeletePunchItemLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            Guid.Empty, 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task DeletePunchItemLink_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.DeletePunchItemLinkAsync(
             UserType.Reader,
@@ -697,6 +764,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task CreatePunchItemComment_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            "T",
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task CreatePunchItemComment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
             UserType.Reader,
@@ -748,6 +825,15 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
     #endregion
 
     #region UploadNewPunchItemAttachment
@@ -797,6 +883,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             new TestFile("T", "F"),
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UploadNewPunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            new TestFile("T", "F"),
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task UploadNewPunchItemAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -850,6 +946,15 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
     #endregion
 
     #region GetPunchItemAttachmentDownloadUrl
@@ -899,6 +1004,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             _attachmentGuidUnderTest,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            Guid.NewGuid(),
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
     #endregion
 
     #region OverwriteExistingPunchItemAttachment
@@ -953,6 +1068,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             new TestFile("T", "F"),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task OverwriteExistingPunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.OverwriteExistingPunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            new TestFile("T", "F"),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task OverwriteExistingPunchItemAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -1033,6 +1159,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task DeletePunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            Guid.Empty, 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task DeletePunchItemAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
             UserType.Reader,
@@ -1102,6 +1239,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task ClearPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task ClearPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
             UserType.Reader,
@@ -1168,6 +1315,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UnclearPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UnclearPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task UnclearPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
@@ -1251,6 +1408,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task RejectPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task RejectPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
             UserType.Reader,
@@ -1332,6 +1499,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task VerifyPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.VerifyPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
     public async Task VerifyPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
         => await PunchItemsControllerTestsHelper.VerifyPunchItemAsync(
             UserType.Reader,
@@ -1411,6 +1588,16 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UnverifyPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UnverifyPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(), 
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
 
     [TestMethod]
     public async Task UnverifyPunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
