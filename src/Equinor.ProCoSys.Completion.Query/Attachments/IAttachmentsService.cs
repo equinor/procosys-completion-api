@@ -14,4 +14,8 @@ public interface IAttachmentService
     Task<Uri?> GetDownloadUriAsync(
         Guid guid,
         CancellationToken cancellationToken);
+
+    Task<bool> ExistsAsync(
+        Guid guid,
+        CancellationToken cancellationToken);
 }

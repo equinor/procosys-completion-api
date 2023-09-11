@@ -20,7 +20,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         RuleFor(command => command)
             // validate given Project
             .MustAsync(BeAnExistingProjectAsync)
-            .WithMessage(command => $"Project does not exist! Guid={command.ProjectGuid}")
+            .WithMessage(command => $"Project with this guid does not exist! Guid={command.ProjectGuid}")
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
 

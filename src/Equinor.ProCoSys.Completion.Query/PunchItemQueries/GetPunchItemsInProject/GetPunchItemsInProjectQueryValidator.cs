@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
@@ -12,11 +13,10 @@ public class GetPunchItemsInProjectQueryValidator : AbstractValidator<GetPunchIt
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
-        // todo add unit tests
         RuleFor(command => command)
-            // validate given Project
             .MustAsync(BeAnExistingProjectAsync)
-            .WithMessage(command => $"Project does not exist! Guid={command.ProjectGuid}");
+            .WithMessage(command => $"Project with this guid does not exist! Guid={command.ProjectGuid}")
+            .WithState(_ => new EntityNotFoundException());
 
         async Task<bool> BeAnExistingProjectAsync(GetPunchItemsInProjectQuery query, CancellationToken cancellationToken)
             => await projectValidator.ExistsAsync(query.ProjectGuid, cancellationToken);
