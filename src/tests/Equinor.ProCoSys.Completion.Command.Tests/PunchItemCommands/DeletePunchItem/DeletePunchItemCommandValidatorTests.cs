@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 

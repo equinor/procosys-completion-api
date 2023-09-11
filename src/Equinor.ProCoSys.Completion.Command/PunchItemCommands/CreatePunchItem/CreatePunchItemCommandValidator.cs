@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;

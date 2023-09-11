@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
+namespace Equinor.ProCoSys.Completion.Domain.Validators;
 
 public interface ICheckListValidator
 {

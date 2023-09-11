@@ -4,9 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.EntityFrameworkCore;
 
-namespace Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Validators.ProjectValidators;
 
 public class ProjectValidator : IProjectValidator
 {
