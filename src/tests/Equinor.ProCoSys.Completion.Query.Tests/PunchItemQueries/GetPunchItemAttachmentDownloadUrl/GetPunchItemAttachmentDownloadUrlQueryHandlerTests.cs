@@ -15,8 +15,7 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
     private GetPunchItemAttachmentDownloadUrlQueryHandler _dut;
     private IAttachmentService _attachmentServiceMock;
     private GetPunchItemAttachmentDownloadUrlQuery _query;
-    private Uri _uri
-        ;
+    private Uri _uri;
 
     [TestInitialize]
     public void Setup()
@@ -44,17 +43,14 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_ShouldReturnNull_WhenUnknownAttachment()
+    public async Task HandlingQuery_ShouldThrowException_WhenUnknownAttachment()
     {
         // Arrange
         var query = new GetPunchItemAttachmentDownloadUrlQuery(Guid.NewGuid(), Guid.NewGuid());
 
-        // Act
-        var result = await _dut.Handle(query, default);
-
-        // Assert
-        Assert.IsNull(result.Data);
-        Assert.AreEqual(ResultType.NotFound, result.ResultType);
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(()
+            => _dut.Handle(query, default));
     }
 
     [TestMethod]
