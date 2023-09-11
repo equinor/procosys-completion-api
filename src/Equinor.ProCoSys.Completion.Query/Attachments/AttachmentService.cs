@@ -71,10 +71,7 @@ public class AttachmentService : IAttachmentService
 
     public async Task<Uri?> GetDownloadUriAsync(Guid guid, CancellationToken cancellationToken)
     {
-        var attachment = await
-            (from a in _context.QuerySet<Attachment>()
-                where a.Guid == guid
-                select a).SingleOrDefaultAsync(cancellationToken);
+        var attachment = await GetAttachmentAsync(guid, cancellationToken);
 
         if (attachment is null)
         {
@@ -89,5 +86,20 @@ public class AttachmentService : IAttachmentService
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)));
         return uri;
+    }
+
+    public async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
+    {
+        var attachment = await GetAttachmentAsync(guid, cancellationToken);
+        return attachment is not null;
+    }
+
+    private async Task<Attachment?> GetAttachmentAsync(Guid guid, CancellationToken cancellationToken)
+    {
+        var attachment = await
+            (from a in _context.QuerySet<Attachment>()
+                where a.Guid == guid
+                select a).SingleOrDefaultAsync(cancellationToken);
+        return attachment;
     }
 }
