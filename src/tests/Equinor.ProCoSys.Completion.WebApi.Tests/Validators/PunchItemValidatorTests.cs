@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
+using Equinor.ProCoSys.Completion.WebApi.Validators.PunchItemValidators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase

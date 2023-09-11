@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
+using Equinor.ProCoSys.Completion.WebApi.Validators.ProjectValidators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 
 [TestClass]
 public class ProjectValidatorTests : ReadOnlyTestsBase

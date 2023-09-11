@@ -6,9 +6,9 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Common;
 using System;
-using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 
-namespace Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Validators.PunchItemValidators;
 
 public class PunchItemValidator : IPunchItemValidator
 {

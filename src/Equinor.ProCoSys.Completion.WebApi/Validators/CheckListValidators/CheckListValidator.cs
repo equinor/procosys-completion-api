@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
-namespace Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Validators.CheckListValidators;
 
 public class CheckListValidator : ICheckListValidator
 {

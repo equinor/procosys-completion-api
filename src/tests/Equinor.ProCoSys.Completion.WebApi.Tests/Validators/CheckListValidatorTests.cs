@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.WebApi.Validators.CheckListValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 
 [TestClass]
 public class CheckListValidatorTests
