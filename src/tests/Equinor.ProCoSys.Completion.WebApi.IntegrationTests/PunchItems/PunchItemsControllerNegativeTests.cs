@@ -127,13 +127,12 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnNotFound_WhenUnknownProject()
         => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest,
-            "Project does not exist");
+            HttpStatusCode.NotFound);
 
     #endregion
 
@@ -520,13 +519,12 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemLinks_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+    public async Task GetPunchItemLinks_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest,
-            "Punch item with this guid does not exist");
+            HttpStatusCode.NotFound);
     #endregion
 
     #region UpdatePunchItemLink
@@ -827,13 +825,12 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+    public async Task GetPunchItemComments_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest,
-            "Punch item with this guid does not exist");
+            HttpStatusCode.NotFound);
     #endregion
 
     #region UploadNewPunchItemAttachment
@@ -948,13 +945,12 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest,
-            "Punch item with this guid does not exist");
+            HttpStatusCode.NotFound);
     #endregion
 
     #region GetPunchItemAttachmentDownloadUrl
@@ -1006,14 +1002,13 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnRequest_WhenUnknownPunchItem()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(), 
             Guid.NewGuid(),
-            HttpStatusCode.BadRequest,
-            "Punch item with this guid does not exist");
+            HttpStatusCode.NotFound);
     #endregion
 
     #region OverwriteExistingPunchItemAttachment
