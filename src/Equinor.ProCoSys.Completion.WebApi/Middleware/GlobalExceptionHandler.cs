@@ -4,8 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Equinor.ProCoSys.Completion.Domain;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -37,37 +37,31 @@ public class GlobalExceptionHandler
         }
         catch (FluentValidation.ValidationException ve)
         {
-            var errors = new Dictionary<string, string[]>();
-            foreach (var error in ve.Errors)
+            if (AnyNotFoundValidationErrors(ve.Errors, out var notFoundMessage))
             {
-                if (!errors.ContainsKey(error.PropertyName))
-                {
-                    errors.Add(error.PropertyName, new[] {error.ErrorMessage});
-                }
-                else
-                {
-                    var errorsForProperty = errors[error.PropertyName].ToList();
-                    errorsForProperty.Add(error.ErrorMessage);
-                    errors[error.PropertyName] = errorsForProperty.ToArray();
-                }
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.ContentType = "application/text";
+                await context.Response.WriteAsync(notFoundMessage);
             }
+            else
+            {
+                var errors = new Dictionary<string, string[]>();
+                foreach (var error in ve.Errors)
+                {
+                    if (!errors.ContainsKey(error.PropertyName))
+                    {
+                        errors.Add(error.PropertyName, new[] {error.ErrorMessage});
+                    }
+                    else
+                    {
+                        var errorsForProperty = errors[error.PropertyName].ToList();
+                        errorsForProperty.Add(error.ErrorMessage);
+                        errors[error.PropertyName] = errorsForProperty.ToArray();
+                    }
+                }
 
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (InValidProjectException ipe)
-        {
-            var errors = new Dictionary<string, string[]> {{"Project", new[] {ipe.Message}}};
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (InValidCheckListException ice)
-        {
-            var errors = new Dictionary<string, string[]> { { "CheckList", new[] { ice.Message } } };
-            await context.WriteBadRequestAsync(errors, _logger);
-        }
-        catch (ValidationException fe)
-        {
-            var errors = new Dictionary<string, string[]> { { "Exception", new[] { fe.Message } } };
-            await context.WriteBadRequestAsync(errors, _logger);
+                await context.WriteBadRequestAsync(errors, _logger);
+            }
         }
         catch (ConcurrencyException)
         {
@@ -84,5 +78,21 @@ public class GlobalExceptionHandler
             context.Response.ContentType = "application/text";
             await context.Response.WriteAsync("Something went wrong!");
         }
+    }
+
+    private bool AnyNotFoundValidationErrors(IEnumerable<ValidationFailure> errors, out string firstNotFoundErrorMessage)
+    {
+        var notFoundError = errors.FirstOrDefault(
+            e => e.CustomState is not null && 
+                 e.CustomState.GetType() == typeof(EntityNotFoundException));
+
+        if (notFoundError is null)
+        {
+            firstNotFoundErrorMessage = string.Empty;
+            return false;
+        }
+
+        firstNotFoundErrorMessage = notFoundError.ErrorMessage;
+        return true;
     }
 }

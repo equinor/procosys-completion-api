@@ -9,13 +9,10 @@
   <ItemGroup>
     <Compile Remove="MeetingCommands\**" />
     <Compile Remove="ResponsibleCommands\**" />
-    <Compile Remove="Validators\PersonValidators\**" />
     <EmbeddedResource Remove="MeetingCommands\**" />
     <EmbeddedResource Remove="ResponsibleCommands\**" />
-    <EmbeddedResource Remove="Validators\PersonValidators\**" />
     <None Remove="MeetingCommands\**" />
     <None Remove="ResponsibleCommands\**" />
-    <None Remove="Validators\PersonValidators\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
-    <ProjectReference Include="..\Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
   </ItemGroup>
 

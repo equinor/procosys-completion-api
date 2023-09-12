@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.Validators.CheckListValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
-using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
@@ -22,7 +20,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         RuleFor(command => command)
             // validate given Project
             .MustAsync(BeAnExistingProjectAsync)
-            .WithMessage(command => $"Project does not exist! Guid={command.ProjectGuid}")
+            .WithMessage(command => $"Project with this guid does not exist! Guid={command.ProjectGuid}")
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
 

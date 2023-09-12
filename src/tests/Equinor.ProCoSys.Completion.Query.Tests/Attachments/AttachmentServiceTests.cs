@@ -120,6 +120,33 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
                 Arg.Any<DateTimeOffset>());
     }
 
+    [TestMethod]
+    public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
+
+        // Act
+        var result = await dut.ExistsAsync(_createdAttachment.Guid, default);
+
+        Assert.IsTrue(result);
+    }
+
+
+    [TestMethod]
+    public async Task ExistsAsync_ShouldReturnNull_WhenUnknownAttachment()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
+
+        // Act
+        var result = await dut.ExistsAsync(Guid.NewGuid(), default);
+
+        Assert.IsFalse(result);
+    }
+
     private void AssertAttachmentDto(Attachment attachment, AttachmentDto attachmentDto)
     {
         Assert.AreEqual(attachment.SourceGuid, attachmentDto.SourceGuid);

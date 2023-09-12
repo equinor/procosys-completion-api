@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+namespace Equinor.ProCoSys.Completion.Domain.Validators;
 
 public interface IPunchItemValidator
 {
