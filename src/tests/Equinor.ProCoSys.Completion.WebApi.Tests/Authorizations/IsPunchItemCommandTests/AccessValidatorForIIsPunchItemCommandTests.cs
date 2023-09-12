@@ -9,14 +9,15 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemCommand> : AccessValidatorTestBase
     where TPunchItemCommand : IBaseRequest, IIsPunchItemCommand
 {
-    protected abstract TPunchItemCommand GetPunchItemCommandWithAccessToProject();
+    protected abstract TPunchItemCommand GetPunchItemCommandWithAccessToBothProjectAndContent();
+    protected abstract TPunchItemCommand GetPunchItemCommandWithAccessToProjectButNotContent();
     protected abstract TPunchItemCommand GetPunchItemCommandWithoutAccessToProject();
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToProjectForPunchItem()
+    public async Task Validate_ShouldReturnTrue_WhenAccessToBothProjectAndContent()
     {
         // Arrange
-        var command = GetPunchItemCommandWithAccessToProject();
+        var command = GetPunchItemCommandWithAccessToBothProjectAndContent();
 
         // act
         var result = await _dut.ValidateAsync(command);
@@ -26,10 +27,23 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
     }
 
     [TestMethod]
-    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProjectForPunchItem()
+    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
         var command = GetPunchItemCommandWithoutAccessToProject();
+
+        // act
+        var result = await _dut.ValidateAsync(command);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
+    {
+        // Arrange
+        var command = GetPunchItemCommandWithAccessToProjectButNotContent();
 
         // act
         var result = await _dut.ValidateAsync(command);
