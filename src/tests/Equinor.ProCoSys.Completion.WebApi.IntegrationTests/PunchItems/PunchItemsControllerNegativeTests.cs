@@ -1181,11 +1181,22 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid(), 
-            Guid.Empty, 
+            Guid.NewGuid(),
+            _attachmentGuidUnderTest,
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
+
+    [TestMethod]
+    public async Task DeletePunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownAttachment()
+        => await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            Guid.NewGuid(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Attachment with this guid does not exist");
 
     [TestMethod]
     public async Task DeletePunchItemAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
