@@ -13,9 +13,9 @@ public class GetPunchItemsInProjectQueryValidator : AbstractValidator<GetPunchIt
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(command => command)
+        RuleFor(query => query)
             .MustAsync(BeAnExistingProjectAsync)
-            .WithMessage(command => $"Project with this guid does not exist! Guid={command.ProjectGuid}")
+            .WithMessage(query => $"Project with this guid does not exist! Guid={query.ProjectGuid}")
             .WithState(_ => new EntityNotFoundException());
 
         async Task<bool> BeAnExistingProjectAsync(GetPunchItemsInProjectQuery query, CancellationToken cancellationToken)

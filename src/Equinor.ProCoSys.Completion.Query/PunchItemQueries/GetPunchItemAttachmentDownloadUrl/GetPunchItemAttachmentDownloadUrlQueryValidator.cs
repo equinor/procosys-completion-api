@@ -21,8 +21,8 @@ public class GetPunchItemAttachmentDownloadUrlQueryValidator : AbstractValidator
             .MustAsync((query, cancellationToken) => BeAnExistingPunchItemAsync(query.PunchItemGuid, cancellationToken))
             .WithMessage(query => $"Punch item with this guid does not exist! Guid={query.PunchItemGuid}")
             .WithState(_ => new EntityNotFoundException())
-            .MustAsync((command, cancellationToken) => BeAnExistingAttachment(command.AttachmentGuid, cancellationToken))
-            .WithMessage(command => $"Attachment with this guid does not exist! Guid={command.AttachmentGuid}")
+            .MustAsync((query, cancellationToken) => BeAnExistingAttachment(query.AttachmentGuid, cancellationToken))
+            .WithMessage(query => $"Attachment with this guid does not exist! Guid={query.AttachmentGuid}")
             .WithState(_ => new EntityNotFoundException());
 
         async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)

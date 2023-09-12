@@ -1002,11 +1002,20 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid(), 
+            Guid.NewGuid(),
+            _attachmentGuidUnderTest,
+            HttpStatusCode.NotFound);
+
+    [TestMethod]
+    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnNotFound_WhenUnknownAttachment()
+        => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
             Guid.NewGuid(),
             HttpStatusCode.NotFound);
     #endregion
@@ -1096,6 +1105,20 @@ public class PunchItemsControllerNegativeTests : TestBase
             new TestFile("T", punchItemAttachmentUnderTest.FileName),
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
+    }
+
+    [TestMethod]
+    public async Task OverwriteExistingPunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownFileName()
+    {
+        var punchItemAttachmentUnderTest = await GetPunchItemAttachmentUnderTest();
+        await PunchItemsControllerTestsHelper.OverwriteExistingPunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            new TestFile("T", Guid.NewGuid().ToString()),
+            punchItemAttachmentUnderTest.RowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item don't have an attachment with filename");
     }
 
     #endregion
