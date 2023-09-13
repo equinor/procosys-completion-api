@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
-public class PatchPunchDtoValidator : PatchDtoValidator<PatchPunchDto>
+public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto>
 {
-    public PatchPunchDtoValidator(IRowVersionValidator rowVersionValidator) : base(rowVersionValidator)
+    public PatchPunchItemDtoValidator(IRowVersionValidator rowVersionValidator) : base(rowVersionValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

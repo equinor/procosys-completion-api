@@ -8,6 +8,8 @@ using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Microsoft.AspNetCore.JsonPatch;
+using System.Collections.Generic;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
@@ -35,9 +37,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        var pi = new PunchItemPatchDto(null!, null!);
+        var pi = new PatchablePunchItem();
 
-        request.PatchDocument.ApplyTo(pi);
+        var errors = new List<JsonPatchError>();
+        request.PatchDocument.ApplyTo(pi, errors.Add);
         //punchItem.SetRowVersion(request.RowVersion);
         punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem));
 

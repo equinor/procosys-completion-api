@@ -106,7 +106,7 @@ public class PunchItemsController : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [FromRoute] Guid guid,
-        [FromBody] PatchPunchDto patchPunchDto)
+        [FromBody] PatchPunchItemDto patchPunchDto)
     {
         var result = await _mediator.Send(new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument));
         return this.FromResult(result);

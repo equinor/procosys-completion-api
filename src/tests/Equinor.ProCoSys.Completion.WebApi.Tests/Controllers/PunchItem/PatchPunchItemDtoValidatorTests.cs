@@ -7,16 +7,16 @@ using DomainPunchItem = Equinor.ProCoSys.Completion.Domain.AggregateModels.Punch
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 
 [TestClass]
-public class PatchPunchDtoValidatorTests : PatchDtoValidatorTests<PatchPunchDto>
+public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunchItemDto>
 {
-    private PatchPunchDtoValidator _dut;
+    private PatchPunchItemDtoValidator _dut;
 
     protected override void SetupDut()
-        => _dut = new PatchPunchDtoValidator(_rowVersionValidatorMock);
+        => _dut = new PatchPunchItemDtoValidator(_rowVersionValidatorMock);
 
-    protected override PatchPunchDto GetValidPatchDto()
+    protected override PatchPunchItemDto GetValidPatchDto()
     {
-        var dto = new PatchPunchDto { PatchDocument = new JsonPatchDocument() };
+        var dto = new PatchPunchItemDto { PatchDocument = new JsonPatchDocument() };
         dto.PatchDocument.Replace($"/{nameof(DomainPunchItem.RowVersion)}", RowVersion);
 
         return dto;
