@@ -143,8 +143,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         VerifiedById = null;
     }
 
-    public void Update(string description) => Description = description;
-
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;

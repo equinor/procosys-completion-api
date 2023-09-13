@@ -142,18 +142,6 @@ public class PunchItemTests : IModificationAuditableTests
     }
     #endregion
 
-    #region Update
-    [TestMethod]
-    public void Update_ShouldUpdate()
-    {
-        // Act
-        _dut.Update("ABC");
-
-        // Assert
-        Assert.AreEqual("ABC", _dut.Description);
-    }
-    #endregion
-
     #region Clear
     [TestMethod]
     public void Clear_ShouldSetClearedFields()

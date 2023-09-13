@@ -34,6 +34,7 @@ using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using ServiceResult;
 using ServiceResult.ApiExtensions;
@@ -98,17 +99,16 @@ public class PunchItemsController : ControllerBase
     }
 
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
-    [HttpPut("{guid}")]
+    [HttpPatch("{guid}")]
     public async Task<ActionResult<string>> UpdatePunchItem(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [FromRoute] Guid guid,
-        [FromBody] UpdatePunchItemDto dto)
+        [FromBody] PatchPunchDto patchPunchDto)
     {
-        var result = await _mediator.Send(
-            new UpdatePunchItemCommand(guid, dto.Description, dto.RowVersion));
+        var result = await _mediator.Send(new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument));
         return this.FromResult(result);
     }
 

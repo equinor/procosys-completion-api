@@ -33,7 +33,7 @@ public class OverwriteAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new OverwriteAttachmentDto()
+        var dto = new OverwriteAttachmentDto
         {
             File = new TestableFormFile("picture.gif", 1000)
         };

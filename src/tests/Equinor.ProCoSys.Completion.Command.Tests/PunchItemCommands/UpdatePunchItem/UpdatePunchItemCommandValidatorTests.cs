@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Validators;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
  using NSubstitute;
 
@@ -13,11 +14,12 @@ public class UpdatePunchItemCommandValidatorTests
     private UpdatePunchItemCommandValidator _dut;
     private IPunchItemValidator _punchItemValidatorMock;
     private UpdatePunchItemCommand _command;
+    private readonly JsonPatchDocument _jsonPatchDocument = new();
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCommand(Guid.NewGuid(), "New description", "r");
+        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument);
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);

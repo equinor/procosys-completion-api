@@ -35,8 +35,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        punchItem.Update(request.Description);
-        punchItem.SetRowVersion(request.RowVersion);
+        var pi = new PunchItemPatchDto(null!, null!);
+
+        request.PatchDocument.ApplyTo(pi);
+        //punchItem.SetRowVersion(request.RowVersion);
         punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
