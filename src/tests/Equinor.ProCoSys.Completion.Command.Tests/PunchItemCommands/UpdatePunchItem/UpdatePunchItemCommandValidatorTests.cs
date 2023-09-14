@@ -14,7 +14,7 @@ public class UpdatePunchItemCommandValidatorTests
     private UpdatePunchItemCommandValidator _dut;
     private IPunchItemValidator _punchItemValidatorMock;
     private UpdatePunchItemCommand _command;
-    private readonly JsonPatchDocument _jsonPatchDocument = new();
+    private readonly JsonPatchDocument<PatchablePunchItem> _jsonPatchDocument = new();
 
     [TestInitialize]
     public void Setup_OkState()

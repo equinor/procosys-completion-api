@@ -1,9 +1,10 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
-public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto>
+public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto, PatchablePunchItem>
 {
     public PatchPunchItemDtoValidator(IRowVersionValidator rowVersionValidator) : base(rowVersionValidator)
     {
@@ -15,8 +16,15 @@ public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto>
 
         RuleFor(dto => dto.PatchDocument)
             .NotNull()
-            .Must(doc => HaveStringReplaceOperationWithMaxLength(doc, nameof(PunchItem.Description), PunchItem.DescriptionLengthMax))
-            .WithMessage($"'{nameof(PunchItem.Description)}' is required as string and max length is {PunchItem.DescriptionLengthMax}")
-            .When(dto => ReplaceOperationExistsFor(dto.PatchDocument, nameof(PunchItem.Description)), ApplyConditionTo.CurrentValidator);
+            .Must(doc => HaveStringReplaceOperationWithMaxLength(
+                doc, 
+                nameof(PunchItem.Description), 
+                PunchItem.DescriptionLengthMax))
+            .WithMessage(
+                $"'{nameof(PunchItem.Description)}' is required as string and max length is {PunchItem.DescriptionLengthMax}")
+            .When(dto => ReplaceOperationExistsFor(
+                dto.PatchDocument, 
+                nameof(PunchItem.Description)), 
+                ApplyConditionTo.CurrentValidator);
     }
 }

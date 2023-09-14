@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
@@ -21,10 +20,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestInitialize]
     public void Setup()
     {
-        var jsonPatchDocument = new JsonPatchDocument();
-        //jsonPatchDocument.Replace("/Tord", _newDescription);
-        jsonPatchDocument.Replace($"/{nameof(PunchItem.Description)}", _newDescription);
-        //jsonPatchDocument.Replace($"/{nameof(PunchItem.Id)}", 1);
+        var jsonPatchDocument = new JsonPatchDocument<PatchablePunchItem>();
+        jsonPatchDocument.Replace(p => p.Description, _newDescription);
         _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, jsonPatchDocument);
 
         _dut = new UpdatePunchItemCommandHandler(

@@ -1,19 +1,21 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests;
 
 [TestClass]
-public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
+public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> where T2: class, new()
 {
     protected readonly string RowVersion = "AAAAAAAAABA=";
-    private PatchDtoValidator<T> _dut;
+    private PatchDtoValidator<T1, T2> _dut;
     protected IRowVersionValidator _rowVersionValidatorMock;
 
     protected abstract void SetupDut();
-    protected abstract T GetValidPatchDto();
+    protected abstract T1 GetValidPatchDto();
+    protected abstract void AddOperationToPatchDto(T1 patchDto, OperationType type);
 
     [TestInitialize]
     public void Setup_OkState()
@@ -21,7 +23,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
         _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
         _rowVersionValidatorMock.IsValid(RowVersion).Returns(true);
 
-        _dut = new PatchDtoValidator<T>(_rowVersionValidatorMock);
+        _dut = new PatchDtoValidator<T1, T2>(_rowVersionValidatorMock);
 
         SetupDut();
     }
@@ -41,7 +43,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Add("/A", null);
+        AddOperationToPatchDto(patchDto, OperationType.Add);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);
@@ -57,7 +59,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Move("/A", "/B");
+        AddOperationToPatchDto(patchDto, OperationType.Move);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);
@@ -73,7 +75,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Copy("/A", "/B");
+        AddOperationToPatchDto(patchDto, OperationType.Copy);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);
@@ -89,7 +91,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Test("/A", null);
+        AddOperationToPatchDto(patchDto, OperationType.Test);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);
@@ -105,7 +107,7 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Remove("/A");
+        AddOperationToPatchDto(patchDto, OperationType.Remove);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);
@@ -121,8 +123,8 @@ public abstract class PatchDtoValidatorTests<T> where T: PatchDto, new()
     {
         // Arrange
         var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Replace("/A", null);
-        patchDto.PatchDocument.Replace("/A", null);
+        AddOperationToPatchDto(patchDto, OperationType.Replace);
+        AddOperationToPatchDto(patchDto, OperationType.Replace);
 
         // Act
         var result = await _dut.ValidateAsync(patchDto);

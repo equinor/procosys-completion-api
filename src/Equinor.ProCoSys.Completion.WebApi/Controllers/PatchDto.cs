@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public abstract class PatchDto
+public abstract class PatchDto<T> where T : class
 {
     [Required]
-    public JsonPatchDocument PatchDocument { get; set; } = null!;
+    public JsonPatchDocument<T> PatchDocument { get; set; } = null!;
 }

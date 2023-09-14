@@ -1,5 +1,7 @@
-﻿namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
-public class PatchPunchItemDto : PatchDto
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
+
+public class PatchPunchItemDto : PatchDto<PatchablePunchItem>
 {
 }

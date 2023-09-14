@@ -34,7 +34,6 @@ using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using ServiceResult;
 using ServiceResult.ApiExtensions;
