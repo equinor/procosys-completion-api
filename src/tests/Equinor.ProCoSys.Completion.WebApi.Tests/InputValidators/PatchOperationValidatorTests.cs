@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Globalization;
 using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -42,16 +44,155 @@ public class PatchOperationValidatorTests
         _dut = new PatchOperationValidator(_rowVersionValidatorMock);
     }
 
-    #region HaveValidReplaceOperationsOnly
+    #region HaveValidReplaceOperationsOnly and GetMessageForIllegalReplaceOperations
     [TestMethod]
     public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenValid()
     {
         // Act
-        var result = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
 
         //Assert
-        Assert.IsTrue(result);
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
     }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingIntAsString()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyInt)}",
+            null,
+            "2"));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingIllegalInt()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        var propName = nameof(PatchableObject.MyInt);
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{propName}",
+            null,
+            "blah"));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.StartsWith("Can't assign value"));
+        Assert.IsTrue(result2.Contains($"to property {propName}"));
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingGuidAsString()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyGuid)}",
+            null,
+            Guid.NewGuid().ToString()));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingIllegalGuid()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        var propName = nameof(PatchableObject.MyGuid);
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{propName}",
+            null,
+            "blah"));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.StartsWith("Can't assign value"));
+        Assert.IsTrue(result2.Contains($"to property {propName}"));
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingDateTimeAsString()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyDateTime)}",
+            null,
+            DateTime.Now.ToString(CultureInfo.InvariantCulture)));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingIllegalDateTime()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        var propName = nameof(PatchableObject.MyDateTime);
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{propName}",
+            null,
+            "blah"));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForIllegalReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.StartsWith("Can't assign value"));
+        Assert.IsTrue(result2.Contains($"to property {propName}"));
+    }
+
+    // todo add more test to check invalid
 
     #endregion
 
@@ -193,5 +334,104 @@ public class PatchOperationValidatorTests
         // Assert
         Assert.IsFalse(result);
     }
+    #endregion
+
+    #region AllRequiredFieldsHaveValue and 
+
+    [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnTrue_WhenValid()
+    {
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredString()
+    {
+        // Arrange
+        _patchDocument.Operations.Clear();
+        _patchDocument.Replace(p => p.MyString, null);
+        
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.EndsWith("MyString"));
+    }
+
+    [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredInt()
+    {
+        // Arrange
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyInt)}",
+            null,
+            null));
+
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.EndsWith("MyInt"));
+    }
+
+    [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredDateTime()
+    {
+        // Arrange
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyDateTime)}",
+            null,
+            null));
+
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.EndsWith("MyDateTime"));
+    }
+
+    [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredGuid()
+    {
+        // Arrange
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyGuid)}",
+            null,
+            null));
+
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.EndsWith("MyGuid"));
+    }
+
     #endregion
 }

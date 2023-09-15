@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
 
+// The class of type T must set the RequiredAttribute on required properties to get correct validation
+// Can't just check if property is nullable or not, since property type of string and string? are both "System.String"
 public class PatchOperationValidator : IPatchOperationValidator
 {
     private readonly IRowVersionValidator _rowVersionValidator;
@@ -53,6 +57,27 @@ public class PatchOperationValidator : IPatchOperationValidator
         }
 
         return _rowVersionValidator.IsValid(rowVersion);
+    }
+
+    public bool AllRequiredFieldsHaveValue<T>(List<Operation<T>> operations) where T : class
+    {
+        var nullOperationsForRequiredProperties = GetNullOperationsForRequiredProperties(operations, out _);
+
+        return nullOperationsForRequiredProperties.Count == 0;
+    }
+
+    public string? GetMessageForRequiredFields<T>(List<Operation<T>> operations) where T : class
+    {
+        var nullOperationsForRequiredProperties =
+            GetNullOperationsForRequiredProperties(operations, out var requiredProperties);
+        if (nullOperationsForRequiredProperties.Count == 0)
+        {
+            return null;
+        }
+        var message =
+            $"{typeof(T).Name} has required properties: {string.Join(',', requiredProperties)}. " + 
+            $"Can't set null for {string.Join(',', nullOperationsForRequiredProperties)}";
+        return message;
     }
 
     private Dictionary<string, string> GetIllegalOperations<T>(List<Operation<T>> operations) where T : class
@@ -137,7 +162,7 @@ public class PatchOperationValidator : IPatchOperationValidator
         }
         if (propType == typeof(double) || propType == typeof(double?))
         {
-            return double.TryParse(str, out _);
+            return double.TryParse(str, CultureInfo.CurrentCulture, out _);
         }
         if (propType == typeof(Guid) || propType == typeof(Guid?))
         {
@@ -145,7 +170,7 @@ public class PatchOperationValidator : IPatchOperationValidator
         }
         if (propType == typeof(DateTime) || propType == typeof(DateTime?))
         {
-            return DateTime.TryParse(str, out _);
+            return DateTime.TryParse(str, CultureInfo.CurrentCulture, out _);
         }
         return false;
     }
@@ -161,14 +186,36 @@ public class PatchOperationValidator : IPatchOperationValidator
         return propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
+    private List<string> CollectRequiredProperties(Type type)
+    {
+        var requiredAttributeType = typeof(RequiredAttribute);
+        var props = GetWritableProperties(type);
+        return props
+            .Where(prop => prop.IsDefined(requiredAttributeType, false))
+            .Select(prop => prop.Name).ToList();
+    }
+
     private Dictionary<string, Type> CollectWritableProperties(Type type)
-        => type
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where( p => p.CanWrite)
-            .ToDictionary(p => p.Name, p => p.PropertyType);
+        => GetWritableProperties(type).ToDictionary(p => p.Name, p => p.PropertyType);
+
+    private static IEnumerable<PropertyInfo> GetWritableProperties(Type type)
+        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Where(p => p.CanWrite);
 
     private Dictionary<string, object?> CollectReplaceOperations<T>(List<Operation<T>> operations) where T : class
         => operations
             .Where(op => op.OperationType == OperationType.Replace)
             .ToDictionary(op => op.path.TrimStart('/'), op => op.value == null ? null : op.value);
+
+    private List<string> GetNullOperationsForRequiredProperties<T>(
+        List<Operation<T>> operations,
+        out List<string> requiredProperties) where T : class
+    {
+        var replaceOperationsToSetNull = CollectReplaceOperations(operations)
+            .Where(op => op.Value is null)
+            .Select(op => op.Key).ToList();
+        requiredProperties = CollectRequiredProperties(typeof(T));
+
+        return requiredProperties.Intersect(replaceOperationsToSetNull).ToList();
+    }
 }

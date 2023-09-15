@@ -22,6 +22,8 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
             .WithMessage("Only 'Replace' operations are supported when patching")
             .Must(HaveUniqueReplaceOperations)
             .WithMessage("All operation paths must be unique")
+            .Must(RequiredFieldsMustHaveValue)
+            .WithMessage(dto => GetMessageForRequiredFields(dto.PatchDocument))
             .Must(HaveValidRowVersionOperation)
             .WithMessage("'RowVersion' is required and must be a valid row version")
             .Must(HaveValidOperationsOnly)
@@ -41,6 +43,12 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
 
         bool HaveValidOperationsOnly(JsonPatchDocument<T2> doc)
             => patchOperationValidator.HaveValidReplaceOperationsOnly(doc.Operations);
+
+        bool RequiredFieldsMustHaveValue(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.AllRequiredFieldsHaveValue(doc.Operations);
+
+        string? GetMessageForRequiredFields(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.GetMessageForRequiredFields(doc.Operations);
     }
 
     protected bool HaveStringReplaceOperationWithMaxLength(JsonPatchDocument<T2> doc, string path, int lengthMax)

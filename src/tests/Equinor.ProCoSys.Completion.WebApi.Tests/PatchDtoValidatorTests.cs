@@ -23,6 +23,7 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
         _patchOperationValidator = Substitute.For<IPatchOperationValidator>();
         _patchOperationValidator.HaveUniqueReplaceOperations(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
+        _patchOperationValidator.AllRequiredFieldsHaveValue(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveValidReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveValidRowVersionOperation(Arg.Any<List<Operation<T2>>>()).Returns(true);
 
@@ -69,6 +70,26 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenRequiredFieldGivenWithoutValue()
+    {
+        // Arrange
+        _patchOperationValidator.AllRequiredFieldsHaveValue(Arg.Any<List<Operation<T2>>>()).Returns(false);
+
+        // Act
+        var message = "message with info";
+        _patchOperationValidator.GetMessageForRequiredFields(
+            Arg.Any<List<Operation<T2>>>()).Returns(message);
+
+        // Act
+        var result = await _dut.ValidateAsync(GetPatchDto());
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.Equals(message));
     }
 
     [TestMethod]
