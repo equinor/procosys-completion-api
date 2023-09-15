@@ -11,8 +11,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests;
 [TestClass]
 public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> where T2: class
 {
-    private PatchDtoValidator<T1, T2> _dut;
-    protected IPatchOperationValidator _patchOperationValidator;
+    private PatchDtoValidator<T1, T2> _dut = null!;
+    protected IPatchOperationValidator _patchOperationValidator = null!;
 
     protected abstract void SetupDut();
     protected abstract T1 GetPatchDto();

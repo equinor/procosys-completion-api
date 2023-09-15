@@ -10,7 +10,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 public class OverwriteAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<OverwriteAttachmentDto>
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private IRowVersionValidator _rowVersionValidatorMock = null!;
 
     protected override void SetupDut()
     {

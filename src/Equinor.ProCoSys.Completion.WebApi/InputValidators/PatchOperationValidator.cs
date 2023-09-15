@@ -151,7 +151,15 @@ public class PatchOperationValidator : IPatchOperationValidator
     }
 
     private static bool IsNullableType(Type propType)
-        => propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>);
+    {
+        // special case for string: when using reflection to get type of a nullable string (string?),
+        // propType.IsGenericType is false. The type for a string? is still "System.String"
+        if (propType == typeof(string))
+        {
+            return true;
+        }
+        return propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>);
+    }
 
     private Dictionary<string, Type> CollectWritableProperties(Type type)
         => type

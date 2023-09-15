@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
 [TestClass]
 public class RowVersionValidatorTests
 {
-    private RowVersionValidator _dut;
+    private RowVersionValidator _dut = null!;
 
     [TestInitialize]
     public void SetUp() => _dut = new RowVersionValidator();

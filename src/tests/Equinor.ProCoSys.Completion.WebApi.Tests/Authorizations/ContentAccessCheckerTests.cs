@@ -17,11 +17,11 @@ public class ContentAccessCheckerTests
     private readonly ProCoSys4CheckList _proCoSys4CheckList = new ("EQ", false, Guid.NewGuid());
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private readonly Guid _punchItemGuid = Guid.NewGuid();
-    private ContentAccessChecker _dut;
-    private IRestrictionRolesChecker _restrictionRolesCheckerMock;
-    private ICheckListCache _checkListCacheMock;
-    private IPlantProvider _plantProviderMock;
-    private IPunchItemHelper _punchItemHelperMock;
+    private ContentAccessChecker _dut = null!;
+    private IRestrictionRolesChecker _restrictionRolesCheckerMock = null!;
+    private ICheckListCache _checkListCacheMock = null!;
+    private IPlantProvider _plantProviderMock = null!;
+    private IPunchItemHelper _punchItemHelperMock = null!;
 
     [TestInitialize]
     public void Setup()

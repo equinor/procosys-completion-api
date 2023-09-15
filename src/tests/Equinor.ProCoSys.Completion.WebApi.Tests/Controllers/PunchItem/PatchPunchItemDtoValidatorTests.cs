@@ -10,7 +10,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 [TestClass]
 public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunchItemDto, PatchablePunchItem>
 {
-    private PatchPunchItemDtoValidator _dut;
+    private PatchPunchItemDtoValidator _dut = null!;
     //private readonly string _rowVersion = "r";
 
     protected override void SetupDut()

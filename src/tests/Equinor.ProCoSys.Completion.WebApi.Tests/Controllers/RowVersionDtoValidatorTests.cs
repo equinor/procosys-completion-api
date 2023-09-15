@@ -11,8 +11,8 @@ public class RowVersionDtoValidatorTests
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
-    private RowVersionDtoValidator _dut;
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private RowVersionDtoValidator _dut = null!;
+    private IRowVersionValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void Setup_OkState()
