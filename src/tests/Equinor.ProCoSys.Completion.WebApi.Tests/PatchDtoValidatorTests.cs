@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -7,23 +9,24 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests;
 
 [TestClass]
-public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> where T2: class, new()
+public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> where T2: class
 {
-    protected readonly string RowVersion = "AAAAAAAAABA=";
     private PatchDtoValidator<T1, T2> _dut;
-    protected IRowVersionValidator _rowVersionValidatorMock;
+    protected IPatchOperationValidator _patchOperationValidator;
 
     protected abstract void SetupDut();
-    protected abstract T1 GetValidPatchDto();
-    protected abstract void AddOperationToPatchDto(T1 patchDto, OperationType type);
+    protected abstract T1 GetPatchDto();
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
-        _rowVersionValidatorMock.IsValid(RowVersion).Returns(true);
+        _patchOperationValidator = Substitute.For<IPatchOperationValidator>();
+        _patchOperationValidator.HaveUniqueReplaceOperations(Arg.Any<List<Operation<T2>>>()).Returns(true);
+        _patchOperationValidator.HaveReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
+        _patchOperationValidator.HaveValidReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
+        _patchOperationValidator.HaveValidRowVersionOperation(Arg.Any<List<Operation<T2>>>()).Returns(true);
 
-        _dut = new PatchDtoValidator<T1, T2>(_rowVersionValidatorMock);
+        _dut = new PatchDtoValidator<T1, T2>(_patchOperationValidator);
 
         SetupDut();
     }
@@ -32,102 +35,20 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Act
-        var result = await _dut.ValidateAsync(GetValidPatchDto());
+        var result = await _dut.ValidateAsync(GetPatchDto());
 
         // Assert
         Assert.IsTrue(result.IsValid);
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenAddOperationGiven()
+    public async Task Validate_ShouldFail_WhenDuplicatesGiven()
     {
         // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Add);
+        _patchOperationValidator.HaveUniqueReplaceOperations(Arg.Any<List<Operation<T2>>>()).Returns(false);
 
         // Act
-        var result = await _dut.ValidateAsync(patchDto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenMoveOperationGiven()
-    {
-        // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Move);
-
-        // Act
-        var result = await _dut.ValidateAsync(patchDto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenCopyOperationGiven()
-    {
-        // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Copy);
-
-        // Act
-        var result = await _dut.ValidateAsync(patchDto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenTestOperationGiven()
-    {
-        // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Test);
-
-        // Act
-        var result = await _dut.ValidateAsync(patchDto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenRemoveOperationGiven()
-    {
-        // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Remove);
-
-        // Act
-        var result = await _dut.ValidateAsync(patchDto);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenDuplicateReplaceOperationGiven()
-    {
-        // Arrange
-        var patchDto = GetValidPatchDto();
-        AddOperationToPatchDto(patchDto, OperationType.Replace);
-        AddOperationToPatchDto(patchDto, OperationType.Replace);
-
-        // Act
-        var result = await _dut.ValidateAsync(patchDto);
+        var result = await _dut.ValidateAsync(GetPatchDto());
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -136,14 +57,28 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenOtherThanReplaceGiven()
+    {
+        // Arrange
+        _patchOperationValidator.HaveReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(GetPatchDto());
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Only 'Replace' operations are supported when patching"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var patchDto = GetValidPatchDto();
-        patchDto.PatchDocument.Operations.Clear();
+        _patchOperationValidator.HaveValidRowVersionOperation(Arg.Any<List<Operation<T2>>>()).Returns(false);
 
         // Act
-        var result = await _dut.ValidateAsync(patchDto);
+        var result = await _dut.ValidateAsync(GetPatchDto());
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -152,17 +87,21 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenIllegalRowVersion()
+    public async Task Validate_ShouldFail_WhenIllegalOperationExist()
     {
         // Arrange
-        _rowVersionValidatorMock.IsValid(RowVersion).Returns(false);
+        _patchOperationValidator.HaveValidReplaceOperationsOnly(
+            Arg.Any<List<Operation<T2>>>()).Returns(false);
+        var message = "message with info";
+        _patchOperationValidator.GetMessageForIllegalReplaceOperations(
+            Arg.Any<List<Operation<T2>>>()).Returns(message);
 
         // Act
-        var result = await _dut.ValidateAsync(GetValidPatchDto());
+        var result = await _dut.ValidateAsync(GetPatchDto());
 
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'RowVersion' is required and must be a valid row version"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.Equals(message));
     }
 }

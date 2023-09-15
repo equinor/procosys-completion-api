@@ -1,12 +1,14 @@
 ﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto, PatchablePunchItem>
 {
-    public PatchPunchItemDtoValidator(IRowVersionValidator rowVersionValidator) : base(rowVersionValidator)
+    public PatchPunchItemDtoValidator(IPatchOperationValidator patchOperationValidator)
+        : base(patchOperationValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

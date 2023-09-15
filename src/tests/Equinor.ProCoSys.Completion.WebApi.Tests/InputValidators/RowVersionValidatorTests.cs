@@ -1,7 +1,7 @@
-﻿using Equinor.ProCoSys.Completion.WebApi.Controllers;
+﻿using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
 
 [TestClass]
 public class RowVersionValidatorTests
@@ -13,7 +13,7 @@ public class RowVersionValidatorTests
 
     [TestMethod]
     public void IsValid_ValidRowVersion_ShouldReturnTrue()
-    { 
+    {
         var validRowVersion = "AAAAAAAAABA=";
 
         var result = _dut.IsValid(validRowVersion);

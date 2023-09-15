@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DomainPunchItem = Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate.PunchItem;
 
@@ -13,50 +11,24 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunchItemDto, PatchablePunchItem>
 {
     private PatchPunchItemDtoValidator _dut;
+    //private readonly string _rowVersion = "r";
 
     protected override void SetupDut()
-        => _dut = new PatchPunchItemDtoValidator(_rowVersionValidatorMock);
+        => _dut = new PatchPunchItemDtoValidator(_patchOperationValidator);
 
-    protected override PatchPunchItemDto GetValidPatchDto()
+    protected override PatchPunchItemDto GetPatchDto()
     {
         var dto = new PatchPunchItemDto { PatchDocument = new JsonPatchDocument<PatchablePunchItem>() };
-        dto.PatchDocument.Replace(p => p.RowVersion, RowVersion);
+        //dto.PatchDocument.Replace(p => p.RowVersion, _rowVersion);
 
         return dto;
-    }
-
-    protected override void AddOperationToPatchDto(PatchPunchItemDto patchDto, OperationType type)
-    {
-        switch (type)
-        {
-            case OperationType.Add:
-                patchDto.PatchDocument.Add(p => p.Description, "desc");
-                break;
-            case OperationType.Remove:
-                patchDto.PatchDocument.Remove(p => p.Description);
-                break;
-            case OperationType.Replace:
-                patchDto.PatchDocument.Replace(p => p.Description, "desc");
-                break;
-            case OperationType.Move:
-                patchDto.PatchDocument.Move(p1 => p1.Description, p2 => p2.RowVersion);
-                break;
-            case OperationType.Copy:
-                patchDto.PatchDocument.Copy(p1 => p1.Description, p2 => p2.RowVersion);
-                break;
-            case OperationType.Test:
-                patchDto.PatchDocument.Test(p => p.Description, "desc");
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type), type, null);
-        }
     }
 
     [TestMethod]
     public async Task Validate_ShouldFail_WhenDescriptionIsTooLong()
     {
         // Arrange
-        var dto = GetValidPatchDto();
+        var dto = GetPatchDto();
         dto.PatchDocument.Replace(
             p => p.Description,
             new string('x', DomainPunchItem.DescriptionLengthMax + 1));
@@ -74,7 +46,7 @@ public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunch
     public async Task Validate_ShouldFail_WhenDescriptionIsEmpty()
     {
         // Arrange
-        var dto = GetValidPatchDto();
+        var dto = GetPatchDto();
         dto.PatchDocument.Replace(p => p.Description, string.Empty);
 
         // Act
@@ -90,7 +62,7 @@ public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunch
     public async Task Validate_ShouldFail_WhenDescriptionIsNull()
     {
         // Arrange
-        var dto = GetValidPatchDto();
+        var dto = GetPatchDto();
         dto.PatchDocument.Replace(p => p.Description, null);
 
         // Act

@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -8,7 +8,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchDto<T2> where T2: class
 {
-    public PatchDtoValidator(IRowVersionValidator rowVersionValidator)
+    public PatchDtoValidator(IPatchOperationValidator patchOperationValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -20,32 +20,27 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
             .NotNull()
             .Must(HaveReplaceOperationsOnly)
             .WithMessage("Only 'Replace' operations are supported when patching")
-            .Must(HaveUniqueOperations)
+            .Must(HaveUniqueReplaceOperations)
             .WithMessage("All operation paths must be unique")
             .Must(HaveValidRowVersionOperation)
-            .WithMessage($"'{nameof(PunchItem.RowVersion)}' is required and must be a valid row version");
-
-        bool HaveValidRowVersionOperation(JsonPatchDocument<T2> doc)
-        {
-            var rowVersionOperation = doc.Operations
-                .SingleOrDefault(op => op.path == $"/{nameof(PunchItem.RowVersion)}" && 
-                                      op.OperationType == OperationType.Replace);
-            if (rowVersionOperation?.value == null)
-            {
-                return false;
-            }
-
-            return rowVersionValidator.IsValid(rowVersionOperation.value as string);
-        }
+            .WithMessage("'RowVersion' is required and must be a valid row version")
+            .Must(HaveValidOperationsOnly)
+            .WithMessage(dto => GetMessageForIllegalOperations(dto.PatchDocument));
 
         bool HaveReplaceOperationsOnly(JsonPatchDocument<T2> doc)
-            => doc.Operations.All(o => o.OperationType == OperationType.Replace);
+            => patchOperationValidator.HaveReplaceOperationsOnly(doc.Operations);
 
-        bool HaveUniqueOperations(JsonPatchDocument<T2> doc)
-        {
-            var allPaths = doc.Operations.Select(o => o.path).ToList();
-            return allPaths.Count == allPaths.Distinct().Count();
-        }
+        bool HaveUniqueReplaceOperations(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.HaveUniqueReplaceOperations(doc.Operations);
+
+        bool HaveValidRowVersionOperation(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.HaveValidRowVersionOperation(doc.Operations);
+
+        string? GetMessageForIllegalOperations(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.GetMessageForIllegalReplaceOperations(doc.Operations);
+
+        bool HaveValidOperationsOnly(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.HaveValidReplaceOperationsOnly(doc.Operations);
     }
 
     protected bool HaveStringReplaceOperationWithMaxLength(JsonPatchDocument<T2> doc, string path, int lengthMax)
