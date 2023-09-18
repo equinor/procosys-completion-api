@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
+﻿namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 public interface IRowVersionValidator
 {

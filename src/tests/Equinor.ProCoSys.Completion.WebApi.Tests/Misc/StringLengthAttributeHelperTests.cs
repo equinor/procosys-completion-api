@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Misc;
 
 [TestClass]
 public class StringLengthAttributeHelperTests

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 
 internal class PatchableObject
 {

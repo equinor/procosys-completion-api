@@ -1,5 +1,4 @@
 ﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Globalization;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 
 [TestClass]
 public class PatchOperationValidatorTests

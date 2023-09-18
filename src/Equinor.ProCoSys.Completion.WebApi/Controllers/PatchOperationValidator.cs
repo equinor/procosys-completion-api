@@ -4,9 +4,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 // Use Attribute on classes represented by the generic type T to get correct validation of T
 // Following Attribute can be used:

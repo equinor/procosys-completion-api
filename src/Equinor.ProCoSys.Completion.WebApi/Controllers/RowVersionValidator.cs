@@ -1,6 +1,7 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
+
 
 public class RowVersionValidator : IRowVersionValidator
 {

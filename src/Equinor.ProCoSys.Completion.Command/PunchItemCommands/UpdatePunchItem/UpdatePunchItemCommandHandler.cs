@@ -43,6 +43,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         var patchedProperties = request.PatchDocument.Operations.Select(op => op.path.TrimStart('/'));
         Patch(punchItem, patchedPunchItem, patchedProperties);
         punchItem.SetRowVersion(request.RowVersion);
+
+        // todo 104046 Refactor PunchItemUpdatedDomainEvent to take a dynamic object with props actually patched
         punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

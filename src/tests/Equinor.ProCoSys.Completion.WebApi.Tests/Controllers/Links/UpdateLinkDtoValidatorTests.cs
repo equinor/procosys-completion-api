@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 

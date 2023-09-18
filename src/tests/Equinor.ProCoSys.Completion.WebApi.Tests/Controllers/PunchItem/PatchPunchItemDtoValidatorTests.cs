@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;

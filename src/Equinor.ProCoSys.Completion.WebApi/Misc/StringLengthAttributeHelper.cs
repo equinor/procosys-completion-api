@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 
 public static class StringLengthAttributeHelper
 {

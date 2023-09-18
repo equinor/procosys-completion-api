@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;

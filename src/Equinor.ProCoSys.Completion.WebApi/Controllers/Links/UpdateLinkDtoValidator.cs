@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.WebApi.InputValidators;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 

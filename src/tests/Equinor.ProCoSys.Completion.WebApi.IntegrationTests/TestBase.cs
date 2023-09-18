@@ -1,5 +1,5 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;

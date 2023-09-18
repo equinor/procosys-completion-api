@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 public interface IPatchOperationValidator
 {
