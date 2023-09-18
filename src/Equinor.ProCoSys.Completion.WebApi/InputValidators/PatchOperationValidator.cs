@@ -8,14 +8,13 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.InputValidators;
 
-// The class of type T must set the RequiredAttribute on required properties to get correct validation
-// Can't just check if property is nullable or not, since property type of string and string? are both "System.String"
+// Use Attribute on classes represented by the generic type T to get correct validation of T
+// Following Attribute can be used:
+//      * RequiredAttribute: Check if property is required or not (Can't just check if property is nullable or not, since property type of string and string? are both "System.String")
+//      * StringLengthAttribute: check min / max length of values to set in string properties
+//          NB: Using StringLengthAttribute on non-string properties has no affect
 public class PatchOperationValidator : IPatchOperationValidator
 {
-    private readonly IRowVersionValidator _rowVersionValidator;
-    
-    public PatchOperationValidator(IRowVersionValidator rowVersionValidator) => _rowVersionValidator = rowVersionValidator;
-
     public bool HaveValidReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class
     {
         var illegalOperations = GetInvalidOperations(operations);
@@ -40,22 +39,6 @@ public class PatchOperationValidator : IPatchOperationValidator
     {
         var allPaths = operations.Select(o => o.path).ToList();
         return allPaths.Count == allPaths.Distinct().Count();
-    }
-
-    public bool HaveValidRowVersionOperation<T>(List<Operation<T>> operations) where T : class
-    {
-        var rowVersion = operations
-            .Where(op => op.path == "/RowVersion" &&
-                                   op.value is string &&
-                                   op.OperationType == OperationType.Replace)
-            .Select(op => op.value as string)
-            .SingleOrDefault();
-        if (rowVersion == null)
-        {
-            return false;
-        }
-
-        return _rowVersionValidator.IsValid(rowVersion);
     }
 
     public bool AllRequiredFieldsHaveValue<T>(List<Operation<T>> operations) where T : class

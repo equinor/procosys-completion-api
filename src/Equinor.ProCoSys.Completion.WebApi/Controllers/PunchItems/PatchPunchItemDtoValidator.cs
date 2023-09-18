@@ -1,12 +1,27 @@
 ﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto, PatchablePunchItem>
 {
-    public PatchPunchItemDtoValidator(IPatchOperationValidator patchOperationValidator)
+    public PatchPunchItemDtoValidator(
+        IRowVersionValidator rowVersionValidator,
+        IPatchOperationValidator patchOperationValidator)
         : base(patchOperationValidator)
     {
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
+
+        RuleFor(dto => dto).NotNull();
+
+        RuleFor(dto => dto.RowVersion)
+            .NotNull()
+            .Must(HaveValidRowVersion)
+            .WithMessage(dto => $"Dto does not have valid rowVersion! RowVersion={dto.RowVersion}");
+
+        bool HaveValidRowVersion(string rowVersion)
+            => rowVersionValidator.IsValid(rowVersion);
     }
 }

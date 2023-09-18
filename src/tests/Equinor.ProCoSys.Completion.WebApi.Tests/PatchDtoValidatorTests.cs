@@ -14,6 +14,7 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
     private PatchDtoValidator<T1, T2> _dut = null!;
     protected IPatchOperationValidator _patchOperationValidator = null!;
 
+    protected abstract void SetupDut();
     protected abstract T1 GetPatchDto();
 
     [TestInitialize]
@@ -24,10 +25,11 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
         _patchOperationValidator.HaveReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.AllRequiredFieldsHaveValue(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveValidReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
-        _patchOperationValidator.HaveValidRowVersionOperation(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveValidLengthOfStrings(Arg.Any<List<Operation<T2>>>()).Returns(true);
 
         _dut = new PatchDtoValidator<T1, T2>(_patchOperationValidator);
+        
+        SetupDut();
     }
 
     [TestMethod]
@@ -85,21 +87,6 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.Equals(message));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
-    {
-        // Arrange
-        _patchOperationValidator.HaveValidRowVersionOperation(Arg.Any<List<Operation<T2>>>()).Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(GetPatchDto());
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'RowVersion' is required and must be a valid row version"));
     }
 
     [TestMethod]

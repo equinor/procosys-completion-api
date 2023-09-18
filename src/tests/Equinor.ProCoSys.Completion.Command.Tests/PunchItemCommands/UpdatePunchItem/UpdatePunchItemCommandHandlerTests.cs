@@ -22,7 +22,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         var jsonPatchDocument = new JsonPatchDocument<PatchablePunchItem>();
         jsonPatchDocument.Replace(p => p.Description, _newDescription);
-        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, jsonPatchDocument);
+        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, jsonPatchDocument, RowVersion);
 
         _dut = new UpdatePunchItemCommandHandler(
             _punchItemRepositoryMock,

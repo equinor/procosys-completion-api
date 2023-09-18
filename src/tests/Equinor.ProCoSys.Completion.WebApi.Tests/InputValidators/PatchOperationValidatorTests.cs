@@ -4,7 +4,6 @@ using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.InputValidators;
 
@@ -14,7 +13,6 @@ public class PatchOperationValidatorTests
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private PatchOperationValidator _dut = null!;
     private JsonPatchDocument<PatchableObject> _patchDocument = null!;
-    private IRowVersionValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void SetUp()
@@ -42,10 +40,7 @@ public class PatchOperationValidatorTests
         _patchDocument.Replace(p => p.MyNullableDateTime1, DateTime.Now);
         _patchDocument.Replace(p => p.MyNullableDateTime2, null);
 
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
-        _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
-
-        _dut = new PatchOperationValidator(_rowVersionValidatorMock);
+        _dut = new PatchOperationValidator();
     }
 
     #region HaveValidReplaceOperationsOnly and GetMessageForInvalidReplaceOperations
@@ -523,44 +518,6 @@ public class PatchOperationValidatorTests
 
         // Act
         var result = _dut.HaveUniqueReplaceOperations(_patchDocument.Operations);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
-
-    #region HaveValidRowVersionOperation
-    [TestMethod]
-    public void HaveValidRowVersionOperation_ShouldReturnTrue_WhenValid()
-    {
-        // Act
-        var result = _dut.HaveValidRowVersionOperation(_patchDocument.Operations);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public void HaveValidRowVersionOperation_ShouldReturnFalse_WhenRowVersionNotGiven()
-    {
-        // Arrange
-        _patchDocument.Operations.Clear();
-
-        // Act
-        var result = _dut.HaveValidRowVersionOperation(_patchDocument.Operations);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public void HaveValidRowVersionOperation_ShouldReturnFalse_WhenInvalidRowVersion()
-    {
-        // Arrange
-        _rowVersionValidatorMock.IsValid(_rowVersion).Returns(false);
-
-        // Act
-        var result = _dut.HaveValidRowVersionOperation(_patchDocument.Operations);
 
         // Assert
         Assert.IsFalse(result);

@@ -9,7 +9,6 @@ public interface IPatchOperationValidator
     string? GetMessageForInvalidReplaceOperations<T>(List<Operation<T>> operations) where T : class;
     bool HaveReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class;
     bool HaveUniqueReplaceOperations<T>(List<Operation<T>> operations) where T : class;
-    bool HaveValidRowVersionOperation<T>(List<Operation<T>> operations) where T : class;
     bool AllRequiredFieldsHaveValue<T>(List<Operation<T>> operations) where T : class;
     string? GetMessageForRequiredFields<T>(List<Operation<T>> operations) where T : class;
     bool HaveValidLengthOfStrings<T>(List<Operation<T>> operations) where T : class;

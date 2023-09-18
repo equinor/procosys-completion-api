@@ -37,12 +37,12 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        var patchablePunchItem = new PatchablePunchItem();
-        request.PatchDocument.ApplyTo(patchablePunchItem);
+        var patchedPunchItem = new PatchablePunchItem();
+        request.PatchDocument.ApplyTo(patchedPunchItem);
 
         var patchedProperties = request.PatchDocument.Operations.Select(op => op.path.TrimStart('/'));
-        Patch(patchablePunchItem, patchedProperties);
-        //punchItem.SetRowVersion(request.RowVersion);
+        Patch(punchItem, patchedPunchItem, patchedProperties);
+        punchItem.SetRowVersion(request.RowVersion);
         punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -52,8 +52,24 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 
-    private void Patch(PatchablePunchItem patchablePunchItem, IEnumerable<string> patchedProperties)
+    private void Patch(PunchItem punchItem, 
+        PatchablePunchItem patchedPunchItem, 
+        IEnumerable<string> patchedProperties)
     {
-        // todo 104046 Patch logic
+        foreach (var patchedProperty in patchedProperties)
+        {
+            switch (patchedProperty)
+            {
+                case nameof(PatchablePunchItem.Description):
+                    punchItem.Description = patchedPunchItem.Description;
+                    break;
+
+                // todo 104046 Patch logic for each patchable property
+
+                default:
+                    throw new NotImplementedException($"Patching property {patchedProperty} not implemented");
+
+            }
+        }
     }
 }

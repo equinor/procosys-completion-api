@@ -107,7 +107,8 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] PatchPunchItemDto patchPunchDto)
     {
-        var result = await _mediator.Send(new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument));
+        var result = await _mediator.Send(
+            new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion));
         return this.FromResult(result);
     }
 

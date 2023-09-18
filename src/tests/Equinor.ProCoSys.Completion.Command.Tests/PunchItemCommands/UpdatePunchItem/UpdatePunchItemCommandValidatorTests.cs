@@ -19,7 +19,7 @@ public class UpdatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument);
+        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "r");
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
