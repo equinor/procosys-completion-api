@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
@@ -11,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
     public const int IdentitySeed = 4000001;
+    public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
 
 #pragma warning disable CS8618

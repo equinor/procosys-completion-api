@@ -18,20 +18,19 @@ public class PatchOperationValidator : IPatchOperationValidator
 
     public bool HaveValidReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class
     {
-        var illegalOperations = GetIllegalOperations(operations);
+        var illegalOperations = GetInvalidOperations(operations);
         return illegalOperations.Count == 0;
     }
 
-    public string? GetMessageForIllegalReplaceOperations<T>(List<Operation<T>> operations) where T : class
+    public string? GetMessageForInvalidReplaceOperations<T>(List<Operation<T>> operations) where T : class
     {
-        var illegalOperations = GetIllegalOperations(operations);
+        var illegalOperations = GetInvalidOperations(operations);
         if (illegalOperations.Count == 0)
         {
             return null;
         }
 
-        var messages = illegalOperations.Select(o => o.Value);
-        return string.Join('|', messages);
+        return string.Join('|', illegalOperations);
     }
 
     public bool HaveReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class
@@ -43,7 +42,7 @@ public class PatchOperationValidator : IPatchOperationValidator
         return allPaths.Count == allPaths.Distinct().Count();
     }
 
-    public bool HaveValidRowVersionOperation<T2>(List<Operation<T2>> operations) where T2 : class
+    public bool HaveValidRowVersionOperation<T>(List<Operation<T>> operations) where T : class
     {
         var rowVersion = operations
             .Where(op => op.path == "/RowVersion" &&
@@ -80,42 +79,59 @@ public class PatchOperationValidator : IPatchOperationValidator
         return message;
     }
 
-    private Dictionary<string, string> GetIllegalOperations<T>(List<Operation<T>> operations) where T : class
+    public bool HaveValidLengthOfStrings<T>(List<Operation<T>> operations) where T : class
+    {
+        var illegalOperations = GetInvalidStringOperations(typeof(T).Name, operations);
+
+        return illegalOperations.Count == 0;
+    }
+
+    public string? GetMessageForInvalidLengthOfStrings<T>(List<Operation<T>> operations) where T : class
+    {
+        var illegalOperations = GetInvalidStringOperations(typeof(T).Name, operations);
+        if (illegalOperations.Count == 0)
+        {
+            return null;
+        }
+        return string.Join('|', illegalOperations);
+    }
+
+    private List<string> GetInvalidOperations<T>(List<Operation<T>> operations) where T : class
     {
         var replaceOperations = CollectReplaceOperations(operations);
         var writableProperties = CollectWritableProperties(typeof(T));
 
-        var illegalOperations = GetIllegalOperations(typeof(T).Name, replaceOperations, writableProperties);
+        var illegalOperations = GetInvalidOperations(typeof(T).Name, replaceOperations, writableProperties);
         return illegalOperations;
     }
 
-    private Dictionary<string, string> GetIllegalOperations(
+    private List<string> GetInvalidOperations(
         string typeName,
         Dictionary<string, object?> replaceOperations, 
         Dictionary<string, Type> writableProperties)
     {
-        var illegalOperations = new Dictionary<string, string>();
+        var illegalOperations = new List<string>();
         foreach (var operation in replaceOperations)
         {
             if (!writableProperties.ContainsKey(operation.Key))
             {
-                illegalOperations.Add(operation.Key, $"{typeName} don't have writable property {operation.Key}");
+                illegalOperations.Add($"{typeName} don't have writable property {operation.Key}");
                 continue;
             }
 
             var propType = writableProperties[operation.Key];
 
-            if (!CanAssign(operation.Value, propType))
+            if (!CanAssignValueToProperty(operation.Value, propType))
             {
                 if (operation.Value is null)
                 {
-                    illegalOperations.Add(operation.Key, 
+                    illegalOperations.Add(
                         $"Can't assign null-value to property {operation.Key} of type {propType} in {typeName}");
                 }
                 else
                 {
-                    illegalOperations.Add(operation.Key, 
-                        $"Can't assign value '{operation.Value}' of type {operation.Value.GetType()} to property {operation.Key} of type {propType} in {typeName}");
+                    illegalOperations.Add(
+                        $"Can't assign value value of type {operation.Value.GetType()} to property {operation.Key} of type {propType} in {typeName}");
                 }
             }
         }
@@ -123,7 +139,7 @@ public class PatchOperationValidator : IPatchOperationValidator
         return illegalOperations;
     }
 
-    private static bool CanAssign(object? value, Type propType)
+    private static bool CanAssignValueToProperty(object? value, Type propType)
     {
         if (value == null)
         {
@@ -175,25 +191,25 @@ public class PatchOperationValidator : IPatchOperationValidator
         return false;
     }
 
-    private static bool IsNullableType(Type propType)
+    private static bool IsNullableType(Type type)
     {
         // special case for string: when using reflection to get type of a nullable string (string?),
         // propType.IsGenericType is false. The type for a string? is still "System.String"
-        if (propType == typeof(string))
+        if (type == typeof(string))
         {
             return true;
         }
-        return propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>);
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
-    private List<string> CollectRequiredProperties(Type type)
+    private IEnumerable<PropertyInfo> CollectPropertiesWithAttribute(Type type, Type attributeType)
     {
-        var requiredAttributeType = typeof(RequiredAttribute);
         var props = GetWritableProperties(type);
-        return props
-            .Where(prop => prop.IsDefined(requiredAttributeType, false))
-            .Select(prop => prop.Name).ToList();
+        return CollectPropertiesWithAttribute(props, attributeType);
     }
+
+    private static IEnumerable<PropertyInfo> CollectPropertiesWithAttribute(IEnumerable<PropertyInfo> props, Type attributeType)
+        => props.Where(prop => prop.IsDefined(attributeType, false));
 
     private Dictionary<string, Type> CollectWritableProperties(Type type)
         => GetWritableProperties(type).ToDictionary(p => p.Name, p => p.PropertyType);
@@ -214,8 +230,44 @@ public class PatchOperationValidator : IPatchOperationValidator
         var replaceOperationsToSetNull = CollectReplaceOperations(operations)
             .Where(op => op.Value is null)
             .Select(op => op.Key).ToList();
-        requiredProperties = CollectRequiredProperties(typeof(T));
+        requiredProperties = CollectPropertiesWithAttribute(typeof(T), typeof(RequiredAttribute))
+            .Select(prop => prop.Name).ToList();
 
         return requiredProperties.Intersect(replaceOperationsToSetNull).ToList();
+    }
+
+    private List<string> GetInvalidStringOperations<T>(string typeName, List<Operation<T>> operations) where T : class
+    {
+        var illegalOperations = new List<string>();
+        var writableStringProperties = GetWritableProperties(typeof(T))
+            .Where(p => p.PropertyType == typeof(string));
+        var propertiesWithLengthLimiting =
+            CollectPropertiesWithAttribute(writableStringProperties, typeof(StringLengthAttribute)).ToList();
+
+        if (propertiesWithLengthLimiting.Count == 0)
+        {
+            return illegalOperations;
+        }
+
+        var replaceStringOperations = operations
+            .Where(op => op.OperationType == OperationType.Replace && op.value is string);
+        foreach (var operation in replaceStringOperations)
+        {
+            var propName = operation.path.TrimStart('/');
+            var propertyWithLengthLimiting =
+                propertiesWithLengthLimiting.SingleOrDefault(p => p.Name == propName);
+            if (propertyWithLengthLimiting == null)
+            {
+                continue;
+            }
+
+            var stringLengthAttribute = propertyWithLengthLimiting.GetCustomAttribute<StringLengthAttribute>(false)!;
+            if (!StringLengthAttributeHelper.IsValid(stringLengthAttribute, operation.value as string, out var message))
+            {
+                illegalOperations.Add($"Can't assign value to property {propName} in {typeName}. {message}");
+            }
+        }
+
+        return illegalOperations;
     }
 }

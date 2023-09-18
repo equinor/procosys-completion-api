@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using Equinor.ProCoSys.Completion.WebApi.InputValidators;
+﻿using Equinor.ProCoSys.Completion.WebApi.InputValidators;
 using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
@@ -27,7 +25,9 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
             .Must(HaveValidRowVersionOperation)
             .WithMessage("'RowVersion' is required and must be a valid row version")
             .Must(HaveValidOperationsOnly)
-            .WithMessage(dto => GetMessageForIllegalOperations(dto.PatchDocument));
+            .WithMessage(dto => GetMessageForInvalidOperations(dto.PatchDocument))
+            .Must(HaveValidLengthOfStrings)
+            .WithMessage(dto => GetMessageForInvalidLengthOfStrings(dto.PatchDocument));
 
         bool HaveReplaceOperationsOnly(JsonPatchDocument<T2> doc)
             => patchOperationValidator.HaveReplaceOperationsOnly(doc.Operations);
@@ -38,8 +38,8 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
         bool HaveValidRowVersionOperation(JsonPatchDocument<T2> doc)
             => patchOperationValidator.HaveValidRowVersionOperation(doc.Operations);
 
-        string? GetMessageForIllegalOperations(JsonPatchDocument<T2> doc)
-            => patchOperationValidator.GetMessageForIllegalReplaceOperations(doc.Operations);
+        string? GetMessageForInvalidOperations(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.GetMessageForInvalidReplaceOperations(doc.Operations);
 
         bool HaveValidOperationsOnly(JsonPatchDocument<T2> doc)
             => patchOperationValidator.HaveValidReplaceOperationsOnly(doc.Operations);
@@ -49,29 +49,11 @@ public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchD
 
         string? GetMessageForRequiredFields(JsonPatchDocument<T2> doc)
             => patchOperationValidator.GetMessageForRequiredFields(doc.Operations);
+
+        bool HaveValidLengthOfStrings(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.HaveValidLengthOfStrings(doc.Operations);
+
+        string? GetMessageForInvalidLengthOfStrings(JsonPatchDocument<T2> doc)
+            => patchOperationValidator.GetMessageForInvalidLengthOfStrings(doc.Operations);
     }
-
-    protected bool HaveStringReplaceOperationWithMaxLength(JsonPatchDocument<T2> doc, string path, int lengthMax)
-    {
-        var operation = doc.Operations
-            .SingleOrDefault(op => op.path == $"/{path}" &&
-                                   op.OperationType == OperationType.Replace);
-        if (operation is null)
-        {
-            return false;
-        }
-
-        if (operation.value is not string str)
-        {
-            return false;
-        }
-
-        var l = str.Length;
-        return l > 0 && l < lengthMax;
-    }
-
-    protected bool ReplaceOperationExistsFor(JsonPatchDocument<T2> doc, string path)
-        => doc.Operations
-            .SingleOrDefault(op => op.path == $"/{path}" &&
-                                   op.OperationType == OperationType.Replace) is not null;
 }
