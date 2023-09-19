@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.PersonCommands.CreatePerson;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
-using Equinor.ProCoSys.Completion.TieImport.Converters;
-using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
-using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
 using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 

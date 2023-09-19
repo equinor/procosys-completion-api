@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
-using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Converters;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
@@ -102,16 +103,6 @@ public class ImportHandler : IImportHandler
         return tiMessageResult;
     }
 
-    private void LogImportStarting(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Starting import of object.");
-
-    private void LogImportIsDone(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import done.");
-
-    private void LogImportResultUnsuccessful(TIObject tiObject)
-    {
-        _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import of object unsuccessful.");
-        _logger.LogInformation("Error is causing rest of message to be dropped.");
-    }
-
     private ImportResult? ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
         //TODO: Do 105834 CollectWarnings here
@@ -128,7 +119,8 @@ public class ImportHandler : IImportHandler
 
         //TODO: Call SiteSpecificHandler
 
-        var pcsObject = CreateIPcsObjectIn(tiObject, out importResult);
+        var proCoSysImportObject = CreateProCoSysImportObject(tiObject, out importResult);
+
         if (ImportResultHasError(importResult))
         {
             return importResult;
@@ -137,24 +129,19 @@ public class ImportHandler : IImportHandler
         TIEPCSCommonConverters.FillInCommandVerbToPerformFromTieObject(
             tiObject,
             message,
-            pcsObject);
+            proCoSysImportObject);
 
-        _messageInspector.UpdateImportOptions(pcsObject, message);
+        _messageInspector.UpdateImportOptions(proCoSysImportObject, message);
 
-        EnsureObjectNameHasValue(tiObject, pcsObject);
+        EnsureObjectNameHasValue(tiObject, proCoSysImportObject);
 
         //TODO: TIEProCoSysImportCustomImport.CustomImport
 
-        var incomingObjectType = pcsObject.GetType();
+        var incomingObjectType = proCoSysImportObject.GetType();
 
         //TODO: NCR special handling
 
-        var command = CreateCommand(incomingObjectType, pcsObject.ImportMethod);
-
-        //TODO: JSOI
-        //CopyProperties(sourceObject, command);
-        //Use below method instead of CopyProperties name
-        //PopulateCommandWithValues(command, pcsObject);
+        var command = CreateCommand(incomingObjectType, proCoSysImportObject.ImportMethod, proCoSysImportObject);
 
         //TODO: JSOI Send command to CreatePunchItem via MediatR
 
@@ -184,13 +171,26 @@ public class ImportHandler : IImportHandler
 
     private static bool ImportResultHasError(ImportResult? importResult) => importResult != null;
 
-    private object CreateCommand(Type incomingObjectType, ImportMethod pcsObjectImportMethod)
+    private IIsProjectCommand CreateCommand(Type incomingObjectType, ImportMethod pcsObjectImportMethod, IPcsObjectIn pcsObjectIn)
     {
         //Always return a CreatePunchItemCommand for now
-        throw new NotImplementedException();
+        var punchItemIn = pcsObjectIn as PcsPunchItemIn;
+        if (punchItemIn is null)
+        {
+            throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
+        }
+
+
+        //TODO: JSOI Run validation before retrieving guids??
+        //TODO: JSOI Retrieve guids from strings
+        //Observation: PCS5 uses "strongly typed" commands while PCS4 uses "primitive typed" commands (i.e. string, int, datetime
+        //var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, punchItemIn.RaisedByOrganization, punchItemIn.ClearedByOrganization, punchItemIn.Priority, punchItemIn.sortingGuid, punchItemIn.PunchListType);
+        var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, new Guid(), new Guid(), new Guid());
+        return createPunchCommand;
     }
 
-    private IPcsObjectIn CreateIPcsObjectIn(TIObject tieObject, out ImportResult? result)
+
+    private IPcsObjectIn CreateProCoSysImportObject(TIObject tieObject, out ImportResult? result)
     {
         result = null;
         var pcsObject = PcsFromTie(tieObject);
@@ -229,7 +229,7 @@ public class ImportHandler : IImportHandler
         switch (tieObject.ObjectClass.ToUpper())
         {
             case "PUNCHITEM":
-                return TIE2PCSPunchItemConverter.AssignPunchItemObject(tieObject);
+                return TIE2PCSPunchItemConverter.PopulateProCoSysPunchItemImportObject(tieObject);
             default:
                 return null;
         }
@@ -292,9 +292,13 @@ public class ImportHandler : IImportHandler
         }
     }
 
-    private TIMessageResult WrapInUnitOfWork(TIInterfaceMessage mappedMessage)
+    private void LogImportStarting(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Starting import of object.");
+
+    private void LogImportIsDone(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import done.");
+
+    private void LogImportResultUnsuccessful(TIObject tiObject)
     {
-        //Hardcode happiness for now
-        return new TIMessageResult {Result = MessageResults.Successful};
+        _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import of object unsuccessful.");
+        _logger.LogInformation("Error is causing rest of message to be dropped.");
     }
 }
