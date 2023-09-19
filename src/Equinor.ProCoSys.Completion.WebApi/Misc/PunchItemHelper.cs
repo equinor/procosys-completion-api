@@ -23,4 +23,14 @@ public class PunchItemHelper : IPunchItemHelper
 
         return project?.Guid;
     }
+
+    public async Task<Guid?> GetCheckListGuidForPunchItemAsync(Guid punchItemGuid)
+    {
+        var punchItem = await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid
+            select pi).SingleOrDefaultAsync();
+
+        return punchItem?.CheckListGuid;
+
+    }
 }

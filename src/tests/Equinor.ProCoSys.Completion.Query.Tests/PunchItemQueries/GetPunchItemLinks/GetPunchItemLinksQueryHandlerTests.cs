@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
 using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemLinks;
 
@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemL
 public class GetPunchItemLinksQueryHandlerTests : TestsBase
 {
     private GetPunchItemLinksQueryHandler _dut;
-    private Mock<ILinkService> _linkServiceMock;
+    private ILinkService _linkServiceMock;
     private GetPunchItemLinksQuery _query;
     private LinkDto _linkDto;
 
@@ -28,11 +28,11 @@ public class GetPunchItemLinksQueryHandlerTests : TestsBase
         {
             _linkDto
         };
-        _linkServiceMock = new Mock<ILinkService>();
-        _linkServiceMock.Setup(l => l.GetAllForSourceAsync(_query.PunchItemGuid, default))
-            .ReturnsAsync(linkDtos);
+        _linkServiceMock = Substitute.For<ILinkService>();
+        _linkServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+            .Returns(linkDtos);
 
-        _dut = new GetPunchItemLinksQueryHandler(_linkServiceMock.Object);
+        _dut = new GetPunchItemLinksQueryHandler(_linkServiceMock);
     }
 
     [TestMethod]
@@ -58,8 +58,8 @@ public class GetPunchItemLinksQueryHandlerTests : TestsBase
         await _dut.Handle(_query, default);
 
         // Assert
-        _linkServiceMock.Verify(u => u.GetAllForSourceAsync(
+        await _linkServiceMock.Received(1).GetAllForSourceAsync(
             _query.PunchItemGuid,
-            default), Times.Exactly(1));
+            default);
     }
 }

@@ -9,13 +9,10 @@
   <ItemGroup>
     <Compile Remove="MeetingCommands\**" />
     <Compile Remove="ResponsibleCommands\**" />
-    <Compile Remove="Validators\PersonValidators\**" />
     <EmbeddedResource Remove="MeetingCommands\**" />
     <EmbeddedResource Remove="ResponsibleCommands\**" />
-    <EmbeddedResource Remove="Validators\PersonValidators\**" />
     <None Remove="MeetingCommands\**" />
     <None Remove="ResponsibleCommands\**" />
-    <None Remove="Validators\PersonValidators\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.BlobStorage;
-using Moq;
+using NSubstitute;
 using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
@@ -22,8 +22,8 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     private Attachment _modifiedAttachment;
     private Guid _modifiedAttachmentGuid;
     private Guid _sourceGuid;
-    private Mock<IOptionsSnapshot<BlobStorageOptions>> _blobStorageOptionsMock;
-    private Mock<IAzureBlobService> _azureBlobServiceMock;
+    private IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
+    private IAzureBlobService _azureBlobServiceMock;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -42,14 +42,14 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         context.SaveChangesAsync().Wait();
         _modifiedAttachmentGuid = _modifiedAttachment.Guid;
 
-        _azureBlobServiceMock = new Mock<IAzureBlobService>();
-        _blobStorageOptionsMock = new Mock<IOptionsSnapshot<BlobStorageOptions>>();
+        _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
+        _blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
         var blobStorageOptions = new BlobStorageOptions
         {
             BlobContainer = _blobContainer
         };
         _blobStorageOptionsMock
-            .Setup(x => x.Value)
+            .Value
             .Returns(blobStorageOptions);
     }
 
@@ -58,7 +58,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
         var result = await dut.GetAllForSourceAsync(_sourceGuid, default);
@@ -89,10 +89,9 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         // Arrange
         var uri = new Uri("http://blah.blah.com");
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
         var p = _createdAttachment.GetFullBlobPath();
-        _azureBlobServiceMock.Setup(a => a.GetDownloadSasUri(_blobContainer, p, It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
-            .Returns(uri);
+        _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, p, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>()).Returns(uri);
 
         // Act
         var result = await dut.GetDownloadUriAsync(_createdAttachment.Guid, default);
@@ -107,18 +106,45 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new AttachmentService(context, _azureBlobServiceMock.Object, _blobStorageOptionsMock.Object);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
         var result = await dut.GetDownloadUriAsync(Guid.NewGuid(), default);
 
         Assert.IsNull(result);
-        _azureBlobServiceMock.Verify(
-            a => a.GetDownloadSasUri(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<DateTimeOffset>(),
-                It.IsAny<DateTimeOffset>()), Times.Never);
+        _azureBlobServiceMock.DidNotReceive()
+            .GetDownloadSasUri(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<DateTimeOffset>());
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
+
+        // Act
+        var result = await dut.ExistsAsync(_createdAttachment.Guid, default);
+
+        Assert.IsTrue(result);
+    }
+
+
+    [TestMethod]
+    public async Task ExistsAsync_ShouldReturnNull_WhenUnknownAttachment()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
+
+        // Act
+        var result = await dut.ExistsAsync(Guid.NewGuid(), default);
+
+        Assert.IsFalse(result);
     }
 
     private void AssertAttachmentDto(Attachment attachment, AttachmentDto attachmentDto)

@@ -10,6 +10,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ServiceResult;
+using System;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 
@@ -65,7 +66,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
 
         if (dto is null)
         {
-            return new NotFoundResult<PunchItemDetailsDto>(Strings.EntityNotFound(nameof(PunchItem), request.PunchItemGuid));
+            throw new Exception($"PunchItem with Guid {request.PunchItemGuid} not found");
         }
 
         var createdBy = MapToPersonDto(dto.CreatedBy)!;

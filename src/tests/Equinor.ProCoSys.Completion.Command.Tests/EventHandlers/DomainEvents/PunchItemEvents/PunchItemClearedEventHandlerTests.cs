@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEven
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchItemEvents;
 
@@ -15,7 +15,7 @@ public class PunchItemClearedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemClearedEventHandler _dut;
     private PunchItemClearedDomainEvent _punchItemClearedEvent;
-    private Mock<IPublishEndpoint> _publishEndpointMock;
+    private IPublishEndpoint _publishEndpointMock;
     private PunchItemClearedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
@@ -25,14 +25,13 @@ public class PunchItemClearedEventHandlerTests : EventHandlerTestBase
         _punchItem.SetModified(_person);
 
         _punchItemClearedEvent = new PunchItemClearedDomainEvent(_punchItem, _person.Guid);
-        _publishEndpointMock = new Mock<IPublishEndpoint>();
-        _dut = new PunchItemClearedEventHandler(_publishEndpointMock.Object, new Mock<ILogger<PunchItemClearedEventHandler>>().Object);
+        _publishEndpointMock = Substitute.For<IPublishEndpoint>();
+        _dut = new PunchItemClearedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemClearedEventHandler>>());
         _publishEndpointMock
-            .Setup(x => x.Publish(It.IsAny<PunchItemClearedIntegrationEvent>(),
-                It.IsAny<IPipe<PublishContext<PunchItemClearedIntegrationEvent>>>(), default))
-            .Callback<PunchItemClearedIntegrationEvent, IPipe<PublishContext<PunchItemClearedIntegrationEvent>>,
-                CancellationToken>((evt, _, _) =>
+            .When(x => x.Publish(Arg.Any<PunchItemClearedIntegrationEvent>(), Arg.Any<IPipe<PublishContext<PunchItemClearedIntegrationEvent>>>(), default))
+            .Do(info =>
             {
+                var evt = info.Arg<PunchItemClearedIntegrationEvent>();
                 _publishedIntegrationEvent = evt;
             });
     }
@@ -44,9 +43,9 @@ public class PunchItemClearedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemClearedEvent, default);
 
         // Assert
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<PunchItemClearedIntegrationEvent>(),
-                It.IsAny<IPipe<PublishContext<PunchItemClearedIntegrationEvent>>>(), default), Times.Once);
+        await _publishEndpointMock.Received(1)
+         .Publish(Arg.Any<PunchItemClearedIntegrationEvent>(),
+             Arg.Any<IPipe<PublishContext<PunchItemClearedIntegrationEvent>>>());
     }
 
     [TestMethod]

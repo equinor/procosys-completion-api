@@ -78,20 +78,16 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnNotFound_WhenPunchItemNotFound()
+    public async Task Handle_ShouldThrowException_WhenUnknownPunch()
     {
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
         var query = new GetPunchItemQuery(Guid.Empty);
         var dut = new GetPunchItemQueryHandler(context);
 
-        // Act
-        var result = await dut.Handle(query, default);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.NotFound, result.ResultType);
-        Assert.IsNull(result.Data);
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(()
+            => dut.Handle(query, default));
     }
 
     [TestMethod]

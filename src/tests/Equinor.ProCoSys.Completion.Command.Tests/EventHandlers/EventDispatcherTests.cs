@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers;
 
@@ -15,21 +15,21 @@ public class EventDispatcherTests
     [TestMethod]
     public async Task DispatchPreSaveAsync_ShouldSendsOutEvents()
     {
-        var mediator = new Mock<IMediator>();
-        var dut = new EventDispatcher(mediator.Object);
+        var mediator = Substitute.For<IMediator>();
+        var dut = new EventDispatcher(mediator);
         var entities = new List<TestableEntity>();
 
         for (var i = 0; i < 3; i++)
         {
-            var entity = new Mock<TestableEntity>();
-            entity.Object.AddDomainEvent(new TestableDomainEvent());
-            entity.Object.AddPostSaveDomainEvent(new Mock<IPostSaveDomainEvent>().Object);
-            entities.Add(entity.Object);
+            var entity = new TestableEntity();
+            entity.AddDomainEvent(new TestableDomainEvent());
+            entity.AddPostSaveDomainEvent(Substitute.For<IPostSaveDomainEvent>());
+            entities.Add(entity);
         }
         await dut.DispatchDomainEventsAsync(entities);
 
-        mediator.Verify(x 
-            => x.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+        await mediator.Received(3) 
+            .Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>());
 
         entities.ForEach(e => Assert.AreEqual(0, e.DomainEvents.Count));
         entities.ForEach(e => Assert.AreEqual(1, e.PostSaveDomainEvents.Count));
@@ -38,21 +38,21 @@ public class EventDispatcherTests
     [TestMethod]
     public async Task DispatchPostSaveAsync_ShouldSendsOutEvents()
     {
-        var mediator = new Mock<IMediator>();
-        var dut = new EventDispatcher(mediator.Object);
+        var mediatorMock = Substitute.For<IMediator>();
+        var dut = new EventDispatcher(mediatorMock);
         var entities = new List<TestableEntity>();
 
         for (var i = 0; i < 3; i++)
         {
-            var entity = new Mock<TestableEntity>();
-            entity.Object.AddDomainEvent(new TestableDomainEvent());
-            entity.Object.AddPostSaveDomainEvent(new Mock<IPostSaveDomainEvent>().Object);
-            entities.Add(entity.Object);
+            var entity = Substitute.For<TestableEntity>();
+            entity.AddDomainEvent(new TestableDomainEvent());
+            entity.AddPostSaveDomainEvent(Substitute.For<IPostSaveDomainEvent>());
+            entities.Add(entity);
         }
         await dut.DispatchPostSaveEventsAsync(entities);
 
-        mediator.Verify(x
-            => x.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+        await mediatorMock.Received(3)
+            .Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>());
 
         entities.ForEach(e => Assert.AreEqual(1, e.DomainEvents.Count));
         entities.ForEach(e => Assert.AreEqual(0, e.PostSaveDomainEvents.Count));

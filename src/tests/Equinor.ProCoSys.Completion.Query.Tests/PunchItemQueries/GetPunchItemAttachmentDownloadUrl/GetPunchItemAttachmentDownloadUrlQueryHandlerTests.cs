@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
@@ -13,10 +13,9 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemA
 public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
 {
     private GetPunchItemAttachmentDownloadUrlQueryHandler _dut;
-    private Mock<IAttachmentService> _attachmentServiceMock;
+    private IAttachmentService _attachmentServiceMock;
     private GetPunchItemAttachmentDownloadUrlQuery _query;
-    private Uri _uri
-        ;
+    private Uri _uri;
 
     [TestInitialize]
     public void Setup()
@@ -24,11 +23,11 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
         _query = new GetPunchItemAttachmentDownloadUrlQuery(Guid.NewGuid(), Guid.NewGuid());
 
         _uri = new Uri("http://blah.blah.com");
-        _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(l => l.GetDownloadUriAsync(_query.AttachmentGuid, default))
-            .ReturnsAsync(_uri);
+        _attachmentServiceMock = Substitute.For<IAttachmentService>();
+        _attachmentServiceMock.GetDownloadUriAsync(_query.AttachmentGuid, default)
+            .Returns(_uri);
 
-        _dut = new GetPunchItemAttachmentDownloadUrlQueryHandler(_attachmentServiceMock.Object);
+        _dut = new GetPunchItemAttachmentDownloadUrlQueryHandler(_attachmentServiceMock);
     }
 
     [TestMethod]
@@ -44,17 +43,14 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_ShouldReturnNull_WhenUnknownAttachment()
+    public async Task HandlingQuery_ShouldThrowException_WhenUnknownAttachment()
     {
         // Arrange
         var query = new GetPunchItemAttachmentDownloadUrlQuery(Guid.NewGuid(), Guid.NewGuid());
 
-        // Act
-        var result = await _dut.Handle(query, default);
-
-        // Assert
-        Assert.IsNull(result.Data);
-        Assert.AreEqual(ResultType.NotFound, result.ResultType);
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(()
+            => _dut.Handle(query, default));
     }
 
     [TestMethod]
@@ -64,8 +60,8 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
         await _dut.Handle(_query, default);
 
         // Assert
-        _attachmentServiceMock.Verify(u => u.GetDownloadUriAsync(
+        await _attachmentServiceMock.Received(1).GetDownloadUriAsync(
             _query.AttachmentGuid,
-            default), Times.Exactly(1));
+            default);
     }
 }

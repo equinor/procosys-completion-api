@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItemLink;
 
@@ -11,17 +11,16 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunc
 public class CreatePunchItemLinkCommandValidatorTests
 {
     private CreatePunchItemLinkCommandValidator _dut;
-    private Mock<IPunchItemValidator> _punchItemValidatorMock;
+    private IPunchItemValidator _punchItemValidatorMock;
     private CreatePunchItemLinkCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
         _command = new CreatePunchItemLinkCommand(Guid.NewGuid(), "Test title", "www");
-        _punchItemValidatorMock = new Mock<IPunchItemValidator>();
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
-        _dut = new CreatePunchItemLinkCommandValidator(_punchItemValidatorMock.Object);
+        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default).Returns(true);
+        _dut = new CreatePunchItemLinkCommandValidator(_punchItemValidatorMock);
     }
 
     [TestMethod]
@@ -36,8 +35,8 @@ public class CreatePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -52,8 +51,8 @@ public class CreatePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -68,8 +67,8 @@ public class CreatePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

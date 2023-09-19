@@ -3,9 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
@@ -13,8 +13,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteE
 public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
 {
     private OverwriteExistingPunchItemAttachmentCommandValidator _dut;
-    private Mock<IPunchItemValidator> _punchItemValidatorMock;
-    private Mock<IAttachmentService> _attachmentServiceMock;
+    private IPunchItemValidator _punchItemValidatorMock;
+    private IAttachmentService _attachmentServiceMock;
     private OverwriteExistingPunchItemAttachmentCommand _command;
     private readonly string _fileName = "a.txt";
 
@@ -22,17 +22,17 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), _fileName, "r", new MemoryStream());
-        _punchItemValidatorMock = new Mock<IPunchItemValidator>();
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
-        _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(x => x.FileNameExistsForSourceAsync(
+        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+        _attachmentServiceMock = Substitute.For<IAttachmentService>();
+        _attachmentServiceMock.FileNameExistsForSourceAsync(
                 _command.PunchItemGuid, 
-                _command.FileName))
-            .ReturnsAsync(true);
+                _command.FileName)
+            .Returns(true);
         _dut = new OverwriteExistingPunchItemAttachmentCommandValidator(
-            _punchItemValidatorMock.Object,
-            _attachmentServiceMock.Object);
+            _punchItemValidatorMock,
+            _attachmentServiceMock);
     }
 
     [TestMethod]
@@ -47,8 +47,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -63,8 +63,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(inv => inv.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -79,8 +79,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -95,10 +95,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_AttachmentWithFileNameNotExists()
     {
         // Arrange
-        _attachmentServiceMock.Setup(x => x.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForSourceAsync(
                 _command.PunchItemGuid,
-                _command.FileName))
-            .ReturnsAsync(false);
+                _command.FileName)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

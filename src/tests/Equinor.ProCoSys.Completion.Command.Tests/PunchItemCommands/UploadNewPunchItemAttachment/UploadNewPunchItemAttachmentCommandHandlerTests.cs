@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UploadNewPunchItemAttachment;
 
@@ -17,22 +17,22 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
     private readonly Guid _guid = new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private UploadNewPunchItemAttachmentCommandHandler _dut;
     private UploadNewPunchItemAttachmentCommand _command;
-    private Mock<IAttachmentService> _attachmentServiceMock;
+    private IAttachmentService _attachmentServiceMock;
 
     [TestInitialize]
     public void Setup()
     {
         _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "T", new MemoryStream());
 
-        _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(a => a.UploadNewAsync(
+        _attachmentServiceMock = Substitute.For<IAttachmentService>();
+        _attachmentServiceMock.UploadNewAsync(
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.FileName,
             _command.Content,
-            default)).ReturnsAsync(new AttachmentDto(_guid, _rowVersion));
+            default).Returns(new AttachmentDto(_guid, _rowVersion));
 
-        _dut = new UploadNewPunchItemAttachmentCommandHandler(_attachmentServiceMock.Object);
+        _dut = new UploadNewPunchItemAttachmentCommandHandler(_attachmentServiceMock);
     }
 
     [TestMethod]
@@ -54,11 +54,11 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        _attachmentServiceMock.Verify(u => u.UploadNewAsync(
+        await _attachmentServiceMock.Received(1).UploadNewAsync(
             nameof(PunchItem), 
             _command.PunchItemGuid, 
             _command.FileName,
             _command.Content,
-            default), Times.Exactly(1));
+            default);
     }
 }

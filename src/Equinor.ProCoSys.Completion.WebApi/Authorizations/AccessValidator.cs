@@ -79,15 +79,22 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsPunchItemCommand punchItemCommand)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchItemCommand.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemCommand.PunchItemGuid, userOid))
             {
+                return false;
+            }
+
+            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
+            {
+                _logger.LogWarning("Current user {UserOid} doesn't have access to checkList owning punch {PunchItemGuid}",
+                    userOid, punchItemCommand.PunchItemGuid);
                 return false;
             }
         }
 
         if (request is IIsPunchItemQuery punchItemQuery)
         {
-            if (!await HasCurrentUserAccessToProjectAsync(punchItemQuery.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemQuery.PunchItemGuid, userOid))
             {
                 return false;
             }
@@ -96,7 +103,7 @@ public class AccessValidator : IAccessValidator
         return true;
     }
 
-    private async Task<bool> HasCurrentUserAccessToProjectAsync(Guid punchItemGuid, Guid userOid)
+    private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid)
     {
         var projectGuid = await _punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid);
         if (projectGuid.HasValue)

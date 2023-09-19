@@ -5,10 +5,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -32,14 +32,14 @@ public abstract class ReadOnlyTestsBase : TestsBase
     [TestInitialize]
     public void SetupBase()
     {
-        _plantProviderMockObject = _plantProviderMock.Object;
+        _plantProviderMockObject = _plantProviderMock;
 
-        var currentUserProviderMock = new Mock<ICurrentUserProvider>();
-        currentUserProviderMock.Setup(x => x.GetCurrentUserOid()).Returns(CurrentUserOid);
-        _currentUserProviderMockObject = currentUserProviderMock.Object;
+        var currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        currentUserProviderMock.GetCurrentUserOid().Returns(CurrentUserOid);
+        _currentUserProviderMockObject = currentUserProviderMock;
 
-        var eventDispatcherMock = new Mock<IEventDispatcher>();
-        _eventDispatcherMockObject = eventDispatcherMock.Object;
+        var eventDispatcherMock = Substitute.For<IEventDispatcher>();
+        _eventDispatcherMockObject = eventDispatcherMock;
 
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

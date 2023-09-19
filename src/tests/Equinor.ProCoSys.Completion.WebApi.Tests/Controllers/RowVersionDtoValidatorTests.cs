@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 
@@ -11,15 +11,15 @@ public class RowVersionDtoValidatorTests
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private RowVersionDtoValidator _dut;
-    private Mock<IRowVersionValidator> _rowVersionValidatorMock;
+    private IRowVersionValidator _rowVersionValidatorMock;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = new Mock<IRowVersionValidator>();
-        _rowVersionValidatorMock.Setup(x => x.IsValid(_rowVersion)).Returns(true);
+        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
-        _dut = new RowVersionDtoValidator(_rowVersionValidatorMock.Object);
+        _dut = new RowVersionDtoValidator(_rowVersionValidatorMock);
     }
 
     [TestMethod]

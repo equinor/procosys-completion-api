@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.RejectPunchItem;
 
@@ -11,20 +11,19 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.RejectPunc
 public class RejectPunchItemCommandValidatorTests
 {
     private RejectPunchItemCommandValidator _dut;
-    private Mock<IPunchItemValidator> _punchItemValidatorMock;
+    private IPunchItemValidator _punchItemValidatorMock;
     private RejectPunchItemCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
         _command = new RejectPunchItemCommand(Guid.NewGuid(), "r");
-        _punchItemValidatorMock = new Mock<IPunchItemValidator>();
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
-        _punchItemValidatorMock.Setup(x => x.IsClearedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default).Returns(true);
+        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)         
+            .Returns(true);
 
-        _dut = new RejectPunchItemCommandValidator(_punchItemValidatorMock.Object);
+        _dut = new RejectPunchItemCommandValidator(_punchItemValidatorMock);
     }
 
     [TestMethod]
@@ -41,8 +40,8 @@ public class RejectPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotExists()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ExistsAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)           
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -57,8 +56,8 @@ public class RejectPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)       
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -73,8 +72,8 @@ public class RejectPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)     
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -89,8 +88,8 @@ public class RejectPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotCleared()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.IsClearedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(false);
+        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)  
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -105,8 +104,8 @@ public class RejectPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVerified()
     {
         // Arrange
-        _punchItemValidatorMock.Setup(x => x.IsVerifiedAsync(_command.PunchItemGuid, default))
-            .ReturnsAsync(true);
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests;
 
@@ -16,7 +16,7 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     protected const string TestPlant = "PCS$TESTPLANT";
     protected ContextHelper _contextHelper;
     protected EntityWithGuidRepository<TEntity> _dut;
-    protected Mock<DbSet<TEntity>> _dbSetMock;
+    protected DbSet<TEntity> _dbSetMock;
 
     protected int _knownId = 5;
     protected Guid _knownGuid;
@@ -88,7 +88,7 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
         var entityToAdd = GetNewEntity();
         _dut.Add(entityToAdd);
 
-        _dbSetMock.Verify(x => x.Add(entityToAdd), Times.Once);
+        _dbSetMock.Received().Add(entityToAdd);
     }
 
     [TestMethod]
