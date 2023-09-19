@@ -14,7 +14,11 @@ public class PatchablePunchItem
     public string Description { get; set; } = null!;
     [Required]
     public Guid RaisedByOrgGuid { get; set; }
+    [Required]
+    public Guid ClearingByOrgGuid { get; set; }
 
-    public DateTime? DueDate { get; set; }
     public Guid? PriorityGuid { get; set; }
+    public Guid? SortingGuid { get; set; }
+    public Guid? TypeGuid { get; set; }
+    public DateTime? DueDate { get; set; }
 }
