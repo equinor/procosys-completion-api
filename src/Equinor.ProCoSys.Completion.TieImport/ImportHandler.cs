@@ -36,11 +36,11 @@ public class ImportHandler : IImportHandler
             message.ObjectName, message.ObjectClass, message.Site);
 
 
-        //TODO: Call ObjectFixers.Fix
-
         TIMessageResult? tiMessageResult = null;
         try
         {
+            //TODO: Call ObjectFixers.Fix
+            
             var mapped = _importSchemaMapper.Map(message);
 
             if (mapped.Success is false)
@@ -49,7 +49,8 @@ public class ImportHandler : IImportHandler
                 return response;
             }
 
-            //TODO: Reminder that WrapInUnitOfWork replaced by ImportMessage....
+            //TODO: _postMapperFixer.Fix(message);
+
             tiMessageResult = ImportMessage(message);
         }
         catch (Exception e)
@@ -68,9 +69,8 @@ public class ImportHandler : IImportHandler
     {
         _logger.LogInformation($"To import message GUID={message.Guid} with {message.Objects.Count} object(s)");
 
-        //TODO: _postMapperFixer.Fix(message);
-
         var tiMessageResult = new TIMessageResult { Result = MessageResults.Successful };
+
         try
         {
             foreach (var tiObject in message.Objects)
