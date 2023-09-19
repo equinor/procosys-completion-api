@@ -125,7 +125,7 @@ public class PatchOperationValidator : IPatchOperationValidator
 
     private static bool CanAssignValueToProperty(object? value, Type propType)
     {
-        if (value == null)
+        if (value is null)
         {
             // a null value can be assigned to propType if it is nullable
             return IsNullableType(propType);
@@ -137,6 +137,7 @@ public class PatchOperationValidator : IPatchOperationValidator
             return true;
         }
 
+        // special case of assigning an int to a double-property
         if ((propType == typeof(double) || propType == typeof(double?)) && value is int)
         {
             return true;
@@ -205,7 +206,7 @@ public class PatchOperationValidator : IPatchOperationValidator
     private Dictionary<string, object?> CollectReplaceOperations<T>(List<Operation<T>> operations) where T : class
         => operations
             .Where(op => op.OperationType == OperationType.Replace)
-            .ToDictionary(op => op.path.TrimStart('/'), op => op.value == null ? null : op.value);
+            .ToDictionary(op => op.path.TrimStart('/'), op => op.value is null ? null : op.value);
 
     private List<string> GetNullOperationsForRequiredProperties<T>(
         List<Operation<T>> operations,
@@ -240,7 +241,7 @@ public class PatchOperationValidator : IPatchOperationValidator
             var propName = operation.path.TrimStart('/');
             var propertyWithLengthLimiting =
                 propertiesWithLengthLimiting.SingleOrDefault(p => p.Name == propName);
-            if (propertyWithLengthLimiting == null)
+            if (propertyWithLengthLimiting is null)
             {
                 continue;
             }
