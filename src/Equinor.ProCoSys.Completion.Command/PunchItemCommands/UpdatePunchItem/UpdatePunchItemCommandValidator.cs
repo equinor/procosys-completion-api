@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -234,7 +233,7 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
         Guid GetGuidValue(List<Operation<PatchablePunchItem>> operations, string propName)
         {
             // due to validation, the operation for propName SHOULD exists ...
-            var operation = GetOperation(operations, propName)!;
+            var operation = operations.GetReplaceOperation(propName)!;
             // ...  and the value it SHOULD be a Guid ...
             if (operation.value is Guid guid)
             {
@@ -246,7 +245,7 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
 
         bool ValueIsReplacedWithGuid(List<Operation<PatchablePunchItem>> operations, string propName)
         {
-            var operation = GetOperation(operations, propName);
+            var operation = operations.GetReplaceOperation(propName);
             var b = operation is not null
                     && (operation.value is Guid || Guid.TryParse(operation.value as string, out _));
             return b;
@@ -279,11 +278,5 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
             var guid = GetGuidValue(operations, propName);
             return !await libraryItemValidator.IsVoidedAsync(guid, cancellationToken);
         }
-
-        Operation<PatchablePunchItem>? GetOperation(
-            List<Operation<PatchablePunchItem>> operations,
-            string propName)
-            => operations.SingleOrDefault(op =>
-                op.OperationType == OperationType.Replace && op.path == $"/{propName}");
     }
 }
