@@ -246,7 +246,7 @@ public class PatchOperationValidator : IPatchOperationValidator
             }
 
             var stringLengthAttribute = propertyWithLengthLimiting.GetCustomAttribute<StringLengthAttribute>(false)!;
-            if (!StringLengthAttributeHelper.IsValid(stringLengthAttribute, operation.value as string, out var message))
+            if (!stringLengthAttribute.IsValid(operation.value as string, out var message))
             {
                 illegalOperations.Add($"Can't assign value to property {propName} in {typeName}. {message}");
             }

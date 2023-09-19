@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Misc;
 
 [TestClass]
-public class StringLengthAttributeHelperTests
+public class StringLengthAttributeExtensionTests
 {
     #region test valid values
     [TestMethod]
@@ -15,7 +15,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(0);
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, null, out var message);
+        var result = attribute.IsValid(null, out var message);
 
         // Assert
         Assert.IsTrue(result);
@@ -29,7 +29,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(10);
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, null, out var message);
+        var result = attribute.IsValid(null, out var message);
 
         // Assert
         Assert.IsTrue(result);
@@ -43,7 +43,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(0);
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsTrue(result);
@@ -57,7 +57,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(10);
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsTrue(result);
@@ -71,7 +71,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(0) { MinimumLength = 1 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsTrue(result);
@@ -87,7 +87,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(0) { MinimumLength = 1 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, null, out var message);
+        var result = attribute.IsValid(null, out var message);
 
         // Assert
         Assert.IsFalse(result);
@@ -102,7 +102,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(10) { MinimumLength = 1 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, null, out var message);
+        var result = attribute.IsValid(null, out var message);
 
         // Assert
         Assert.IsFalse(result);
@@ -117,7 +117,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(0) { MinimumLength = 4 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsFalse(result);
@@ -132,7 +132,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(10) { MinimumLength = 4 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsFalse(result);
@@ -147,7 +147,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(2);
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsFalse(result);
@@ -162,7 +162,7 @@ public class StringLengthAttributeHelperTests
         var attribute = new StringLengthAttribute(2) { MinimumLength = 1 };
 
         // Act
-        var result = StringLengthAttributeHelper.IsValid(attribute, "abc", out var message);
+        var result = attribute.IsValid("abc", out var message);
 
         // Assert
         Assert.IsFalse(result);

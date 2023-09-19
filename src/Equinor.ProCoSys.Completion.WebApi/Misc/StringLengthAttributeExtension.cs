@@ -2,9 +2,9 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 
-public static class StringLengthAttributeHelper
+public static class StringLengthAttributeExtension
 {
-    public static bool IsValid(StringLengthAttribute attribute, string? value, out string? message)
+    public static bool IsValid(this StringLengthAttribute attribute, string? value, out string? message)
     {
         message = null;
         if (attribute.MinimumLength == 0 && attribute.MaximumLength == 0)
@@ -17,7 +17,6 @@ public static class StringLengthAttributeHelper
         {
             strLen = value.Length;
         }
-
 
         if (attribute.MinimumLength > 0 && attribute.MaximumLength > 0)
         {
