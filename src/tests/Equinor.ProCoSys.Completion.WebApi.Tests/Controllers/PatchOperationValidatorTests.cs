@@ -578,6 +578,28 @@ public class PatchOperationValidatorTests
     }
 
     [TestMethod]
+    public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredDouble()
+    {
+        // Arrange
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyDouble)}",
+            null,
+            null));
+
+        // Act
+        var result1 = _dut.AllRequiredFieldsHaveValue(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForRequiredFields(_patchDocument.Operations);
+
+        // Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+        Assert.IsTrue(result2.EndsWith("MyDouble"));
+    }
+
+    [TestMethod]
     public void AllRequiredFieldsHaveValue_ShouldReturnFalse_WhenTryingToSetNullInRequiredDateTime()
     {
         // Arrange
