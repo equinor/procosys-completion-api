@@ -39,7 +39,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Description = description;
         Guid = Guid.NewGuid();
 
-        // unit tests
         SetRaisedByOrg(raisedByOrg);
         SetClearingByOrg(clearingByOrg);
     }

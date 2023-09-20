@@ -47,11 +47,11 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         _libraryItemRepositoryMock = Substitute.For<ILibraryItemRepository>();
 
-        _raisedByOrg = SetupOkLibraryItem(_raisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, 100);
-        _clearingByOrg = SetupOkLibraryItem(_clearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, 110);
-        _priority = SetupOkLibraryItem(_priorityGuid, LibraryType.PUNCHLIST_PRIORITY, 120);
-        _sorting = SetupOkLibraryItem(_sortingGuid, LibraryType.PUNCHLIST_SORTING, 130);
-        _type = SetupOkLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE, 140);
+        _raisedByOrg = SetupLibraryItem(_raisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, 100);
+        _clearingByOrg = SetupLibraryItem(_clearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, 110);
+        _priority = SetupLibraryItem(_priorityGuid, LibraryType.PUNCHLIST_PRIORITY, 120);
+        _sorting = SetupLibraryItem(_sortingGuid, LibraryType.PUNCHLIST_SORTING, 130);
+        _type = SetupLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE, 140);
 
         _dut = new UpdatePunchItemCommandHandler(
             Substitute.For<PlantProvider>(),
@@ -195,7 +195,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
     #endregion
 
-    private LibraryItem SetupOkLibraryItem(Guid libraryGuid, LibraryType libraryType, int id)
+    private LibraryItem SetupLibraryItem(Guid libraryGuid, LibraryType libraryType, int id)
     {
         var libraryItem = new LibraryItem(TestPlantA, libraryGuid, null!, null!, libraryType);
         libraryItem.SetProtectedIdForTesting(id);
