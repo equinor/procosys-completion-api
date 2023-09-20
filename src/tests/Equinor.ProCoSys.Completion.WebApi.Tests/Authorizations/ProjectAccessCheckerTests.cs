@@ -12,7 +12,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 public class ProjectAccessCheckerTests
 {
     private readonly Guid _projectGuid = Guid.NewGuid();
-    private ProjectAccessChecker _dut;
+    private ProjectAccessChecker _dut = null!;
 
     [TestInitialize]
     public void Setup()

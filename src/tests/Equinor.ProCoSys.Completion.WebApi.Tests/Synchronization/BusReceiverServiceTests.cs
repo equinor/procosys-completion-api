@@ -16,14 +16,14 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 [TestClass]
 public class BusReceiverServiceTests
 {
-    private BusReceiverService _dut;
-    private IUnitOfWork _unitOfWork;
-    private IPlantSetter _plantSetter;
-    private IProjectRepository _projectRepository;
+    private BusReceiverService _dut = null!;
+    private IUnitOfWork _unitOfWork = null!;
+    private IPlantSetter _plantSetter = null!;
+    private IProjectRepository _projectRepository = null!;
     private const string Plant = "Plant";
     private readonly Guid _projectGuid = Guid.NewGuid();
-    private Project _project1;
-    private Project _projectedAddedToRepository;
+    private Project _project1 = null!;
+    private Project _projectedAddedToRepository = null!;
 
     [TestInitialize]
     public void Setup()
@@ -91,7 +91,7 @@ public class BusReceiverServiceTests
         };
         var messageJson = JsonSerializer.Serialize(message);
         _projectRepository.GetByGuidAsync(_projectGuid)
-            .Returns((Project)null);
+            .Returns((Project)null!);
         Assert.IsFalse(_project1.IsClosed);
 
         // Act

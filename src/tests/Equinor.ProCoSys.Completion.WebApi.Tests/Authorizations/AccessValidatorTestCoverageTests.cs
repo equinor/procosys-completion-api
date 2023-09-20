@@ -79,7 +79,7 @@ public class AccessValidatorTestCoverageTests
             var classHasTest = genericArguments.Any(g => g.FullName == c.FullName);
             if (!classHasTest)
             {
-                missingTests.Add(c.FullName);
+                missingTests.Add(c.FullName!);
             }
         }
 

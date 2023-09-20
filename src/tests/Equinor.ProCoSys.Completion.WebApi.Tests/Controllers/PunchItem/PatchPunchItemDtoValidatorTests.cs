@@ -1,32 +1,40 @@
 ﻿using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 
 [TestClass]
-public class RowVersionDtoValidatorTests
+public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunchItemDto, PatchablePunchItem>
 {
-    private readonly string _rowVersion = "AAAAAAAAABA=";
-
-    private RowVersionDtoValidator _dut = null!;
     private IRowVersionValidator _rowVersionValidatorMock = null!;
+    private PatchPunchItemDtoValidator _dut = null!;
+    private readonly string _rowVersion = "r";
 
-    [TestInitialize]
-    public void Setup_OkState()
+    protected override void SetupDut()
     {
         _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
+        _dut = new PatchPunchItemDtoValidator(_rowVersionValidatorMock, _patchOperationValidator);
+    }
 
-        _dut = new RowVersionDtoValidator(_rowVersionValidatorMock);
+    protected override PatchPunchItemDto GetPatchDto()
+    {
+        var dto = new PatchPunchItemDto { PatchDocument = new JsonPatchDocument<PatchablePunchItem>() };
+
+        return dto;
     }
 
     [TestMethod]
-    public async Task Validate_ShouldBeValid_WhenOkState()
+    public async Task Validate_ShouldBeValid_WhenRowVersionGiven()
     {
         // Arrange
-        var dto = new RowVersionDto(_rowVersion);
+        var dto = GetPatchDto();
+        dto.RowVersion = _rowVersion;
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -39,7 +47,7 @@ public class RowVersionDtoValidatorTests
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new RowVersionDto(null!);
+        var dto = GetPatchDto();
 
         // Act
         var result = await _dut.ValidateAsync(dto);

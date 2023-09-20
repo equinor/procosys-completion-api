@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -14,11 +15,14 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 {
     private UpdatePunchItemCommand _command;
     private UpdatePunchItemCommandHandler _dut;
+    private readonly string _newDescription = "new description";
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, "newText", RowVersion);
+        var jsonPatchDocument = new JsonPatchDocument<PatchablePunchItem>();
+        jsonPatchDocument.Replace(p => p.Description, _newDescription);
+        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, jsonPatchDocument, RowVersion);
 
         _dut = new UpdatePunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -33,7 +37,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_command.Description, _existingPunchItem.Description);
+        Assert.AreEqual(_newDescription, _existingPunchItem.Description);
     }
 
     [TestMethod]

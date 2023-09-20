@@ -1,18 +1,19 @@
-﻿using FluentValidation;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
-public class UpdatePunchItemDtoValidator : AbstractValidator<UpdatePunchItemDto>
+public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto, PatchablePunchItem>
 {
-    public UpdatePunchItemDtoValidator(IRowVersionValidator rowVersionValidator)
+    public PatchPunchItemDtoValidator(
+        IRowVersionValidator rowVersionValidator,
+        IPatchOperationValidator patchOperationValidator)
+        : base(patchOperationValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(dto => dto).NotNull();
-
-        RuleFor(dto => dto.Description)
-            .MaximumLength(Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax);
 
         RuleFor(dto => dto.RowVersion)
             .NotNull()

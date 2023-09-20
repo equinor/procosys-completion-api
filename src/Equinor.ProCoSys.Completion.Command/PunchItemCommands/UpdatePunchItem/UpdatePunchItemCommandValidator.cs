@@ -13,6 +13,7 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
+        // todo 104046 Business validations for patchable properties as RaisedByOrgGuid etc. Must check if Guid exists
         RuleFor(command => command)
             .MustAsync((command, cancellationToken) => NotBeInAClosedProjectForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Project is closed!")

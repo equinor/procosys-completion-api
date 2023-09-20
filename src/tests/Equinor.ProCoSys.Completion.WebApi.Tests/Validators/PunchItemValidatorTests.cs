@@ -14,12 +14,12 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
-    private PunchItem _punchItemInOpenProject;
-    private PunchItem _punchItemInClosedProject;
-    private PunchItem _notClearedPunchItem;
-    private PunchItem _clearedButNotVerifiedPunchItem;
-    private PunchItem _verifiedPunchItem;
-    private ICheckListValidator _checkListValidatorMock;
+    private PunchItem _punchItemInOpenProject = null!;
+    private PunchItem _punchItemInClosedProject = null!;
+    private PunchItem _notClearedPunchItem = null!;
+    private PunchItem _clearedButNotVerifiedPunchItem = null!;
+    private PunchItem _verifiedPunchItem = null!;
+    private ICheckListValidator _checkListValidatorMock = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {

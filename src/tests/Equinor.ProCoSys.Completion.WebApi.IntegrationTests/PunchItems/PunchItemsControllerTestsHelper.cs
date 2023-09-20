@@ -289,6 +289,7 @@ public static class PunchItemsControllerTestsHelper
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        // todo 104046 Refactor integration tests from put to patch
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}", content);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);

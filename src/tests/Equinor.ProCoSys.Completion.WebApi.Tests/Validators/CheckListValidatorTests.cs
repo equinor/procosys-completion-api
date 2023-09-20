@@ -12,9 +12,9 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 public class CheckListValidatorTests
 {
     private readonly string _plant = "P";
-    private CheckListValidator _dut;
-    private ICheckListCache _checkListCacheMock;
-    private IPlantProvider _plantProviderMock;
+    private CheckListValidator _dut = null!;
+    private ICheckListCache _checkListCacheMock = null!;
+    private IPlantProvider _plantProviderMock = null!;
     private static readonly Guid s_projectGuid = Guid.NewGuid();
     private readonly ProCoSys4CheckList _proCoSys4CheckList = new("RC", false, s_projectGuid);
     private readonly Guid _checkListGuid = Guid.NewGuid();
