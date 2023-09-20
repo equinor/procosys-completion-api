@@ -538,7 +538,7 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetClearingByOrg_ShouldThrowException_WhenClearingByOrgInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetClearingByOrg(
-                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY)));
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION)));
 
     [TestMethod]
     public void SetClearingByOrg_ShouldThrowException_WhenClearingByOrgIsIncorrectType() =>

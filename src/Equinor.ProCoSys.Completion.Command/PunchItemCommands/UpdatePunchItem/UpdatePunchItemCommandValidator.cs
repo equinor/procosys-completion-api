@@ -232,20 +232,22 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
 
         Guid GetGuidValue(List<Operation<PatchablePunchItem>> operations, string propName)
         {
-            // due to validation, the operation for propName SHOULD exists ...
+            // due to already performed input validation, the operation for propName SHOULD exists ...
             var operation = operations.GetReplaceOperation(propName)!;
-            // ...  and the value it SHOULD be a Guid ...
+            // ...  and the value SHOULD be either a Guid ...
             if (operation.value is Guid guid)
             {
                 return guid;
             }
-            // ... or can be parsed to Guid
+            // ... or the value can be parsed to Guid
             return Guid.Parse((string)operation.value);
         }
 
         bool ValueIsReplacedWithGuid(List<Operation<PatchablePunchItem>> operations, string propName)
         {
             var operation = operations.GetReplaceOperation(propName);
+            // due to already performed input validation, the operation for replacing a Guid or Guid?
+            // are validated to be treated as a Guid.
             var b = operation is not null
                     && (operation.value is Guid || Guid.TryParse(operation.value as string, out _));
             return b;
