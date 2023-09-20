@@ -488,6 +488,65 @@ public class PunchItemTests : IModificationAuditableTests
     }
     #endregion
 
+    #region SetRaisedByOrg
+    [TestMethod]
+    public void SetRaisedByOrg_ShouldSetRaisedByOrgId()
+    {
+        // Arrange 
+        Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
+        var newRaisedByOrg =
+            new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+        newRaisedByOrg.SetProtectedIdForTesting(_raisedByOrg.Id + 1);
+
+        // Act
+        _dut.SetRaisedByOrg(newRaisedByOrg);
+
+        // Assert
+        Assert.AreEqual(newRaisedByOrg.Id, _dut.RaisedByOrgId);
+    }
+
+    [TestMethod]
+    public void SetRaisedByOrg_ShouldThrowException_WhenRaisedByOrgInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetRaisedByOrg(
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION)));
+
+    [TestMethod]
+    public void SetRaisedByOrg_ShouldThrowException_WhenRaisedByOrgIsIncorrectType() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetRaisedByOrg(
+                new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+    #endregion
+
+    #region SetClearingByOrg
+    [TestMethod]
+    public void SetClearingByOrg_ShouldSetClearingByOrgId()
+    {
+        // Arrange 
+        Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
+        var newClearingByOrg =
+            new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+        newClearingByOrg.SetProtectedIdForTesting(newClearingByOrg.Id + 1);
+        // Act
+        _dut.SetClearingByOrg(newClearingByOrg);
+
+        // Assert
+        Assert.AreEqual(newClearingByOrg.Id, _dut.ClearingByOrgId);
+    }
+
+    [TestMethod]
+    public void SetClearingByOrg_ShouldThrowException_WhenClearingByOrgInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetClearingByOrg(
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION)));
+
+    [TestMethod]
+    public void SetClearingByOrg_ShouldThrowException_WhenClearingByOrgIsIncorrectType() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetClearingByOrg(
+                new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+    #endregion
+
     #region SetPriority
     [TestMethod]
     public void SetPriority_ShouldSetPriorityId()
@@ -558,5 +617,53 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetType(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING)));
+    #endregion
+
+    #region ClearPriority
+    [TestMethod]
+    public void ClearPriority_ShouldClearPriorityId()
+    {
+        // Arrange
+        _dut.SetPriority(_priority);
+        Assert.AreEqual(_priority.Id, _dut.PriorityId);
+        
+        // Act
+        _dut.ClearPriority();
+
+        // Assert
+        Assert.IsNull(_dut.PriorityId);
+    }
+    #endregion
+
+    #region ClearSorting
+    [TestMethod]
+    public void ClearSorting_ShouldClearSortingId()
+    {
+        // Arrange
+        _dut.SetSorting(_sorting);
+        Assert.AreEqual(_sorting.Id, _dut.SortingId);
+
+        // Act
+        _dut.ClearSorting();
+
+        // Assert
+        Assert.IsNull(_dut.SortingId);
+    }
+    #endregion
+
+    #region ClearType
+    [TestMethod]
+    public void ClearType_ShouldClearTypeId()
+    {
+        // Arrange
+        _dut.SetType(_type);
+        Assert.AreEqual(_type.Id, _dut.TypeId);
+
+        // Act
+        _dut.ClearType();
+
+        // Assert
+        Assert.IsNull(_dut.TypeId);
+    }
     #endregion
 }

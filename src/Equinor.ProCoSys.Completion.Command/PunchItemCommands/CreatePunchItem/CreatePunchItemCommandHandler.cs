@@ -72,13 +72,13 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
     }
 
-    private async Task SetLibraryItemAsync(PunchItem punchItem, Guid? guid, LibraryType libraryType)
+    private async Task SetLibraryItemAsync(PunchItem punchItem, Guid? libraryGuid, LibraryType libraryType)
     {
-        if (!guid.HasValue)
+        if (!libraryGuid.HasValue)
         {
             return;
         }
-        var libraryItem = await GetLibraryItemAsync(guid.Value, libraryType);
+        var libraryItem = await GetLibraryItemAsync(libraryGuid.Value, libraryType);
 
         switch (libraryType)
         {
