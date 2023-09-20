@@ -13,6 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
     public class PunchItemCommandHandlerTestsBase : TestsBase
     {
         protected const int CurrentPersonId = 13;
+        protected const string OriginalRowVersion = "BBBBBBBBABA=";
         protected const string RowVersion = "AAAAAAAAABA=";
         protected IPersonRepository _personRepositoryMock;
         protected IPunchItemRepository _punchItemRepositoryMock;
@@ -25,7 +26,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
             var raisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
             var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-            _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(),null!, raisedByOrg, clearingByOrg);
+            _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(), null!, raisedByOrg, clearingByOrg);
+            _existingPunchItem.SetRowVersion(OriginalRowVersion);
 
         _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
         _punchItemRepositoryMock.GetByGuidAsync(_existingPunchItem.Guid)

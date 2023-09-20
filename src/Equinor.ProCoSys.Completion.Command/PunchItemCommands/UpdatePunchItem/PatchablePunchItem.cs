@@ -20,5 +20,6 @@ public class PatchablePunchItem
     public Guid? PriorityGuid { get; set; }
     public Guid? SortingGuid { get; set; }
     public Guid? TypeGuid { get; set; }
-    public DateTime? DueDate { get; set; }
+
+    //public DateTime? DueDate { get; set; }
 }
