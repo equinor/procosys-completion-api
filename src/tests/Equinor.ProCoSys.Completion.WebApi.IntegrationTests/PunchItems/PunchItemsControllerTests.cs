@@ -52,6 +52,11 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsTrue(!newPunchItem.Description.IsEmpty());
         Assert.IsTrue(newPunchItem.ItemNo >= PunchItem.IdentitySeed);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, newPunchItem.ClearingByOrg.Guid);
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, newPunchItem.RaisedByOrg!.Guid);
+        Assert.AreEqual(TestFactory.PriorityGuid, newPunchItem.Priority!.Guid);
+        Assert.AreEqual(TestFactory.SortingGuid, newPunchItem.Sorting!.Guid);
+        Assert.AreEqual(TestFactory.TypeGuid, newPunchItem.Type!.Guid);
 
         var allPunchItems = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
@@ -88,10 +93,9 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task UpdatePunchItem_AsWriter_ShouldUpdateRowVersion_AndPatchPunchItemWithNonNullValues()
+    public async Task UpdatePunchItem_WithNonNullValues_AsWriter_ShouldUpdateRowVersion_AndPatchPunchItemWithNonNullValues()
     {
         // Arrange
-        var newDescription = Guid.NewGuid().ToString();
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
@@ -101,8 +105,14 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
+        Assert.IsNull(punchItem.Priority);
+        Assert.IsNull(punchItem.Sorting);
+        Assert.IsNull(punchItem.Type);
         var initialRowVersion = punchItem.RowVersion;
         var patchDocument = new JsonPatchDocument();
+        var newDescription = Guid.NewGuid().ToString();
         patchDocument.Replace("Description", newDescription);
         patchDocument.Replace("PriorityGuid", TestFactory.PriorityGuid);
         patchDocument.Replace("SortingGuid", TestFactory.SortingGuid);
@@ -121,13 +131,15 @@ public class PunchItemsControllerTests : TestBase
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(newRowVersion, punchItem.RowVersion);
         Assert.AreEqual(newDescription, punchItem.Description);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid, "Value not patched and should be kept");
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
     }
 
     [TestMethod]
-    public async Task UpdatePunchItem_AsWriter_ShouldUpdateRowVersion_AndPatchPunchItemWithNullValues()
+    public async Task UpdatePunchItem_WithNullValues_AsWriter_ShouldUpdateRowVersion_AndPatchPunchItemWithNullValues()
     {
         // Arrange
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
@@ -142,6 +154,8 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.SortingGuid,
             TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
@@ -163,49 +177,56 @@ public class PunchItemsControllerTests : TestBase
         AssertRowVersionChange(initialRowVersion, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(newRowVersion, punchItem.RowVersion);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid, "Value not patched and should be kept");
         Assert.IsNull(punchItem.Priority);
         Assert.IsNull(punchItem.Sorting);
         Assert.IsNull(punchItem.Type);
     }
 
     [TestMethod]
-    public async Task UpdatePunchItem_AsWriter_ShouldUpdateRowVersion_AndPatchOnlyGivenValues()
+    public async Task UpdatePunchItem_WithoutAnyValues_AsWriter_ShouldLeaveBothRowVersionAndPunchItemUnchanged()
     {
         // Arrange
+        var description = Guid.NewGuid().ToString();
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            Guid.NewGuid().ToString(),
+            description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
-            TestFactory.ClearingByOrgGuid);
+            TestFactory.ClearingByOrgGuid,
+            TestFactory.PriorityGuid,
+            TestFactory.SortingGuid,
+            TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
-        Assert.IsNull(punchItem.Priority);
-        Assert.IsNull(punchItem.Sorting);
-        Assert.IsNull(punchItem.Type);
+        Assert.AreEqual(description, punchItem.Description);
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
+        Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
+        Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
+        Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
         var initialRowVersion = punchItem.RowVersion;
-        var initialDescription = punchItem.Description;
-        var patchDocument = new JsonPatchDocument();
-        patchDocument.Replace("PriorityGuid", TestFactory.PriorityGuid);
-        patchDocument.Replace("SortingGuid", TestFactory.SortingGuid);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             punchItem.Guid,
-            patchDocument,
+            new JsonPatchDocument(),
             initialRowVersion);
 
         // Assert
-        AssertRowVersionChange(initialRowVersion, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.AreEqual(initialRowVersion, newRowVersion);
         Assert.AreEqual(newRowVersion, punchItem.RowVersion);
-        Assert.AreEqual(initialDescription, punchItem.Description);
-        Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
-        Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
-        Assert.IsNull(punchItem.Type);
+        Assert.AreEqual(description, punchItem.Description, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid, "Value not patched and should be kept");
+        Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid, "Value not patched and should be kept");
     }
 
     [TestMethod]
