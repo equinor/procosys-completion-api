@@ -54,7 +54,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _type = SetupLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE, 140);
 
         _dut = new UpdatePunchItemCommandHandler(
-            Substitute.For<PlantProvider>(),
             _punchItemRepositoryMock,
             _libraryItemRepositoryMock,
             _unitOfWorkMock,

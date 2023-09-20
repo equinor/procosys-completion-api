@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MediatR;
-using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
 
@@ -17,20 +16,17 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
 public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemCommand, Result<string>>
 {
-    private readonly IPlantProvider _plantProvider;
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
-        IPlantProvider plantProvider,
         IPunchItemRepository punchItemRepository,
         ILibraryItemRepository libraryItemRepository,
         IUnitOfWork unitOfWork,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
-        _plantProvider = plantProvider;
         _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
         _unitOfWork = unitOfWork;
@@ -67,10 +63,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private async Task<ExpandoObject?> Patch(PunchItem punchItem, UpdatePunchItemCommand request)
     {
         var operations = request.PatchDocument.Operations;
-        if (operations.Any(op => op.OperationType != OperationType.Replace))
-        {
-            throw new Exception($"Only {OperationType.Replace} supported");
-        }
 
         var replaceProperties = operations.Select(op => op.path.TrimStart('/')).ToList();
         if (!replaceProperties.Any())
@@ -152,7 +144,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         Guid libraryGuid,
         LibraryType libraryType)
     {
-        var libraryItem = await GetLibraryItemAsync(libraryGuid, libraryType);
+        var libraryItem = (await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType))!;
 
         switch (property)
         {
@@ -192,17 +184,5 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
-    }
-
-    private async Task<LibraryItem> GetLibraryItemAsync(Guid libraryGuid, LibraryType type)
-    {
-        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, type);
-        if (libraryItem is null)
-        {
-            throw new Exception(
-                $"Could not find {nameof(LibraryItem)} of type {type} with Guid {libraryGuid} in plant {_plantProvider.Plant}");
-        }
-
-        return libraryItem;
     }
 }
