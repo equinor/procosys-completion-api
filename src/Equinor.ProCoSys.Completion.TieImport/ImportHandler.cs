@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
@@ -17,12 +18,14 @@ public class ImportHandler : IImportHandler
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
     private readonly IMessageInspector _messageInspector;
+    private readonly IMediator _mediator;
 
-    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger, IMessageInspector messageInspector)
+    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger, IMessageInspector messageInspector, IMediator mediator)
     {
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
         _messageInspector = messageInspector;
+        _mediator = mediator;
     }
     public TIResponseFrame Handle(TIInterfaceMessage? message)
     {
@@ -143,9 +146,17 @@ public class ImportHandler : IImportHandler
 
         var command = CreateCommand(incomingObjectType, proCoSysImportObject.ImportMethod, proCoSysImportObject);
 
-        //TODO: JSOI Send command to CreatePunchItem via MediatR
+        //TODO: Use await
+        try
+        {
+            var mediatorResult = _mediator.Send(command).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
 
-
+            throw;
+        }
+        
         //TODO: JSOI Temp code
         //Retrieve result from MediatR command
         var dummyCommandResultSuccess = true; //Temp for now
@@ -156,9 +167,6 @@ public class ImportHandler : IImportHandler
             //    return ImportResult;
         }
         return ImportResult.Ok();
-
-        //---------------------------------End of LoadObject
-
     }
 
     private static void EnsureObjectNameHasValue(TIObject tiObject, IPcsObjectIn pcsObject)
