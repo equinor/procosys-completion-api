@@ -45,6 +45,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _command.PatchDocument.Replace(p => p.SortingGuid, _sortingGuid);
         _command.PatchDocument.Replace(p => p.TypeGuid, _typeGuid);
 
+        _command.EnsureValidInputValidation();
+
         _libraryItemRepositoryMock = Substitute.For<ILibraryItemRepository>();
 
         _raisedByOrg = SetupLibraryItem(_raisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, 100);
