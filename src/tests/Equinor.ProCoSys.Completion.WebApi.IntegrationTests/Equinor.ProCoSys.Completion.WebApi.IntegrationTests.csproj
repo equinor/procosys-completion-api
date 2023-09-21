@@ -33,7 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
-    <ProjectReference Include="..\..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" />
   </ItemGroup>
 

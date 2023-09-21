@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.JsonPatch;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
@@ -276,21 +277,20 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid guid,
-        string description,
+        JsonPatchDocument patchDocument,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            description,
+            patchDocument,
             rowVersion
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        // todo 104046 Refactor integration tests from put to patch
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}", content);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
