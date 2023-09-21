@@ -27,12 +27,14 @@ public class UpdatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "r");
+        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "AAAAAAAAABA=");
         _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _raisedByOrgGuid);
         _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _clearingByOrgGuid);
         _command.PatchDocument.Replace(p => p.PriorityGuid, _priorityGuid);
         _command.PatchDocument.Replace(p => p.SortingGuid, _sortingGuid);
         _command.PatchDocument.Replace(p => p.TypeGuid, _typeGuid);
+
+        _command.EnsureValidInputValidation();
 
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
