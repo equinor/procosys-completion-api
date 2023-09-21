@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 
 public interface IMessageInspector
 {
-    string ExtractPlant(TIInterfaceMessage message);
+    string? ExtractPlant(TIInterfaceMessage message);
 
     void CheckForScriptInjection(TIObject tieObject);
 

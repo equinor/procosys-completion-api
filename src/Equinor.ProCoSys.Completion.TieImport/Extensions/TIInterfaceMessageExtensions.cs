@@ -19,7 +19,6 @@ public static class TIInterfaceMessageExtensions
     public static string? TransferCode(this TIInterfaceMessage tieMessage)
         => tieMessage?.GetMetadataValue("TRANSFER_CODE")?.ToUpper();
 
-    //TODO: JSOI Fix this
     public static bool MetaDataAsBool(this TIInterfaceMessage tieMessage, string key)
         => (tieMessage?.GetMetadataValue(key))!.GetValueAsBool();
 }

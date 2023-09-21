@@ -43,8 +43,8 @@ public class ImportHandler : IImportHandler
         TIMessageResult? tiMessageResult = null;
         try
         {
-            //TODO: Call ObjectFixers.Fix
-            
+            //TODO: 106683 ObjectFixers
+
             var mapped = _importSchemaMapper.Map(message);
 
             if (mapped.Success is false)
@@ -53,7 +53,7 @@ public class ImportHandler : IImportHandler
                 return response;
             }
 
-            //TODO: _postMapperFixer.Fix(message);
+            //TODO: 106685 PostMapperFixer;
 
             tiMessageResult = ImportMessage(message);
         }
@@ -108,13 +108,14 @@ public class ImportHandler : IImportHandler
 
     private ImportResult? ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
-        //TODO: Do 105834 CollectWarnings here
+        //TODO: 105834 CollectWarnings
 
-        TIEProCoSysMapperCustomMapper.MapRelationsUntilTieMapperGetsFixed(tiObject);
+        //TODO: 106686 MapRelationsUntilTieMapperGetsFixed
+
         TIEProCoSysMapperCustomMapper.CustomMap(tiObject, message);
 
         _messageInspector.CheckForScriptInjection(tiObject);
-        var importResult = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger); //TODO: Remove _logger parameter
+        var importResult = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger);
         if (ImportResultHasError(importResult))
         {
             return importResult;
@@ -145,27 +146,9 @@ public class ImportHandler : IImportHandler
         //TODO: NCR special handling
 
         var command = CreateCommand(incomingObjectType, proCoSysImportObject.ImportMethod, proCoSysImportObject);
-
-        //TODO: Use await
-        try
-        {
-            var mediatorResult = _mediator.Send(command).GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-
-            throw;
-        }
         
-        //TODO: JSOI Temp code
-        //Retrieve result from MediatR command
-        var dummyCommandResultSuccess = true; //Temp for now
-        if (!dummyCommandResultSuccess)
-        {
-            return ImportResult.Error(); //JSOI TEMP
-            //    importResult = _commandFailureHandler.HandleFailureResult(commandResult);
-            //    return ImportResult;
-        }
+        //TODO: 106687 CommandFailureHandler;
+        
         return ImportResult.Ok();
     }
 
@@ -188,11 +171,6 @@ public class ImportHandler : IImportHandler
             throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
         }
 
-
-        //TODO: JSOI Run validation before retrieving guids??
-        //TODO: JSOI Retrieve guids from strings
-        //Observation: PCS5 uses "strongly typed" commands while PCS4 uses "primitive typed" commands (i.e. string, int, datetime
-        //var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, punchItemIn.RaisedByOrganization, punchItemIn.ClearedByOrganization, punchItemIn.Priority, punchItemIn.sortingGuid, punchItemIn.PunchListType);
         var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, new Guid(), new Guid(), new Guid());
         return createPunchCommand;
     }

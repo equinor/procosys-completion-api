@@ -10,15 +10,11 @@ public class MessageInspector : IMessageInspector
 
     public MessageInspector()
     {
-        //TODO: JSOI Fix below
-        _importOptionsDefault = new ImportOptions();
-        _importOptionsIgnore = new ImportOptions();
-        //_importOptionsDefault = ImportOptionsFromSetting("Statoil.TI.PCSNG.ProCoSysAdapter.ImportOptionsDefault");
-        //_importOptionsIgnore = ImportOptionsFromSetting("Statoil.TI.PCSNG.ProCoSysAdapter.ImportOptionsIgnore");
+        _importOptionsDefault = ImportOptionsFromSetting("Statoil.TI.PCSNG.ProCoSysAdapter.ImportOptionsDefault");
+        _importOptionsIgnore = ImportOptionsFromSetting("Statoil.TI.PCSNG.ProCoSysAdapter.ImportOptionsIgnore");
     }
 
-    //TODO: JSOI Fix warning
-    public string ExtractPlant(TIInterfaceMessage message) => message.IsClass("MODEL") ? null : message.Site;
+    public string? ExtractPlant(TIInterfaceMessage message) => message.IsClass("MODEL") ? null : message.Site;
 
     public void CheckForScriptInjection(TIObject tieObject)
     {
@@ -48,11 +44,10 @@ public class MessageInspector : IMessageInspector
             _importOptionsIgnore);
     }
 
-    //TODO: JSOI Comment out for now
-    //private static ImportOptions ImportOptionsFromSetting(string key)
-    //    => ImportOptions.FromSettings(
-    //        ConfigurationHelper
-    //            .SplitSettingOrNone(key)
-    //            .Select(s => s.ToUpper())
-    //            .ToList());
+    private static ImportOptions ImportOptionsFromSetting(string key)
+        => ImportOptions.FromSettings(
+            ConfigurationHelper
+                .SplitSettingOrNone(key)
+                .Select(s => s.ToUpper())
+                .ToList());
 }
