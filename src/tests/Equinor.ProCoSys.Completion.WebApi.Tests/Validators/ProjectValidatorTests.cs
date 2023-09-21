@@ -12,8 +12,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 [TestClass]
 public class ProjectValidatorTests : ReadOnlyTestsBase
 {
-    private Project _openProject;
-    private Project _closedProject;
+    private Project _openProject = null!;
+    private Project _closedProject = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {

@@ -11,7 +11,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 [TestClass]
 public class AccessValidatorTestBase
 {
-    protected AccessValidator _dut;
+    protected AccessValidator _dut = null!;
     protected readonly Guid PunchItemGuidWithAccessToProjectAndContent = new("11111111-1111-1111-1111-111111111111");
     protected readonly Guid PunchItemGuidWithoutAccessToProject = new("22222222-2222-2222-2222-222222222222");
     protected readonly Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
@@ -20,10 +20,10 @@ public class AccessValidatorTestBase
     protected readonly Guid CheckListGuidWithoutAccessToContent = new("66666666-6666-6666-6666-666666666666");
     protected readonly Guid PunchItemGuidWithAccessToProjectButNotContent = new("77777777-7777-7777-7777-777777777777");
 
-    private IProjectAccessChecker _projectAccessCheckerMock;
-    private IContentAccessChecker _contentAccessCheckerMock;
-    private ILogger<AccessValidator> _loggerMock;
-    private ICurrentUserProvider _currentUserProviderMock;
+    private IProjectAccessChecker _projectAccessCheckerMock = null!;
+    private IContentAccessChecker _contentAccessCheckerMock = null!;
+    private ILogger<AccessValidator> _loggerMock = null!;
+    private ICurrentUserProvider _currentUserProviderMock = null!;
 
     [TestInitialize]
     public void Setup()

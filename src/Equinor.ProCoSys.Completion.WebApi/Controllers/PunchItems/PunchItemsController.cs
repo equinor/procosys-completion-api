@@ -98,17 +98,17 @@ public class PunchItemsController : ControllerBase
     }
 
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
-    [HttpPut("{guid}")]
+    [HttpPatch("{guid}")]
     public async Task<ActionResult<string>> UpdatePunchItem(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [FromRoute] Guid guid,
-        [FromBody] UpdatePunchItemDto dto)
+        [FromBody] PatchPunchItemDto patchPunchDto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchItemCommand(guid, dto.Description, dto.RowVersion));
+            new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion));
         return this.FromResult(result);
     }
 

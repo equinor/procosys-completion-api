@@ -6,14 +6,14 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 [TestClass]
 public class RowVersionValidatorTests
 {
-    private RowVersionValidator _dut;
+    private RowVersionValidator _dut = null!;
 
     [TestInitialize]
     public void SetUp() => _dut = new RowVersionValidator();
 
     [TestMethod]
     public void IsValid_ValidRowVersion_ShouldReturnTrue()
-    { 
+    {
         var validRowVersion = "AAAAAAAAABA=";
 
         var result = _dut.IsValid(validRowVersion);

@@ -53,7 +53,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         // Elapse some time between each update and save to be able to that 
         // timestamps of Created, Modified, Cleared and Verified differ
         _timeProvider.Elapse(new TimeSpan(0, 1, 0));
-        _modifiedPunchItem.Update("Modified");
+        _modifiedPunchItem.Description = "Modified";
         context.SaveChangesAsync().Wait();
 
         _timeProvider.Elapse(new TimeSpan(0, 1, 0));

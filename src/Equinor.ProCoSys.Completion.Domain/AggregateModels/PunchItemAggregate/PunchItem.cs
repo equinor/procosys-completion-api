@@ -11,6 +11,7 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
     public const int IdentitySeed = 4000001;
+    public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
 
 #pragma warning disable CS8618
@@ -33,28 +34,13 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         {
             throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
         }
-        if (raisedByOrg.Plant != plant)
-        {
-            throw new ArgumentException($"Can't relate {nameof(raisedByOrg)} in {raisedByOrg.Plant} to item in {plant}");
-        }
-        if (raisedByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
-        {
-            throw new ArgumentException($"Can't relate a {raisedByOrg.Type} as {nameof(raisedByOrg)}");
-        }
-        if (clearingByOrg.Plant != plant)
-        {
-            throw new ArgumentException($"Can't relate {nameof(clearingByOrg)} in {clearingByOrg.Plant} to item in {plant}");
-        }
-        if (clearingByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
-        {
-            throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
-        }
         ProjectId = project.Id;
         CheckListGuid = checkListGuid;
-        RaisedByOrgId = raisedByOrg.Id;
-        ClearingByOrgId = clearingByOrg.Id;
         Description = description;
         Guid = Guid.NewGuid();
+
+        SetRaisedByOrg(raisedByOrg);
+        SetClearingByOrg(clearingByOrg);
     }
 
     // private setters needed for Entity Framework
@@ -143,8 +129,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         VerifiedById = null;
     }
 
-    public void Update(string description) => Description = description;
-
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;
@@ -157,6 +141,34 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
         ModifiedByOid = modifiedBy.Guid;
+    }
+
+    public void SetRaisedByOrg(LibraryItem raisedByOrg)
+    {
+        if (raisedByOrg.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(raisedByOrg)} in {raisedByOrg.Plant} to item in {Plant}");
+        }
+        if (raisedByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
+        {
+            throw new ArgumentException($"Can't relate a {raisedByOrg.Type} as {nameof(raisedByOrg)}");
+        }
+
+        RaisedByOrgId = raisedByOrg.Id;
+    }
+
+    public void SetClearingByOrg(LibraryItem clearingByOrg)
+    {
+        if (clearingByOrg.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(clearingByOrg)} in {clearingByOrg.Plant} to item in {Plant}");
+        }
+        if (clearingByOrg.Type != LibraryType.COMPLETION_ORGANIZATION)
+        {
+            throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
+        }
+
+        ClearingByOrgId = clearingByOrg.Id;
     }
 
     public void SetSorting(LibraryItem sorting)
@@ -200,4 +212,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
         PriorityId = priority.Id;
     }
+
+    public void ClearSorting() => SortingId = null;
+    public void ClearPriority() => PriorityId = null;
+    public void ClearType() => TypeId = null;
 }

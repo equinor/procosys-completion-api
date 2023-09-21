@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
@@ -231,7 +232,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Unauthorized);
 
@@ -241,7 +242,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -252,7 +253,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -263,7 +264,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -273,7 +274,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -283,7 +284,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(), 
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
@@ -294,19 +295,24 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            new JsonPatchDocument(),
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
     public async Task UpdatePunchItem_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
-        => await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
+    {
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Replace("Description", Guid.NewGuid().ToString());
+
+        await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
-            "Punch item updated",
+            patchDocument,
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
+    }
 
     #endregion
 

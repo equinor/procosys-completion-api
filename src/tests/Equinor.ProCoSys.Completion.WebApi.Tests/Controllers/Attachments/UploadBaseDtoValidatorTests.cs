@@ -14,9 +14,9 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 [TestClass]
 public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, new()
 {
-    protected UploadBaseDtoValidator<T> _dut;
-    protected IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
-    private BlobStorageOptions _blobStorageOptions;
+    protected UploadBaseDtoValidator<T> _dut = null!;
+    protected IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock = null!;
+    private BlobStorageOptions _blobStorageOptions = null!;
 
     [TestInitialize]
     public void Setup()
@@ -62,7 +62,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
     {
         var uploadAttachmentDto = new T
         {
-            File = new TestableFormFile(null, 1000)
+            File = new TestableFormFile(null!, 1000)
         };
 
         var result = _dut.Validate(uploadAttachmentDto);
@@ -121,12 +121,12 @@ internal class TestableFormFile : IFormFile
 {
     public TestableFormFile(string fileName, long lengthInBytes)
     {
-        ContentDisposition = null;
-        ContentType = null;
+        ContentDisposition = null!;
+        ContentType = null!;
         FileName = fileName;
-        Headers = null;
+        Headers = null!;
         Length = lengthInBytes;
-        Name = null;
+        Name = null!;
     }
 
     public void CopyTo(Stream target) => throw new System.NotImplementedException();

@@ -120,6 +120,7 @@ public static class ApplicationModule
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
         services.AddScoped<ICheckListValidator, CheckListValidator>();
         services.AddScoped<IRowVersionValidator, RowVersionValidator>();
+        services.AddScoped<IPatchOperationValidator, PatchOperationValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
 
