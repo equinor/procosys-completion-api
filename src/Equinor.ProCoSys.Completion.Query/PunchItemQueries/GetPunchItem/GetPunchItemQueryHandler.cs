@@ -24,6 +24,11 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
     {
         var dto =
             await (from punchItem in _context.QuerySet<PunchItem>()
+                        .Include(p => p.RaisedByOrg)
+                        .Include(p => p.ClearingByOrg)
+                        .Include(p => p.Priority)
+                        .Include(p => p.Sorting)
+                        .Include(p => p.Type)
                    join project in _context.QuerySet<Project>()
                        on punchItem.ProjectId equals project.Id
                    join createdByUser in _context.QuerySet<Person>()
@@ -36,16 +41,6 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        .Where(p => p.Id == punchItem.RejectedById).DefaultIfEmpty() //left join!                   
                    from verifiedByUser in _context.QuerySet<Person>()
                        .Where(p => p.Id == punchItem.VerifiedById).DefaultIfEmpty() //left join!                   
-                   join raisedByOrgItem in _context.QuerySet<LibraryItem>()
-                       on punchItem.RaisedByOrgId equals raisedByOrgItem.Id
-                   join clearingByOrgItem in _context.QuerySet<LibraryItem>()
-                       on punchItem.ClearingByOrgId equals clearingByOrgItem.Id
-                   from priorityItem in _context.QuerySet<LibraryItem>()
-                       .Where(l => l.Id == punchItem.PriorityId).DefaultIfEmpty() //left join!
-                   from sortingItem in _context.QuerySet<LibraryItem>()
-                       .Where(l => l.Id == punchItem.SortingId).DefaultIfEmpty() //left join!
-                   from typeItem in _context.QuerySet<LibraryItem>()
-                       .Where(l => l.Id == punchItem.TypeId).DefaultIfEmpty() //left join!
                    where punchItem.Guid == request.PunchItemGuid
                    select new {
                        PunchItem = punchItem,
@@ -54,12 +49,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        ModifiedBy = modifiedByUser,
                        ClearedBy = clearedByUser,
                        RejectedBy = rejectedByUser,
-                       VerifiedBy = verifiedByUser,
-                       RaisedByOrg = raisedByOrgItem,
-                       ClearingByOrg = clearingByOrgItem,
-                       Priority = priorityItem,
-                       Sorting = sortingItem,
-                       Type = typeItem
+                       VerifiedBy = verifiedByUser
                    })
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
@@ -74,11 +64,11 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
         var clearedBy = MapToPersonDto(dto.ClearedBy);
         var rejectedBy = MapToPersonDto(dto.RejectedBy);
         var verifiedBy = MapToPersonDto(dto.VerifiedBy);
-        var raisedByOrg = MapToLibraryItemDto(dto.RaisedByOrg)!;
-        var clearingByOrg = MapToLibraryItemDto(dto.ClearingByOrg)!;
-        var sorting = MapToLibraryItemDto(dto.Sorting);
-        var priority = MapToLibraryItemDto(dto.Priority);
-        var type = MapToLibraryItemDto(dto.Type);
+        var raisedByOrg = MapToLibraryItemDto(dto.PunchItem.RaisedByOrg)!;
+        var clearingByOrg = MapToLibraryItemDto(dto.PunchItem.ClearingByOrg)!;
+        var sorting = MapToLibraryItemDto(dto.PunchItem.Sorting);
+        var priority = MapToLibraryItemDto(dto.PunchItem.Priority);
+        var type = MapToLibraryItemDto(dto.PunchItem.Type);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,

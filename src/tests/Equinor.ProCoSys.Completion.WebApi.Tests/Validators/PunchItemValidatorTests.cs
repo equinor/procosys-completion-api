@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
@@ -27,12 +28,15 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x1", _raisedByOrg, _clearingByOrg);
-        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), "x2", _raisedByOrg, _clearingByOrg);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+
+        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x1", raisedByOrg, clearingByOrg);
+        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), "x2", raisedByOrg, clearingByOrg);
         _notClearedPunchItem = _punchItemInOpenProject;
-        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x3", _raisedByOrg, _clearingByOrg);
+        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x3", raisedByOrg, clearingByOrg);
         _clearedButNotVerifiedPunchItem.Clear(_currentPerson);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x4", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x4", raisedByOrg, clearingByOrg);
         _verifiedPunchItem.Clear(_currentPerson);
         _verifiedPunchItem.Verify(_currentPerson);
 

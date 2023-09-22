@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -18,11 +19,14 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-                
+
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+
         // Save to get real id on project
         context.SaveChangesAsync().Wait();
 
-        var punchItem = new PunchItem(TestPlantA, _projectA, _checkListGuid, "Title", _raisedByOrg, _clearingByOrg);
+        var punchItem = new PunchItem(TestPlantA, _projectA, _checkListGuid, "Title", raisedByOrg, clearingByOrg);
         context.PunchItems.Add(punchItem);
         context.SaveChangesAsync().Wait();
         _punchItemGuid = punchItem.Guid;

@@ -18,11 +18,11 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected Project _projectB;
     protected Project _closedProjectC;
     protected Person _currentPerson;
-    protected LibraryItem _raisedByOrg;
-    protected LibraryItem _clearingByOrg;
-    protected LibraryItem _priority;
-    protected LibraryItem _sorting;
-    protected LibraryItem _type;
+    protected int _raisedByOrgId;
+    protected int _clearingByOrgId;
+    protected int _priorityId;
+    protected int _sortingId;
+    protected int _typeId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
@@ -62,42 +62,42 @@ public abstract class ReadOnlyTestsBase : TestsBase
         AddProject(context, _projectB);
         AddProject(context, _closedProjectC);
 
-        _raisedByOrg = new LibraryItem(
+        var raisedByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(), 
             "COM",
             "COM desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _clearingByOrg = new LibraryItem(
+        var clearingByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "ENG",
             "ENG desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _priority = new LibraryItem(
+        var priority = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "P1",
             "P1 desc",
             LibraryType.PUNCHLIST_PRIORITY);
-        _sorting = new LibraryItem(
+        var sorting = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "A",
             "A desc",
             LibraryType.PUNCHLIST_SORTING);
-        _type = new LibraryItem(
+        var type = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "Paint",
             "Paint desc",
             LibraryType.PUNCHLIST_TYPE);
 
-        AddLibraryItem(context, _raisedByOrg);
-        AddLibraryItem(context, _clearingByOrg);
-        AddLibraryItem(context, _priority);
-        AddLibraryItem(context, _sorting);
-        AddLibraryItem(context, _type);
+        _raisedByOrgId = AddLibraryItem(context, raisedByOrg);
+        _clearingByOrgId = AddLibraryItem(context, clearingByOrg);
+        _priorityId = AddLibraryItem(context, priority);
+        _sortingId = AddLibraryItem(context, sorting);
+        _typeId = AddLibraryItem(context, type);
 
         SetupNewDatabase(_dbContextOptions);
     }
@@ -124,10 +124,10 @@ public abstract class ReadOnlyTestsBase : TestsBase
         return project;
     }
 
-    protected LibraryItem AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
+    protected int AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
     {
         context.Library.Add(libraryItem);
         context.SaveChangesAsync().Wait();
-        return libraryItem;
+        return libraryItem.Id;
     }
 }

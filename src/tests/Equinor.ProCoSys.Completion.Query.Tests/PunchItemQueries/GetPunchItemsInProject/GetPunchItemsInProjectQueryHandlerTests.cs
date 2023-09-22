@@ -22,8 +22,11 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "A", _raisedByOrg, _clearingByOrg);
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), "B", _raisedByOrg, _clearingByOrg);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+
+        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "A", raisedByOrg, clearingByOrg);
+        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), "B", raisedByOrg, clearingByOrg);
 
         context.PunchItems.Add(_punchItemInProjectA);
         context.PunchItems.Add(_punchItemInProjectB);

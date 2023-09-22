@@ -49,10 +49,15 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public Guid CheckListGuid { get; private set; }
     public int ItemNo => Id;
     public string Description { get; set; }
+    public LibraryItem RaisedByOrg { get; private set; } = null!;
     public int RaisedByOrgId { get; private set; }
+    public LibraryItem ClearingByOrg { get; private set; } = null!;
     public int ClearingByOrgId { get; private set; }
+    public LibraryItem? Sorting { get; private set; }
     public int? SortingId { get; private set; }
+    public LibraryItem? Type { get; private set; }
     public int? TypeId { get; private set; }
+    public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
@@ -154,6 +159,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {raisedByOrg.Type} as {nameof(raisedByOrg)}");
         }
 
+        RaisedByOrg = raisedByOrg;
         RaisedByOrgId = raisedByOrg.Id;
     }
 
@@ -168,6 +174,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
         }
 
+        ClearingByOrg = clearingByOrg;
         ClearingByOrgId = clearingByOrg.Id;
     }
 
@@ -182,6 +189,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {sorting.Type} as {nameof(sorting)}");
         }
 
+        Sorting = sorting;
         SortingId = sorting.Id;
     }
 
@@ -196,6 +204,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {type.Type} as {nameof(type)}");
         }
 
+        Type = type;
         TypeId = type.Id;
     }
 
@@ -210,10 +219,25 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {priority.Type} as {nameof(priority)}");
         }
 
+        Priority = priority;
         PriorityId = priority.Id;
     }
 
-    public void ClearSorting() => SortingId = null;
-    public void ClearPriority() => PriorityId = null;
-    public void ClearType() => TypeId = null;
+    public void ClearSorting()
+    {
+        Sorting = null;
+        SortingId = null;
+    }
+
+    public void ClearPriority()
+    {
+        Priority = null;
+        PriorityId = null;
+    }
+
+    public void ClearType()
+    {
+        Type = null;
+        TypeId = null;
+    }
 }

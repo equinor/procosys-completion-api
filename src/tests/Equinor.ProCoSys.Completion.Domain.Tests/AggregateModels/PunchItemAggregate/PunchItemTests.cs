@@ -58,8 +58,10 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.AreEqual(_project.Id, _dut.ProjectId);
         Assert.AreEqual(_checkListGuid, _dut.CheckListGuid);
         Assert.AreEqual(_itemDescription, _dut.Description);
+        Assert.AreEqual(_raisedByOrg, _dut.RaisedByOrg);
         Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
         Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
+        Assert.AreEqual(_clearingByOrg, _dut.ClearingByOrg);
     }
 
     [TestMethod]
@@ -490,7 +492,7 @@ public class PunchItemTests : IModificationAuditableTests
 
     #region SetRaisedByOrg
     [TestMethod]
-    public void SetRaisedByOrg_ShouldSetRaisedByOrgId()
+    public void SetRaisedByOrg_ShouldSetRaisedByOrg()
     {
         // Arrange 
         Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
@@ -503,6 +505,7 @@ public class PunchItemTests : IModificationAuditableTests
 
         // Assert
         Assert.AreEqual(newRaisedByOrg.Id, _dut.RaisedByOrgId);
+        Assert.AreEqual(newRaisedByOrg, _dut.RaisedByOrg);
     }
 
     [TestMethod]
@@ -520,7 +523,7 @@ public class PunchItemTests : IModificationAuditableTests
 
     #region SetClearingByOrg
     [TestMethod]
-    public void SetClearingByOrg_ShouldSetClearingByOrgId()
+    public void SetClearingByOrg_ShouldSetClearingByOrg()
     {
         // Arrange 
         Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
@@ -532,6 +535,7 @@ public class PunchItemTests : IModificationAuditableTests
 
         // Assert
         Assert.AreEqual(newClearingByOrg.Id, _dut.ClearingByOrgId);
+        Assert.AreEqual(newClearingByOrg, _dut.ClearingByOrg);
     }
 
     [TestMethod]
@@ -549,13 +553,17 @@ public class PunchItemTests : IModificationAuditableTests
 
     #region SetPriority
     [TestMethod]
-    public void SetPriority_ShouldSetPriorityId()
+    public void SetPriority_ShouldSetPriority()
     {
+        // Arrange
+        Assert.IsNull(_dut.PriorityId);
+
         // Act
         _dut.SetPriority(_priority);
 
         // Assert
         Assert.AreEqual(_priority.Id, _dut.PriorityId);
+        Assert.AreEqual(_priority, _dut.Priority);
     }
 
     [TestMethod]
@@ -573,13 +581,17 @@ public class PunchItemTests : IModificationAuditableTests
 
     #region SetSorting
     [TestMethod]
-    public void SetSorting_ShouldSetSortingId()
+    public void SetSorting_ShouldSetSorting()
     {
+        // Arrange
+        Assert.IsNull(_dut.SortingId);
+
         // Act
         _dut.SetSorting(_sorting);
 
         // Assert
         Assert.AreEqual(_sorting.Id, _dut.SortingId);
+        Assert.AreEqual(_sorting, _dut.Sorting);
     }
 
     [TestMethod]
@@ -599,11 +611,15 @@ public class PunchItemTests : IModificationAuditableTests
     [TestMethod]
     public void SetType_ShouldSetTypeId()
     {
+        // Arrange
+        Assert.IsNull(_dut.TypeId);
+
         // Act
         _dut.SetType(_type);
 
         // Assert
         Assert.AreEqual(_type.Id, _dut.TypeId);
+        Assert.AreEqual(_type, _dut.Type);
     }
 
     [TestMethod]
@@ -621,49 +637,55 @@ public class PunchItemTests : IModificationAuditableTests
 
     #region ClearPriority
     [TestMethod]
-    public void ClearPriority_ShouldClearPriorityId()
+    public void ClearPriority_ShouldClearPriority()
     {
         // Arrange
         _dut.SetPriority(_priority);
         Assert.AreEqual(_priority.Id, _dut.PriorityId);
-        
+        Assert.IsNotNull(_dut.Priority);
+
         // Act
         _dut.ClearPriority();
 
         // Assert
         Assert.IsNull(_dut.PriorityId);
+        Assert.IsNull(_dut.Priority);
     }
     #endregion
 
     #region ClearSorting
     [TestMethod]
-    public void ClearSorting_ShouldClearSortingId()
+    public void ClearSorting_ShouldClearSorting()
     {
         // Arrange
         _dut.SetSorting(_sorting);
         Assert.AreEqual(_sorting.Id, _dut.SortingId);
+        Assert.IsNotNull(_dut.Sorting);
 
         // Act
         _dut.ClearSorting();
 
         // Assert
         Assert.IsNull(_dut.SortingId);
+        Assert.IsNull(_dut.Sorting);
     }
     #endregion
 
     #region ClearType
     [TestMethod]
-    public void ClearType_ShouldClearTypeId()
+    public void ClearType_ShouldClearType()
     {
         // Arrange
         _dut.SetType(_type);
         Assert.AreEqual(_type.Id, _dut.TypeId);
+        Assert.IsNotNull(_dut.Type);
 
         // Act
         _dut.ClearType();
 
         // Assert
         Assert.IsNull(_dut.TypeId);
+        Assert.IsNull(_dut.Type);
     }
     #endregion
 }

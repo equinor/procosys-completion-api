@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -26,11 +27,21 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private PunchItem _punchItemWithoutPriority;
     private PunchItem _punchItemWithoutSorting;
     private PunchItem _punchItemWithoutType;
+    private LibraryItem _raisedByOrg;
+    private LibraryItem _clearingByOrg;
+    private LibraryItem _priority;
+    private LibraryItem _sorting;
+    private LibraryItem _type;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
+        _raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        _clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+        _priority = context.Library.Single(l => l.Id == _priorityId);
+        _sorting = context.Library.Single(l => l.Id == _sortingId);
+        _type = context.Library.Single(l => l.Id == _typeId);
         _createdPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         _createdPunchItem.SetPriority(_priority);
         _createdPunchItem.SetSorting(_sorting);
