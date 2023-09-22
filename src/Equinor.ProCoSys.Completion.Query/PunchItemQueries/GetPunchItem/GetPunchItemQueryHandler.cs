@@ -1,16 +1,15 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ServiceResult;
-using System;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 
@@ -24,13 +23,12 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
     {
         var dto =
             await (from punchItem in _context.QuerySet<PunchItem>()
+                        .Include(p => p.Project)
                         .Include(p => p.RaisedByOrg)
                         .Include(p => p.ClearingByOrg)
                         .Include(p => p.Priority)
                         .Include(p => p.Sorting)
                         .Include(p => p.Type)
-                   join project in _context.QuerySet<Project>()
-                       on punchItem.ProjectId equals project.Id
                    join createdByUser in _context.QuerySet<Person>()
                        on punchItem.CreatedById equals createdByUser.Id
                    from modifiedByUser in _context.QuerySet<Person>()
@@ -44,7 +42,6 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                    where punchItem.Guid == request.PunchItemGuid
                    select new {
                        PunchItem = punchItem,
-                       Project = project,
                        CreatedBy = createdByUser, 
                        ModifiedBy = modifiedByUser,
                        ClearedBy = clearedByUser,
@@ -72,7 +69,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        dto.PunchItem.Guid,
-                       dto.Project.Name,
+                       dto.PunchItem.Project.Name,
                        dto.PunchItem.ItemNo,
                        dto.PunchItem.Description,
                        createdBy,

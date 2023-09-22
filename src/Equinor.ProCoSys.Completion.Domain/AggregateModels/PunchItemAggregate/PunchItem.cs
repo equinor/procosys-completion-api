@@ -30,21 +30,18 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         LibraryItem clearingByOrg)
         : base(plant)
     {
-        if (project.Plant != plant)
-        {
-            throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
-        }
-        ProjectId = project.Id;
         CheckListGuid = checkListGuid;
         Description = description;
         Guid = Guid.NewGuid();
 
+        SetProject(plant, project);
         SetRaisedByOrg(raisedByOrg);
         SetClearingByOrg(clearingByOrg);
     }
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
+    public Project Project { get; private set; } = null!;
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
     public int ItemNo => Id;
@@ -239,5 +236,16 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         Type = null;
         TypeId = null;
+    }
+
+    private void SetProject(string plant, Project project)
+    {
+        if (project.Plant != plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
+        }
+
+        ProjectId = project.Id;
+        Project = project;
     }
 }

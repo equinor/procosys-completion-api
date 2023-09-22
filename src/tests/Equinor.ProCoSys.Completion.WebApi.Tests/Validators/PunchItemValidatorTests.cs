@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -21,12 +22,17 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     private PunchItem _clearedButNotVerifiedPunchItem = null!;
     private PunchItem _verifiedPunchItem = null!;
     private ICheckListValidator _checkListValidatorMock = null!;
+    private Project _projectA = null!;
+    private Project _closedProjectC = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         _checkListValidatorMock = Substitute.For<ICheckListValidator>();
 
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        _projectA = context.Projects.Single(p => p.Id == _projectAId);
+        _closedProjectC = context.Projects.Single(p => p.Id == _closedProjectCId);
 
         var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
         var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);

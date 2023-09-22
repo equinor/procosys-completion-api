@@ -1,5 +1,4 @@
 ﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +16,8 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
-        builder.HasOne<Project>()
+        builder.HasOne(x => x.Project)
             .WithMany()
-            .HasForeignKey(x => x.ProjectId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 

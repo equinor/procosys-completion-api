@@ -56,6 +56,7 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.AreEqual(_testPlant, _dut.Plant);
         Assert.AreEqual(_project.Id, _dut.ProjectId);
+        Assert.AreEqual(_project, _dut.Project);
         Assert.AreEqual(_checkListGuid, _dut.CheckListGuid);
         Assert.AreEqual(_itemDescription, _dut.Description);
         Assert.AreEqual(_raisedByOrg, _dut.RaisedByOrg);

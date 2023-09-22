@@ -8,6 +8,8 @@ public record PunchItemCreatedIntegrationEvent
 (
     string DisplayName,
     Guid ProjectGuid,
+    string ProjectName,
+    string ProjectDescription,
     Guid Guid,
     int ItemNo,
     Guid CreatedByOid,
@@ -16,7 +18,9 @@ public record PunchItemCreatedIntegrationEvent
 {
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent punchItemCreatedEvent) : this(
         DisplayName: "Punch item created",
-        punchItemCreatedEvent.ProjectGuid,
+        punchItemCreatedEvent.PunchItem.Project.Guid,
+        punchItemCreatedEvent.PunchItem.Project.Name,
+        punchItemCreatedEvent.PunchItem.Project.Description,
         punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.ItemNo,
         punchItemCreatedEvent.PunchItem.CreatedByOid,
