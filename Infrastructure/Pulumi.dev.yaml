@@ -1,3 +1,4 @@
 encryptionsalt: v1:XKgqFdpvy7w=:v1:8WU0N7ecgQLzexXI:QIVNVfabiu33jgZ/JBIFBcQDp38pmw==
 config:
   azure-native:location: norwayeast
+  completion-api-infrastructure:EquinorIp: 143.97.2.35
