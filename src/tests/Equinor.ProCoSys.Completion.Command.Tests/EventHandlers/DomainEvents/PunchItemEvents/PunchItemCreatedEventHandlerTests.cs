@@ -22,7 +22,7 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
     {
         _punchItem.SetCreated(_person);
 
-        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem, _project.Guid);
+        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemCreatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemCreatedEventHandler>>());
         _publishEndpointMock
@@ -55,7 +55,7 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item created", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_punchItemCreatedEvent.ProjectGuid, _publishedIntegrationEvent.ProjectGuid);
+        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.Project.Guid, _publishedIntegrationEvent.ProjectGuid);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedByOid, _publishedIntegrationEvent.CreatedByOid);
