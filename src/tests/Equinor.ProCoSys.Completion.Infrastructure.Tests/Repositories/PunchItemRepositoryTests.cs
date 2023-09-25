@@ -28,7 +28,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
+        var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), Category.PB, null!, _raisedByOrg, _clearingByOrg);
         _priority = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY);
         punchItem.SetPriority(_priority);
         _sorting = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING);
@@ -51,7 +51,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _dut = new PunchItemRepository(_contextHelper.ContextMock);
     }
 
-    protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), null!, _raisedByOrg, _clearingByOrg);
+    protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), Category.PA, null!, _raisedByOrg, _clearingByOrg);
 
     [TestMethod]
     public async Task GetByGuid_KnownGuid_ShouldReturnEntityWithLibraryProperties()

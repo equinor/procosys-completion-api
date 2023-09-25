@@ -46,14 +46,14 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         _priority = context.Library.Single(l => l.Id == _priorityId);
         _sorting = context.Library.Single(l => l.Id == _sortingId);
         _type = context.Library.Single(l => l.Id == _typeId);
-        _createdPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _createdPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _createdPunchItem.SetPriority(_priority);
         _createdPunchItem.SetSorting(_sorting);
         _createdPunchItem.SetType(_type);
-        _modifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
-        _clearedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
-        _verifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
-        _rejectedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
 
         _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType = _createdPunchItem;
         _punchItemWithoutPriority = _punchItemWithoutSorting = _punchItemWithoutType = _modifiedPunchItem;

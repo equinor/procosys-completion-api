@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +15,7 @@ public class CreatePunchItemDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreatePunchItemDto("New item", Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
+        var dto = new CreatePunchItemDto(Category.PA, "New item", Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
         
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -27,7 +28,7 @@ public class CreatePunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenDescriptionNotGiven()
     {
         // Arrange
-        var dto = new CreatePunchItemDto(null!, Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
+        var dto = new CreatePunchItemDto(Category.PA, null!, Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -42,7 +43,7 @@ public class CreatePunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenDescriptionIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreatePunchItemDto(
+        var dto = new CreatePunchItemDto(Category.PA,
             new string('x', Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax + 1),
             Guid.Empty, Guid.Empty, Guid.Empty, Guid.Empty);
 

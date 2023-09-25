@@ -30,8 +30,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
         var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "A", raisedByOrg, clearingByOrg);
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), "B", raisedByOrg, clearingByOrg);
+        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PA, "A", raisedByOrg, clearingByOrg);
+        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), Category.PA, "B", raisedByOrg, clearingByOrg);
 
         context.PunchItems.Add(_punchItemInProjectA);
         context.PunchItems.Add(_punchItemInProjectB);
@@ -79,6 +79,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)
     {
         Assert.AreEqual(punchItem.ItemNo, punchItemDto.ItemNo);
+        Assert.AreEqual(punchItem.Category, punchItemDto.Category);
         Assert.AreEqual(punchItem.Description, punchItemDto.Description);
         Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDto.RowVersion);
         var project = GetProjectById(punchItem.ProjectId);

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public record CreatePunchItemDto(
+    [Required]
+    Category Category,
     [Required]
     string Description, 
     [Required]

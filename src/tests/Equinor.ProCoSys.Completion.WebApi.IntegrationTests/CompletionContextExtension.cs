@@ -90,9 +90,10 @@ public static class CompletionContextExtension
             plant,
             project,
             KnownPlantData.CheckListGuid[plant],
+            Category.PA,
+            "PunchItemA",
             raisedByOrg,
             clearingByOrg,
-            "PunchItemA",
             priority,
             sorting,
             type);
@@ -109,9 +110,10 @@ public static class CompletionContextExtension
             plant,
             project,
             KnownPlantData.CheckListGuid[plant],
+            Category.PA,
+            "PunchItemB",
             raisedByOrg,
-            clearingByOrg,
-            "PunchItemB");
+            clearingByOrg);
 
         var link = SeedLink(dbContext, nameof(PunchItem), punchItem.Guid, "VG", "www.vg.no");
         knownTestData.LinkInPunchItemAGuid = link.Guid;
@@ -160,15 +162,16 @@ public static class CompletionContextExtension
         string plant,
         Project project,
         Guid checkListGuid,
+        Category category,
+        string description,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg,
-        string title,
         LibraryItem priority = null,
         LibraryItem sorting = null,
         LibraryItem type = null)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
-        var punchItem = new PunchItem(plant, project, checkListGuid, title, raisedByOrg, clearingByOrg);
+        var punchItem = new PunchItem(plant, project, checkListGuid, category, description, raisedByOrg, clearingByOrg);
         if (priority is not null)
         {
             punchItem.SetPriority(priority);

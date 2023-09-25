@@ -1,4 +1,6 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+﻿using System;
+using System.Linq;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -46,6 +48,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
             .UseIdentityColumn(PunchItem.IdentitySeed);
 
+        builder.Property(f => f.Category)
+            .HasDefaultValue(Category.PA)
+            .IsRequired();
+
         builder.Property(x => x.Description)
             .IsRequired()
             .HasMaxLength(PunchItem.DescriptionLengthMax);
@@ -73,6 +79,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
         builder.HasOne(x => x.VerifiedBy)
             .WithMany()
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder
+            .ToTable(x => x.HasCheckConstraint("punch_item_valid_category",
+                $"{nameof(PunchItem.Category)} in ({GetValidCategoryEnums()})"));
 
         // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
@@ -137,5 +147,11 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.Id,
                 x.RowVersion
             });
+    }
+
+    private string GetValidCategoryEnums()
+    {
+        var values = Enum.GetValues(typeof(Category)).Cast<int>();
+        return string.Join(',', values);
     }
 }

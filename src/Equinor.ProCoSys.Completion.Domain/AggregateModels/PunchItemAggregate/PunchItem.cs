@@ -25,12 +25,14 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         string plant,
         Project project,
         Guid checkListGuid,
+        Category category,
         string description,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg)
         : base(plant)
     {
         CheckListGuid = checkListGuid;
+        Category = category;
         Description = description;
         Guid = Guid.NewGuid();
 
@@ -44,6 +46,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public Project Project { get; private set; } = null!;
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
+    public Category Category { get; private set; }
     public int ItemNo => Id;
     public string Description { get; set; }
     public LibraryItem RaisedByOrg { get; private set; } = null!;

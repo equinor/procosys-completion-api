@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
@@ -7,6 +8,7 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
     public CreatePunchItemCommand(
+        Category category,
         string description,
         Guid projectGuid,
         Guid checkListGuid,
@@ -16,6 +18,7 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
         Guid? sortingGuid = null,
         Guid? typeGuid = null)
     {
+        Category = category;
         Description = description;
         ProjectGuid = projectGuid;
         CheckListGuid = checkListGuid;
@@ -26,6 +29,7 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
         TypeGuid = typeGuid;
     }
 
+    public Category Category { get; }
     public string Description { get; }
     public Guid ProjectGuid { get; }
     public Guid CheckListGuid { get; }
