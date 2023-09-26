@@ -132,7 +132,6 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     #endregion
 
     #region TagOwningPunchItemIsVoided
-    // todo #103935 
     [TestMethod]
     public async Task TagOwningPunchItemIsVoided_ShouldReturnTrue_WhenPunchItemOwnedByVoidedTag()
     {

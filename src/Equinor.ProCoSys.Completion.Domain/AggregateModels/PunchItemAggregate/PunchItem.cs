@@ -13,6 +13,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
+    public const int ExternalItemNoLengthMax = 100;
+    public const int MaterialExternalNoLengthMax = 100;
 
 #pragma warning disable CS8618
     protected PunchItem()
@@ -59,6 +61,12 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? TypeId { get; private set; }
     public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
+    public DateTime? DueDate { get; set; }
+    public int? Estimate { get; set; }
+    public string? ExternalItemNo { get; set; }
+    public bool MaterialRequired { get; set; }
+    public DateTime? MaterialETA { get; set; }
+    public string? MaterialExternalNo { get; set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }

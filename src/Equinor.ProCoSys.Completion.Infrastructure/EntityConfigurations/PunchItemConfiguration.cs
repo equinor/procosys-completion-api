@@ -56,6 +56,16 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IsRequired()
             .HasMaxLength(PunchItem.DescriptionLengthMax);
 
+        builder.Property(f => f.MaterialRequired)
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(x => x.ExternalItemNo)
+            .HasMaxLength(PunchItem.ExternalItemNoLengthMax);
+
+        builder.Property(x => x.MaterialExternalNo)
+            .HasMaxLength(PunchItem.MaterialExternalNoLengthMax);
+
         builder
             .Property(x => x.ClearedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
@@ -119,6 +129,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IncludeProperties(x => new
             {
                 x.Id,
+                x.Category,
                 x.Description,
                 x.ProjectId,
                 x.CreatedById,
@@ -136,6 +147,12 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.SortingId,
                 x.TypeId,
                 x.PriorityId,
+                x.Estimate,
+                x.DueDate,
+                x.ExternalItemNo,
+                x.MaterialRequired,
+                x.MaterialExternalNo,
+                x.MaterialETA,
                 x.RowVersion
             });
 
