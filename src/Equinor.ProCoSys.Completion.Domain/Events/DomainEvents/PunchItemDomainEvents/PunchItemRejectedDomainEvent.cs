@@ -5,8 +5,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemRejectedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemRejectedDomainEvent(PunchItem punchItem, Guid rejectedByOid) : base(punchItem)
-        => RejectedByOid = rejectedByOid;
-
-    public Guid RejectedByOid { get; }
+    public PunchItemRejectedDomainEvent(PunchItem punchItem) : base(punchItem)
+    {
+    }
 }

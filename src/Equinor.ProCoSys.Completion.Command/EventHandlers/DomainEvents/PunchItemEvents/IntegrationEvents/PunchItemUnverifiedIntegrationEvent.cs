@@ -16,7 +16,7 @@ public record PunchItemUnverifiedIntegrationEvent
         PunchItemUnverifiedDomainEvent punchItemUnverifiedEvent) : this(
         DisplayName: "Punch item unverified",
         punchItemUnverifiedEvent.PunchItem.Guid,
-        punchItemUnverifiedEvent.PunchItem.ModifiedByOid!.Value,
+        punchItemUnverifiedEvent.PunchItem.ModifiedBy!.Guid,
         punchItemUnverifiedEvent.PunchItem.ModifiedAtUtc!.Value)
     { }
 }

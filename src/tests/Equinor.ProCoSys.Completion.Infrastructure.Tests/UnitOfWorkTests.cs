@@ -24,7 +24,7 @@ public class UnitOfWorkTests
     private IEventDispatcher _eventDispatcherMock;
     private ICurrentUserProvider _currentUserProviderMock;
     private ManualTimeProvider _timeProvider;
-    private Person _user;
+    private Person _currentUser;
 
     [TestInitialize]
     public async Task Setup()
@@ -46,8 +46,8 @@ public class UnitOfWorkTests
 
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
-        dut.Persons.Add(_user);
+        _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
+        dut.Persons.Add(_currentUser);
         await dut.SaveChangesAsync();
 
         _currentUserProviderMock.GetCurrentUserOid()
@@ -68,11 +68,11 @@ public class UnitOfWorkTests
 
         // Assert
         Assert.AreEqual(_currentTime, raisedByOrg.CreatedAtUtc);
-        Assert.AreEqual(_user.Id, raisedByOrg.CreatedById);
-        Assert.AreEqual(_currentUserOid, raisedByOrg.CreatedByOid);
+        Assert.AreEqual(_currentUser.Id, raisedByOrg.CreatedById);
+        Assert.AreEqual(_currentUser.Guid, raisedByOrg.CreatedBy.Guid);
         Assert.IsNull(raisedByOrg.ModifiedAtUtc);
         Assert.IsNull(raisedByOrg.ModifiedById);
-        Assert.IsNull(raisedByOrg.ModifiedByOid);
+        Assert.IsNull(raisedByOrg.ModifiedBy);
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class UnitOfWorkTests
 
         // Assert
         Assert.AreEqual(_currentTime, raisedByOrg.ModifiedAtUtc);
-        Assert.AreEqual(_user.Id, raisedByOrg.ModifiedById);
-        Assert.AreEqual(_currentUserOid, raisedByOrg.ModifiedByOid);
+        Assert.AreEqual(_currentUser.Id, raisedByOrg.ModifiedById);
+        Assert.AreEqual(_currentUser.Guid, raisedByOrg.ModifiedBy!.Guid);
     }
 }

@@ -24,12 +24,12 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         _punchItem.Reject(_person);
         _punchItem.SetModified(_person);
 
-        _punchItemRejectedEvent = new PunchItemRejectedDomainEvent(_punchItem, _person.Guid);
+        _punchItemRejectedEvent = new PunchItemRejectedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemRejectedEventHandler(_publishEndpointMock,  Substitute.For<ILogger<PunchItemRejectedEventHandler>>());
         _publishEndpointMock
             .When(x => x.Publish(Arg.Any<PunchItemRejectedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemRejectedIntegrationEvent>>>(), default))
+                Arg.Any<IPipe<PublishContext<PunchItemRejectedIntegrationEvent>>>()))
             .Do(info =>
             {
                 _publishedIntegrationEvent = info.Arg<PunchItemRejectedIntegrationEvent>();
@@ -61,6 +61,6 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_punchItemRejectedEvent.PunchItem.RejectedAtUtc, _publishedIntegrationEvent.RejectedAtUtc);
         Assert.AreEqual(_person.Guid, _publishedIntegrationEvent.RejectedByOid);
         Assert.AreEqual(_punchItemRejectedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.ModifiedByOid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
     }
 }

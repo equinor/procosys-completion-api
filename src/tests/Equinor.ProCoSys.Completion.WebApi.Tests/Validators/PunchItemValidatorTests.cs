@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
@@ -24,6 +25,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     private ICheckListValidator _checkListValidatorMock = null!;
     private Project _projectA = null!;
     private Project _closedProjectC = null!;
+    private Person _currentPerson = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -31,6 +33,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
+        _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
         _projectA = context.Projects.Single(p => p.Id == _projectAId);
         _closedProjectC = context.Projects.Single(p => p.Id == _closedProjectCId);
 

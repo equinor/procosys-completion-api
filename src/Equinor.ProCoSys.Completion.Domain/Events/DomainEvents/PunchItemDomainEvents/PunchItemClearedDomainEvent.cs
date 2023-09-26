@@ -5,8 +5,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemClearedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemClearedDomainEvent(PunchItem punchItem, Guid clearedByOid) : base(punchItem)
-        => ClearedByOid = clearedByOid;
-
-    public Guid ClearedByOid { get; }
+    public PunchItemClearedDomainEvent(PunchItem punchItem) : base(punchItem)
+    {
+    }
 }

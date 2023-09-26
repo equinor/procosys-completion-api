@@ -17,7 +17,6 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected int _projectAId;
     protected int _projectBId;
     protected int _closedProjectCId;
-    protected Person _currentPerson;
     protected int _raisedByOrgId;
     protected int _clearingByOrgId;
     protected int _priorityId;
@@ -50,8 +49,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
         {
-            _currentPerson = new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs");
-            AddPerson(context, _currentPerson);
+            AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs"));
         }
 
         var projectA = new Project(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");

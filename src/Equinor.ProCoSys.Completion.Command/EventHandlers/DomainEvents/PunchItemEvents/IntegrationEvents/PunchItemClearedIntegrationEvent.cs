@@ -18,9 +18,9 @@ public record PunchItemClearedIntegrationEvent
         PunchItemClearedDomainEvent punchItemClearedEvent) : this(
         DisplayName: "Punch item cleared",
         punchItemClearedEvent.PunchItem.Guid,
-        punchItemClearedEvent.ClearedByOid,
+        punchItemClearedEvent.PunchItem.ClearedBy!.Guid,
         punchItemClearedEvent.PunchItem.ClearedAtUtc!.Value,
-        punchItemClearedEvent.PunchItem.ModifiedByOid!.Value,
+        punchItemClearedEvent.PunchItem.ModifiedBy!.Guid,
         punchItemClearedEvent.PunchItem.ModifiedAtUtc!.Value)
     { }
 }

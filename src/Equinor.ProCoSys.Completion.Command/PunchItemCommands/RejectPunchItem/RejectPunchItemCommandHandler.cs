@@ -42,7 +42,7 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
         var currentPerson = await _personRepository.GetCurrentPersonAsync();
         punchItem.Reject(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
-        punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(punchItem, currentPerson.Guid));
+        punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

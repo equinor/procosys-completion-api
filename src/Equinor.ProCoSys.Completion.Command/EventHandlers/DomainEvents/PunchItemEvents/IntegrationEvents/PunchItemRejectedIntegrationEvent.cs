@@ -18,9 +18,9 @@ public record PunchItemRejectedIntegrationEvent
         PunchItemRejectedDomainEvent punchItemRejectedEvent) : this(
         DisplayName: "Punch item rejected",
         punchItemRejectedEvent.PunchItem.Guid,
-        punchItemRejectedEvent.RejectedByOid,
+        punchItemRejectedEvent.PunchItem.RejectedBy!.Guid,
         punchItemRejectedEvent.PunchItem.RejectedAtUtc!.Value,
-        punchItemRejectedEvent.PunchItem.ModifiedByOid!.Value,
+        punchItemRejectedEvent.PunchItem.ModifiedBy!.Guid,
         punchItemRejectedEvent.PunchItem.ModifiedAtUtc!.Value)
     { }
 }

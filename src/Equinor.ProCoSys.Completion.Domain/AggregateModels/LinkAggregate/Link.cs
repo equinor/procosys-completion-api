@@ -28,23 +28,23 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public string Url { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
-    public Guid CreatedByOid { get; private set; }
+    public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
-    public Guid? ModifiedByOid { get; private set; }
+    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
 
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;
         CreatedById = createdBy.Id;
-        CreatedByOid = createdBy.Guid;
+        CreatedBy = createdBy;
     }
 
     public void SetModified(Person modifiedBy)
     {
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
-        ModifiedByOid = modifiedBy.Guid;
+        ModifiedBy = modifiedBy;
     }
 }

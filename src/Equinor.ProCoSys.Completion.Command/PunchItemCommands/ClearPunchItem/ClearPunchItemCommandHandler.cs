@@ -42,7 +42,7 @@ public class ClearPunchItemCommandHandler : IRequestHandler<ClearPunchItemComman
         var currentPerson = await _personRepository.GetCurrentPersonAsync();
         punchItem.Clear(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
-        punchItem.AddDomainEvent(new PunchItemClearedDomainEvent(punchItem, currentPerson.Guid));
+        punchItem.AddDomainEvent(new PunchItemClearedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

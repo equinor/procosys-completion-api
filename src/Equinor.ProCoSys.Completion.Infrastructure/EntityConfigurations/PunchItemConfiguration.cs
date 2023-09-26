@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -55,31 +54,26 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .Property(x => x.ClearedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.ClearedBy)
             .WithMany()
-            .HasForeignKey(x => x.ClearedById)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
             .Property(x => x.RejectedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.RejectedBy)
             .WithMany()
-            .HasForeignKey(x => x.RejectedById)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
             .Property(x => x.VerifiedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.VerifiedBy)
             .WithMany()
-            .HasForeignKey(x => x.VerifiedById)
             .OnDelete(DeleteBehavior.NoAction);
+
         // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_cleared",

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -32,11 +33,13 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private LibraryItem _priority;
     private LibraryItem _sorting;
     private LibraryItem _type;
+    private Person _currentPerson;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
+        _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
         var projectA = context.Projects.Single(p => p.Id == _projectAId);
         _raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
         _clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
