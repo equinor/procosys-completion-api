@@ -16,6 +16,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -106,6 +107,7 @@ public static class ApplicationModule
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<ILibraryItemRepository, LibraryItemRepository>();
+        services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();

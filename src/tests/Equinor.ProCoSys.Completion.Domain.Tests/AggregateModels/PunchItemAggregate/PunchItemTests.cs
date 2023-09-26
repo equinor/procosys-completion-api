@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Completion.Domain.Audit;
@@ -19,6 +20,7 @@ public class PunchItemTests : IModificationAuditableTests
     private LibraryItem _priority;
     private LibraryItem _type;
     private LibraryItem _sorting;
+    private WorkOrder _workOrder;
     private readonly Category _itemCategory = Category.PA;
     private readonly string _itemDescription = "Item A";
     private readonly Guid _checkListGuid = Guid.NewGuid();
@@ -46,6 +48,9 @@ public class PunchItemTests : IModificationAuditableTests
 
         _sorting = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING);
         _sorting.SetProtectedIdForTesting(128);
+
+        _workOrder = new WorkOrder(_testPlant, Guid.NewGuid(), null!);
+        _workOrder.SetProtectedIdForTesting(129);
 
         _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
@@ -694,6 +699,84 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsNull(_dut.TypeId);
         Assert.IsNull(_dut.Type);
+    }
+    #endregion
+
+    #region SetWorkOrder
+    [TestMethod]
+    public void SetWorkOrder_ShouldSetWorkOrder()
+    {
+        // Arrange
+        Assert.IsNull(_dut.WorkOrderId);
+
+        // Act
+        _dut.SetWorkOrder(_workOrder);
+
+        // Assert
+        Assert.AreEqual(_workOrder.Id, _dut.WorkOrderId);
+        Assert.AreEqual(_workOrder, _dut.WorkOrder);
+    }
+
+    [TestMethod]
+    public void SetWorkOrder_ShouldThrowException_WhenWorkOrderInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetWorkOrder(new WorkOrder("OtherPlant", Guid.NewGuid(), null!)));
+    #endregion
+
+    #region ClearWorkOrder
+    [TestMethod]
+    public void ClearWorkOrder_ShouldClearWorkOrder()
+    {
+        // Arrange
+        _dut.SetWorkOrder(_workOrder);
+        Assert.AreEqual(_workOrder.Id, _dut.WorkOrderId);
+        Assert.IsNotNull(_dut.WorkOrder);
+
+        // Act
+        _dut.ClearWorkOrder();
+
+        // Assert
+        Assert.IsNull(_dut.WorkOrderId);
+        Assert.IsNull(_dut.WorkOrder);
+    }
+    #endregion
+
+    #region SetOriginalWorkOrder
+    [TestMethod]
+    public void SetOriginalWorkOrder_ShouldSetOriginalWorkOrder()
+    {
+        // Arrange
+        Assert.IsNull(_dut.OriginalWorkOrderId);
+
+        // Act
+        _dut.SetOriginalWorkOrder(_workOrder);
+
+        // Assert
+        Assert.AreEqual(_workOrder.Id, _dut.OriginalWorkOrderId);
+        Assert.AreEqual(_workOrder, _dut.OriginalWorkOrder);
+    }
+
+    [TestMethod]
+    public void SetOriginalWorkOrder_ShouldThrowException_WhenOriginalWorkOrderInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetOriginalWorkOrder(new WorkOrder("OtherPlant", Guid.NewGuid(), null!)));
+    #endregion
+
+    #region ClearOriginalWorkOrder
+    [TestMethod]
+    public void ClearOriginalWorkOrder_ShouldClearOriginalWorkOrder()
+    {
+        // Arrange
+        _dut.SetOriginalWorkOrder(_workOrder);
+        Assert.AreEqual(_workOrder.Id, _dut.OriginalWorkOrderId);
+        Assert.IsNotNull(_dut.OriginalWorkOrder);
+
+        // Act
+        _dut.ClearOriginalWorkOrder();
+
+        // Assert
+        Assert.IsNull(_dut.OriginalWorkOrderId);
+        Assert.IsNull(_dut.OriginalWorkOrder);
     }
     #endregion
 }

@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -67,6 +68,10 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public bool MaterialRequired { get; set; }
     public DateTime? MaterialETA { get; set; }
     public string? MaterialExternalNo { get; set; }
+    public WorkOrder? WorkOrder { get; private set; }
+    public int? WorkOrderId { get; private set; }
+    public WorkOrder? OriginalWorkOrder { get; private set; }
+    public int? OriginalWorkOrderId { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -256,6 +261,40 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         Type = null;
         TypeId = null;
+    }
+
+    public void SetWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        WorkOrder = workOrder;
+        WorkOrderId = workOrder.Id;
+    }
+
+    public void ClearWorkOrder()
+    {
+        WorkOrder = null;
+        WorkOrderId = null;
+    }
+
+    public void SetOriginalWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        OriginalWorkOrder = workOrder;
+        OriginalWorkOrderId = workOrder.Id;
+    }
+
+    public void ClearOriginalWorkOrder()
+    {
+        OriginalWorkOrder = null;
+        OriginalWorkOrderId = null;
     }
 
     private void SetProject(string plant, Project project)
