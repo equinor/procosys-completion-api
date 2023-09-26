@@ -86,6 +86,7 @@ public class UnitOfWorkTests
 
         await dut.SaveChangesAsync();
 
+        // trigger a change on record. EF change tracker notice this
         raisedByOrg.IsVoided = true;
             
         // Act
