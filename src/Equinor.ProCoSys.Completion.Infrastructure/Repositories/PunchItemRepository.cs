@@ -9,6 +9,11 @@ public class PunchItemRepository : EntityWithGuidRepository<PunchItem>, IPunchIt
         : base(context, 
             context.PunchItems,
             context.PunchItems
+                .Include(p => p.CreatedBy)
+                .Include(p => p.ModifiedBy)
+                .Include(p => p.ClearedBy)
+                .Include(p => p.RejectedBy)
+                .Include(p => p.VerifiedBy)
                 .Include(p => p.RaisedByOrg)
                 .Include(p => p.ClearingByOrg)
                 .Include(p => p.Priority)

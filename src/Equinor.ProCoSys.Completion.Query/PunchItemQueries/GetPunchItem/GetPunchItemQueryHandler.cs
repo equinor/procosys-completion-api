@@ -21,78 +21,66 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
 
     public async Task<Result<PunchItemDetailsDto>> Handle(GetPunchItemQuery request, CancellationToken cancellationToken)
     {
-        var dto =
-            await (from punchItem in _context.QuerySet<PunchItem>()
+        var punchItem =
+            await (from pi in _context.QuerySet<PunchItem>()
+                        .Include(p => p.CreatedBy)
+                        .Include(p => p.ModifiedBy)
+                        .Include(p => p.ClearedBy)
+                        .Include(p => p.RejectedBy)
+                        .Include(p => p.VerifiedBy)
                         .Include(p => p.Project)
                         .Include(p => p.RaisedByOrg)
                         .Include(p => p.ClearingByOrg)
                         .Include(p => p.Priority)
                         .Include(p => p.Sorting)
                         .Include(p => p.Type)
-                   join createdByUser in _context.QuerySet<Person>()
-                       on punchItem.CreatedById equals createdByUser.Id
-                   from modifiedByUser in _context.QuerySet<Person>()
-                       .Where(p => p.Id == punchItem.ModifiedById).DefaultIfEmpty() //left join!
-                   from clearedByUser in _context.QuerySet<Person>()
-                       .Where(p => p.Id == punchItem.ClearedById).DefaultIfEmpty() //left join!                   
-                   from rejectedByUser in _context.QuerySet<Person>()
-                       .Where(p => p.Id == punchItem.RejectedById).DefaultIfEmpty() //left join!                   
-                   from verifiedByUser in _context.QuerySet<Person>()
-                       .Where(p => p.Id == punchItem.VerifiedById).DefaultIfEmpty() //left join!                   
-                   where punchItem.Guid == request.PunchItemGuid
-                   select new {
-                       PunchItem = punchItem,
-                       CreatedBy = createdByUser, 
-                       ModifiedBy = modifiedByUser,
-                       ClearedBy = clearedByUser,
-                       RejectedBy = rejectedByUser,
-                       VerifiedBy = verifiedByUser
-                   })
+                   where pi.Guid == request.PunchItemGuid
+                   select pi)
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
-        if (dto is null)
+        if (punchItem is null)
         {
             throw new Exception($"PunchItem with Guid {request.PunchItemGuid} not found");
         }
 
-        var createdBy = MapToPersonDto(dto.CreatedBy)!;
-        var modifiedBy = MapToPersonDto(dto.ModifiedBy);
-        var clearedBy = MapToPersonDto(dto.ClearedBy);
-        var rejectedBy = MapToPersonDto(dto.RejectedBy);
-        var verifiedBy = MapToPersonDto(dto.VerifiedBy);
-        var raisedByOrg = MapToLibraryItemDto(dto.PunchItem.RaisedByOrg)!;
-        var clearingByOrg = MapToLibraryItemDto(dto.PunchItem.ClearingByOrg)!;
-        var sorting = MapToLibraryItemDto(dto.PunchItem.Sorting);
-        var priority = MapToLibraryItemDto(dto.PunchItem.Priority);
-        var type = MapToLibraryItemDto(dto.PunchItem.Type);
+        var createdBy = MapToPersonDto(punchItem.CreatedBy)!;
+        var modifiedBy = MapToPersonDto(punchItem.ModifiedBy);
+        var clearedBy = MapToPersonDto(punchItem.ClearedBy);
+        var rejectedBy = MapToPersonDto(punchItem.RejectedBy);
+        var verifiedBy = MapToPersonDto(punchItem.VerifiedBy);
+        var raisedByOrg = MapToLibraryItemDto(punchItem.RaisedByOrg)!;
+        var clearingByOrg = MapToLibraryItemDto(punchItem.ClearingByOrg)!;
+        var sorting = MapToLibraryItemDto(punchItem.Sorting);
+        var priority = MapToLibraryItemDto(punchItem.Priority);
+        var type = MapToLibraryItemDto(punchItem.Type);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
-                       dto.PunchItem.Guid,
-                       dto.PunchItem.Project.Name,
-                       dto.PunchItem.ItemNo,
-                       dto.PunchItem.Description,
+                       punchItem.Guid,
+                       punchItem.Project.Name,
+                       punchItem.ItemNo,
+                       punchItem.Description,
                        createdBy,
-                       dto.PunchItem.CreatedAtUtc,
+                       punchItem.CreatedAtUtc,
                        modifiedBy,
-                       dto.PunchItem.ModifiedAtUtc,
-                       dto.PunchItem.IsReadyToBeCleared,
-                       dto.PunchItem.IsReadyToBeUncleared,
+                       punchItem.ModifiedAtUtc,
+                       punchItem.IsReadyToBeCleared,
+                       punchItem.IsReadyToBeUncleared,
                        clearedBy,
-                       dto.PunchItem.ClearedAtUtc,
-                       dto.PunchItem.IsReadyToBeRejected,
+                       punchItem.ClearedAtUtc,
+                       punchItem.IsReadyToBeRejected,
                        rejectedBy,
-                       dto.PunchItem.RejectedAtUtc,
-                       dto.PunchItem.IsReadyToBeVerified,
-                       dto.PunchItem.IsReadyToBeUnverified,
+                       punchItem.RejectedAtUtc,
+                       punchItem.IsReadyToBeVerified,
+                       punchItem.IsReadyToBeUnverified,
                        verifiedBy,
-                       dto.PunchItem.VerifiedAtUtc,
+                       punchItem.VerifiedAtUtc,
                        raisedByOrg,
                        clearingByOrg,
                        priority,
                        sorting,
                        type,
-                       dto.PunchItem.RowVersion.ConvertToString());
+                       punchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
 

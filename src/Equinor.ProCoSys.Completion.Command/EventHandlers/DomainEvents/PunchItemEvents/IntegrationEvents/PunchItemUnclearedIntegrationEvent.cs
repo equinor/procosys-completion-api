@@ -16,7 +16,7 @@ public record PunchItemUnclearedIntegrationEvent
         PunchItemUnclearedDomainEvent punchItemUnclearedEvent) : this(
         DisplayName: "Punch item uncleared",
         punchItemUnclearedEvent.PunchItem.Guid,
-        punchItemUnclearedEvent.PunchItem.ModifiedByOid!.Value,
+        punchItemUnclearedEvent.PunchItem.ModifiedBy!.Guid,
         punchItemUnclearedEvent.PunchItem.ModifiedAtUtc!.Value)
     { }
 }

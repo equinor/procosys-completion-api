@@ -59,6 +59,6 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual("Punch item unverified", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.ModifiedByOid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
     }
 }

@@ -5,8 +5,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemVerifiedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemVerifiedDomainEvent(PunchItem punchItem, Guid verifiedByOid) : base(punchItem)
-        => VerifiedByOid = verifiedByOid;
-
-    public Guid VerifiedByOid { get; }
+    public PunchItemVerifiedDomainEvent(PunchItem punchItem) : base(punchItem)
+    {
+    }
 }

@@ -42,7 +42,7 @@ public class VerifyPunchItemCommandHandler : IRequestHandler<VerifyPunchItemComm
         var currentPerson = await _personRepository.GetCurrentPersonAsync();
         punchItem.Verify(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
-        punchItem.AddDomainEvent(new PunchItemVerifiedDomainEvent(punchItem, currentPerson.Guid));
+        punchItem.AddDomainEvent(new PunchItemVerifiedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

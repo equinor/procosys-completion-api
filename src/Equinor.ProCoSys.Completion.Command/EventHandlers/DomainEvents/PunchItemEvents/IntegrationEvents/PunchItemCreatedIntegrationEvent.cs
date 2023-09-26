@@ -23,7 +23,7 @@ public record PunchItemCreatedIntegrationEvent
         punchItemCreatedEvent.PunchItem.Project.Description,
         punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.ItemNo,
-        punchItemCreatedEvent.PunchItem.CreatedByOid,
+        punchItemCreatedEvent.PunchItem.CreatedBy.Guid,
         punchItemCreatedEvent.PunchItem.CreatedAtUtc)
     { }
 }

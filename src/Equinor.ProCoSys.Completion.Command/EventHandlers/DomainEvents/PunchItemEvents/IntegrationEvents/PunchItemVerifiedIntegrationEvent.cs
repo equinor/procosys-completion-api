@@ -18,9 +18,9 @@ public record PunchItemVerifiedIntegrationEvent
         PunchItemVerifiedDomainEvent punchItemVerifiedEvent) : this(
         DisplayName: "Punch item verified",
         punchItemVerifiedEvent.PunchItem.Guid,
-        punchItemVerifiedEvent.VerifiedByOid,
+        punchItemVerifiedEvent.PunchItem.VerifiedBy!.Guid,
         punchItemVerifiedEvent.PunchItem.VerifiedAtUtc!.Value,
-        punchItemVerifiedEvent.PunchItem.ModifiedByOid!.Value,
+        punchItemVerifiedEvent.PunchItem.ModifiedBy!.Guid,
         punchItemVerifiedEvent.PunchItem.ModifiedAtUtc!.Value)
     { }
 }

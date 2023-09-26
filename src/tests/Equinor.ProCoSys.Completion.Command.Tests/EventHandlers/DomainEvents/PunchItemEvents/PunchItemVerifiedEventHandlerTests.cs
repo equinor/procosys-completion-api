@@ -24,7 +24,7 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
         _punchItem.Verify(_person);
         _punchItem.SetModified(_person);
 
-        _punchItemVerifiedEvent = new PunchItemVerifiedDomainEvent(_punchItem, _person.Guid);
+        _punchItemVerifiedEvent = new PunchItemVerifiedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemVerifiedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemVerifiedEventHandler>>());
         _publishEndpointMock
@@ -61,6 +61,6 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.VerifiedAtUtc, _publishedIntegrationEvent.VerifiedAtUtc);
         Assert.AreEqual(_person.Guid, _publishedIntegrationEvent.VerifiedByOid);
         Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.ModifiedByOid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_punchItemVerifiedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
     }
 }

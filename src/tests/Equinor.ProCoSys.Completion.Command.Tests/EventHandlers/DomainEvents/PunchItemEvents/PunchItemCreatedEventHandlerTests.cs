@@ -58,7 +58,7 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.Project.Guid, _publishedIntegrationEvent.ProjectGuid);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedByOid, _publishedIntegrationEvent.CreatedByOid);
+        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
         Assert.AreEqual(_punchItemCreatedEvent.PunchItem.ItemNo, _publishedIntegrationEvent.ItemNo);
     }
 }

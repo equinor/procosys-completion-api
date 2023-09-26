@@ -20,6 +20,6 @@ public abstract class IModificationAuditableTests : ICreationAuditableTests
         // Arrange
         Assert.AreEqual(_now, dut.ModifiedAtUtc);
         Assert.AreEqual(_person.Id, dut.ModifiedById);
-        Assert.AreEqual(_person.Guid, dut.ModifiedByOid);
+        Assert.AreEqual(_person, dut.ModifiedBy);
     }
 }

@@ -59,17 +59,20 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
-    public Guid CreatedByOid { get; private set; }
+    public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
-    public Guid? ModifiedByOid { get; private set; }
+    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public DateTime? ClearedAtUtc { get; private set; }
     public int? ClearedById { get; private set; }
+    public Person? ClearedBy { get; private set; }
     public DateTime? RejectedAtUtc { get; private set; }
     public int? RejectedById { get; private set; }
+    public Person? RejectedBy { get; private set; }
     public DateTime? VerifiedAtUtc { get; private set; }
     public int? VerifiedById { get; private set; }
+    public Person? VerifiedBy { get; private set; }
 
     public bool IsReadyToBeCleared => !ClearedAtUtc.HasValue;
     public bool IsReadyToBeRejected => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
@@ -84,6 +87,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be cleared");
         }
         ClearedAtUtc = TimeService.UtcNow;
+        ClearedBy = clearedBy;
         ClearedById = clearedBy.Id;
         RejectedAtUtc = null;
         RejectedById = null;
@@ -96,8 +100,10 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be rejected");
         }
         RejectedAtUtc = TimeService.UtcNow;
+        RejectedBy = rejectedBy;
         RejectedById = rejectedBy.Id;
         ClearedAtUtc = null;
+        ClearedBy = null;
         ClearedById = null;
     }
 
@@ -108,6 +114,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be verified");
         }
         VerifiedAtUtc = TimeService.UtcNow;
+        VerifiedBy = verifiedBy;
         VerifiedById = verifiedBy.Id;
     }
 
@@ -118,6 +125,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be uncleared");
         }
         ClearedAtUtc = null;
+        ClearedBy = null;
         ClearedById = null;
     }
 
@@ -128,21 +136,22 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be unverified");
         }
         VerifiedAtUtc = null;
+        VerifiedBy = null;
         VerifiedById = null;
     }
 
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;
+        CreatedBy = createdBy;
         CreatedById = createdBy.Id;
-        CreatedByOid = createdBy.Guid;
     }
 
     public void SetModified(Person modifiedBy)
     {
         ModifiedAtUtc = TimeService.UtcNow;
+        ModifiedBy = modifiedBy;
         ModifiedById = modifiedBy.Id;
-        ModifiedByOid = modifiedBy.Guid;
     }
 
     public void SetRaisedByOrg(LibraryItem raisedByOrg)
