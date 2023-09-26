@@ -63,7 +63,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE);
 
         _punchItemRepository.Add(punchItem);
-        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, request.ProjectGuid));
+        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

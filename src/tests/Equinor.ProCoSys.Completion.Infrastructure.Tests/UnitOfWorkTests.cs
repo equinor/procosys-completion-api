@@ -5,8 +5,6 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,9 +16,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests;
 public class UnitOfWorkTests
 {
     private readonly string _plant = "PCS$TESTPLANT";
-    private Project _project;
-    private LibraryItem _raisedByOrg;
-    private LibraryItem _clearingByOrg;
     private readonly Guid _currentUserOid = new("12345678-1234-1234-1234-123456789123");
     private readonly DateTime _currentTime = new(2020, 2, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -29,14 +24,11 @@ public class UnitOfWorkTests
     private IEventDispatcher _eventDispatcherMock;
     private ICurrentUserProvider _currentUserProviderMock;
     private ManualTimeProvider _timeProvider;
+    private Person _user;
 
     [TestInitialize]
-    public void Setup()
+    public async Task Setup()
     {
-        _project = new(_plant, Guid.NewGuid(), null!, null!);
-        _raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _clearingByOrg = new LibraryItem(_plant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -51,6 +43,15 @@ public class UnitOfWorkTests
 
         _timeProvider = new ManualTimeProvider(_currentTime);
         TimeService.SetProvider(_timeProvider);
+
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+
+        _user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
+        dut.Persons.Add(_user);
+        await dut.SaveChangesAsync();
+
+        _currentUserProviderMock.GetCurrentUserOid()
+            .Returns(_currentUserOid);
     }
 
     [TestMethod]
@@ -59,25 +60,19 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
-        dut.Persons.Add(user);
-        await dut.SaveChangesAsync();
-
-        _currentUserProviderMock.GetCurrentUserOid()
-            .Returns(_currentUserOid);
-        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
-        dut.PunchItems.Add(newPunchItem);
+        var raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(raisedByOrg);
 
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, newPunchItem.CreatedAtUtc);
-        Assert.AreEqual(user.Id, newPunchItem.CreatedById);
-        Assert.AreEqual(_currentUserOid, newPunchItem.CreatedByOid);
-        Assert.IsNull(newPunchItem.ModifiedAtUtc);
-        Assert.IsNull(newPunchItem.ModifiedById);
-        Assert.IsNull(newPunchItem.ModifiedByOid);
+        Assert.AreEqual(_currentTime, raisedByOrg.CreatedAtUtc);
+        Assert.AreEqual(_user.Id, raisedByOrg.CreatedById);
+        Assert.AreEqual(_currentUserOid, raisedByOrg.CreatedByOid);
+        Assert.IsNull(raisedByOrg.ModifiedAtUtc);
+        Assert.IsNull(raisedByOrg.ModifiedById);
+        Assert.IsNull(raisedByOrg.ModifiedByOid);
     }
 
     [TestMethod]
@@ -86,26 +81,20 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
-        dut.Persons.Add(user);
-        await dut.SaveChangesAsync();
-
-        _currentUserProviderMock.GetCurrentUserOid()
-            .Returns(_currentUserOid);
-
-        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
-        dut.PunchItems.Add(newPunchItem);
+        var raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(raisedByOrg);
 
         await dut.SaveChangesAsync();
 
-        newPunchItem.Description = "Updated";
+        // trigger a change on record. EF change tracker notice this
+        raisedByOrg.IsVoided = true;
             
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, newPunchItem.ModifiedAtUtc);
-        Assert.AreEqual(user.Id, newPunchItem.ModifiedById);
-        Assert.AreEqual(_currentUserOid, newPunchItem.ModifiedByOid);
+        Assert.AreEqual(_currentTime, raisedByOrg.ModifiedAtUtc);
+        Assert.AreEqual(_user.Id, raisedByOrg.ModifiedById);
+        Assert.AreEqual(_currentUserOid, raisedByOrg.ModifiedByOid);
     }
 }

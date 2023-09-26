@@ -14,15 +14,15 @@ namespace Equinor.ProCoSys.Completion.Test.Common;
 
 public abstract class ReadOnlyTestsBase : TestsBase
 {
-    protected Project _projectA;
-    protected Project _projectB;
-    protected Project _closedProjectC;
+    protected int _projectAId;
+    protected int _projectBId;
+    protected int _closedProjectCId;
     protected Person _currentPerson;
-    protected LibraryItem _raisedByOrg;
-    protected LibraryItem _clearingByOrg;
-    protected LibraryItem _priority;
-    protected LibraryItem _sorting;
-    protected LibraryItem _type;
+    protected int _raisedByOrgId;
+    protected int _clearingByOrgId;
+    protected int _priorityId;
+    protected int _sortingId;
+    protected int _typeId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
@@ -54,50 +54,50 @@ public abstract class ReadOnlyTestsBase : TestsBase
             AddPerson(context, _currentPerson);
         }
 
-        _projectA = new(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
-        _projectB = new(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
-        _closedProjectC = new(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
+        var projectA = new Project(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
+        var projectB = new Project(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
+        var closedProjectC = new Project(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
 
-        AddProject(context, _projectA);
-        AddProject(context, _projectB);
-        AddProject(context, _closedProjectC);
+        _projectAId = AddProject(context, projectA);
+        _projectBId = AddProject(context, projectB);
+        _closedProjectCId = AddProject(context, closedProjectC);
 
-        _raisedByOrg = new LibraryItem(
+        var raisedByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(), 
             "COM",
             "COM desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _clearingByOrg = new LibraryItem(
+        var clearingByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "ENG",
             "ENG desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _priority = new LibraryItem(
+        var priority = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "P1",
             "P1 desc",
             LibraryType.PUNCHLIST_PRIORITY);
-        _sorting = new LibraryItem(
+        var sorting = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "A",
             "A desc",
             LibraryType.PUNCHLIST_SORTING);
-        _type = new LibraryItem(
+        var type = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "Paint",
             "Paint desc",
             LibraryType.PUNCHLIST_TYPE);
 
-        AddLibraryItem(context, _raisedByOrg);
-        AddLibraryItem(context, _clearingByOrg);
-        AddLibraryItem(context, _priority);
-        AddLibraryItem(context, _sorting);
-        AddLibraryItem(context, _type);
+        _raisedByOrgId = AddLibraryItem(context, raisedByOrg);
+        _clearingByOrgId = AddLibraryItem(context, clearingByOrg);
+        _priorityId = AddLibraryItem(context, priority);
+        _sortingId = AddLibraryItem(context, sorting);
+        _typeId = AddLibraryItem(context, type);
 
         SetupNewDatabase(_dbContextOptions);
     }
@@ -117,17 +117,17 @@ public abstract class ReadOnlyTestsBase : TestsBase
         return person;
     }
 
-    protected Project AddProject(CompletionContext context, Project project)
+    protected int AddProject(CompletionContext context, Project project)
     {
         context.Projects.Add(project);
         context.SaveChangesAsync().Wait();
-        return project;
+        return project.Id;
     }
 
-    protected LibraryItem AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
+    protected int AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
     {
         context.Library.Add(libraryItem);
         context.SaveChangesAsync().Wait();
-        return libraryItem;
+        return libraryItem.Id;
     }
 }

@@ -1,7 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,37 +16,31 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
-        builder.HasOne<Project>()
+        builder.HasOne(x => x.Project)
             .WithMany()
-            .HasForeignKey(x => x.ProjectId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.RaisedByOrg)
             .WithMany()
-            .HasForeignKey(x => x.RaisedByOrgId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.ClearingByOrg)
             .WithMany()
-            .HasForeignKey(x => x.ClearingByOrgId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Sorting)
             .WithMany()
-            .HasForeignKey(x => x.SortingId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Type)
             .WithMany()
-            .HasForeignKey(x => x.TypeId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Priority)
             .WithMany()
-            .HasForeignKey(x => x.PriorityId)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(x => x.Id)
@@ -88,37 +80,6 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .WithMany()
             .HasForeignKey(x => x.VerifiedById)
             .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.RaisedByOrgId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.ClearingByOrgId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.SortingId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.TypeId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.PriorityId)
-            .OnDelete(DeleteBehavior.NoAction);
-
         // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
             .ToTable(x => x.HasCheckConstraint("punch_item_check_cleared",
