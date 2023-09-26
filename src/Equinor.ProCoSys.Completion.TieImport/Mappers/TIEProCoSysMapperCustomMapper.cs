@@ -5,15 +5,12 @@ public static class TIEProCoSysMapperCustomMapper
 {
     public static void CustomMap(TIObject tieObject, TIInterfaceMessage message)
     {
-        //TODO: Implement other custom mapping functionality
-        MAP_STID_Project_Methods(tieObject, message);
-
+        //TODO: 106699 Implement other custom mapping functionality
+        SetActionAndMethodToAppendForProjectObjectsFromStid(tieObject, message);
     }
 
-    private static void MAP_STID_Project_Methods(TIObject tieObject, TIInterfaceMessage message)
+    private static void SetActionAndMethodToAppendForProjectObjectsFromStid(TIObject tieObject, TIInterfaceMessage message)
     {
-        //If Project is imported from STID methods should be changed to APPEND
-        //2014-Jan-15:[KRS]Added.
         if (string.IsNullOrWhiteSpace(message.SourceSystem))
         {
             return;

@@ -121,7 +121,7 @@ public class ImportHandler : IImportHandler
             return importResult;
         }
 
-        //TODO: Call SiteSpecificHandler
+        //TODO: 106691 SiteSpecificHandler
 
         var proCoSysImportObject = CreateProCoSysImportObject(tiObject, out importResult);
 
@@ -139,11 +139,11 @@ public class ImportHandler : IImportHandler
 
         EnsureObjectNameHasValue(tiObject, proCoSysImportObject);
 
-        //TODO: TIEProCoSysImportCustomImport.CustomImport
+        //TODO: 106692 CustomImport
 
         var incomingObjectType = proCoSysImportObject.GetType();
 
-        //TODO: NCR special handling
+        //TODO: 106693 NCR special handling
 
         var command = CreateCommand(incomingObjectType, proCoSysImportObject.ImportMethod, proCoSysImportObject);
         
