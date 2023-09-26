@@ -83,6 +83,7 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
+        string category,
         string description,
         Guid projectGuid,
         Guid checkListGuid,
@@ -96,6 +97,7 @@ public static class PunchItemsControllerTestsHelper
     {
         var bodyPayload = new
         {
+            category,
             description,
             projectGuid = projectGuid.ToString(),
             checkListGuid = checkListGuid.ToString(),
@@ -536,6 +538,7 @@ public static class PunchItemsControllerTestsHelper
         var guidAndRowVersion = await CreatePunchItemAsync(
             userType,
             plant,
+            "PA",
             Guid.NewGuid().ToString(),
             projectGuid,
             checkListGuid,

@@ -7,6 +7,7 @@ public record PunchItemDetailsDto(
     Guid Guid,
     string ProjectName,
     int ItemNo,
+    string Category,
     string Description,
     PersonDto CreatedBy,
     DateTime CreatedAtUtc,

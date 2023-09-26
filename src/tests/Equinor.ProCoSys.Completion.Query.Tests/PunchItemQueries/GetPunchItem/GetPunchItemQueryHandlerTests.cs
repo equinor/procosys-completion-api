@@ -288,6 +288,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunchItem(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
     {
         Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
+        Assert.AreEqual(punchItem.Category.ToString(), punchItemDetailsDto.Category);
         Assert.AreEqual(punchItem.Description, punchItemDetailsDto.Description);
         Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDetailsDto.RowVersion);
         var project = GetProjectById(punchItem.ProjectId);
