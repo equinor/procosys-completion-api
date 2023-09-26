@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -71,6 +72,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Attachment> Attachments => Set<Attachment>();
     public virtual DbSet<LibraryItem> Library => Set<LibraryItem>();
     public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public virtual DbSet<Document> Documents => Set<Document>();
 
     private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
     {

@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
@@ -72,6 +73,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? WorkOrderId { get; private set; }
     public WorkOrder? OriginalWorkOrder { get; private set; }
     public int? OriginalWorkOrderId { get; private set; }
+    public Document? Document { get; private set; }
+    public int? DocumentId { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -295,6 +298,23 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         OriginalWorkOrder = null;
         OriginalWorkOrderId = null;
+    }
+
+    public void SetDocument(Document document)
+    {
+        if (document.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(document)} in {document.Plant} to item in {Plant}");
+        }
+
+        Document = document;
+        DocumentId = document.Id;
+    }
+
+    public void ClearDocument()
+    {
+        Document = null;
+        DocumentId = null;
     }
 
     private void SetProject(string plant, Project project)

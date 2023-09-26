@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
@@ -21,6 +22,7 @@ public class PunchItemTests : IModificationAuditableTests
     private LibraryItem _type;
     private LibraryItem _sorting;
     private WorkOrder _workOrder;
+    private Document _document;
     private readonly Category _itemCategory = Category.PA;
     private readonly string _itemDescription = "Item A";
     private readonly Guid _checkListGuid = Guid.NewGuid();
@@ -51,6 +53,9 @@ public class PunchItemTests : IModificationAuditableTests
 
         _workOrder = new WorkOrder(_testPlant, Guid.NewGuid(), null!);
         _workOrder.SetProtectedIdForTesting(129);
+
+        _document = new Document(_testPlant, Guid.NewGuid(), null!);
+        _document.SetProtectedIdForTesting(130);
 
         _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
@@ -777,6 +782,45 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsNull(_dut.OriginalWorkOrderId);
         Assert.IsNull(_dut.OriginalWorkOrder);
+    }
+    #endregion
+
+    #region SetDocument
+    [TestMethod]
+    public void SetDocument_ShouldSetDocument()
+    {
+        // Arrange
+        Assert.IsNull(_dut.DocumentId);
+
+        // Act
+        _dut.SetDocument(_document);
+
+        // Assert
+        Assert.AreEqual(_document.Id, _dut.DocumentId);
+        Assert.AreEqual(_document, _dut.Document);
+    }
+
+    [TestMethod]
+    public void SetDocument_ShouldThrowException_WhenDocumentInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetDocument(new Document("OtherPlant", Guid.NewGuid(), null!)));
+    #endregion
+
+    #region ClearDocument
+    [TestMethod]
+    public void ClearDocument_ShouldClearDocument()
+    {
+        // Arrange
+        _dut.SetDocument(_document);
+        Assert.AreEqual(_document.Id, _dut.DocumentId);
+        Assert.IsNotNull(_dut.Document);
+
+        // Act
+        _dut.ClearDocument();
+
+        // Assert
+        Assert.IsNull(_dut.DocumentId);
+        Assert.IsNull(_dut.Document);
     }
     #endregion
 }
