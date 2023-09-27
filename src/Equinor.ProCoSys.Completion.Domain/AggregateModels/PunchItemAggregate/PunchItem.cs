@@ -78,6 +78,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? DocumentId { get; private set; }
     public SWCR? SWCR { get; private set; }
     public int? SWCRId { get; private set; }
+    public Person? ActionBy { get; private set; }
+    public int? ActionById { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -335,6 +337,18 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         SWCR = null;
         SWCRId = null;
+    }
+
+    public void SetActionBy(Person person)
+    {
+        ActionBy = person;
+        ActionById = person.Id;
+    }
+
+    public void ClearActionBy()
+    {
+        ActionBy = null;
+        ActionById = null;
     }
 
     private void SetProject(string plant, Project project)

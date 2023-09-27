@@ -1,6 +1,7 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -25,6 +26,7 @@ public class PunchItemTests : IModificationAuditableTests
     private WorkOrder _workOrder;
     private Document _document;
     private SWCR _swcr;
+    private Person _actionBy;
     private readonly Category _itemCategory = Category.PA;
     private readonly string _itemDescription = "Item A";
     private readonly Guid _checkListGuid = Guid.NewGuid();
@@ -61,6 +63,9 @@ public class PunchItemTests : IModificationAuditableTests
 
         _swcr = new SWCR(_testPlant, Guid.NewGuid(), 1);
         _swcr.SetProtectedIdForTesting(131);
+
+        _actionBy = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+        _actionBy.SetProtectedIdForTesting(132);
 
         _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
@@ -865,6 +870,40 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsNull(_dut.SWCRId);
         Assert.IsNull(_dut.SWCR);
+    }
+    #endregion
+
+    #region SetActionBy
+    [TestMethod]
+    public void SetActionBy_ShouldSetActionBy()
+    {
+        // Arrange
+        Assert.IsNull(_dut.ActionById);
+
+        // Act
+        _dut.SetActionBy(_actionBy);
+
+        // Assert
+        Assert.AreEqual(_actionBy.Id, _dut.ActionById);
+        Assert.AreEqual(_actionBy, _dut.ActionBy);
+    }
+    #endregion
+
+    #region ClearActionBy
+    [TestMethod]
+    public void ClearActionBy_ShouldClearActionBy()
+    {
+        // Arrange
+        _dut.SetActionBy(_actionBy);
+        Assert.AreEqual(_actionBy.Id, _dut.ActionById);
+        Assert.IsNotNull(_dut.ActionBy);
+
+        // Act
+        _dut.ClearActionBy();
+
+        // Assert
+        Assert.IsNull(_dut.ActionById);
+        Assert.IsNull(_dut.ActionBy);
     }
     #endregion
 }

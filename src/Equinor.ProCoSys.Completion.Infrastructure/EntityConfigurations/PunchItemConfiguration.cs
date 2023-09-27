@@ -60,6 +60,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .WithMany()
             .OnDelete(DeleteBehavior.NoAction);
 
+        builder.HasOne(x => x.ActionBy)
+            .WithMany()
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.Property(x => x.Id)
             // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
             .UseIdentityColumn(PunchItem.IdentitySeed);
@@ -169,6 +173,11 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.MaterialRequired,
                 x.MaterialExternalNo,
                 x.MaterialETA,
+                x.WorkOrderId,
+                x.OriginalWorkOrderId,
+                x.DocumentId,
+                x.SWCRId,
+                x.ActionById,
                 x.RowVersion
             });
 
