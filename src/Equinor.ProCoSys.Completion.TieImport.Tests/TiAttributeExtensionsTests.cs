@@ -102,7 +102,7 @@ public class TiAttributeExtensionsTests
     {
         var attribute = new TIAttribute { Value = null };
 
-        var result = attribute.GetValueAsString();
+        var result = attribute.GetValueAsBool();
 
         Assert.IsNull(result);
     }

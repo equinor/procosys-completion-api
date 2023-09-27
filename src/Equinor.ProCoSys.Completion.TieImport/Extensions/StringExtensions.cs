@@ -1,8 +1,6 @@
 ﻿namespace Equinor.ProCoSys.Completion.TieImport.Extensions;
 public static class StringExtensions
 {
-    public static bool ContainsAnyOf(this string value, IEnumerable<string> candidates) => candidates.Any(value.Contains);
-
     public static bool GetValueAsBool(this string value)
     {
         if (string.IsNullOrWhiteSpace(value))

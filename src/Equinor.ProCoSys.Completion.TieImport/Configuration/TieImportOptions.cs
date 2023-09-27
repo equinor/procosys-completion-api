@@ -5,18 +5,20 @@ namespace Equinor.ProCoSys.Completion.TieImport.Configuration;
 
 public class TieImportOptions
 {
+#pragma warning disable CS8618
     [Required]
-    public string AdapterTieUri { get; set; } = string.Empty;
+    public string AdapterTieUri { get; set; }
     [Required]
-    public string AzureClientId { get; set; } = string.Empty;
+    public string AzureClientId { get; set; }
     [Required] 
-    public string AzureTenantId { get; set; } = string.Empty;
+    public string AzureTenantId { get; set; }
     [Required]
-    public string AzureTieApiId { get; set; } = string.Empty;
+    public string AzureTieApiId { get; set; }
     [Required]
-    public string AzureKeyVaultUrl { get; set; } = string.Empty;
+    public string AzureKeyVaultUrl { get; set; }
     [Required]
-    public string AzureCertificateName { get; set; } = string.Empty;
+    public string AzureCertificateName { get; set; }
+#pragma warning restore CS8618
 
     /// <summary>
     /// See usage in <see cref="AdapterMessageHandleBehavior"/>.
