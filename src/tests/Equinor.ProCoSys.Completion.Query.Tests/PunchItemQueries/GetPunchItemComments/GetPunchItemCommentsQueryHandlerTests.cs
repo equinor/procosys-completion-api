@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemComments;
 
@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemC
 public class GetPunchItemCommentsQueryHandlerTests : TestsBase
 {
     private GetPunchItemCommentsQueryHandler _dut;
-    private Mock<ICommentService> _commentServiceMock;
+    private ICommentService _commentServiceMock;
     private GetPunchItemCommentsQuery _query;
     private CommentDto _commentDto;
 
@@ -33,11 +33,11 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         {
             _commentDto
         };
-        _commentServiceMock = new Mock<ICommentService>();
-        _commentServiceMock.Setup(l => l.GetAllForSourceAsync(_query.PunchItemGuid, default))
-            .ReturnsAsync(commentDtos);
+        _commentServiceMock = Substitute.For<ICommentService>();
+        _commentServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+            .Returns(commentDtos);
 
-        _dut = new GetPunchItemCommentsQueryHandler(_commentServiceMock.Object);
+        _dut = new GetPunchItemCommentsQueryHandler(_commentServiceMock);
     }
 
     [TestMethod]
@@ -69,8 +69,8 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         await _dut.Handle(_query, default);
 
         // Assert
-        _commentServiceMock.Verify(u => u.GetAllForSourceAsync(
+        await _commentServiceMock.Received(1).GetAllForSourceAsync(
             _query.PunchItemGuid,
-            default), Times.Exactly(1));
+            default);
     }
 }

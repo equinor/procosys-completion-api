@@ -5,7 +5,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -27,10 +28,10 @@ public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Projects)
-            .Returns(_dbSetMock.Object);
+            .Projects
+            .Returns(_dbSetMock);
 
-        _dut = new ProjectRepository(_contextHelper.ContextMock.Object);
+        _dut = new ProjectRepository(_contextHelper.ContextMock);
         base._dut = _dut;
     }
 

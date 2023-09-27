@@ -12,9 +12,12 @@ using Equinor.ProCoSys.Completion.WebApi.TieImport.Mocks;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using System;
+using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
+using Equinor.ProCoSys.Completion.TieImport.Configuration;
+using Equinor.ProCoSys.Completion.TieImport.Mocks;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
 
@@ -27,14 +30,14 @@ public static class TieImportModule
         services.AddOptions<TieImportOptions>()
             .BindConfiguration("TieImport")
             .ValidateDataAnnotations()
-            .ValidateOnStart(); //TODO: Add required keyword on TieImportOptions class
+            .ValidateOnStart();
         configuration.Bind("TieImport", configOptions);
         //services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
             .ValidateDataAnnotations()
-            .ValidateOnStart(); //TODO: Add required keyword on TieImportOptions class
+            .ValidateOnStart();
 
         //TODO: Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();

@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
@@ -16,7 +16,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
     private readonly string _newRowVersion = "AAAAAAAAACC=";
     private OverwriteExistingPunchItemAttachmentCommandHandler _dut;
     private OverwriteExistingPunchItemAttachmentCommand _command;
-    private Mock<IAttachmentService> _attachmentServiceMock;
+    private IAttachmentService _attachmentServiceMock;
 
     [TestInitialize]
     public void Setup()
@@ -24,16 +24,16 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
         var oldRowVersion = "AAAAAAAAABA=";
         _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "T", oldRowVersion, new MemoryStream());
 
-        _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(a => a.UploadOverwriteAsync(
+        _attachmentServiceMock = Substitute.For<IAttachmentService>();
+        _attachmentServiceMock.UploadOverwriteAsync(
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.FileName,
             _command.Content,
             _command.RowVersion,
-            default)).ReturnsAsync(_newRowVersion);
+            default).Returns(_newRowVersion);
 
-        _dut = new OverwriteExistingPunchItemAttachmentCommandHandler(_attachmentServiceMock.Object);
+        _dut = new OverwriteExistingPunchItemAttachmentCommandHandler(_attachmentServiceMock);
     }
 
     [TestMethod]
@@ -53,12 +53,12 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        _attachmentServiceMock.Verify(u => u.UploadOverwriteAsync(
+        await _attachmentServiceMock.Received(1).UploadOverwriteAsync(
             nameof(PunchItem), 
             _command.PunchItemGuid, 
             _command.FileName,
             _command.Content,
             _command.RowVersion,
-            default), Times.Exactly(1));
+            default);
     }
 }

@@ -9,14 +9,14 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectComma
 public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> : AccessValidatorTestBase
     where TProjectCommand : IBaseRequest, IIsProjectCommand
 {
-    protected abstract TProjectCommand GetProjectCommandWithAccessToProjectToTest();
-    protected abstract TProjectCommand GetProjectCommandWithoutAccessToProjectToTest();
+    protected abstract TProjectCommand GetProjectCommandWithAccessToProjectAndContent();
+    protected abstract TProjectCommand GetProjectCommandWithoutAccessToProject();
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToProject()
+    public async Task Validate_ShouldReturnTrue_WhenAccessToProjectAndContent()
     {
         // Arrange
-        var command = GetProjectCommandWithAccessToProjectToTest();
+        var command = GetProjectCommandWithAccessToProjectAndContent();
 
         // act
         var result = await _dut.ValidateAsync(command);
@@ -29,7 +29,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var command = GetProjectCommandWithoutAccessToProjectToTest();
+        var command = GetProjectCommandWithoutAccessToProject();
 
         // act
         var result = await _dut.ValidateAsync(command);

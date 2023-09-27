@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemAttachments;
 
@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemA
 public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
 {
     private GetPunchItemAttachmentsQueryHandler _dut;
-    private Mock<IAttachmentService> _attachmentServiceMock;
+    private IAttachmentService _attachmentServiceMock;
     private GetPunchItemAttachmentsQuery _query;
     private AttachmentDto _attachmentDto;
 
@@ -37,11 +37,11 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         {
             _attachmentDto
         };
-        _attachmentServiceMock = new Mock<IAttachmentService>();
-        _attachmentServiceMock.Setup(l => l.GetAllForSourceAsync(_query.PunchItemGuid, default))
-            .ReturnsAsync(attachmentDtos);
+        _attachmentServiceMock = Substitute.For<IAttachmentService>();
+        _attachmentServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+            .Returns(attachmentDtos);
 
-        _dut = new GetPunchItemAttachmentsQueryHandler(_attachmentServiceMock.Object);
+        _dut = new GetPunchItemAttachmentsQueryHandler(_attachmentServiceMock);
     }
 
     [TestMethod]
@@ -86,8 +86,8 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         await _dut.Handle(_query, default);
 
         // Assert
-        _attachmentServiceMock.Verify(u => u.GetAllForSourceAsync(
+        await _attachmentServiceMock.Received(1).GetAllForSourceAsync(
             _query.PunchItemGuid,
-            default), Times.Exactly(1));
+            default);
     }
 }

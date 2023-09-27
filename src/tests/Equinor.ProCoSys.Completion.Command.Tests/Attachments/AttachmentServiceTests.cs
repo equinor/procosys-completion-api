@@ -11,7 +11,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Attachments;
 
@@ -21,11 +21,11 @@ public class AttachmentServiceTests : TestsBase
     private readonly string _blobContainer = "bc";
     private readonly string _sourceType = "Whatever";
     private readonly Guid _sourceGuid = Guid.NewGuid();
-    private Mock<IAttachmentRepository> _attachmentRepositoryMock;
+    private IAttachmentRepository _attachmentRepositoryMock;
     private AttachmentService _dut;
     private Attachment _attachmentAddedToRepository;
     private Attachment _existingAttachment;
-    private Mock<IAzureBlobService> _azureBlobServiceMock;
+    private IAzureBlobService _azureBlobServiceMock;
     private readonly string _existingFileName = "E.txt";
     private readonly string _newFileName = "N.txt";
     private readonly string _rowVersion = "AAAAAAAAABA=";
@@ -33,37 +33,50 @@ public class AttachmentServiceTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _attachmentRepositoryMock = new Mock<IAttachmentRepository>();
+        _attachmentRepositoryMock = Substitute.For<IAttachmentRepository>();
         _attachmentRepositoryMock
-            .Setup(x => x.Add(It.IsAny<Attachment>()))
-            .Callback<Attachment>(attachment =>
+            .When(x => x.Add(Arg.Any<Attachment>()))
+            .Do(callInfo =>
             {
-                _attachmentAddedToRepository = attachment;
+                _attachmentAddedToRepository = callInfo.Arg<Attachment>();
             });
-        _existingAttachment = new Attachment(_sourceType, _sourceGuid, TestPlantA, _existingFileName);
-        _attachmentRepositoryMock.Setup(a => a.GetAttachmentWithFileNameForSourceAsync(
-                _existingAttachment.SourceGuid,
-                _existingAttachment.FileName))
-            .ReturnsAsync(_existingAttachment);
-        _attachmentRepositoryMock.Setup(a => a.GetByGuidAsync(_existingAttachment.Guid))
-            .ReturnsAsync(_existingAttachment);
 
-        _azureBlobServiceMock = new Mock<IAzureBlobService>();
-        var blobStorageOptionsMock = new Mock<IOptionsSnapshot<BlobStorageOptions>>();
+        _existingAttachment = new Attachment(_sourceType, _sourceGuid, TestPlantA, _existingFileName);
+
+        _attachmentRepositoryMock
+            .GetAttachmentWithFileNameForSourceAsync(_existingAttachment.SourceGuid, _existingAttachment.FileName)
+            .Returns(_existingAttachment);
+
+        _attachmentRepositoryMock
+            .GetByGuidAsync(_existingAttachment.Guid)
+            .Returns(_existingAttachment);
+
+
+        _attachmentRepositoryMock.GetAttachmentWithFileNameForSourceAsync(
+                _existingAttachment.SourceGuid,
+                _existingAttachment.FileName)
+            .Returns(_existingAttachment);
+
+        _attachmentRepositoryMock.GetByGuidAsync(_existingAttachment.Guid)
+            .Returns(_existingAttachment);
+
+        _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
+        var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
+            
         var blobStorageOptions = new BlobStorageOptions
         {
             BlobContainer = _blobContainer
         };
-        blobStorageOptionsMock
-            .Setup(x => x.Value)
-            .Returns(blobStorageOptions);
+            
+        blobStorageOptionsMock.Value.Returns(blobStorageOptions);
+
         _dut = new AttachmentService(
-            _attachmentRepositoryMock.Object,
-            _plantProviderMock.Object,
-            _unitOfWorkMock.Object,
-            _azureBlobServiceMock.Object,
-            blobStorageOptionsMock.Object,
-            new Mock<ILogger<AttachmentService>>().Object);
+            _attachmentRepositoryMock,
+            _plantProviderMock,
+            _unitOfWorkMock,
+            _azureBlobServiceMock,
+            blobStorageOptionsMock,
+            Substitute.For<ILogger<AttachmentService>>());
     }
 
     #region UploadNewAsync
@@ -75,12 +88,11 @@ public class AttachmentServiceTests : TestsBase
             => _dut.UploadNewAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), default));
 
         // Assert
-        _azureBlobServiceMock.Verify(a => a.UploadAsync(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<Stream>(),
-            It.IsAny<bool>(),
-            default), Times.Never);
+       await _azureBlobServiceMock.Received(0).UploadAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Stream>(),
+            Arg.Any<bool>());
     }
 
     [TestMethod]
@@ -104,7 +116,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -125,13 +137,13 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         var p = _attachmentAddedToRepository.GetFullBlobPath();
-        _azureBlobServiceMock.Verify(a
-            => a.UploadAsync(
-                _blobContainer,
-                p,
-                It.IsAny<Stream>(),
-                false,
-                default), Times.Once);
+       await _azureBlobServiceMock.Received(1).UploadAsync(
+            _blobContainer,
+            p,
+            Arg.Any<Stream>(),
+            false,
+            default);
+
     }
     #endregion
 
@@ -166,7 +178,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -187,13 +199,12 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         var p = _existingAttachment.GetFullBlobPath();
-        _azureBlobServiceMock.Verify(a
-            => a.UploadAsync(
+        await _azureBlobServiceMock.Received(1)
+           .UploadAsync(
                 _blobContainer,
                 p,
-                It.IsAny<Stream>(),
-                true,
-                default), Times.Once);
+                Arg.Any<Stream>(),
+                true);
     }
 
     [TestMethod]
@@ -241,7 +252,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
 
         // Assert
-        _attachmentRepositoryMock.Verify(a => a.Remove(_existingAttachment), Times.Once);
+        _attachmentRepositoryMock.Received(1).Remove(_existingAttachment);
     }
 
     [TestMethod]
@@ -252,11 +263,9 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         var p = _existingAttachment.GetFullBlobPath();
-        _azureBlobServiceMock.Verify(a
-            => a.DeleteAsync(
+        await _azureBlobServiceMock.Received(1).DeleteAsync(
                 _blobContainer,
-                p,
-                default), Times.Once);
+                p);
     }
 
     [TestMethod]
@@ -267,16 +276,14 @@ public class AttachmentServiceTests : TestsBase
             => _dut.DeleteAsync(Guid.NewGuid(), _rowVersion, default));
 
         // Assert
-        _attachmentRepositoryMock.Verify(
-            a => a.Remove(
-                It.IsAny<Attachment>()),
-            Times.Never);
-        _azureBlobServiceMock.Verify(
-            a => a.DeleteAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                default),
-            Times.Never);
+        _attachmentRepositoryMock.Received(0)
+            .Remove(
+                Arg.Any<Attachment>());
+        await _azureBlobServiceMock.Received(0)
+            .DeleteAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>());
+
     }
     #endregion
 }

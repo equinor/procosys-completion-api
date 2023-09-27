@@ -5,7 +5,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MockQueryable.Moq;
+using MockQueryable.NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 
@@ -23,10 +24,10 @@ public class LinkRepositoryTests : EntityWithGuidRepositoryTestBase<Link>
 
         _contextHelper
             .ContextMock
-            .Setup(x => x.Links)
-            .Returns(_dbSetMock.Object);
+            .Links
+            .Returns(_dbSetMock);
 
-        _dut = new LinkRepository(_contextHelper.ContextMock.Object);
+        _dut = new LinkRepository(_contextHelper.ContextMock);
     }
 
     protected override Link GetNewEntity() => new("Whatever", Guid.NewGuid(), "New link", "U");

@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.Validators.LibraryItemValidators;
 using Equinor.ProCoSys.Completion.Command.Validators.ProjectValidators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItem;
 
@@ -14,8 +14,8 @@ public class CreatePunchItemCommandValidatorTests
 {
     private CreatePunchItemCommandValidator _dut;
     private CreatePunchItemCommand _command;
-    private Mock<IProjectValidator> _projectValidatorMock;
-    private Mock<ILibraryItemValidator> _libraryItemValidatorMock;
+    private IProjectValidator _projectValidatorMock;
+    private ILibraryItemValidator _libraryItemValidatorMock;
 
     [TestInitialize]
     public void Setup_OkState()
@@ -27,11 +27,11 @@ public class CreatePunchItemCommandValidatorTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
+            Guid.NewGuid(),
             Guid.NewGuid());
-        _projectValidatorMock = new Mock<IProjectValidator>();
-        _projectValidatorMock.Setup(x => x.ExistsAsync(_command.ProjectGuid, default))
-            .ReturnsAsync(true);
-        _libraryItemValidatorMock = new Mock<ILibraryItemValidator>();
+        _projectValidatorMock = Substitute.For<IProjectValidator>();
+        _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(true);
+        _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
 
         SetupOkLibraryItem(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         SetupOkLibraryItem(_command.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
@@ -40,19 +40,14 @@ public class CreatePunchItemCommandValidatorTests
         SetupOkLibraryItem(_command.TypeGuid!.Value, LibraryType.PUNCHLIST_TYPE);
 
         _dut = new CreatePunchItemCommandValidator(
-            _projectValidatorMock.Object,
-            _libraryItemValidatorMock.Object);
+            _projectValidatorMock,
+            _libraryItemValidatorMock);
     }
 
     private void SetupOkLibraryItem(Guid guid, LibraryType libraryType)
     {
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(guid, default))
-            .ReturnsAsync(true);
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(
-                guid,
-                libraryType,
-                default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.ExistsAsync(guid, default).Returns(true);
+        _libraryItemValidatorMock.HasTypeAsync(guid, libraryType, default).Returns(true);
     }
 
     [TestMethod]
@@ -69,8 +64,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectNotExists()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.ExistsAsync(_command.ProjectGuid, default))
-            .ReturnsAsync(false);
+        _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -85,8 +79,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.Setup(x => x.IsClosedAsync(_command.ProjectGuid, default))
-            .ReturnsAsync(true);
+        _projectValidatorMock.IsClosedAsync(_command.ProjectGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -101,8 +94,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_RaisedByOrgNotExists()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.RaisedByOrgGuid, default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.ExistsAsync(_command.RaisedByOrgGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -117,8 +109,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_RaisedByOrgIsVoided()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.RaisedByOrgGuid, default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.IsVoidedAsync(_command.RaisedByOrgGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -133,10 +124,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_RaisedByOrgIsNotACompletionOrganization()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.RaisedByOrgGuid,
-                LibraryType.COMPLETION_ORGANIZATION,
-                default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.HasTypeAsync(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -152,8 +140,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ClearingByOrgGuidNotExists()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.ClearingByOrgGuid, default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.ExistsAsync(_command.ClearingByOrgGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -168,8 +155,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ClearingByOrgGuidIsVoided()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.ClearingByOrgGuid, default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.IsVoidedAsync(_command.ClearingByOrgGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -184,10 +170,8 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ClearingByOrgIsNotACompletionOrganization()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.ClearingByOrgGuid,
-                LibraryType.COMPLETION_ORGANIZATION,
-                default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.HasTypeAsync(_command.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION, default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -203,8 +187,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PriorityGuidNotExists()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.PriorityGuid!.Value, default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.ExistsAsync(_command.PriorityGuid!.Value, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -219,8 +202,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PriorityGuidIsVoided()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.PriorityGuid!.Value, default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.IsVoidedAsync(_command.PriorityGuid!.Value, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -235,10 +217,11 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PriorityIsNotAPriority()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.PriorityGuid!.Value,
-                LibraryType.PUNCHLIST_PRIORITY,
-                default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.HasTypeAsync(
+                _command.PriorityGuid!.Value,
+                LibraryType.PUNCHLIST_PRIORITY, 
+                default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -254,8 +237,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_SortingGuidNotExists()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.SortingGuid!.Value, default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.ExistsAsync(_command.SortingGuid!.Value, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -270,8 +252,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_SortingGuidIsVoided()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.SortingGuid!.Value, default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.IsVoidedAsync(_command.SortingGuid!.Value, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -286,10 +267,11 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_SortingIsNotASorting()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.SortingGuid!.Value,
-                LibraryType.PUNCHLIST_SORTING,
-                default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.HasTypeAsync(
+                _command.SortingGuid!.Value, 
+                LibraryType.PUNCHLIST_SORTING, 
+                default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -305,8 +287,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_TypeGuidNotExists()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.ExistsAsync(_command.TypeGuid!.Value, default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.ExistsAsync(_command.TypeGuid!.Value, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -321,8 +302,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_TypeGuidIsVoided()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.IsVoidedAsync(_command.TypeGuid!.Value, default))
-            .ReturnsAsync(true);
+        _libraryItemValidatorMock.IsVoidedAsync(_command.TypeGuid!.Value, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -337,10 +317,11 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_TypeIsNotAType()
     {
         // Arrange
-        _libraryItemValidatorMock.Setup(x => x.HasTypeAsync(_command.TypeGuid!.Value,
-                LibraryType.PUNCHLIST_TYPE,
-                default))
-            .ReturnsAsync(false);
+        _libraryItemValidatorMock.HasTypeAsync(
+                _command.TypeGuid!.Value,
+                LibraryType.PUNCHLIST_TYPE, 
+                default)
+            .Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

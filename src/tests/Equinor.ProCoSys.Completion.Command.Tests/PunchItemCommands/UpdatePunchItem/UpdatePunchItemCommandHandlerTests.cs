@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
@@ -18,12 +18,12 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestInitialize]
     public void Setup()
     {
-        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, "newText", _rowVersion);
+        _command = new UpdatePunchItemCommand(_existingPunchItem.Guid, "newText", RowVersion);
 
         _dut = new UpdatePunchItemCommandHandler(
-            _punchItemRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ILogger<UpdatePunchItemCommandHandler>>().Object);
+            _punchItemRepositoryMock,
+            _unitOfWorkMock,
+            Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
     }
 
     [TestMethod]
@@ -43,7 +43,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        _unitOfWorkMock.Verify(r => r.SaveChangesAsync(default), Times.Once);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
@@ -55,8 +55,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_rowVersion, result.Data);
-        Assert.AreEqual(_rowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(RowVersion, result.Data);
+        Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]

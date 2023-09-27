@@ -10,7 +10,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Tests;
 
@@ -25,9 +25,9 @@ public class UnitOfWorkTests
     private readonly DateTime _currentTime = new(2020, 2, 1, 0, 0, 0, DateTimeKind.Utc);
 
     private DbContextOptions<CompletionContext> _dbContextOptions;
-    private Mock<IPlantProvider> _plantProviderMock;
-    private Mock<IEventDispatcher> _eventDispatcherMock;
-    private Mock<ICurrentUserProvider> _currentUserProviderMock;
+    private IPlantProvider _plantProviderMock;
+    private IEventDispatcher _eventDispatcherMock;
+    private ICurrentUserProvider _currentUserProviderMock;
     private ManualTimeProvider _timeProvider;
 
     [TestInitialize]
@@ -41,13 +41,13 @@ public class UnitOfWorkTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        _plantProviderMock = new Mock<IPlantProvider>();
-        _plantProviderMock.Setup(x => x.Plant)
+        _plantProviderMock = Substitute.For<IPlantProvider>();
+        _plantProviderMock.Plant
             .Returns(_plant);
 
-        _eventDispatcherMock = new Mock<IEventDispatcher>();
+        _eventDispatcherMock = Substitute.For<IEventDispatcher>();
 
-        _currentUserProviderMock = new Mock<ICurrentUserProvider>();
+        _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
 
         _timeProvider = new ManualTimeProvider(_currentTime);
         TimeService.SetProvider(_timeProvider);
@@ -57,16 +57,15 @@ public class UnitOfWorkTests
     public async Task SaveChangesAsync_SetsCreatedProperties_WhenCreated()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock.Object, _eventDispatcherMock.Object, _currentUserProviderMock.Object);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         var user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
         dut.Persons.Add(user);
         await dut.SaveChangesAsync();
 
-        _currentUserProviderMock
-            .Setup(x => x.GetCurrentUserOid())
+        _currentUserProviderMock.GetCurrentUserOid()
             .Returns(_currentUserOid);
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         // Act
@@ -85,17 +84,16 @@ public class UnitOfWorkTests
     public async Task SaveChangesAsync_SetsModifiedProperties_WhenModified()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock.Object, _eventDispatcherMock.Object, _currentUserProviderMock.Object);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         var user = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
         dut.Persons.Add(user);
         await dut.SaveChangesAsync();
 
-        _currentUserProviderMock
-            .Setup(x => x.GetCurrentUserOid())
+        _currentUserProviderMock.GetCurrentUserOid()
             .Returns(_currentUserOid);
 
-        var newPunchItem = new PunchItem(_plant, _project, "Desc", _raisedByOrg, _clearingByOrg);
+        var newPunchItem = new PunchItem(_plant, _project, Guid.NewGuid(), "Desc", _raisedByOrg, _clearingByOrg);
         dut.PunchItems.Add(newPunchItem);
 
         await dut.SaveChangesAsync();

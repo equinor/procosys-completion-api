@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
+using Equinor.ProCoSys.Completion.WebApi.MainApi;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,31 +20,33 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public sealed class TestFactory : WebApplicationFactory<Startup>
 {
-    private readonly string _writerOid = "00000000-0000-0000-0000-000000000001";
-    private readonly string _readerOid = "00000000-0000-0000-0000-000000000003";
-    private readonly string _noPermissionUserOid = "00000000-0000-0000-0000-000000000666";
+    private const string WriterOid = "00000000-0000-0000-0000-000000000001";
+    private const string ReaderOid = "00000000-0000-0000-0000-000000000003";
+    private const string NoPermissionUserOid = "00000000-0000-0000-0000-000000000666";
     private readonly string _connectionString;
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = new();
     private readonly List<IDisposable> _disposables = new();
 
-    public readonly Mock<IAzureBlobService> BlobStorageMock = new();
-    private readonly Mock<IPersonApiService> _personApiServiceMock = new();
-    private readonly Mock<IPermissionApiService> _permissionApiServiceMock = new();
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
+    public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
+    private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
+    private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
+    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
     public static string Unknown => "UNKNOWN";
     public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
     public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
+    public static Guid CheckListGuid => KnownPlantData.CheckListGuid[KnownPlantData.PlantA];
     public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
     public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
     public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
@@ -140,10 +144,11 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.PostConfigureAll<JwtBearerOptions>(jwtBearerOptions =>
                 jwtBearerOptions.ForwardAuthenticate = IntegrationTestAuthHandler.TestAuthenticationScheme);
 
-            services.AddScoped(_ => _personApiServiceMock.Object);
-            services.AddScoped(_ => _permissionApiServiceMock.Object);
-            services.AddScoped(_ => BlobStorageMock.Object);
-            services.AddScoped(_ => _publishEndpointMock.Object);
+            services.AddScoped(_ => _personApiServiceMock);
+            services.AddScoped(_ => _permissionApiServiceMock);
+            services.AddScoped(_ => _checkListApiServiceMock);
+            services.AddScoped(_ => BlobStorageMock);
+            services.AddScoped(_ => _publishEndpointMock);
         });
 
         builder.ConfigureServices(services =>
@@ -229,11 +234,14 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         
     private void SetupPermissionMock(string plant, ITestUser testUser)
     {
-        _permissionApiServiceMock.Setup(p => p.GetPermissionsForCurrentUserAsync(plant))
+        _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.Permissions));
                         
-        _permissionApiServiceMock.Setup(p => p.GetAllOpenProjectsForCurrentUserAsync(plant))
+        _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant)
             .Returns(Task.FromResult(testUser.AccessableProjects));
+
+        _permissionApiServiceMock.GetRestrictionRolesForCurrentUserAsync(plant)
+            .Returns(Task.FromResult(testUser.Restrictions));
     }
 
     private void SetupTestUsers()
@@ -257,11 +265,16 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             }
         };
 
+        var restrictions = new List<string>
+        {
+            ClaimsTransformation.NoRestrictions
+        };
+
         SetupAnonymousUser();
 
-        SetupWriterUser(accessablePlants, accessableProjects);
+        SetupWriterUser(accessablePlants, accessableProjects, restrictions);
 
-        SetupReaderUser(accessablePlants, accessableProjects);
+        SetupReaderUser(accessablePlants, accessableProjects, restrictions);
     
         SetupNoPermissionUser();
             
@@ -297,22 +310,22 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         {
             if (testUser.AuthProCoSysPerson is not null)
             {
-                _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
                     .Returns(Task.FromResult(testUser.AuthProCoSysPerson));
             }
             else
             {
-                _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid)))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
                     .Returns(Task.FromResult((ProCoSysPerson)null));
             }
-            _permissionApiServiceMock.Setup(p => p.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid)))
+            _permissionApiServiceMock.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid))
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
         // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Authenticator:CompletionApiObjectId"];
-        _personApiServiceMock.Setup(p => p.TryGetPersonByOidAsync(new Guid(apiObjectId)))
+        _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId))
             .Returns(Task.FromResult(new ProCoSysPerson
             {
                 AzureOid = apiObjectId,
@@ -336,7 +349,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Access",
                         UserName = "NO",
                         Email = "no@pcs.com",
-                        Oid = _noPermissionUserOid
+                        Oid = NoPermissionUserOid
                     },
                 AccessablePlants = new List<AccessablePlant>
                 {
@@ -344,13 +357,15 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
                 },
                 Permissions = new List<string>(),
-                AccessableProjects = new List<AccessableProject>()
+                AccessableProjects = new List<AccessableProject>(),
+                Restrictions = new List<string>()
             });
 
     // Authenticated client with necessary roles to read PunchItems
     private void SetupReaderUser(
         List<AccessablePlant> commonAccessablePlants,
-        List<AccessableProject> accessableProjects)
+        List<AccessableProject> accessableProjects,
+        List<string> restrictions)
         => _testUsers.Add(UserType.Reader,
             new TestUser
             {
@@ -361,20 +376,23 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Read",
                         UserName = "RR",
                         Email = "rr@pcs.com",
-                        Oid = _readerOid
+                        Oid = ReaderOid
                     },
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
                 {
                     Permissions.PUNCHITEM_READ
                 },
-                AccessableProjects = accessableProjects
+                AccessableProjects = accessableProjects,
+                Restrictions = restrictions
+
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
-        List<AccessableProject> accessableProjects)
+        List<AccessableProject> accessableProjects,
+        List<string> restrictions)
         => _testUsers.Add(UserType.Writer,
             new TestUser
             {
@@ -385,7 +403,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Write",
                         UserName = "WW",
                         Email = "ww@pcs.com",
-                        Oid = _writerOid
+                        Oid = WriterOid
                     },
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>
@@ -399,15 +417,16 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ
                 },
-                AccessableProjects = accessableProjects
+                AccessableProjects = accessableProjects,
+                Restrictions = restrictions
             });
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());
 
-    private void AuthenticateUser(ITestUser user)
+    private static void AuthenticateUser(ITestUser user)
         => user.HttpClient.DefaultRequestHeaders.Add("Authorization", user.Profile.CreateBearerToken());
 
-    private void UpdatePlantInHeader(HttpClient client, string plant)
+    private static void UpdatePlantInHeader(HttpClient client, string plant)
     {
         if (client.DefaultRequestHeaders.Contains(CurrentPlantMiddleware.PlantHeader))
         {

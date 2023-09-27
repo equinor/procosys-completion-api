@@ -17,6 +17,11 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
 
+        // todo 105393 validate given checklistguid
+        // must exists
+        // tag not voided
+        // same projectguid as given projectguid
+
         RuleFor(command => command)
             // validate given Project
             .MustAsync(BeAnExistingProjectAsync)

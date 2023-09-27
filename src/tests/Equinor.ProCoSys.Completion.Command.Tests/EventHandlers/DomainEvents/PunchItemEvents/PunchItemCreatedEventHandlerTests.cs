@@ -1,12 +1,11 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchItemEvents;
 
@@ -15,7 +14,7 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemCreatedEventHandler _dut;
     private PunchItemCreatedDomainEvent _punchItemCreatedEvent;
-    private Mock<IPublishEndpoint> _publishEndpointMock;
+    private IPublishEndpoint _publishEndpointMock;
     private PunchItemCreatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
@@ -24,14 +23,14 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
         _punchItem.SetCreated(_person);
 
         _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem, _project.Guid);
-        _publishEndpointMock = new Mock<IPublishEndpoint>();
-        _dut = new PunchItemCreatedEventHandler(_publishEndpointMock.Object, new Mock<ILogger<PunchItemCreatedEventHandler>>().Object);
+        _publishEndpointMock = Substitute.For<IPublishEndpoint>();
+        _dut = new PunchItemCreatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemCreatedEventHandler>>());
         _publishEndpointMock
-            .Setup(x => x.Publish(It.IsAny<PunchItemCreatedIntegrationEvent>(),
-                It.IsAny<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>(), default))
-            .Callback<PunchItemCreatedIntegrationEvent, IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>,
-                CancellationToken>((evt, _, _) =>
+            .When(x => x.Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>()))
+            .Do(info =>
             {
+                var evt = info.Arg<PunchItemCreatedIntegrationEvent>();
                 _publishedIntegrationEvent = evt;
             });
     }
@@ -43,9 +42,8 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemCreatedEvent, default);
 
         // Assert
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<PunchItemCreatedIntegrationEvent>(),
-                It.IsAny<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>(), default), Times.Once);
+        await _publishEndpointMock.Received().Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
+            Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
     }
 
     [TestMethod]
