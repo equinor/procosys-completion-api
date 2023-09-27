@@ -1,27 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.ComponentModel.DataAnnotations;
 using Equinor.TI.TIE.Adapter.Base.Message;
 
-namespace Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
+namespace Equinor.ProCoSys.Completion.TieImport.Configuration;
 
 public class TieImportOptions
 {
-    public string AdapterTieUri { get; set; } = string.Empty;
-    public string AzureClientId { get; set; } = string.Empty;
-    public string AzureTenantId { get; set; } = string.Empty;
-    public string AzureTieApiId { get; set; } = string.Empty;
-    public string AzureKeyVaultUrl { get; set; } = string.Empty;
-    public string AzureCertificateName { get; set; } = string.Empty;
+#pragma warning disable CS8618
+    [Required]
+    public string AdapterTieUri { get; set; }
+    [Required]
+    public string AzureClientId { get; set; }
+    [Required] 
+    public string AzureTenantId { get; set; }
+    [Required]
+    public string AzureTieApiId { get; set; }
+    [Required]
+    public string AzureKeyVaultUrl { get; set; }
+    [Required]
+    public string AzureCertificateName { get; set; }
+#pragma warning restore CS8618
 
     /// <summary>
     /// See usage in <see cref="AdapterMessageHandleBehavior"/>.
     /// </summary>
+    [Required]
     public bool AdapterParallelMessageHandling { get; set; }
 
     /// <summary>
     /// Number of messages to handle in each batch from TIE.
     /// </summary>
+    [Required]
     public int AdapterMessageChunkSize { get; set; }
 
     /// <summary>
@@ -37,11 +45,13 @@ public class TieImportOptions
     /// <summary>
     /// TIE application for source system message routing. See <see cref="AdapterApplication"/>.
     /// </summary>
+    [Required]
     public string AdapterApplication { get; set; } = string.Empty;
 
     /// <summary>
     /// Comma-separated list of TIE site names to handle. See <see cref="AdapterPartitions"/>.
     /// </summary>
+    [Required]
     public string AdapterSites { get; set; } = string.Empty;
 
     /// <summary>

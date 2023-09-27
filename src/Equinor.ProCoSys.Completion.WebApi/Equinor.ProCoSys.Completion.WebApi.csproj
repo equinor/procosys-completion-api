@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Query\Equinor.ProCoSys.Completion.Query.csproj" />
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.TieImport\Equinor.ProCoSys.Completion.TieImport.csproj" />
   </ItemGroup>
 
   <ItemGroup>

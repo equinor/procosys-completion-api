@@ -5,9 +5,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.TieImport.Adapter;
-using Equinor.ProCoSys.Completion.WebApi.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.TIE1.Setup;
+using Equinor.TI.TIE.Adapter.Base.Message;
+using Equinor.TI.TIE.Adapter.TIE1.Message;
+using System;
+using Equinor.ProCoSys.Completion.TieImport.Adapter;
+using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+using Equinor.ProCoSys.Completion.TieImport.Configuration;
+using Equinor.ProCoSys.Completion.TieImport.Mocks;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
 
@@ -16,8 +21,19 @@ public static class TieImportModule
     public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
     {
         var configOptions = new TieImportOptions();
+        
+        services.AddOptions<TieImportOptions>()
+            .BindConfiguration("TieImport")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         configuration.Bind("TieImport", configOptions);
 
+        services.AddOptions<CommonLibOptions>()
+            .BindConfiguration("CommonLib")
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddAdapterHosting();
 
         var tiClientOptions = GetTiClientOptions(configOptions);
@@ -56,6 +72,23 @@ public static class TieImportModule
             .To<Tie1MessageHandler>()
             .AsBackgroundService()
             .Done();
+
+        // Apply test/mock settings, if any
+        services.SetTestSettings(configOptions);
+    }
+
+    private static void SetTestSettings(this IServiceCollection services, TieImportOptions configOptions)
+    {
+        if (configOptions.TestEnableMockTie1Listener &&
+            configOptions.TestEnableTestFileMessageListener)
+        {
+            throw new Exception("TestSettings error: only one MessageListener should be enabled.");
+        }
+
+        if (configOptions.TestEnableTestFileMessageListener)
+        {
+            services.AddTransient<IMessageListener<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>, TestFileMessageListener<TieAdapterConfig, TieAdapterPartitionConfig>>();
+        }
     }
 
     private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>

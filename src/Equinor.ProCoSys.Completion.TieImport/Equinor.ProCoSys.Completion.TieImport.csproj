@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper" Version="0.26.0" />
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Core" Version="0.26.0" />
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Legacy" Version="0.26.0" />
+    <PackageReference Include="Equinor.TI.CommonLibrary.SchemaModel" Version="0.1.6" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.9.0" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="Statoil.TI.InterfaceServices" Version="1.5.7" />
+  </ItemGroup>
+
+</Project>
