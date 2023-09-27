@@ -3,6 +3,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,6 +24,7 @@ public class PunchItemTests : IModificationAuditableTests
     private LibraryItem _sorting;
     private WorkOrder _workOrder;
     private Document _document;
+    private SWCR _swcr;
     private readonly Category _itemCategory = Category.PA;
     private readonly string _itemDescription = "Item A";
     private readonly Guid _checkListGuid = Guid.NewGuid();
@@ -56,6 +58,9 @@ public class PunchItemTests : IModificationAuditableTests
 
         _document = new Document(_testPlant, Guid.NewGuid(), null!);
         _document.SetProtectedIdForTesting(130);
+
+        _swcr = new SWCR(_testPlant, Guid.NewGuid(), 1);
+        _swcr.SetProtectedIdForTesting(131);
 
         _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg, _clearingByOrg); 
     }
@@ -821,6 +826,45 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsNull(_dut.DocumentId);
         Assert.IsNull(_dut.Document);
+    }
+    #endregion
+
+    #region SetSWCR
+    [TestMethod]
+    public void SetSWCR_ShouldSetSWCR()
+    {
+        // Arrange
+        Assert.IsNull(_dut.SWCRId);
+
+        // Act
+        _dut.SetSWCR(_swcr);
+
+        // Assert
+        Assert.AreEqual(_swcr.Id, _dut.SWCRId);
+        Assert.AreEqual(_swcr, _dut.SWCR);
+    }
+
+    [TestMethod]
+    public void SetSWCR_ShouldThrowException_WhenSWCRInOtherPlant() =>
+        Assert.ThrowsException<ArgumentException>(() =>
+            _dut.SetSWCR(new SWCR("OtherPlant", Guid.NewGuid(), 1)));
+    #endregion
+
+    #region ClearSWCR
+    [TestMethod]
+    public void ClearSWCR_ShouldClearSWCR()
+    {
+        // Arrange
+        _dut.SetSWCR(_swcr);
+        Assert.AreEqual(_swcr.Id, _dut.SWCRId);
+        Assert.IsNotNull(_dut.SWCR);
+
+        // Act
+        _dut.ClearSWCR();
+
+        // Assert
+        Assert.IsNull(_dut.SWCRId);
+        Assert.IsNull(_dut.SWCR);
     }
     #endregion
 }

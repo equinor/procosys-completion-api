@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -75,6 +76,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? OriginalWorkOrderId { get; private set; }
     public Document? Document { get; private set; }
     public int? DocumentId { get; private set; }
+    public SWCR? SWCR { get; private set; }
+    public int? SWCRId { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -315,6 +318,23 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         Document = null;
         DocumentId = null;
+    }
+
+    public void SetSWCR(SWCR swcr)
+    {
+        if (swcr.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(swcr)} in {swcr.Plant} to item in {Plant}");
+        }
+
+        SWCR = swcr;
+        SWCRId = swcr.Id;
+    }
+
+    public void ClearSWCR()
+    {
+        SWCR = null;
+        SWCRId = null;
     }
 
     private void SetProject(string plant, Project project)

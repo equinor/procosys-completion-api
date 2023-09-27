@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using MassTransit;
@@ -73,6 +74,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<LibraryItem> Library => Set<LibraryItem>();
     public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public virtual DbSet<Document> Documents => Set<Document>();
+    public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
     private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
     {
