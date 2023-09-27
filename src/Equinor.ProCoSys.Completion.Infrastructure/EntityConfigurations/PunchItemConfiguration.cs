@@ -115,6 +115,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
         builder
+            .Property(x => x.MaterialETAUtc)
+            .HasConversion(CompletionContext.DateTimeKindConverter);
+
+        builder
             .ToTable(x => x.HasCheckConstraint("punch_item_valid_category",
                 $"{nameof(PunchItem.Category)} in ({GetValidCategoryEnums()})"));
 
@@ -176,7 +180,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.ExternalItemNo,
                 x.MaterialRequired,
                 x.MaterialExternalNo,
-                x.MaterialETA,
+                x.MaterialETAUtc,
                 x.WorkOrderId,
                 x.OriginalWorkOrderId,
                 x.DocumentId,

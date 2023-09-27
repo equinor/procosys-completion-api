@@ -909,7 +909,6 @@ public class PunchItemTests : IModificationAuditableTests
     #endregion
 
     #region SetDueTime
-
     [TestMethod]
     public void SetDueTime_ShouldSetDueTime()
     {
@@ -936,9 +935,42 @@ public class PunchItemTests : IModificationAuditableTests
     }
 
     [TestMethod]
-    public void SetDueTime_ShouldThrowException_WhenDueIsNotUtc()
+    public void SetDueTime_ShouldThrowException_WhenDateTimeIsNotUtc()
         => Assert.ThrowsException<ArgumentException>(()
             => _dut.SetDueTime(DateTime.Now));
+
+    #endregion
+
+    #region SetMaterialETA
+    [TestMethod]
+    public void SetMaterialETA_ShouldSetMaterialETA()
+    {
+        // Act
+        _dut.SetMaterialETA(_utcNow);
+
+        // Assert
+        Assert.IsNotNull(_dut.MaterialETAUtc);
+        Assert.AreEqual(_utcNow, _dut.MaterialETAUtc);
+    }
+
+    [TestMethod]
+    public void SetNullAsMaterialETA_ShouldSetNull()
+    {
+        // Arrange
+        _dut.SetMaterialETA(_utcNow);
+        Assert.IsNotNull(_dut.MaterialETAUtc);
+
+        // Act
+        _dut.SetMaterialETA(null);
+
+        // Assert
+        Assert.IsNull(_dut.MaterialETAUtc);
+    }
+
+    [TestMethod]
+    public void SetMaterialETA_ShouldThrowException_WhenDateTimeIsNotUtc()
+        => Assert.ThrowsException<ArgumentException>(()
+            => _dut.SetMaterialETA(DateTime.Now));
 
     #endregion
 }

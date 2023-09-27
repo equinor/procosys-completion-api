@@ -68,7 +68,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? Estimate { get; set; }
     public string? ExternalItemNo { get; set; }
     public bool MaterialRequired { get; set; }
-    public DateTime? MaterialETA { get; set; }
+    public DateTime? MaterialETAUtc { get; set; }
     public string? MaterialExternalNo { get; set; }
     public WorkOrder? WorkOrder { get; private set; }
     public int? WorkOrderId { get; private set; }
@@ -359,6 +359,16 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         }
 
         DueTimeUtc = dueTimeUtc;
+    }
+
+    public void SetMaterialETA(DateTime? materialETAUtc)
+    {
+        if (materialETAUtc.HasValue && materialETAUtc.Value.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException($"{nameof(materialETAUtc)} is not Utc");
+        }
+
+        MaterialETAUtc = materialETAUtc;
     }
 
     private void SetProject(string plant, Project project)
