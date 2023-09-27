@@ -111,6 +111,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
+            .Property(x => x.DueTimeUtc)
+            .HasConversion(CompletionContext.DateTimeKindConverter);
+
+        builder
             .ToTable(x => x.HasCheckConstraint("punch_item_valid_category",
                 $"{nameof(PunchItem.Category)} in ({GetValidCategoryEnums()})"));
 
@@ -168,7 +172,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.TypeId,
                 x.PriorityId,
                 x.Estimate,
-                x.DueDate,
+                x.DueTimeUtc,
                 x.ExternalItemNo,
                 x.MaterialRequired,
                 x.MaterialExternalNo,

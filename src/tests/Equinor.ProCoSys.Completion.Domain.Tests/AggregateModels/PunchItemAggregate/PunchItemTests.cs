@@ -15,6 +15,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.PunchItemAggr
 [TestClass]
 public class PunchItemTests : IModificationAuditableTests
 {
+    private DateTime _utcNow = new (2020, 1, 1, 1, 1, 1, DateTimeKind.Utc);
     private PunchItem _dut;
     private readonly string _testPlant = "PlantA";
     private Project _project;
@@ -905,5 +906,39 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.ActionById);
         Assert.IsNull(_dut.ActionBy);
     }
+    #endregion
+
+    #region SetDueTime
+
+    [TestMethod]
+    public void SetDueTime_ShouldSetDueTime()
+    {
+        // Act
+        _dut.SetDueTime(_utcNow);
+
+        // Assert
+        Assert.IsNotNull(_dut.DueTimeUtc);
+        Assert.AreEqual(_utcNow, _dut.DueTimeUtc);
+    }
+
+    [TestMethod]
+    public void SetNullAsDueTime_ShouldSetNull()
+    {
+        // Arrange
+        _dut.SetDueTime(_utcNow);
+        Assert.IsNotNull(_dut.DueTimeUtc);
+
+        // Act
+        _dut.SetDueTime(null);
+
+        // Assert
+        Assert.IsNull(_dut.DueTimeUtc);
+    }
+
+    [TestMethod]
+    public void SetDueTime_ShouldThrowException_WhenDueIsNotUtc()
+        => Assert.ThrowsException<ArgumentException>(()
+            => _dut.SetDueTime(DateTime.Now));
+
     #endregion
 }
