@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 
-public class Document : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
+public class Document : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid, IVoidable
 {
     public const int NoLengthMax = 60;
 
@@ -26,6 +26,7 @@ public class Document : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMo
 
     // private setters needed for Entity Framework
     public string No { get; private set; }
+    public bool IsVoided { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;

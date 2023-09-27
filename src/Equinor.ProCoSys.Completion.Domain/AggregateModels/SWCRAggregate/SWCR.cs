@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 
-public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
+public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid, IVoidable
 {
 #pragma warning disable CS8618
     protected SWCR()
@@ -24,6 +24,7 @@ public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModifi
 
     // private setters needed for Entity Framework
     public int No { get; private set; }
+    public bool IsVoided { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;
