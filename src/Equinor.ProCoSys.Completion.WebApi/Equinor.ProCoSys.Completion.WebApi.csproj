@@ -42,4 +42,8 @@
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TieImport\" />
+  </ItemGroup>
+
 </Project>

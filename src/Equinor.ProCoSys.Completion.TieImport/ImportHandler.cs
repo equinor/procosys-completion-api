@@ -171,7 +171,7 @@ public class ImportHandler : IImportHandler
             throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
         }
 
-        var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, new Guid(), new Guid(), new Guid());
+        var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, new Guid(), new Guid(), new Guid(), new Guid());
         return createPunchCommand;
     }
 
