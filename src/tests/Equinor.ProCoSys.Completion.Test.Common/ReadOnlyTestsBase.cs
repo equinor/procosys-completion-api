@@ -6,8 +6,11 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
@@ -22,6 +25,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected int _priorityId;
     protected int _sortingId;
     protected int _typeId;
+    protected int _documentId;
+    protected int _swcrId;
+    protected int _workOrderId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
@@ -97,6 +103,15 @@ public abstract class ReadOnlyTestsBase : TestsBase
         _sortingId = AddLibraryItem(context, sorting);
         _typeId = AddLibraryItem(context, type);
 
+        var document = new Document(TestPlantA, Guid.NewGuid(), "1A");
+        _documentId = AddDocument(context, document);
+
+        var swcr = new SWCR(TestPlantA, Guid.NewGuid(), 1);
+        _swcrId = AddSWCR(context, swcr);
+
+        var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "004");
+        _workOrderId = AddWorkOrder(context, workOrder);
+
         SetupNewDatabase(_dbContextOptions);
     }
 
@@ -127,5 +142,26 @@ public abstract class ReadOnlyTestsBase : TestsBase
         context.Library.Add(libraryItem);
         context.SaveChangesAsync().Wait();
         return libraryItem.Id;
+    }
+
+    private int AddWorkOrder(CompletionContext context, WorkOrder workOrder)
+    {
+        context.WorkOrders.Add(workOrder);
+        context.SaveChangesAsync().Wait();
+        return workOrder.Id;
+    }
+
+    private int AddSWCR(CompletionContext context, SWCR swcr)
+    {
+        context.SWCRs.Add(swcr);
+        context.SaveChangesAsync().Wait();
+        return swcr.Id;
+    }
+
+    private int AddDocument(CompletionContext context, Document document)
+    {
+        context.Documents.Add(document);
+        context.SaveChangesAsync().Wait();
+        return document.Id;
     }
 }

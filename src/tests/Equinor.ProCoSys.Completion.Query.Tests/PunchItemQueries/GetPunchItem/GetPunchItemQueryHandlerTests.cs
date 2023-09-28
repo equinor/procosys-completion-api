@@ -2,9 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -25,15 +28,26 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     private PunchItem _punchItemWithPriority;
     private PunchItem _punchItemWithSorting;
     private PunchItem _punchItemWithType;
+    private PunchItem _punchItemWithDocument;
+    private PunchItem _punchItemWithWorkOrder;
+    private PunchItem _punchItemWithOriginalWorkOrder;
+    private PunchItem _punchItemWithSWCR;
     private PunchItem _punchItemWithoutPriority;
     private PunchItem _punchItemWithoutSorting;
     private PunchItem _punchItemWithoutType;
+    private PunchItem _punchItemWithoutDocument;
+    private PunchItem _punchItemWithoutWorkOrder;
+    private PunchItem _punchItemWithoutOriginalWorkOrder;
+    private PunchItem _punchItemWithoutSWCR;
     private LibraryItem _raisedByOrg;
     private LibraryItem _clearingByOrg;
     private LibraryItem _priority;
     private LibraryItem _sorting;
     private LibraryItem _type;
     private Person _currentPerson;
+    private Document _document;
+    private SWCR _swcr;
+    private WorkOrder _workOrder;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -46,17 +60,30 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         _priority = context.Library.Single(l => l.Id == _priorityId);
         _sorting = context.Library.Single(l => l.Id == _sortingId);
         _type = context.Library.Single(l => l.Id == _typeId);
+        _document = context.Documents.Single(d => d.Id == _documentId);
+        _swcr = context.SWCRs.Single(s => s.Id == _swcrId);
+        _workOrder = context.WorkOrders.Single(w => w.Id == _workOrderId);
+
         _createdPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _createdPunchItem.SetPriority(_priority);
         _createdPunchItem.SetSorting(_sorting);
         _createdPunchItem.SetType(_type);
+        _createdPunchItem.SetDocument(_document);
+        _createdPunchItem.SetWorkOrder(_workOrder);
+        _createdPunchItem.SetOriginalWorkOrder(_workOrder);
+        _createdPunchItem.SetSWCR(_swcr);
+
         _modifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _clearedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _verifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _rejectedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
 
-        _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType = _createdPunchItem;
-        _punchItemWithoutPriority = _punchItemWithoutSorting = _punchItemWithoutType = _modifiedPunchItem;
+        _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType =
+            _punchItemWithDocument = _punchItemWithWorkOrder = _punchItemWithOriginalWorkOrder =
+                _punchItemWithSWCR = _createdPunchItem;
+        _punchItemWithoutPriority = _punchItemWithoutSorting = _punchItemWithoutType =
+            _punchItemWithoutDocument = _punchItemWithoutWorkOrder = _punchItemWithoutOriginalWorkOrder =
+                _punchItemWithoutSWCR = _modifiedPunchItem;
 
         context.PunchItems.Add(_createdPunchItem);
         context.PunchItems.Add(_modifiedPunchItem);
@@ -419,6 +446,94 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithDocument()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithDocument;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var documentDto = result.Data.Document;
+        Assert.IsNotNull(documentDto);
+        AssertDocument(_document, documentDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithWorkOrder;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var workOrderDto = result.Data.WorkOrder;
+        Assert.IsNotNull(workOrderDto);
+        AssertWorkOrder(_workOrder, workOrderDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithOriginalWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithOriginalWorkOrder;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var originalWorkOrderDto = result.Data.OriginalWorkOrder;
+        Assert.IsNotNull(originalWorkOrderDto);
+        AssertWorkOrder(_workOrder, originalWorkOrderDto);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithSWCR()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithSWCR;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        var swcrDto = result.Data.SWCR;
+        Assert.IsNotNull(swcrDto);
+        AssertSWCR(_swcr, swcrDto);
+    }
+
+    [TestMethod]
     public async Task Handle_ShouldReturnPunchItem_WithoutPriority()
     {
         // Arrange
@@ -435,8 +550,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var libraryItemDto = result.Data.Priority;
-        Assert.IsNull(libraryItemDto);
+        Assert.IsNull(result.Data.Priority);
     }
 
     [TestMethod]
@@ -456,8 +570,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var libraryItemDto = result.Data.Sorting;
-        Assert.IsNull(libraryItemDto);
+        Assert.IsNull(result.Data.Sorting);
     }
 
     [TestMethod]
@@ -477,8 +590,87 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var libraryItemDto = result.Data.Type;
-        Assert.IsNull(libraryItemDto);
+        Assert.IsNull(result.Data.Type);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutDocument()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutDocument;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        Assert.IsNull(result.Data.Document);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutOriginalWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutOriginalWorkOrder;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        Assert.IsNull(result.Data.OriginalWorkOrder);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutSWCR()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutSWCR;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        Assert.IsNull(result.Data.SWCR);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldReturnPunchItem_WithoutWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var testPunchItem = _punchItemWithoutWorkOrder;
+        var query = new GetPunchItemQuery(testPunchItem.Guid);
+        var dut = new GetPunchItemQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+
+        Assert.IsNull(result.Data.WorkOrder);
     }
 
     private void AssertRaisedByOrg(PunchItemDetailsDto punchItemDetailsDto)
@@ -500,5 +692,23 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(libraryItem.Guid, libraryItemDto.Guid);
         Assert.AreEqual(libraryItem.Code, libraryItemDto.Code);
         Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
+    }
+
+    private void AssertDocument(Document document, DocumentDto documentDto)
+    {
+        Assert.AreEqual(document.Guid, documentDto.Guid);
+        Assert.AreEqual(document.No, documentDto.No);
+    }
+
+    private void AssertWorkOrder(WorkOrder workOrder, WorkOrderDto workOrderDto)
+    {
+        Assert.AreEqual(workOrder.Guid, workOrderDto.Guid);
+        Assert.AreEqual(workOrder.No, workOrderDto.No);
+    }
+
+    private void AssertSWCR(SWCR swcr, SWCRDto swcrDto)
+    {
+        Assert.AreEqual(swcr.Guid, swcrDto.Guid);
+        Assert.AreEqual(swcr.No, swcrDto.No);
     }
 }
