@@ -180,6 +180,80 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate.Document", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("No")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.Property<string>("Plant")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Guid")
+                        .IsUnique();
+
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("Documents");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("DocumentsHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryItem", b =>
                 {
                     b.Property<int>("Id")
@@ -512,6 +586,14 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 4000001L);
 
+                    b.Property<int?>("ActionById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Category")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<Guid>("CheckListGuid")
                         .HasColumnType("uniqueidentifier");
 
@@ -535,13 +617,41 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DueTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("Estimate")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExternalItemNo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("MaterialETAUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MaterialExternalNo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("MaterialRequired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ModifiedAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OriginalWorkOrderId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("PeriodEnd")
@@ -579,6 +689,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<int?>("SWCRId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("SortingId")
                         .HasColumnType("int");
 
@@ -591,7 +704,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<int?>("VerifiedById")
                         .HasColumnType("int");
 
+                    b.Property<int?>("WorkOrderId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ActionById");
 
                     b.HasIndex("ClearedById");
 
@@ -599,13 +717,17 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("DocumentId");
+
                     b.HasIndex("Guid")
                         .IsUnique()
                         .HasDatabaseName("IX_PunchItems_Guid");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Id", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RaisedByOrgId", "ClearingByOrgId", "SortingId", "TypeId", "PriorityId", "RowVersion" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Id", "Category", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RaisedByOrgId", "ClearingByOrgId", "SortingId", "TypeId", "PriorityId", "Estimate", "DueTimeUtc", "ExternalItemNo", "MaterialRequired", "MaterialExternalNo", "MaterialETAUtc", "WorkOrderId", "OriginalWorkOrderId", "DocumentId", "SWCRId", "ActionById", "RowVersion" });
 
                     b.HasIndex("ModifiedById");
+
+                    b.HasIndex("OriginalWorkOrderId");
 
                     b.HasIndex("PriorityId");
 
@@ -618,11 +740,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("RejectedById");
 
+                    b.HasIndex("SWCRId");
+
                     b.HasIndex("SortingId");
 
                     b.HasIndex("TypeId");
 
                     b.HasIndex("VerifiedById");
+
+                    b.HasIndex("WorkOrderId");
 
                     b.ToTable("PunchItems", t =>
                         {
@@ -635,11 +761,159 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             t.HasCheckConstraint("punch_item_check_rejected", "(RejectedAtUtc is null and RejectedById is null) or (RejectedAtUtc is not null and RejectedById is not null)");
 
                             t.HasCheckConstraint("punch_item_check_verified", "(VerifiedAtUtc is null and VerifiedById is null) or (VerifiedAtUtc is not null and VerifiedById is not null)");
+
+                            t.HasCheckConstraint("punch_item_valid_category", "Category in (0,1)");
                         });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
                                 ttb.UseHistoryTable("PunchItemsHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate.SWCR", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("No")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.Property<string>("Plant")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Guid")
+                        .IsUnique();
+
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("SWCRs");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SWCRsHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate.WorkOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("No")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.Property<string>("Plant")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Guid")
+                        .IsUnique();
+
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("WorkOrders");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("WorkOrdersHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -843,6 +1117,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
                 });
 
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate.Document", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryItem", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
@@ -906,6 +1197,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate.PunchItem", b =>
                 {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ActionBy")
+                        .WithMany()
+                        .HasForeignKey("ActionById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ClearedBy")
                         .WithMany()
                         .HasForeignKey("ClearedById")
@@ -922,9 +1218,19 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
                         .WithMany()
                         .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate.WorkOrder", "OriginalWorkOrder")
+                        .WithMany()
+                        .HasForeignKey("OriginalWorkOrderId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryItem", "Priority")
@@ -949,6 +1255,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasForeignKey("RejectedById")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate.SWCR", "SWCR")
+                        .WithMany()
+                        .HasForeignKey("SWCRId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryItem", "Sorting")
                         .WithMany()
                         .HasForeignKey("SortingId")
@@ -964,13 +1275,24 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasForeignKey("VerifiedById")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate.WorkOrder", "WorkOrder")
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ActionBy");
+
                     b.Navigation("ClearedBy");
 
                     b.Navigation("ClearingByOrg");
 
                     b.Navigation("CreatedBy");
 
+                    b.Navigation("Document");
+
                     b.Navigation("ModifiedBy");
+
+                    b.Navigation("OriginalWorkOrder");
 
                     b.Navigation("Priority");
 
@@ -980,11 +1302,49 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Navigation("RejectedBy");
 
+                    b.Navigation("SWCR");
+
                     b.Navigation("Sorting");
 
                     b.Navigation("Type");
 
                     b.Navigation("VerifiedBy");
+
+                    b.Navigation("WorkOrder");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate.SWCR", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate.WorkOrder", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
                 });
 #pragma warning restore 612, 618
         }

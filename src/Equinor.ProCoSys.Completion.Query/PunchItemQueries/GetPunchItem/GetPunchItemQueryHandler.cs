@@ -59,6 +59,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        punchItem.Guid,
                        punchItem.Project.Name,
                        punchItem.ItemNo,
+                       punchItem.Category.ToString(),
                        punchItem.Description,
                        createdBy,
                        punchItem.CreatedAtUtc,

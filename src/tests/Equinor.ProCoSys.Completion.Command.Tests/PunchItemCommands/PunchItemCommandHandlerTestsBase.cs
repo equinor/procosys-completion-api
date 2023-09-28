@@ -26,7 +26,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
             var raisedByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
             var clearingByOrg = new LibraryItem(TestPlantA, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-            _existingPunchItem = new PunchItem(TestPlantA, project, Guid.NewGuid(), null!, raisedByOrg, clearingByOrg);
+            _existingPunchItem = new PunchItem(TestPlantA, project,Guid.NewGuid(), Category.PA, null!, raisedByOrg, clearingByOrg);
             _existingPunchItem.SetRowVersion(OriginalRowVersion);
 
         _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();

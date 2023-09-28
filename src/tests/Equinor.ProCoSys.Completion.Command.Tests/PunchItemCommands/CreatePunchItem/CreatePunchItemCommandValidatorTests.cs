@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -21,7 +22,8 @@ public class CreatePunchItemCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new CreatePunchItemCommand(
-            "Test title",
+            Category.PA,
+            "Test desc",
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),

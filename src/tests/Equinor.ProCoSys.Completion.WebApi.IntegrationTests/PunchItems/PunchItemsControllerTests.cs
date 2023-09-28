@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,11 +29,13 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange
         var description = Guid.NewGuid().ToString();
+        var category = "PB";
 
         // Act
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            category,
             description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -49,7 +50,8 @@ public class PunchItemsControllerTests : TestBase
         var newPunchItem = await PunchItemsControllerTestsHelper
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunchItem);
-        Assert.IsTrue(!newPunchItem.Description.IsEmpty());
+        Assert.AreEqual(category, newPunchItem.Category);
+        Assert.AreEqual(description, newPunchItem.Description);
         Assert.IsTrue(newPunchItem.ItemNo >= PunchItem.IdentitySeed);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, newPunchItem.ClearingByOrg.Guid);
@@ -99,6 +101,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -145,6 +148,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -192,6 +196,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -236,6 +241,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -515,6 +521,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -655,6 +662,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -677,6 +685,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -698,6 +707,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,

@@ -143,6 +143,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
+            "PA",
             "PunchItem1",
             Guid.Empty,
             Guid.Empty,
@@ -155,6 +156,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
+            "PA",
             "PunchItem1",
             Guid.Empty,
             Guid.Empty,
@@ -168,6 +170,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.Unknown,
+            "PA",
             "PunchItem1",
             Guid.Empty,
             Guid.Empty,
@@ -181,6 +184,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
+            "PA",
             "PunchItem1",
             Guid.Empty,
             Guid.Empty,
@@ -193,6 +197,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithAccess,
+            "PA",
             "PunchItem1",
             TestFactory.ProjectGuidWithoutAccess,
             Guid.Empty,
@@ -205,6 +210,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
+            "PA",
             "PunchItem1",
             Guid.Empty,
             Guid.Empty,
@@ -217,6 +223,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
+            "PA",
             "PunchItem1",
             TestFactory.ProjectGuidWithAccess,
             Guid.Empty,
@@ -389,6 +396,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess, 
             TestFactory.CheckListGuid,

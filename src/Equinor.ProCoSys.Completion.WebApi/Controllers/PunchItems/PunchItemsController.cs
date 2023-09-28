@@ -86,6 +86,7 @@ public class PunchItemsController : ControllerBase
         [FromBody] CreatePunchItemDto dto)
     {
         var result = await _mediator.Send(new CreatePunchItemCommand(
+            dto.Category,
             dto.Description,
             dto.ProjectGuid,
             dto.CheckListGuid,

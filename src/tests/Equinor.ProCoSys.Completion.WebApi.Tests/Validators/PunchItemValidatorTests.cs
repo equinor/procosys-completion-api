@@ -40,12 +40,12 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
         var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
         var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
 
-        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x1", raisedByOrg, clearingByOrg);
-        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), "x2", raisedByOrg, clearingByOrg);
+        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x1", raisedByOrg, clearingByOrg);
+        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), Category.PB, "x2", raisedByOrg, clearingByOrg);
         _notClearedPunchItem = _punchItemInOpenProject;
-        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x3", raisedByOrg, clearingByOrg);
+        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x3", raisedByOrg, clearingByOrg);
         _clearedButNotVerifiedPunchItem.Clear(_currentPerson);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "x4", raisedByOrg, clearingByOrg);
+        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x4", raisedByOrg, clearingByOrg);
         _verifiedPunchItem.Clear(_currentPerson);
         _verifiedPunchItem.Verify(_currentPerson);
 
@@ -132,7 +132,6 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     #endregion
 
     #region TagOwningPunchItemIsVoided
-    // todo #103935 
     [TestMethod]
     public async Task TagOwningPunchItemIsVoided_ShouldReturnTrue_WhenPunchItemOwnedByVoidedTag()
     {

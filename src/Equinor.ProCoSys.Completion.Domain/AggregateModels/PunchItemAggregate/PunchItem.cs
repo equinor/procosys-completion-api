@@ -4,7 +4,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -13,6 +16,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
+    public const int ExternalItemNoLengthMax = 100;
+    public const int MaterialExternalNoLengthMax = 100;
 
 #pragma warning disable CS8618
     protected PunchItem()
@@ -25,12 +30,14 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         string plant,
         Project project,
         Guid checkListGuid,
+        Category category,
         string description,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg)
         : base(plant)
     {
         CheckListGuid = checkListGuid;
+        Category = category;
         Description = description;
         Guid = Guid.NewGuid();
 
@@ -44,6 +51,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public Project Project { get; private set; } = null!;
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
+    public Category Category { get; private set; }
     public int ItemNo => Id;
     public string Description { get; set; }
     public LibraryItem RaisedByOrg { get; private set; } = null!;
@@ -56,6 +64,24 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? TypeId { get; private set; }
     public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
+    // todo 104017 remember utc validation in POST and PATCH
+    public DateTime? DueTimeUtc { get; set; }
+    public int? Estimate { get; set; }
+    public string? ExternalItemNo { get; set; }
+    public bool MaterialRequired { get; set; }
+    // todo 104017 remember utc validation in POST and PATCH
+    public DateTime? MaterialETAUtc { get; set; }
+    public string? MaterialExternalNo { get; set; }
+    public WorkOrder? WorkOrder { get; private set; }
+    public int? WorkOrderId { get; private set; }
+    public WorkOrder? OriginalWorkOrder { get; private set; }
+    public int? OriginalWorkOrderId { get; private set; }
+    public Document? Document { get; private set; }
+    public int? DocumentId { get; private set; }
+    public SWCR? SWCR { get; private set; }
+    public int? SWCRId { get; private set; }
+    public Person? ActionBy { get; private set; }
+    public int? ActionById { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
@@ -245,6 +271,86 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         Type = null;
         TypeId = null;
+    }
+
+    public void SetWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        WorkOrder = workOrder;
+        WorkOrderId = workOrder.Id;
+    }
+
+    public void ClearWorkOrder()
+    {
+        WorkOrder = null;
+        WorkOrderId = null;
+    }
+
+    public void SetOriginalWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        OriginalWorkOrder = workOrder;
+        OriginalWorkOrderId = workOrder.Id;
+    }
+
+    public void ClearOriginalWorkOrder()
+    {
+        OriginalWorkOrder = null;
+        OriginalWorkOrderId = null;
+    }
+
+    public void SetDocument(Document document)
+    {
+        if (document.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(document)} in {document.Plant} to item in {Plant}");
+        }
+
+        Document = document;
+        DocumentId = document.Id;
+    }
+
+    public void ClearDocument()
+    {
+        Document = null;
+        DocumentId = null;
+    }
+
+    public void SetSWCR(SWCR swcr)
+    {
+        if (swcr.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(swcr)} in {swcr.Plant} to item in {Plant}");
+        }
+
+        SWCR = swcr;
+        SWCRId = swcr.Id;
+    }
+
+    public void ClearSWCR()
+    {
+        SWCR = null;
+        SWCRId = null;
+    }
+
+    public void SetActionBy(Person person)
+    {
+        ActionBy = person;
+        ActionById = person.Id;
+    }
+
+    public void ClearActionBy()
+    {
+        ActionBy = null;
+        ActionById = null;
     }
 
     private void SetProject(string plant, Project project)

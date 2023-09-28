@@ -94,6 +94,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
 
 
         _command = new CreatePunchItemCommand(
+            Category.PA,
             "P123",
             _existingProject.Guid,
             _existingCheckListGuid,
@@ -144,6 +145,7 @@ public class CreatePunchItemCommandHandlerTests : TestsBase
     {
         // Arrange
         var command = new CreatePunchItemCommand(
+            Category.PA,
             "P123",
             _existingProject.Guid,
             _existingCheckListGuid, 

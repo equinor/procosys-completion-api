@@ -28,6 +28,6 @@ public class EventHandlerTestBase
         _project = new Project(testPlant, Guid.NewGuid(), null!, null!);
         var raisedByOrg = new LibraryItem(testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = new LibraryItem(testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-        _punchItem = new PunchItem(testPlant, _project, Guid.NewGuid(), null!, raisedByOrg, clearingByOrg);
+        _punchItem = new PunchItem(testPlant, _project, Guid.NewGuid(), Category.PB, null!, raisedByOrg, clearingByOrg);
     }
 }

@@ -54,6 +54,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             _plantProvider.Plant,
             project,
             request.CheckListGuid,
+            request.Category,
             request.Description,
             raisedByOrg,
             clearingByOrg);
