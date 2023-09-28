@@ -4,9 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ServiceResult;
@@ -34,6 +37,11 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                         .Include(p => p.Priority)
                         .Include(p => p.Sorting)
                         .Include(p => p.Type)
+                        .Include(p => p.ActionBy)
+                        .Include(p => p.WorkOrder)
+                        .Include(p => p.OriginalWorkOrder)
+                        .Include(p => p.SWCR)
+                        .Include(p => p.Document)
                    where pi.Guid == request.PunchItemGuid
                    select pi)
                 .TagWith($"{nameof(GetPunchItemQueryHandler)}.{nameof(Handle)}")
@@ -54,6 +62,11 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
         var sorting = MapToLibraryItemDto(punchItem.Sorting);
         var priority = MapToLibraryItemDto(punchItem.Priority);
         var type = MapToLibraryItemDto(punchItem.Type);
+        var actionBy = MapToPersonDto(punchItem.ActionBy);
+        var workOrderDto = MapToWorkOrderDto(punchItem.WorkOrder);
+        var originalWorkOrderDto = MapToWorkOrderDto(punchItem.OriginalWorkOrder);
+        var documentDto = MapToDocumentDto(punchItem.Document);
+        var swcrDto = MapToSWCRDto(punchItem.SWCR);
 
         var punchItemDetailsDto = new PunchItemDetailsDto(
                        punchItem.Guid,
@@ -81,9 +94,35 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        priority,
                        sorting,
                        type,
+                       actionBy,
+                       punchItem.DueTimeUtc,
+                       punchItem.Estimate,
+                       punchItem.ExternalItemNo,
+                       punchItem.MaterialRequired,
+                       punchItem.MaterialETAUtc,
+                       punchItem.MaterialExternalNo,
+                       workOrderDto,
+                       originalWorkOrderDto,
+                       documentDto,
+                       swcrDto,
                        punchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
+
+    private SWCRDto? MapToSWCRDto(SWCR? swcr)
+        => swcr is null
+            ? null
+            : new SWCRDto(swcr.Guid, swcr.No);
+
+    private DocumentDto? MapToDocumentDto(Document? document)
+        => document is null
+            ? null
+            : new DocumentDto(document.Guid, document.No);
+
+    private WorkOrderDto? MapToWorkOrderDto(WorkOrder? workOrder)
+        => workOrder is null
+            ? null
+            : new WorkOrderDto(workOrder.Guid, workOrder.No);
 
     private LibraryItemDto? MapToLibraryItemDto(LibraryItem? libraryItem)
         => libraryItem is null
