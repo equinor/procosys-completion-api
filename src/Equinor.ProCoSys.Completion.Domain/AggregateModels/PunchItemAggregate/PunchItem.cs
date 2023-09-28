@@ -64,10 +64,12 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? TypeId { get; private set; }
     public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
-    public DateTime? DueTimeUtc { get; private set; }
+    // todo 104017 remember utc validation in POST and PATCH
+    public DateTime? DueTimeUtc { get; set; }
     public int? Estimate { get; set; }
     public string? ExternalItemNo { get; set; }
     public bool MaterialRequired { get; set; }
+    // todo 104017 remember utc validation in POST and PATCH
     public DateTime? MaterialETAUtc { get; set; }
     public string? MaterialExternalNo { get; set; }
     public WorkOrder? WorkOrder { get; private set; }
@@ -349,26 +351,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         ActionBy = null;
         ActionById = null;
-    }
-
-    public void SetDueTime(DateTime? dueTimeUtc)
-    {
-        if (dueTimeUtc.HasValue && dueTimeUtc.Value.Kind != DateTimeKind.Utc)
-        {
-            throw new ArgumentException($"{nameof(dueTimeUtc)} is not Utc");
-        }
-
-        DueTimeUtc = dueTimeUtc;
-    }
-
-    public void SetMaterialETA(DateTime? materialETAUtc)
-    {
-        if (materialETAUtc.HasValue && materialETAUtc.Value.Kind != DateTimeKind.Utc)
-        {
-            throw new ArgumentException($"{nameof(materialETAUtc)} is not Utc");
-        }
-
-        MaterialETAUtc = materialETAUtc;
     }
 
     private void SetProject(string plant, Project project)

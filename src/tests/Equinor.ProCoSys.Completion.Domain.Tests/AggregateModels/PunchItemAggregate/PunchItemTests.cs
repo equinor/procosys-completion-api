@@ -15,7 +15,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.PunchItemAggr
 [TestClass]
 public class PunchItemTests : IModificationAuditableTests
 {
-    private DateTime _utcNow = new (2020, 1, 1, 1, 1, 1, DateTimeKind.Utc);
     private PunchItem _dut;
     private readonly string _testPlant = "PlantA";
     private Project _project;
@@ -68,10 +67,12 @@ public class PunchItemTests : IModificationAuditableTests
         _actionBy = new Person(Guid.NewGuid(), null!, null!, null!, null!);
         _actionBy.SetProtectedIdForTesting(132);
 
-        _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg, _clearingByOrg); 
+        _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg,
+            _clearingByOrg);
     }
 
     #region Constructor
+
     [TestMethod]
     public void Constructor_ShouldSetProperties()
     {
@@ -102,7 +103,7 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 new Project("OtherPlant", Guid.NewGuid(), "P", "D"),
-                Guid.Empty, 
+                Guid.Empty,
                 Category.PA,
                 _itemDescription,
                 _raisedByOrg,
@@ -150,14 +151,16 @@ public class PunchItemTests : IModificationAuditableTests
             new PunchItem(
                 _testPlant,
                 _project,
-                Guid.Empty, 
+                Guid.Empty,
                 Category.PA,
                 _itemDescription,
                 _raisedByOrg,
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
     #endregion
 
     #region ItemNo
+
     [TestMethod]
     public void ItemNo_ShouldReturnId()
     {
@@ -171,9 +174,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.AreEqual(id, itemNo);
     }
+
     #endregion
 
     #region Clear
+
     [TestMethod]
     public void Clear_ShouldSetClearedFields()
     {
@@ -181,7 +186,7 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
         Assert.IsFalse(_dut.ClearedById.HasValue);
         Assert.IsTrue(_dut.IsReadyToBeCleared);
-        
+
         // Act
         _dut.Clear(_person);
 
@@ -218,9 +223,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Act and Assert
         Assert.ThrowsException<Exception>(() => _dut.Clear(_person));
     }
+
     #endregion
 
     #region Reject
+
     [TestMethod]
     public void Reject_ShouldSetRejectedFields()
     {
@@ -264,9 +271,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Act and Assert
         Assert.ThrowsException<Exception>(() => _dut.Reject(_person));
     }
+
     #endregion
 
     #region Verify
+
     [TestMethod]
     public void Verify_ShouldSetVerifiedFields()
     {
@@ -293,9 +302,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Act and Assert
         Assert.ThrowsException<Exception>(() => _dut.Verify(_person));
     }
+
     #endregion
 
     #region Unclear
+
     [TestMethod]
     public void Unclear_ShouldSetClearedFieldsToNull()
     {
@@ -322,9 +333,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Act and Assert
         Assert.ThrowsException<Exception>(() => _dut.Unclear());
     }
+
     #endregion
 
     #region Unverify
+
     [TestMethod]
     public void Unverify_ShouldSetVerifiedFields()
     {
@@ -352,9 +365,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Act and Assert
         Assert.ThrowsException<Exception>(() => _dut.Unverify());
     }
+
     #endregion
 
     #region IsReadyToBeCleared
+
     [TestMethod]
     public void IsReadyToBeCleared_ShouldBeTrue_WhenNotCleared()
     {
@@ -381,9 +396,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsFalse(b);
     }
+
     #endregion
 
     #region IsReadyToBeRejected
+
     [TestMethod]
     public void IsReadyToBeRejected_ShouldBeFalse_WhenNotCleared()
     {
@@ -410,9 +427,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsTrue(b);
     }
+
     #endregion
 
     #region IsReadyToBeVerified
+
     [TestMethod]
     public void IsReadyToBeVerified_ShouldBeFalse_WhenNotCleared()
     {
@@ -455,9 +474,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsFalse(b);
     }
+
     #endregion
 
     #region IsReadyToBeUncleared
+
     [TestMethod]
     public void IsReadyToBeUncleared_ShouldBeFalse_WhenNotCleared()
     {
@@ -484,9 +505,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsTrue(b);
     }
+
     #endregion
 
     #region IsReadyToBeUnverified
+
     [TestMethod]
     public void IsReadyToBeUnverified_ShouldBeFalse_WhenClearedButNotVerified()
     {
@@ -517,9 +540,11 @@ public class PunchItemTests : IModificationAuditableTests
         // Assert
         Assert.IsTrue(b);
     }
+
     #endregion
 
     #region SetRaisedByOrg
+
     [TestMethod]
     public void SetRaisedByOrg_ShouldSetRaisedByOrg()
     {
@@ -548,9 +573,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetRaisedByOrg(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
     #endregion
 
     #region SetClearingByOrg
+
     [TestMethod]
     public void SetClearingByOrg_ShouldSetClearingByOrg()
     {
@@ -578,9 +605,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetClearingByOrg(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
     #endregion
 
     #region SetPriority
+
     [TestMethod]
     public void SetPriority_ShouldSetPriority()
     {
@@ -606,9 +635,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetPriority(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
     #endregion
 
     #region SetSorting
+
     [TestMethod]
     public void SetSorting_ShouldSetSorting()
     {
@@ -634,9 +665,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetSorting(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
+
     #endregion
 
     #region SetType
+
     [TestMethod]
     public void SetType_ShouldSetTypeId()
     {
@@ -662,9 +695,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetType(
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING)));
+
     #endregion
 
     #region ClearPriority
+
     [TestMethod]
     public void ClearPriority_ShouldClearPriority()
     {
@@ -680,9 +715,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.PriorityId);
         Assert.IsNull(_dut.Priority);
     }
+
     #endregion
 
     #region ClearSorting
+
     [TestMethod]
     public void ClearSorting_ShouldClearSorting()
     {
@@ -698,9 +735,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.SortingId);
         Assert.IsNull(_dut.Sorting);
     }
+
     #endregion
 
     #region ClearType
+
     [TestMethod]
     public void ClearType_ShouldClearType()
     {
@@ -716,9 +755,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.TypeId);
         Assert.IsNull(_dut.Type);
     }
+
     #endregion
 
     #region SetWorkOrder
+
     [TestMethod]
     public void SetWorkOrder_ShouldSetWorkOrder()
     {
@@ -737,9 +778,11 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetWorkOrder_ShouldThrowException_WhenWorkOrderInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetWorkOrder(new WorkOrder("OtherPlant", Guid.NewGuid(), null!)));
+
     #endregion
 
     #region ClearWorkOrder
+
     [TestMethod]
     public void ClearWorkOrder_ShouldClearWorkOrder()
     {
@@ -755,9 +798,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.WorkOrderId);
         Assert.IsNull(_dut.WorkOrder);
     }
+
     #endregion
 
     #region SetOriginalWorkOrder
+
     [TestMethod]
     public void SetOriginalWorkOrder_ShouldSetOriginalWorkOrder()
     {
@@ -776,9 +821,11 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetOriginalWorkOrder_ShouldThrowException_WhenOriginalWorkOrderInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetOriginalWorkOrder(new WorkOrder("OtherPlant", Guid.NewGuid(), null!)));
+
     #endregion
 
     #region ClearOriginalWorkOrder
+
     [TestMethod]
     public void ClearOriginalWorkOrder_ShouldClearOriginalWorkOrder()
     {
@@ -794,9 +841,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.OriginalWorkOrderId);
         Assert.IsNull(_dut.OriginalWorkOrder);
     }
+
     #endregion
 
     #region SetDocument
+
     [TestMethod]
     public void SetDocument_ShouldSetDocument()
     {
@@ -815,9 +864,11 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetDocument_ShouldThrowException_WhenDocumentInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetDocument(new Document("OtherPlant", Guid.NewGuid(), null!)));
+
     #endregion
 
     #region ClearDocument
+
     [TestMethod]
     public void ClearDocument_ShouldClearDocument()
     {
@@ -833,9 +884,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.DocumentId);
         Assert.IsNull(_dut.Document);
     }
+
     #endregion
 
     #region SetSWCR
+
     [TestMethod]
     public void SetSWCR_ShouldSetSWCR()
     {
@@ -854,9 +907,11 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetSWCR_ShouldThrowException_WhenSWCRInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetSWCR(new SWCR("OtherPlant", Guid.NewGuid(), 1)));
+
     #endregion
 
     #region ClearSWCR
+
     [TestMethod]
     public void ClearSWCR_ShouldClearSWCR()
     {
@@ -872,9 +927,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.SWCRId);
         Assert.IsNull(_dut.SWCR);
     }
+
     #endregion
 
     #region SetActionBy
+
     [TestMethod]
     public void SetActionBy_ShouldSetActionBy()
     {
@@ -888,9 +945,11 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.AreEqual(_actionBy.Id, _dut.ActionById);
         Assert.AreEqual(_actionBy, _dut.ActionBy);
     }
+
     #endregion
 
     #region ClearActionBy
+
     [TestMethod]
     public void ClearActionBy_ShouldClearActionBy()
     {
@@ -906,71 +965,6 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.IsNull(_dut.ActionById);
         Assert.IsNull(_dut.ActionBy);
     }
-    #endregion
-
-    #region SetDueTime
-    [TestMethod]
-    public void SetDueTime_ShouldSetDueTime()
-    {
-        // Act
-        _dut.SetDueTime(_utcNow);
-
-        // Assert
-        Assert.IsNotNull(_dut.DueTimeUtc);
-        Assert.AreEqual(_utcNow, _dut.DueTimeUtc);
-    }
-
-    [TestMethod]
-    public void SetNullAsDueTime_ShouldSetNull()
-    {
-        // Arrange
-        _dut.SetDueTime(_utcNow);
-        Assert.IsNotNull(_dut.DueTimeUtc);
-
-        // Act
-        _dut.SetDueTime(null);
-
-        // Assert
-        Assert.IsNull(_dut.DueTimeUtc);
-    }
-
-    [TestMethod]
-    public void SetDueTime_ShouldThrowException_WhenDateTimeIsNotUtc()
-        => Assert.ThrowsException<ArgumentException>(()
-            => _dut.SetDueTime(DateTime.Now));
-
-    #endregion
-
-    #region SetMaterialETA
-    [TestMethod]
-    public void SetMaterialETA_ShouldSetMaterialETA()
-    {
-        // Act
-        _dut.SetMaterialETA(_utcNow);
-
-        // Assert
-        Assert.IsNotNull(_dut.MaterialETAUtc);
-        Assert.AreEqual(_utcNow, _dut.MaterialETAUtc);
-    }
-
-    [TestMethod]
-    public void SetNullAsMaterialETA_ShouldSetNull()
-    {
-        // Arrange
-        _dut.SetMaterialETA(_utcNow);
-        Assert.IsNotNull(_dut.MaterialETAUtc);
-
-        // Act
-        _dut.SetMaterialETA(null);
-
-        // Assert
-        Assert.IsNull(_dut.MaterialETAUtc);
-    }
-
-    [TestMethod]
-    public void SetMaterialETA_ShouldThrowException_WhenDateTimeIsNotUtc()
-        => Assert.ThrowsException<ArgumentException>(()
-            => _dut.SetMaterialETA(DateTime.Now));
 
     #endregion
 }
