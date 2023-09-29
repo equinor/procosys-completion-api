@@ -42,13 +42,15 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        var changes = await Patch(punchItem, request);
+        var properties = await Patch(punchItem, request);
 
         punchItem.SetRowVersion(request.RowVersion);
 
-        if (changes.Any())
+        // todo 104081 lag test som sjekker om PunchItemUpdatedDomainEvent ble added
+        // todo 104081 lag test som sjekker at added PunchItemUpdatedDomainEvent har riktig liste med properties
+        // if (changes.Any())
         {
-            punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+            punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, properties));
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
