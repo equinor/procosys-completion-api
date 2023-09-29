@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemDeletedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemDeletedDomainEvent(PunchItem punchItem) : base(punchItem)
+    public PunchItemDeletedDomainEvent(PunchItem punchItem) : base(punchItem, null)
     { }
 }

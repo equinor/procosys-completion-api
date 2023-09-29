@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemRejectedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemRejectedDomainEvent(PunchItem punchItem) : base(punchItem)
+    public PunchItemRejectedDomainEvent(PunchItem punchItem) : base(punchItem, null)
     {
     }
 }

@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -22,7 +24,9 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
     {
         _punchItem.SetCreated(_person);
 
-        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem);
+        // todo 104081 utvid testene med å sjekke at properties er i published message
+        var properties = new List<Property>();
+        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem, properties);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemCreatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemCreatedEventHandler>>());
         _publishEndpointMock

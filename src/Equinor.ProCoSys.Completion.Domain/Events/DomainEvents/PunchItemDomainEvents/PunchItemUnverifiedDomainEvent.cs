@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemUnverifiedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemUnverifiedDomainEvent(PunchItem punchItem) : base(punchItem)
+    public PunchItemUnverifiedDomainEvent(PunchItem punchItem) : base(punchItem, null)
     { }
 }

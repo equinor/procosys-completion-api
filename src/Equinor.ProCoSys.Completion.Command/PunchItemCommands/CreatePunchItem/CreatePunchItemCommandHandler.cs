@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -6,6 +7,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -59,12 +61,15 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             raisedByOrg,
             clearingByOrg);
 
+        // todo 104081 Fyll på med changes. Se Handler for update
+        var properties = new List<Property>();
+
         await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY);
         await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING);
         await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE);
 
         _punchItemRepository.Add(punchItem);
-        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem));
+        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem, properties));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

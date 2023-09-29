@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemUnclearedDomainEvent : PunchItemDomainEvent
 {
-    public PunchItemUnclearedDomainEvent(PunchItem punchItem) : base(punchItem)
+    public PunchItemUnclearedDomainEvent(PunchItem punchItem) : base(punchItem, null)
     { }
 }
