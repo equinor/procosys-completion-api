@@ -25,6 +25,11 @@ public class CompletionApiStack : Stack
         var appConfig = new AzureAppConfiguration($"pcs-completion-{stack}-config", resourceGroup)
             .AddKeyValue("ApplicationInsights:ConnectionString", appInsight.ConnectionString)
             .AddKeyValue("Sentinel","0");
+        
+        
+        //Create database
+        
+        //add connectionstring to keyvault
         //TODO discuss how we want to do this
         
         
