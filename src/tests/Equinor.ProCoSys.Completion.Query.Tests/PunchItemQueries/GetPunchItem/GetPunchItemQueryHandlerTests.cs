@@ -303,82 +303,6 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(punchItemDetailsDto.RejectedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
     }
 
-    private void AssertRejected(PunchItemDetailsDto punchItemDetailsDto, PunchItem testPunchItem)
-    {
-        var rejectedBy = punchItemDetailsDto.RejectedBy;
-        Assert.IsNotNull(rejectedBy);
-        Assert.AreEqual(_currentPerson.Guid, rejectedBy.Guid);
-        Assert.IsNotNull(punchItemDetailsDto.RejectedAtUtc);
-        Assert.AreEqual(testPunchItem.RejectedAtUtc, punchItemDetailsDto.RejectedAtUtc);
-    }
-
-    private void AssertPunchItem(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
-    {
-        Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
-        Assert.AreEqual(punchItem.Category.ToString(), punchItemDetailsDto.Category);
-        Assert.AreEqual(punchItem.Description, punchItemDetailsDto.Description);
-        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDetailsDto.RowVersion);
-        var project = GetProjectById(punchItem.ProjectId);
-        Assert.AreEqual(project.Name, punchItemDetailsDto.ProjectName);
-
-        var createdBy = punchItemDetailsDto.CreatedBy;
-        Assert.IsNotNull(createdBy);
-        Assert.AreEqual(CurrentUserOid, createdBy.Guid);
-        Assert.AreEqual(punchItem.CreatedAtUtc, punchItemDetailsDto.CreatedAtUtc);
-    }
-
-    private static void AssertNotModified(PunchItemDetailsDto punchItemDetailsDto)
-    {
-        Assert.IsNull(punchItemDetailsDto.ModifiedBy);
-        Assert.IsNull(punchItemDetailsDto.ModifiedAtUtc);
-    }
-
-    private void AssertModified(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
-    {
-        var modifiedBy = punchItemDetailsDto.ModifiedBy;
-        Assert.IsNotNull(modifiedBy);
-        Assert.AreEqual(CurrentUserOid, modifiedBy.Guid);
-        Assert.IsNotNull(punchItemDetailsDto.ModifiedAtUtc);
-        Assert.AreEqual(punchItem.ModifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
-    }
-
-    private static void AssertNotRejected(PunchItemDetailsDto punchItemDetailsDto)
-    {
-        Assert.IsNull(punchItemDetailsDto.RejectedBy);
-        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
-    }
-
-    private static void AssertNotVerified(PunchItemDetailsDto punchItemDetailsDto)
-    {
-        Assert.IsNull(punchItemDetailsDto.VerifiedBy);
-        Assert.IsNull(punchItemDetailsDto.VerifiedAtUtc);
-    }
-
-    private static void AssertNotCleared(PunchItemDetailsDto punchItemDetailsDto)
-    {
-        Assert.IsNull(punchItemDetailsDto.ClearedBy);
-        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
-    }
-
-    private void AssertCleared(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
-    {
-        var clearedBy = punchItemDetailsDto.ClearedBy;
-        Assert.IsNotNull(clearedBy);
-        Assert.AreEqual(_currentPerson.Guid, clearedBy.Guid);
-        Assert.IsNotNull(punchItemDetailsDto.ClearedAtUtc);
-        Assert.AreEqual(punchItem.ClearedAtUtc, punchItemDetailsDto.ClearedAtUtc);
-    }
-
-    private void AssertVerified(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
-    {
-        var verifiedBy = punchItemDetailsDto.VerifiedBy;
-        Assert.IsNotNull(verifiedBy);
-        Assert.AreEqual(_currentPerson.Guid, verifiedBy.Guid);
-        Assert.IsNotNull(punchItemDetailsDto.VerifiedAtUtc);
-        Assert.AreEqual(punchItem.VerifiedAtUtc, punchItemDetailsDto.VerifiedAtUtc);
-        Assert.AreNotEqual(punchItemDetailsDto.VerifiedAtUtc, punchItemDetailsDto.ClearedAtUtc);
-    }
-
     [TestMethod]
     public async Task Handle_ShouldReturnPunchItem_WithPriority()
     {
@@ -671,6 +595,82 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
         Assert.IsNull(result.Data.WorkOrder);
+    }
+
+    private void AssertRejected(PunchItemDetailsDto punchItemDetailsDto, PunchItem testPunchItem)
+    {
+        var rejectedBy = punchItemDetailsDto.RejectedBy;
+        Assert.IsNotNull(rejectedBy);
+        Assert.AreEqual(_currentPerson.Guid, rejectedBy.Guid);
+        Assert.IsNotNull(punchItemDetailsDto.RejectedAtUtc);
+        Assert.AreEqual(testPunchItem.RejectedAtUtc, punchItemDetailsDto.RejectedAtUtc);
+    }
+
+    private void AssertPunchItem(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
+        Assert.AreEqual(punchItem.Category.ToString(), punchItemDetailsDto.Category);
+        Assert.AreEqual(punchItem.Description, punchItemDetailsDto.Description);
+        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDetailsDto.RowVersion);
+        var project = GetProjectById(punchItem.ProjectId);
+        Assert.AreEqual(project.Name, punchItemDetailsDto.ProjectName);
+
+        var createdBy = punchItemDetailsDto.CreatedBy;
+        Assert.IsNotNull(createdBy);
+        Assert.AreEqual(CurrentUserOid, createdBy.Guid);
+        Assert.AreEqual(punchItem.CreatedAtUtc, punchItemDetailsDto.CreatedAtUtc);
+    }
+
+    private static void AssertNotModified(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.IsNull(punchItemDetailsDto.ModifiedBy);
+        Assert.IsNull(punchItemDetailsDto.ModifiedAtUtc);
+    }
+
+    private void AssertModified(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var modifiedBy = punchItemDetailsDto.ModifiedBy;
+        Assert.IsNotNull(modifiedBy);
+        Assert.AreEqual(CurrentUserOid, modifiedBy.Guid);
+        Assert.IsNotNull(punchItemDetailsDto.ModifiedAtUtc);
+        Assert.AreEqual(punchItem.ModifiedAtUtc, punchItemDetailsDto.ModifiedAtUtc);
+    }
+
+    private static void AssertNotRejected(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.IsNull(punchItemDetailsDto.RejectedBy);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
+    }
+
+    private static void AssertNotVerified(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.IsNull(punchItemDetailsDto.VerifiedBy);
+        Assert.IsNull(punchItemDetailsDto.VerifiedAtUtc);
+    }
+
+    private static void AssertNotCleared(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        Assert.IsNull(punchItemDetailsDto.ClearedBy);
+        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
+    }
+
+    private void AssertCleared(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var clearedBy = punchItemDetailsDto.ClearedBy;
+        Assert.IsNotNull(clearedBy);
+        Assert.AreEqual(_currentPerson.Guid, clearedBy.Guid);
+        Assert.IsNotNull(punchItemDetailsDto.ClearedAtUtc);
+        Assert.AreEqual(punchItem.ClearedAtUtc, punchItemDetailsDto.ClearedAtUtc);
+    }
+
+    private void AssertVerified(PunchItem punchItem, PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var verifiedBy = punchItemDetailsDto.VerifiedBy;
+        Assert.IsNotNull(verifiedBy);
+        Assert.AreEqual(_currentPerson.Guid, verifiedBy.Guid);
+        Assert.IsNotNull(punchItemDetailsDto.VerifiedAtUtc);
+        Assert.AreEqual(punchItem.VerifiedAtUtc, punchItemDetailsDto.VerifiedAtUtc);
+        Assert.AreNotEqual(punchItemDetailsDto.VerifiedAtUtc, punchItemDetailsDto.ClearedAtUtc);
     }
 
     private void AssertRaisedByOrg(PunchItemDetailsDto punchItemDetailsDto)
