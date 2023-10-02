@@ -15,7 +15,7 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
     private PunchItemVerifiedEventHandler _dut;
     private PunchItemVerifiedDomainEvent _punchItemVerifiedEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private PunchItemVerifiedIntegrationEvent _publishedIntegrationEvent;
+    private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
@@ -28,24 +28,24 @@ public class PunchItemVerifiedEventHandlerTests : EventHandlerTestBase
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemVerifiedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemVerifiedEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<PunchItemVerifiedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemVerifiedIntegrationEvent>>>(), default))
+            .When(x => x.Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>()))
             .Do(info => 
             {
-                _publishedIntegrationEvent = info.Arg<PunchItemVerifiedIntegrationEvent>();
+                _publishedIntegrationEvent = info.Arg<PunchItemUpdatedIntegrationEvent>();
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_PunchItemVerifiedIntegrationEvent()
+    public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
         await _dut.Handle(_punchItemVerifiedEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
-           .Publish(Arg.Any<PunchItemVerifiedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemVerifiedIntegrationEvent>>>());
+           .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]

@@ -54,17 +54,30 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), Category.PA, null!, _raisedByOrg, _clearingByOrg);
 
     [TestMethod]
-    public async Task GetByGuid_KnownGuid_ShouldReturnEntityWithLibraryProperties()
+    public async Task GetByGuid_KnownGuid_ShouldReturnEntityWithNavigationProperties()
     {
         // Act
         var result = await _dut.GetByGuidAsync(_knownGuid);
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(_raisedByOrg, result.RaisedByOrg);
+
+        Assert.IsNotNull(result.Project);
+        Assert.AreEqual(_project.Guid, result.Project.Guid);
+
+        Assert.IsNotNull(result.RaisedByOrg);
+        Assert.AreEqual(_raisedByOrg.Guid, result.RaisedByOrg.Guid);
+        
+        Assert.IsNotNull(result.ClearingByOrg);
         Assert.AreEqual(_clearingByOrg, result.ClearingByOrg);
-        Assert.AreEqual(_priority, result.Priority);
-        Assert.AreEqual(_sorting, result.Sorting);
-        Assert.AreEqual(_type, result.Type);
+
+        Assert.IsNotNull( result.Priority);
+        Assert.AreEqual(_priority.Guid, result.Priority.Guid);
+
+        Assert.IsNotNull(result.Sorting);
+        Assert.AreEqual(_sorting.Guid, result.Sorting.Guid);
+
+        Assert.IsNotNull(result.Type);
+        Assert.AreEqual(_type.Guid, result.Type.Guid);
     }
 }

@@ -15,7 +15,7 @@ public class PunchItemUnclearedEventHandlerTests : EventHandlerTestBase
     private PunchItemUnclearedEventHandler _dut;
     private PunchItemUnclearedDomainEvent _punchItemUnclearedEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private PunchItemUnclearedIntegrationEvent _publishedIntegrationEvent;
+    private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
@@ -28,24 +28,24 @@ public class PunchItemUnclearedEventHandlerTests : EventHandlerTestBase
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemUnclearedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemUnclearedEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<PunchItemUnclearedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemUnclearedIntegrationEvent>>>(), default))
+            .When(x => x.Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>()))
             .Do(info =>
             {
-                _publishedIntegrationEvent = info.Arg<PunchItemUnclearedIntegrationEvent>();
+                _publishedIntegrationEvent = info.Arg<PunchItemUpdatedIntegrationEvent>();
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_PunchItemUnclearedIntegrationEvent()
+    public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
         await _dut.Handle(_punchItemUnclearedEvent, default);
 
         // Assert
        await _publishEndpointMock.Received()
-            .Publish(Arg.Any<PunchItemUnclearedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemUnclearedIntegrationEvent>>>());
+            .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]

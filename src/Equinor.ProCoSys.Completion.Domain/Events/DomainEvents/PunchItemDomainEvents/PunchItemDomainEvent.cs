@@ -5,7 +5,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public abstract class PunchItemDomainEvent : IDomainEvent
 {
-    protected PunchItemDomainEvent(PunchItem punchItem) => PunchItem = punchItem;
+    protected PunchItemDomainEvent(PunchItem punchItem) 
+        => PunchItem = punchItem;
 
     public PunchItem PunchItem { get; }
 }

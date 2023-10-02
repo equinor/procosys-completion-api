@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
@@ -114,7 +116,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSetAndReturnNewRowVersion_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldSetAndReturnRowVersion_WhenOperationsGiven()
     {
         // Act
         var result = await _dut.Handle(_command, default);
@@ -133,8 +135,112 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUpdatedDomainEvent));
+        var punchItemUpdatedDomainEventAdded = _existingPunchItem.DomainEvents.Last();
+        Assert.IsInstanceOfType(punchItemUpdatedDomainEventAdded, typeof(PunchItemUpdatedDomainEvent));
     }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldAddChangesToPunchItemUpdatedEvent_WhenOperationsGiven()
+    {
+        // Arrange
+        var oldDescription = _existingPunchItem.Description;
+        var oldRaisedByCode = _existingPunchItem.RaisedByOrg.Code;
+        var oldClearingByOrg = _existingPunchItem.ClearingByOrg.Code;
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        var punchItemUpdatedDomainEventAdded = _existingPunchItem.DomainEvents.Last() as PunchItemUpdatedDomainEvent;
+        Assert.IsNotNull(punchItemUpdatedDomainEventAdded);
+        Assert.IsNotNull(punchItemUpdatedDomainEventAdded.Changes);
+        Assert.AreEqual(6, _command.PatchDocument.Operations.Count);
+        Assert.AreEqual(_command.PatchDocument.Operations.Count, punchItemUpdatedDomainEventAdded.Changes.Count);
+
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
+            oldDescription,
+            _newDescription);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
+            oldRaisedByCode,
+            _raisedByOrg.Code);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
+            oldClearingByOrg,
+            _clearingByOrg.Code);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
+            null,
+            _priority.Code);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
+            null,
+            _sorting.Code);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
+            null,
+            _type.Code);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldAddChangesToPunchItemUpdatedEvent_WhenOperationsWithNullGiven()
+    {
+        // Arrange
+        _command.PatchDocument.Operations.Clear();
+        _command.PatchDocument.Replace(p => p.PriorityGuid, null);
+        _command.PatchDocument.Replace(p => p.SortingGuid, null);
+        _command.PatchDocument.Replace(p => p.TypeGuid, null);
+
+        _existingPunchItem.SetPriority(_priority);
+        _existingPunchItem.SetSorting(_sorting);
+        _existingPunchItem.SetType(_type);
+        var oldPriorityCode = _priority.Code;
+        var oldSortingCode = _sorting.Code;
+        var oldTypeCode = _type.Code;
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        var punchItemUpdatedDomainEventAdded = _existingPunchItem.DomainEvents.Last() as PunchItemUpdatedDomainEvent;
+        Assert.IsNotNull(punchItemUpdatedDomainEventAdded);
+        Assert.IsNotNull(punchItemUpdatedDomainEventAdded.Changes);
+        Assert.AreEqual(3, _command.PatchDocument.Operations.Count);
+        Assert.AreEqual(_command.PatchDocument.Operations.Count, punchItemUpdatedDomainEventAdded.Changes.Count);
+
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
+            oldPriorityCode,
+            null);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
+            oldSortingCode,
+            null);
+        AssertChange(
+            punchItemUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
+            oldTypeCode,
+            null);
+    }
+
     #endregion
 
     #region test update when patchDocument don't contains any operations
@@ -153,7 +259,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotSave_WhenNoOperationsGiven()
+    public async Task HandlingCommand_ShouldSave_WhenNoOperationsGiven()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -162,25 +268,26 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldReturnOldRowVersion_WhenNoOperationsGiven()
+    public async Task HandlingCommand_ShouldSetAndReturnRowVersion_WhenNoOperationsGiven()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        var oldRowVersion = _existingPunchItem.RowVersion.ConvertToString();
 
         // Act
         var result = await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(oldRowVersion, result.Data);
-        Assert.AreEqual(oldRowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        // In real life EF Core will create a new RowVersion when save.
+        // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
+        Assert.AreEqual(_command.RowVersion, result.Data);
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
-    [TestMethod]
+        [TestMethod]
     public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenNoOperationsGiven()
     {
         // Arrange 
@@ -198,11 +305,24 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
     private LibraryItem SetupLibraryItem(Guid libraryGuid, LibraryType libraryType, int id)
     {
-        var libraryItem = new LibraryItem(TestPlantA, libraryGuid, null!, null!, libraryType);
+        var str = Guid.NewGuid().ToString();
+        var libraryItem = new LibraryItem(
+            TestPlantA,
+            libraryGuid,
+            str.Substring(0, 4),
+            str,
+            libraryType);
         libraryItem.SetProtectedIdForTesting(id);
         _libraryItemRepositoryMock.GetByGuidAndTypeAsync(libraryGuid, libraryType)
             .Returns(libraryItem);
 
         return libraryItem;
+    }
+
+    private void AssertChange(IProperty change, object oldValue, object newValue)
+    {
+        Assert.IsNotNull(change);
+        Assert.AreEqual(oldValue, change.OldValue);
+        Assert.AreEqual(newValue, change.NewValue);
     }
 }

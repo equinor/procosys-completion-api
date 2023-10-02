@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Dynamic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +7,9 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -41,17 +43,14 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        var patches = await Patch(punchItem, request);
-        if (patches is null)
-        {
-            _logger.LogInformation("Early exit. No changes in punch item '{PunchItemNo}' with guid {PunchItemGuid}", punchItem.ItemNo, punchItem.Guid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
-        }
+        var changes = await PatchAsync(punchItem, request);
 
         punchItem.SetRowVersion(request.RowVersion);
 
-        // todo 104046 Refactor PunchItemUpdatedDomainEvent to take a dynamic object with props actually patched
-        punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem));
+        if (changes.Any())
+        {
+            punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -60,58 +59,65 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 
-    private async Task<ExpandoObject?> Patch(PunchItem punchItem, UpdatePunchItemCommand request)
+    private async Task<List<IProperty>> PatchAsync(PunchItem punchItem, UpdatePunchItemCommand request)
     {
+        var changes = new List<IProperty>();
         var operations = request.PatchDocument.Operations;
 
         var replaceProperties = operations.Select(op => op.path.TrimStart('/')).ToList();
         if (!replaceProperties.Any())
         {
-            return null;
+            return changes;
         }
 
         var patchedPunchItem = new PatchablePunchItem();
-        dynamic patch = new ExpandoObject();
 
         request.PatchDocument.ApplyTo(patchedPunchItem);
 
         foreach (var prop in replaceProperties)
         {
+            IProperty? change;
             switch (prop)
             {
                 case nameof(PatchablePunchItem.Description):
-                    punchItem.Description = patchedPunchItem.Description;
-                    patch.Description = patchedPunchItem.Description;
+                    if (punchItem.Description != patchedPunchItem.Description)
+                    {
+                        change = new Property<string>(nameof(punchItem.Description),
+                            punchItem.Description,
+                            patchedPunchItem.Description);
+                        changes.AddChangeIfNotNull(change);
+                        punchItem.Description = patchedPunchItem.Description;
+                    }
                     break;
 
                 case nameof(PatchablePunchItem.RaisedByOrgGuid):
-                    await SetLibraryItemAsync(prop, punchItem, patchedPunchItem.RaisedByOrgGuid,
+                    change = await SetLibraryItemAsync(prop, punchItem, patchedPunchItem.RaisedByOrgGuid,
                         LibraryType.COMPLETION_ORGANIZATION);
-                    patch.RaisedByOrgGuid = patchedPunchItem.RaisedByOrgGuid;
+                    changes.AddChangeIfNotNull(change);
                     break;
 
                 case nameof(PatchablePunchItem.ClearingByOrgGuid):
-                    await SetLibraryItemAsync(prop, punchItem, patchedPunchItem.ClearingByOrgGuid,
+                    change = await SetLibraryItemAsync(prop, punchItem, patchedPunchItem.ClearingByOrgGuid,
                         LibraryType.COMPLETION_ORGANIZATION);
-                    patch.ClearingByOrgGuid = patchedPunchItem.ClearingByOrgGuid;
+                    changes.AddChangeIfNotNull(change);
                     break;
 
                 case nameof(PatchablePunchItem.PriorityGuid):
-                    await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.PriorityGuid,
+                    change = await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.PriorityGuid,
                         LibraryType.PUNCHLIST_PRIORITY);
-                    patch.PriorityGuid = patchedPunchItem.PriorityGuid!;
+                    changes.AddChangeIfNotNull(change);
                     break;
 
                 case nameof(PatchablePunchItem.SortingGuid):
-                    await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.SortingGuid,
+                    change = await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.SortingGuid,
                         LibraryType.PUNCHLIST_SORTING);
-                    patch.SortingGuid = patchedPunchItem.SortingGuid!;
+                    changes.AddChangeIfNotNull(change);
                     break;
 
                 case nameof(PatchablePunchItem.TypeGuid):
-                    await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.TypeGuid,
+                    change = await SetOrClearLibraryItemAsync(prop, punchItem, patchedPunchItem.TypeGuid,
                         LibraryType.PUNCHLIST_TYPE);
-                    patch.TypeGuid = patchedPunchItem.TypeGuid!;
+                    changes.AddChangeIfNotNull(change);
                     break;
 
                 default:
@@ -119,10 +125,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             }
         }
 
-        return patch;
+        return changes;
     }
 
-    private async Task SetOrClearLibraryItemAsync(
+    private async Task<IProperty?> SetOrClearLibraryItemAsync(
         string property,
         PunchItem punchItem,
         Guid? libraryGuid,
@@ -130,59 +136,117 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     {
         if (libraryGuid.HasValue)
         {
-            await SetLibraryItemAsync(property, punchItem, libraryGuid.Value, libraryType);
+            return await SetLibraryItemAsync(property, punchItem, libraryGuid.Value, libraryType);
         }
-        else
-        {
-            ClearLibraryItemAsync(property, punchItem, libraryType);
-        }
+
+        return ClearLibraryItemAsync(property, punchItem, libraryType);
     }
 
-    private async Task SetLibraryItemAsync(
+    private async Task<IProperty?> SetLibraryItemAsync(
         string property,
         PunchItem punchItem,
         Guid libraryGuid,
         LibraryType libraryType)
     {
-        var libraryItem = (await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType))!;
-
+        IProperty? change = null;
         switch (property)
         {
             case nameof(PatchablePunchItem.RaisedByOrgGuid):
-                punchItem.SetRaisedByOrg(libraryItem);
+                if (punchItem.RaisedByOrg.Guid != libraryGuid)
+                {
+                    var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType);
+                    change = new Property<string>(nameof(punchItem.RaisedByOrg),
+                        punchItem.RaisedByOrg.Code,
+                        libraryItem.Code);
+                    punchItem.SetRaisedByOrg(libraryItem);
+                }
                 break;
             case nameof(PatchablePunchItem.ClearingByOrgGuid):
-                punchItem.SetClearingByOrg(libraryItem);
+                if (punchItem.ClearingByOrg.Guid != libraryGuid)
+                {
+                    var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType);
+                    change = new Property<string>(nameof(punchItem.ClearingByOrg),
+                        punchItem.ClearingByOrg.Code,
+                        libraryItem.Code);
+                    punchItem.SetClearingByOrg(libraryItem);
+                }
                 break;
             case nameof(PatchablePunchItem.PriorityGuid):
-                punchItem.SetPriority(libraryItem);
+                if (punchItem.Priority is null || punchItem.Priority.Guid != libraryGuid)
+                {
+                    var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType);
+                    change = new Property<string>(nameof(punchItem.Priority),
+                        punchItem.Priority?.Code,
+                        libraryItem.Code);
+                    punchItem.SetPriority(libraryItem);
+                }
                 break;
             case nameof(PatchablePunchItem.SortingGuid):
-                punchItem.SetSorting(libraryItem);
+                if (punchItem.Sorting is null || punchItem.Sorting.Guid != libraryGuid)
+                {
+                    var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType);
+                    change = new Property<string>(nameof(punchItem.Sorting),
+                        punchItem.Sorting?.Code,
+                        libraryItem.Code);
+                    punchItem.SetSorting(libraryItem);
+                }
                 break;
             case nameof(PatchablePunchItem.TypeGuid):
-                punchItem.SetType(libraryItem);
+                if (punchItem.Type is null || punchItem.Type.Guid != libraryGuid)
+                {
+                    var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, libraryType);
+                    change = new Property<string>(nameof(punchItem.Type),
+                        punchItem.Type?.Code,
+                        libraryItem.Code);
+                    punchItem.SetType(libraryItem);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
+
+        return change;
     }
 
-    private void ClearLibraryItemAsync(string property, PunchItem punchItem, LibraryType libraryType)
+    private IProperty? ClearLibraryItemAsync(
+        string property,
+        PunchItem punchItem,
+        LibraryType libraryType)
     {
+        IProperty? change = null;
         switch (property)
         {
             case nameof(PatchablePunchItem.PriorityGuid):
-                punchItem.ClearPriority();
+                if (punchItem.Priority is not null)
+                {
+                    change = new Property<string?>(nameof(punchItem.Priority),
+                        punchItem.Priority.Code,
+                        null);
+                    punchItem.ClearPriority();
+                }
                 break;
             case nameof(PatchablePunchItem.SortingGuid):
-                punchItem.ClearSorting();
+                if (punchItem.Sorting is not null)
+                {
+                    change = new Property<string?>(nameof(punchItem.Sorting),
+                        punchItem.Sorting.Code,
+                        null);
+                    punchItem.ClearSorting();
+                }
                 break;
             case nameof(PatchablePunchItem.TypeGuid):
-                punchItem.ClearType();
+                if (punchItem.Type is not null)
+                {
+                    change = new Property<string?>(nameof(punchItem.Type),
+                        punchItem.Type.Code,
+                        null);
+                    punchItem.ClearType();
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
+
+        return change;
     }
 }

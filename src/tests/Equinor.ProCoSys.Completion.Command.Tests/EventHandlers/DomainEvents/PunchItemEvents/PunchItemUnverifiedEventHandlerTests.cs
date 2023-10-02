@@ -1,12 +1,11 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchItemEvents;
 
@@ -16,7 +15,7 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
     private PunchItemUnverifiedEventHandler _dut;
     private PunchItemUnverifiedDomainEvent _punchItemUnverifiedEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private PunchItemUnverifiedIntegrationEvent _publishedIntegrationEvent;
+    private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
@@ -29,23 +28,23 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemUnverifiedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemUnverifiedEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<PunchItemUnverifiedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemUnverifiedIntegrationEvent>>>()))
+            .When(x => x.Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>()))
             .Do(info =>{
-                var evt = info.Arg<PunchItemUnverifiedIntegrationEvent>();
+                var evt = info.Arg<PunchItemUpdatedIntegrationEvent>();
                 _publishedIntegrationEvent = evt;
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_PunchItemUnverifiedIntegrationEvent()
+    public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
         await _dut.Handle(_punchItemUnverifiedEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received(1).Publish(Arg.Any<PunchItemUnverifiedIntegrationEvent>(),
-            Arg.Any<IPipe<PublishContext<PunchItemUnverifiedIntegrationEvent>>>());
+        await _publishEndpointMock.Received(1).Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+            Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]
