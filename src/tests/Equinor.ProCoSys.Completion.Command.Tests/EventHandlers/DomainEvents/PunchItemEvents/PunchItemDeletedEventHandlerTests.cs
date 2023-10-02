@@ -20,6 +20,8 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
     [TestInitialize]
     public void Setup()
     {
+        // Need to simulate what CompletionContext.SaveChangesAsync do to set ...
+        // ... both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
         _punchItem.SetModified(_person);
 
         _punchItemDeletedEvent = new PunchItemDeletedDomainEvent(_punchItem);
@@ -56,6 +58,9 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item deleted", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_punchItemDeletedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+
+        // Our entities don't have DeletedByOid / DeletedAtUtc ...
+        // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
         Assert.AreEqual(_punchItemDeletedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
         Assert.AreEqual(_punchItemDeletedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
     }
