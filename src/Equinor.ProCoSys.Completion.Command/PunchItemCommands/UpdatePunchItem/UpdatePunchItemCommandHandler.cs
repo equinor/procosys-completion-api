@@ -117,62 +117,71 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                     break;
 
                 case nameof(PatchablePunchItem.PriorityGuid):
-                    if (ShouldClearLibValue(punchItem.Priority, patchedPunchItem.PriorityGuid))
+                    if (punchItem.Priority?.Guid != patchedPunchItem.PriorityGuid)
                     {
-                        changes.Add(new Property<string?>(nameof(punchItem.Priority),
-                            punchItem.Priority!.Code,
-                            null));
-                        punchItem.ClearPriority();
-                    }
-                    else if (ShouldReplaceLibValue(punchItem.Priority, patchedPunchItem.PriorityGuid))
-                    {
-                        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
-                            patchedPunchItem.PriorityGuid!.Value,
-                            LibraryType.PUNCHLIST_PRIORITY);
-                        changes.Add(new Property<string>(nameof(punchItem.Priority),
-                            punchItem.Priority?.Code,
-                            libraryItem.Code));
-                        punchItem.SetPriority(libraryItem);
+                        if (patchedPunchItem.PriorityGuid is not null)
+                        {
+                            var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
+                                patchedPunchItem.PriorityGuid.Value,
+                                LibraryType.PUNCHLIST_PRIORITY);
+                            changes.Add(new Property<string?>(nameof(punchItem.Priority),
+                                punchItem.Priority?.Code,
+                                libraryItem.Code));
+                            punchItem.SetPriority(libraryItem);
+                        }
+                        else
+                        {
+                            changes.Add(new Property<string?>(nameof(punchItem.Priority),
+                                punchItem.Priority!.Code,
+                                null));
+                            punchItem.ClearPriority();
+                        }
                     }
                     break;
 
                 case nameof(PatchablePunchItem.SortingGuid):
-                    if (ShouldClearLibValue(punchItem.Sorting, patchedPunchItem.SortingGuid))
+                    if (punchItem.Sorting?.Guid != patchedPunchItem.SortingGuid)
                     {
-                        changes.Add(new Property<string?>(nameof(punchItem.Sorting),
-                            punchItem.Sorting!.Code,
-                            null));
-                        punchItem.ClearSorting();
-                    }
-                    else if (ShouldReplaceLibValue(punchItem.Sorting, patchedPunchItem.SortingGuid))
-                    {
-                        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
-                            patchedPunchItem.SortingGuid!.Value,
-                            LibraryType.PUNCHLIST_SORTING);
-                        changes.Add(new Property<string>(nameof(punchItem.Sorting),
-                            punchItem.Sorting?.Code,
-                            libraryItem.Code));
-                        punchItem.SetSorting(libraryItem);
+                        if (patchedPunchItem.SortingGuid is not null)
+                        {
+                            var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
+                                patchedPunchItem.SortingGuid.Value,
+                                LibraryType.PUNCHLIST_SORTING);
+                            changes.Add(new Property<string?>(nameof(punchItem.Sorting),
+                                punchItem.Sorting?.Code,
+                                libraryItem.Code));
+                            punchItem.SetSorting(libraryItem);
+                        }
+                        else
+                        {
+                            changes.Add(new Property<string?>(nameof(punchItem.Sorting),
+                                punchItem.Sorting!.Code,
+                                null));
+                            punchItem.ClearSorting();
+                        }
                     }
                     break;
 
                 case nameof(PatchablePunchItem.TypeGuid):
-                    if (ShouldClearLibValue(punchItem.Type, patchedPunchItem.TypeGuid))
+                    if (punchItem.Type?.Guid != patchedPunchItem.TypeGuid)
                     {
-                        changes.Add(new Property<string?>(nameof(punchItem.Type),
-                            punchItem.Type!.Code,
-                            null));
-                        punchItem.ClearType();
-                    }
-                    else if (ShouldReplaceLibValue(punchItem.Type, patchedPunchItem.TypeGuid))
-                    {
-                        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
-                            patchedPunchItem.TypeGuid!.Value,
-                            LibraryType.PUNCHLIST_TYPE);
-                        changes.Add(new Property<string>(nameof(punchItem.Type),
-                            punchItem.Type?.Code,
-                            libraryItem.Code));
-                        punchItem.SetType(libraryItem);
+                        if (patchedPunchItem.TypeGuid is not null)
+                        {
+                            var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
+                                patchedPunchItem.TypeGuid.Value,
+                                LibraryType.PUNCHLIST_TYPE);
+                            changes.Add(new Property<string?>(nameof(punchItem.Type),
+                                punchItem.Type?.Code,
+                                libraryItem.Code));
+                            punchItem.SetType(libraryItem);
+                        }
+                        else
+                        {
+                            changes.Add(new Property<string?>(nameof(punchItem.Type),
+                                punchItem.Type!.Code,
+                                null));
+                            punchItem.ClearType();
+                        }
                     }
                     break;
 
@@ -188,12 +197,4 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         => patchDocument.Operations
             .Where(op => op.OperationType == OperationType.Replace)
             .Select(op => op.path.TrimStart('/')).ToList();
-
-    private bool ShouldReplaceLibValue(LibraryItem? oldLibraryItem, Guid? newLibraryItemGuid)
-        => (oldLibraryItem is null && newLibraryItemGuid is not null)
-           || (oldLibraryItem is not null && newLibraryItemGuid is not null &&
-               oldLibraryItem.Guid != newLibraryItemGuid.Value);
-
-    private bool ShouldClearLibValue(LibraryItem? oldLibraryItem, Guid? newLibraryItemGuid)
-        => oldLibraryItem is not null && newLibraryItemGuid is null;
 }
