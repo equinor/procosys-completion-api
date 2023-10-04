@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -62,7 +61,7 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAsync_ShouldAddCommentCreatedEvent()
+    public async Task AddAsync_ShouldNotAddAnyDomainEvent()
     {
         // Act
         await _dut.AddAsync("Whatever", _sourceGuid, "T", default);
