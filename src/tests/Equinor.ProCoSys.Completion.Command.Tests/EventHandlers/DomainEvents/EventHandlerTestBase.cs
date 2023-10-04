@@ -1,6 +1,7 @@
 ﻿using System;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -16,6 +17,7 @@ public class EventHandlerTestBase
     protected Person _person;
     protected PunchItem _punchItem;
     protected Project _project;
+    protected Link _link;
 
     [TestInitialize]
     public void SetupBase()
@@ -29,5 +31,6 @@ public class EventHandlerTestBase
         var raisedByOrg = new LibraryItem(testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = new LibraryItem(testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _punchItem = new PunchItem(testPlant, _project, Guid.NewGuid(), Category.PB, null!, raisedByOrg, clearingByOrg);
+        _link = new Link(nameof(PunchItem), _punchItem.Guid, "A", "u");
     }
 }

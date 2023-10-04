@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Equinor.ProCoSys.Completion.MessageContracts;
+namespace Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 
 public interface IPunchItemUpdatedV1 : IPunchItem, IIntegrationEvent
 {

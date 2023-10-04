@@ -68,7 +68,7 @@ public class CommentServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _sourceGuid, "T", default);
 
         // Assert
-        Assert.IsInstanceOfType(_commentAddedToRepository.DomainEvents.First(), typeof(CommentCreatedDomainEvent));
+        Assert.AreEqual(0, _commentAddedToRepository.DomainEvents.Count);
     }
     #endregion
 }
