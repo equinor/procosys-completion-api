@@ -23,7 +23,7 @@ public record PunchItemCreatedIntegrationEvent
 ) : IPunchItemCreatedV1
 {
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent punchItemCreatedEvent) : this(
-        DisplayName: "Punch item created",
+        "Punch item created",
         punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.Project.Guid,
         punchItemCreatedEvent.PunchItem.Project.Name,

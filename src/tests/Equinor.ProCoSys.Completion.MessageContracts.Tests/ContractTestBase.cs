@@ -27,8 +27,8 @@ public abstract class ContractTestBase<TContract> where TContract: IIntegrationE
     }
 
     /**
-     * If this test fails, its mostly because the namespace of contract is other than Equinor.ProCoSys.Completion.MessageContracts
-     * See adr 0004
+     * If this test fails, its mostly because the namespace of versioning contract had been moved.
+     * This is a breaking change for message receiver, since full namespace are used when subscribing with mass transit
      */
     protected void AssertNamespaceNotChanged(string expectedNameSpace)
     {

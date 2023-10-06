@@ -17,7 +17,7 @@ public record LinkCreatedIntegrationEvent
 ) : ILinkCreatedV1
 {
     internal LinkCreatedIntegrationEvent(LinkCreatedDomainEvent linkCreatedEvent) : this(
-        DisplayName: "Link created",
+        "Link created",
         linkCreatedEvent.Link.Guid,
         linkCreatedEvent.Link.SourceGuid,
         linkCreatedEvent.Link.SourceType,

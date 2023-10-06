@@ -56,8 +56,9 @@ public class LinkDeletedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual("Punch item deleted", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual("Link deleted", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_linkDeletedEvent.Link.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_linkDeletedEvent.Link.SourceGuid, _publishedIntegrationEvent.SourceGuid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete

@@ -1,5 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -18,6 +19,7 @@ public class EventHandlerTestBase
     protected PunchItem _punchItem;
     protected Project _project;
     protected Link _link;
+    protected Attachment _attachment;
 
     [TestInitialize]
     public void SetupBase()
@@ -32,5 +34,6 @@ public class EventHandlerTestBase
         var clearingByOrg = new LibraryItem(testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _punchItem = new PunchItem(testPlant, _project, Guid.NewGuid(), Category.PB, null!, raisedByOrg, clearingByOrg);
         _link = new Link(nameof(PunchItem), _punchItem.Guid, "A", "u");
+        _attachment = new Attachment(nameof(PunchItem), Guid.NewGuid(), "PCS$PLANT", "file.txt");
     }
 }

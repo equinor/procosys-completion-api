@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.MessageContracts.Link;
+using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.Link;
+namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.Attachment;
 
 [TestClass]
-public class LinkDeletedV1ContractTests : ContractTestBase<ILinkDeletedV1>
+public class AttachmentDeletedV1ContractTests : ContractTestBase<IAttachmentDeletedV1>
 {
     [TestMethod]
     public override void Contract_Interface_DoNotChange()
@@ -27,5 +27,5 @@ public class LinkDeletedV1ContractTests : ContractTestBase<ILinkDeletedV1>
 
     [TestMethod]
     public override void Contract_Namespace_DoNotChange()
-        => AssertNamespaceNotChanged("Equinor.ProCoSys.Completion.MessageContracts.Link");
+        => AssertNamespaceNotChanged("Equinor.ProCoSys.Completion.MessageContracts.Attachment");
 }
