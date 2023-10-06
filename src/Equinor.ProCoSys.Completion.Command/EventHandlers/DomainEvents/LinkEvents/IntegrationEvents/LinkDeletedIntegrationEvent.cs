@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
 
@@ -13,13 +14,13 @@ public record LinkDeletedIntegrationEvent
     DateTime DeletedAtUtc
 ) : ILinkDeletedV1
 {
-    internal LinkDeletedIntegrationEvent(LinkDeletedDomainEvent punchItemDomainEvent) : this(
-        "Link deleted",
-        punchItemDomainEvent.Link.Guid,
-        punchItemDomainEvent.Link.SourceGuid,
+    internal LinkDeletedIntegrationEvent(LinkDeletedDomainEvent domainEvent) : this(
+        $"Link {domainEvent.Link.Title} deleted",
+        domainEvent.Link.Guid,
+        domainEvent.Link.SourceGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
-        punchItemDomainEvent.Link.ModifiedBy!.Guid,
-        punchItemDomainEvent.Link.ModifiedAtUtc!.Value)
+        domainEvent.Link.ModifiedBy!.Guid,
+        domainEvent.Link.ModifiedAtUtc!.Value)
     { }
 }

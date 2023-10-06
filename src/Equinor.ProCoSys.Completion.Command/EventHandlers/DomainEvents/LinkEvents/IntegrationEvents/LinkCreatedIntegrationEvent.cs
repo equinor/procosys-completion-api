@@ -16,14 +16,14 @@ public record LinkCreatedIntegrationEvent
     DateTime CreatedAtUtc
 ) : ILinkCreatedV1
 {
-    internal LinkCreatedIntegrationEvent(LinkCreatedDomainEvent linkCreatedEvent) : this(
-        "Link created",
-        linkCreatedEvent.Link.Guid,
-        linkCreatedEvent.Link.SourceGuid,
-        linkCreatedEvent.Link.SourceType,
-        linkCreatedEvent.Link.Title,
-        linkCreatedEvent.Link.Url,
-        linkCreatedEvent.Link.CreatedBy.Guid,
-        linkCreatedEvent.Link.CreatedAtUtc)
+    internal LinkCreatedIntegrationEvent(LinkCreatedDomainEvent domainEvent) : this(
+        $"Link {domainEvent.Link.Title} created",
+        domainEvent.Link.Guid,
+        domainEvent.Link.SourceGuid,
+        domainEvent.Link.SourceType,
+        domainEvent.Link.Title,
+        domainEvent.Link.Url,
+        domainEvent.Link.CreatedBy.Guid,
+        domainEvent.Link.CreatedAtUtc)
     { }
 }

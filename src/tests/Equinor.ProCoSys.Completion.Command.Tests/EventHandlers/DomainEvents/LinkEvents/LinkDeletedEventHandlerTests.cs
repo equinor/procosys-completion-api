@@ -56,7 +56,7 @@ public class LinkDeletedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual("Link deleted", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual($"Link {_linkDeletedEvent.Link.Title} deleted", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_linkDeletedEvent.Link.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_linkDeletedEvent.Link.SourceGuid, _publishedIntegrationEvent.SourceGuid);
 

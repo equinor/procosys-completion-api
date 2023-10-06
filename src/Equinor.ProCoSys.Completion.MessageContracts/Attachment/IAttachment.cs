@@ -8,5 +8,4 @@ public interface IAttachment
     string SourceType { get; }
     string FileName { get; }
     string BlobPath { get; }
-    int RevisionNumber { get; }
 }

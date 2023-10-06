@@ -19,15 +19,15 @@ public record LinkUpdatedIntegrationEvent
     List<IProperty> Changes
 ) : ILinkUpdatedV1
 {
-    internal LinkUpdatedIntegrationEvent(LinkUpdatedDomainEvent punchItemDomainEvent) : this(
-        "Link updated",
-        punchItemDomainEvent.Link.Guid,
-        punchItemDomainEvent.Link.SourceGuid,
-        punchItemDomainEvent.Link.SourceType,
-        punchItemDomainEvent.Link.Title,
-        punchItemDomainEvent.Link.Url,
-        punchItemDomainEvent.Link.ModifiedBy!.Guid,
-        punchItemDomainEvent.Link.ModifiedAtUtc!.Value,
-        punchItemDomainEvent.Changes)
+    internal LinkUpdatedIntegrationEvent(LinkUpdatedDomainEvent domainEvent) : this(
+        $"Link {domainEvent.Link.Title} updated",
+        domainEvent.Link.Guid,
+        domainEvent.Link.SourceGuid,
+        domainEvent.Link.SourceType,
+        domainEvent.Link.Title,
+        domainEvent.Link.Url,
+        domainEvent.Link.ModifiedBy!.Guid,
+        domainEvent.Link.ModifiedAtUtc!.Value,
+        domainEvent.Changes)
     { }
 }

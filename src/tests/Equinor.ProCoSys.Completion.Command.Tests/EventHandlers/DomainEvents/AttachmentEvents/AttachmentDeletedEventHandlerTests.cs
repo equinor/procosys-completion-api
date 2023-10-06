@@ -1,68 +1,68 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents.IntegrationEvents;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.LinkEvents;
+namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.AttachmentEvents;
 
 [TestClass]
-public class LinkDeletedEventHandlerTests : EventHandlerTestBase
+public class AttachmentDeletedEventHandlerTests : EventHandlerTestBase
 {
-    private LinkDeletedEventHandler _dut;
-    private LinkDeletedDomainEvent _linkDeletedEvent;
+    private AttachmentDeletedEventHandler _dut;
+    private AttachmentDeletedDomainEvent _attachmentDeletedEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private LinkDeletedIntegrationEvent _publishedIntegrationEvent;
+    private AttachmentDeletedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
     {
         // Need to simulate what CompletionContext.SaveChangesAsync do, since it set ...
         // ... both ModifiedBy and ModifiedAtUtc when entity is deleted
-        _link.SetModified(_person);
+        _attachment.SetModified(_person);
 
-        _linkDeletedEvent = new LinkDeletedDomainEvent(_link);
+        _attachmentDeletedEvent = new AttachmentDeletedDomainEvent(_attachment);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
-        _dut = new LinkDeletedEventHandler(_publishEndpointMock, Substitute.For<ILogger<LinkDeletedEventHandler>>());
+        _dut = new AttachmentDeletedEventHandler(_publishEndpointMock, Substitute.For<ILogger<AttachmentDeletedEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<LinkDeletedIntegrationEvent>(), Arg.Any<IPipe<PublishContext<LinkDeletedIntegrationEvent>>>()))
+            .When(x => x.Publish(Arg.Any<AttachmentDeletedIntegrationEvent>(), Arg.Any<IPipe<PublishContext<AttachmentDeletedIntegrationEvent>>>()))
             .Do(info =>
             {
-                var evt = info.Arg<LinkDeletedIntegrationEvent>();
+                var evt = info.Arg<AttachmentDeletedIntegrationEvent>();
                 _publishedIntegrationEvent = evt;
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_LinkDeletedIntegrationEvent()
+    public async Task Handle_ShouldPublish_AttachmentDeletedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_linkDeletedEvent, default);
+        await _dut.Handle(_attachmentDeletedEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
-            .Publish(Arg.Any<LinkDeletedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<LinkDeletedIntegrationEvent>>>());
+            .Publish(Arg.Any<AttachmentDeletedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<AttachmentDeletedIntegrationEvent>>>());
     }
 
     [TestMethod]
     public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_linkDeletedEvent, default);
+        await _dut.Handle(_attachmentDeletedEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual("Link deleted", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_linkDeletedEvent.Link.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_linkDeletedEvent.Link.SourceGuid, _publishedIntegrationEvent.SourceGuid);
+        Assert.AreEqual($"Attachment {_attachmentDeletedEvent.Attachment.FileName} deleted", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
-        Assert.AreEqual(_linkDeletedEvent.Link.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
-        Assert.AreEqual(_linkDeletedEvent.Link.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
     }
 }

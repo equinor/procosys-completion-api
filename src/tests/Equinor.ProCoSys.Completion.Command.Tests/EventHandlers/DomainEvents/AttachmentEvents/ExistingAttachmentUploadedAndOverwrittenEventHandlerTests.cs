@@ -10,7 +10,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.AttachmentEvents;
 
 [TestClass]
-public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
+public class ExistingAttachmentUploadedAndOverwrittenEventHandlerTests : EventHandlerTestBase
 {
     private NewAttachmentUploadedEventHandler _dut;
     private NewAttachmentUploadedDomainEvent _attachmentCreatedEvent;
@@ -55,12 +55,11 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual("Attachment uploaded", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual($"Attachment {_attachmentCreatedEvent.Attachment.FileName} uploaded", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.RevisionNumber, _publishedIntegrationEvent.RevisionNumber);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
         Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
     }

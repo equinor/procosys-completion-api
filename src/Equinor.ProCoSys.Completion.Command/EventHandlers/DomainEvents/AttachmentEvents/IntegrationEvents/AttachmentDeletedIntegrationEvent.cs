@@ -13,13 +13,13 @@ public record AttachmentDeletedIntegrationEvent
     DateTime DeletedAtUtc
 ) : IAttachmentDeletedV1
 {
-    internal AttachmentDeletedIntegrationEvent(AttachmentDeletedDomainEvent punchItemDomainEvent) : this(
-        "Attachment deleted",
-        punchItemDomainEvent.Attachment.Guid,
-        punchItemDomainEvent.Attachment.SourceGuid,
+    internal AttachmentDeletedIntegrationEvent(AttachmentDeletedDomainEvent domainEvent) : this(
+        $"Attachment {domainEvent.Attachment.FileName} deleted",
+        domainEvent.Attachment.Guid,
+        domainEvent.Attachment.SourceGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
-        punchItemDomainEvent.Attachment.ModifiedBy!.Guid,
-        punchItemDomainEvent.Attachment.ModifiedAtUtc!.Value)
+        domainEvent.Attachment.ModifiedBy!.Guid,
+        domainEvent.Attachment.ModifiedAtUtc!.Value)
     { }
 }

@@ -13,19 +13,18 @@ public record AttachmentCreatedIntegrationEvent
     string SourceType,
     string FileName,
     string BlobPath,
-    int RevisionNumber,
     Guid CreatedByOid,
     DateTime CreatedAtUtc
 ) : IAttachmentCreatedV1
 {
-    internal AttachmentCreatedIntegrationEvent(NewAttachmentUploadedDomainEvent attachmentCreatedEvent) : this(
-        "Attachment uploaded",
-        attachmentCreatedEvent.Attachment)
+    internal AttachmentCreatedIntegrationEvent(NewAttachmentUploadedDomainEvent domainEvent) : this(
+        $"Attachment {domainEvent.Attachment.FileName} uploaded",
+        domainEvent.Attachment)
     { }
 
-    internal AttachmentCreatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent attachmentCreatedEvent) : this(
-        "Attachment uploaded - new revision",
-        attachmentCreatedEvent.Attachment)
+    internal AttachmentCreatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent domainEvent) : this(
+        $"Attachment {domainEvent.Attachment.FileName} uploaded",
+        domainEvent.Attachment)
     { }
 
     private AttachmentCreatedIntegrationEvent(string displayName, Attachment attachment) : this(
@@ -35,7 +34,6 @@ public record AttachmentCreatedIntegrationEvent
         attachment.SourceType,
         attachment.FileName,
         attachment.BlobPath,
-        attachment.RevisionNumber,
         attachment.CreatedBy.Guid,
         attachment.CreatedAtUtc)
     { }
