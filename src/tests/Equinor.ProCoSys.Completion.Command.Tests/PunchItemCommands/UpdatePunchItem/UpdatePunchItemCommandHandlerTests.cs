@@ -66,7 +66,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
     #region test update when patchDocument contains operations
     [TestMethod]
-    public async Task HandlingCommand_ShouldUpdatePunchItem_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldUpdateRequiredProps_OnPunchItem_WhenOperationsGiven()
     {
         // Act
         await _dut.Handle(_command, default);
@@ -75,26 +75,41 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.AreEqual(_newDescription, _existingPunchItem.Description);
         Assert.AreEqual(_raisedByOrg.Id, _existingPunchItem.RaisedByOrgId);
         Assert.AreEqual(_clearingByOrg.Id, _existingPunchItem.ClearingByOrgId);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldUpdateOptionalProps_FromNullToValue_OnPunchItem_WhenOperationsGiven()
+    {
+        // Arrange
+        Assert.IsNull(_existingPunchItem.PriorityId);
+        Assert.IsNull(_existingPunchItem.SortingId);
+        Assert.IsNull(_existingPunchItem.TypeId);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
         Assert.AreEqual(_priority.Id, _existingPunchItem.PriorityId);
         Assert.AreEqual(_sorting.Id, _existingPunchItem.SortingId);
         Assert.AreEqual(_type.Id, _existingPunchItem.TypeId);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldUpdatePunchItem_WhenOperationsWithNullGiven()
+    public async Task HandlingCommand_ShouldUpdateOptionalProps_FromValueToNull_OnPunchItem_WhenOperationsGiven()
     {
         // Arrange
+        _existingPunchItem.SetPriority(_priority);
+        _existingPunchItem.SetSorting(_sorting);
+        _existingPunchItem.SetType(_type);
+
+        Assert.IsNotNull(_existingPunchItem.PriorityId);
+        Assert.IsNotNull(_existingPunchItem.SortingId);
+        Assert.IsNotNull(_existingPunchItem.TypeId);
+
         _command.PatchDocument.Operations.Clear();
         _command.PatchDocument.Replace(p => p.PriorityGuid, null);
         _command.PatchDocument.Replace(p => p.SortingGuid, null);
         _command.PatchDocument.Replace(p => p.TypeGuid, null);
-
-        _existingPunchItem.SetPriority(_priority);
-        _existingPunchItem.SetSorting(_sorting);
-        _existingPunchItem.SetType(_type);
-        Assert.AreEqual(_priority.Id, _existingPunchItem.PriorityId);
-        Assert.AreEqual(_sorting.Id, _existingPunchItem.SortingId);
-        Assert.AreEqual(_type.Id, _existingPunchItem.TypeId);
 
         // Act
         await _dut.Handle(_command, default);
@@ -103,6 +118,35 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsNull(_existingPunchItem.PriorityId);
         Assert.IsNull(_existingPunchItem.SortingId);
         Assert.IsNull(_existingPunchItem.TypeId);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldUpdateOptionalProps_FromValueToOtherValue_OnPunchItem_WhenOperationsGiven()
+    {
+        // Arrange
+        _existingPunchItem.SetPriority(_priority);
+        _existingPunchItem.SetSorting(_sorting);
+        _existingPunchItem.SetType(_type);
+
+        Assert.IsNotNull(_existingPunchItem.PriorityId);
+        Assert.IsNotNull(_existingPunchItem.SortingId);
+        Assert.IsNotNull(_existingPunchItem.TypeId);
+
+        var priority2 = SetupLibraryItem(Guid.NewGuid(), LibraryType.PUNCHLIST_PRIORITY, _priority.Id+1000);
+        var sorting2 = SetupLibraryItem(Guid.NewGuid(), LibraryType.PUNCHLIST_SORTING, _sorting.Id+1000);
+        var type2 = SetupLibraryItem(Guid.NewGuid(), LibraryType.PUNCHLIST_TYPE, _type.Id+1000);
+        _command.PatchDocument.Operations.Clear();
+        _command.PatchDocument.Replace(p => p.PriorityGuid, priority2.Guid);
+        _command.PatchDocument.Replace(p => p.SortingGuid, sorting2.Guid);
+        _command.PatchDocument.Replace(p => p.TypeGuid, type2.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.AreEqual(priority2.Id, _existingPunchItem.PriorityId);
+        Assert.AreEqual(sorting2.Id, _existingPunchItem.SortingId);
+        Assert.AreEqual(type2.Id, _existingPunchItem.TypeId);
     }
 
     [TestMethod]
@@ -241,6 +285,104 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             null);
     }
 
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchDescriptionWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _command.PatchDocument.Replace(p => p.Description, _existingPunchItem.Description);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchRaisedByOrgWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _existingPunchItem.RaisedByOrg.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchClearingByOrgWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _existingPunchItem.ClearingByOrg.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchPriorityWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _existingPunchItem.SetPriority(_priority);
+        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPunchItem.Priority!.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchSortingWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _existingPunchItem.SetSorting(_sorting);
+        _command.PatchDocument.Replace(p => p.SortingGuid, _existingPunchItem.Sorting!.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchTypeWithSameValue()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+        _existingPunchItem.SetType(_type);
+        _command.PatchDocument.Replace(p => p.TypeGuid, _existingPunchItem.Type!.Guid);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert 
+        var punchItemUpdatedDomainEventAdded =
+            _existingPunchItem.DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
+        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+    }
     #endregion
 
     #region test update when patchDocument don't contains any operations
@@ -250,12 +392,22 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Arrange 
         _command.PatchDocument.Operations.Clear();
         var oldDescription = _existingPunchItem.Description;
+        var oldRaisedByOrgId = _existingPunchItem.RaisedByOrgId;
+        var oldClearingByOrgId = _existingPunchItem.ClearingByOrgId;
+        var oldPriorityId = _existingPunchItem.PriorityId;
+        var oldTypeId = _existingPunchItem.TypeId;
+        var oldSortingId = _existingPunchItem.SortingId;
         
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
         Assert.AreEqual(oldDescription, _existingPunchItem.Description);
+        Assert.AreEqual(oldRaisedByOrgId, _existingPunchItem.RaisedByOrgId);
+        Assert.AreEqual(oldClearingByOrgId, _existingPunchItem.ClearingByOrgId);
+        Assert.AreEqual(oldPriorityId, _existingPunchItem.PriorityId);
+        Assert.AreEqual(oldSortingId, _existingPunchItem.SortingId);
+        Assert.AreEqual(oldTypeId, _existingPunchItem.TypeId);
     }
 
     [TestMethod]
@@ -287,7 +439,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
     }
 
-        [TestMethod]
+    [TestMethod]
     public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenNoOperationsGiven()
     {
         // Arrange 

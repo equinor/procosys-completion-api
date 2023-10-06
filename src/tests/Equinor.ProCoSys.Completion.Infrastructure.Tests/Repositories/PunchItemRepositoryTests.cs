@@ -69,7 +69,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         Assert.AreEqual(_raisedByOrg.Guid, result.RaisedByOrg.Guid);
         
         Assert.IsNotNull(result.ClearingByOrg);
-        Assert.AreEqual(_clearingByOrg, result.ClearingByOrg);
+        Assert.AreEqual(_clearingByOrg.Guid, result.ClearingByOrg.Guid);
 
         Assert.IsNotNull( result.Priority);
         Assert.AreEqual(_priority.Guid, result.Priority.Guid);
