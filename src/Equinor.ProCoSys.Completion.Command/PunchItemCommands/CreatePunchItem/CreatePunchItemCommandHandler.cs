@@ -47,8 +47,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             throw new Exception($"Could not find {nameof(Project)} with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
         }
 
-        var raisedByOrg = await GetLibraryItemAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
-        var clearingByOrg = await GetLibraryItemAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
 
         var punchItem = new PunchItem(
             _plantProvider.Plant,
@@ -79,7 +79,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         {
             return;
         }
-        var libraryItem = await GetLibraryItemAsync(libraryGuid.Value, libraryType);
+        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType);
 
         switch (libraryType)
         {
@@ -95,17 +95,5 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
-    }
-
-    private async Task<LibraryItem> GetLibraryItemAsync(Guid libraryGuid, LibraryType type)
-    {
-        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid, type);
-        if (libraryItem is null)
-        {
-            throw new Exception(
-                $"Could not find {nameof(LibraryItem)} of type {type} with Guid {libraryGuid} in plant {_plantProvider.Plant}");
-        }
-
-        return libraryItem;
     }
 }

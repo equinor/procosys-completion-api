@@ -2,13 +2,8 @@
 
 namespace Equinor.ProCoSys.Completion.MessageContracts;
 
-public interface IPunchItemCreatedV1 : IHaveDisplayName, IIntegrationEvent
+public interface IPunchItemCreatedV1 : IPunchItem, IIntegrationEvent
 {
-    public Guid ProjectGuid { get; }
-    string ProjectName { get; }
-    string ProjectDescription { get; }
-    public Guid Guid { get;  }
-    public int ItemNo { get; }
-    public Guid CreatedByOid { get; }
-    public DateTime CreatedAtUtc { get;  }
+    Guid CreatedByOid { get; }
+    DateTime CreatedAtUtc { get;  }
 }

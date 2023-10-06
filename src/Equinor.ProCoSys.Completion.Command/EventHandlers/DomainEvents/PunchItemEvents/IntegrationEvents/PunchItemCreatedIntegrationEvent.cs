@@ -7,23 +7,35 @@ namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchIt
 public record PunchItemCreatedIntegrationEvent
 (
     string DisplayName,
+    Guid Guid,
     Guid ProjectGuid,
     string ProjectName,
     string ProjectDescription,
-    Guid Guid,
     int ItemNo,
     Guid CreatedByOid,
-    DateTime CreatedAtUtc
+    DateTime CreatedAtUtc,
+    Guid? ClearedByOid,
+    DateTime? ClearedAtUtc,
+    Guid? RejectedByOid,
+    DateTime? RejectedAtUtc,
+    Guid? VerifiedByOid,
+    DateTime? VerifiedAtUtc
 ) : IPunchItemCreatedV1
 {
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent punchItemCreatedEvent) : this(
         DisplayName: "Punch item created",
+        punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.Project.Guid,
         punchItemCreatedEvent.PunchItem.Project.Name,
         punchItemCreatedEvent.PunchItem.Project.Description,
-        punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.ItemNo,
         punchItemCreatedEvent.PunchItem.CreatedBy.Guid,
-        punchItemCreatedEvent.PunchItem.CreatedAtUtc)
+        punchItemCreatedEvent.PunchItem.CreatedAtUtc,
+        punchItemCreatedEvent.PunchItem.ClearedBy?.Guid,
+        punchItemCreatedEvent.PunchItem.ClearedAtUtc,
+        punchItemCreatedEvent.PunchItem.RejectedBy?.Guid,
+        punchItemCreatedEvent.PunchItem.RejectedAtUtc,
+        punchItemCreatedEvent.PunchItem.VerifiedBy?.Guid,
+        punchItemCreatedEvent.PunchItem.VerifiedAtUtc)
     { }
 }

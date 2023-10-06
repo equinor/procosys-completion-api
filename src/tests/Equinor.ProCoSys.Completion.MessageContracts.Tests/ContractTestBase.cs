@@ -30,7 +30,8 @@ public abstract class ContractTestBase<TContract> where TContract: IIntegrationE
 
         foreach (var expectedProperty in expectedProperties)
         {
-            Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key], "Property type mismatch. " +
+            Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key], 
+                $"Property type mismatch for {expectedProperty.Key}. " +
                 "Consider creating a new version instead of modifying the existing one.");
         }
     }

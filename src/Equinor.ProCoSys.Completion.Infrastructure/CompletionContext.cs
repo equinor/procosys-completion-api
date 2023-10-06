@@ -193,7 +193,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .ToList();
         var modifiedEntries = ChangeTracker
             .Entries<IModificationAuditable>()
-            // Also update modifiedBy / modifiedAt when deleting. This to be able to log who performed the deletion
+            // Also update modifiedBy / modifiedAt when deleting ...
+            // ... This to be able to create integration events with info about who performed the deletion and when
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted)
             .ToList();
 

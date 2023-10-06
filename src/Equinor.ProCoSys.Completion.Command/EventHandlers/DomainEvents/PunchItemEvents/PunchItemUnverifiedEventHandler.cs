@@ -20,7 +20,7 @@ public class PunchItemUnverifiedEventHandler : INotificationHandler<PunchItemUnv
     }
 
     public async Task Handle(PunchItemUnverifiedDomainEvent punchItemUnverifiedEvent, CancellationToken cancellationToken)
-        => await _publishEndpoint.Publish(new PunchItemUnverifiedIntegrationEvent(punchItemUnverifiedEvent),
+        => await _publishEndpoint.Publish(new PunchItemUpdatedIntegrationEvent(punchItemUnverifiedEvent),
             context =>
             {
                 context.SetSessionId(punchItemUnverifiedEvent.PunchItem.Guid.ToString());

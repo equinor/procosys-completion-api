@@ -15,7 +15,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
     private PunchItemRejectedEventHandler _dut;
     private PunchItemRejectedDomainEvent _punchItemRejectedEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private PunchItemRejectedIntegrationEvent _publishedIntegrationEvent;
+    private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
@@ -28,24 +28,24 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemRejectedEventHandler(_publishEndpointMock,  Substitute.For<ILogger<PunchItemRejectedEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<PunchItemRejectedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemRejectedIntegrationEvent>>>()))
+            .When(x => x.Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>()))
             .Do(info =>
             {
-                _publishedIntegrationEvent = info.Arg<PunchItemRejectedIntegrationEvent>();
+                _publishedIntegrationEvent = info.Arg<PunchItemUpdatedIntegrationEvent>();
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_PunchItemRejectedIntegrationEvent()
+    public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
         await _dut.Handle(_punchItemRejectedEvent, default);
 
         // Assert
         await _publishEndpointMock.Received()
-            .Publish(Arg.Any<PunchItemRejectedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<PunchItemRejectedIntegrationEvent>>>());
+            .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]
