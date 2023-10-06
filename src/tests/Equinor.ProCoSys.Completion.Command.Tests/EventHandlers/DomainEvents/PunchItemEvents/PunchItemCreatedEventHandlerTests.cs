@@ -42,8 +42,9 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemCreatedEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received().Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
-            Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
+        await _publishEndpointMock.Received(1)
+            .Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
     }
 
     [TestMethod]

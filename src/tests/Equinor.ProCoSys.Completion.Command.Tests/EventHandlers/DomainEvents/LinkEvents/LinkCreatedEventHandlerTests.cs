@@ -20,7 +20,7 @@ public class LinkCreatedEventHandlerTests : EventHandlerTestBase
     [TestInitialize]
     public void Setup()
     {
-        _punchItem.SetCreated(_person);
+        _link.SetCreated(_person);
 
         _linkCreatedEvent = new LinkCreatedDomainEvent(_link);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
@@ -42,8 +42,9 @@ public class LinkCreatedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_linkCreatedEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received().Publish(Arg.Any<LinkCreatedIntegrationEvent>(),
-            Arg.Any<IPipe<PublishContext<LinkCreatedIntegrationEvent>>>());
+        await _publishEndpointMock.Received(1)
+            .Publish(Arg.Any<LinkCreatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<LinkCreatedIntegrationEvent>>>());
     }
 
     [TestMethod]

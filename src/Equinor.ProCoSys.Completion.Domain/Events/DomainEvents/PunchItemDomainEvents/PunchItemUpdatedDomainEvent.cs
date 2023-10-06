@@ -6,8 +6,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomain
 
 public class PunchItemUpdatedDomainEvent : PunchItemDomainEvent
 {
-    public List<IProperty> Changes { get; }
-
     public PunchItemUpdatedDomainEvent(PunchItem punchItem, List<IProperty> changes) : base(punchItem) 
         => Changes = changes;
+
+    public List<IProperty> Changes { get; }
 }

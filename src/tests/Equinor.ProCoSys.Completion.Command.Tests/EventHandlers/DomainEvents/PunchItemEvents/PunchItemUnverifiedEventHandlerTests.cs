@@ -43,8 +43,9 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemUnverifiedEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received(1).Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
-            Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
+        await _publishEndpointMock.Received(1)
+            .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]

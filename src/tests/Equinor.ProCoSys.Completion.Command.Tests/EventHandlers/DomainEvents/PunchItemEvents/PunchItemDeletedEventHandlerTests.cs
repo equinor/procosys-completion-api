@@ -44,8 +44,8 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         await _publishEndpointMock.Received(1)
-         .Publish(Arg.Any<PunchItemDeletedIntegrationEvent>(),
-             Arg.Any<IPipe<PublishContext<PunchItemDeletedIntegrationEvent>>>());
+            .Publish(Arg.Any<PunchItemDeletedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemDeletedIntegrationEvent>>>());
     }
 
     [TestMethod]
