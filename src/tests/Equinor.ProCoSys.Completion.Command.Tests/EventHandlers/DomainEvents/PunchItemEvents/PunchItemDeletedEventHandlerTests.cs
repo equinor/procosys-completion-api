@@ -20,8 +20,8 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
     [TestInitialize]
     public void Setup()
     {
-        // Need to simulate what CompletionContext.SaveChangesAsync do to set ...
-        // ... both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
+        // Need to simulate what CompletionContext.SaveChangesAsync do, since it set ...
+        // ... both ModifiedBy and ModifiedAtUtc when entity is deleted
         _punchItem.SetModified(_person);
 
         _punchItemDeletedEvent = new PunchItemDeletedDomainEvent(_punchItem);
