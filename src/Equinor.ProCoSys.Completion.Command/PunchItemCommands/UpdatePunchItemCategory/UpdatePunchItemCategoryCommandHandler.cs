@@ -36,7 +36,7 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        punchItem.AddDomainEvent(new PunchItemUpdatedCategoryDomainEvent(
+        punchItem.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
             punchItem,
             new Property<string>(
                 nameof(PunchItem.Category),
