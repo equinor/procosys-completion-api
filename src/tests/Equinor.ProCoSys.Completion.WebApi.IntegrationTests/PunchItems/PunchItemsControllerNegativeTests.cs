@@ -323,6 +323,105 @@ public class PunchItemsControllerNegativeTests : TestBase
 
     #endregion
 
+    #region UpdatePunchItemCategory
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            "PA",
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldReturnConflict_WhenWrongRowVersion()
+    {
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
+        Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
+
+        await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            "PB",
+            TestFactory.WrongButValidRowVersion,
+            HttpStatusCode.Conflict);
+    }
+
+    #endregion
+
     #region DeletePunchItem
     [TestMethod]
     public async Task DeletePunchItem_AsAnonymous_ShouldReturnUnauthorized()

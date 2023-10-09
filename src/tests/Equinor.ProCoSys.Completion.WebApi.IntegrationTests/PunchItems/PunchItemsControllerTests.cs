@@ -235,6 +235,37 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldUpdatePunchItemCategory()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.AreEqual("PA", punchItem.Category);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            "PB",
+            guidAndRowVersion.RowVersion);
+
+        // Assert
+        AssertRowVersionChange(guidAndRowVersion.RowVersion, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.AreEqual("PB", punchItem.Category);
+    }
+
+    [TestMethod]
     public async Task DeletePunchItem_AsWriter_ShouldDeletePunchItem()
     {
         // Arrange

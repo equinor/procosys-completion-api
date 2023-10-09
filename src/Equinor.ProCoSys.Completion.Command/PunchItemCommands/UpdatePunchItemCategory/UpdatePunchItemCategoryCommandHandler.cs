@@ -47,7 +47,10 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
         punchItem.SetRowVersion(request.RowVersion);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
+        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}", 
+            punchItem.ItemNo,
+            punchItem.Guid,
+            punchItem.Category);
 
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }

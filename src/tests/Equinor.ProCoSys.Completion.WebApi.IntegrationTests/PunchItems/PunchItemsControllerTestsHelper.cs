@@ -304,6 +304,35 @@ public static class PunchItemsControllerTestsHelper
         return await response.Content.ReadAsStringAsync();
     }
 
+    public static async Task<string> UpdatePunchItemCategoryAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        string category,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            category,
+            rowVersion
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}/UpdateCategory", content);
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
+
     public static async Task<string> ClearPunchItemAsync(
         UserType userType,
         string plant,
