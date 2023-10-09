@@ -12,55 +12,55 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.A
 [TestClass]
 public class ExistingAttachmentUploadedAndOverwrittenEventHandlerTests : EventHandlerTestBase
 {
-    private NewAttachmentUploadedEventHandler _dut;
-    private NewAttachmentUploadedDomainEvent _attachmentCreatedEvent;
+    private ExistingAttachmentUploadedAndOverwrittenEventHandler _dut;
+    private ExistingAttachmentUploadedAndOverwrittenDomainEvent _existingAttachmentUploadedAndOverwrittenDomainEvent;
     private IPublishEndpoint _publishEndpointMock;
-    private AttachmentCreatedIntegrationEvent _publishedIntegrationEvent;
+    private AttachmentUpdatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
     {
-        _attachment.SetCreated(_person);
+        _attachment.SetModified(_person);
 
-        _attachmentCreatedEvent = new NewAttachmentUploadedDomainEvent(_attachment);
+        _existingAttachmentUploadedAndOverwrittenDomainEvent = new ExistingAttachmentUploadedAndOverwrittenDomainEvent(_attachment);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
-        _dut = new NewAttachmentUploadedEventHandler(_publishEndpointMock, Substitute.For<ILogger<NewAttachmentUploadedEventHandler>>());
+        _dut = new ExistingAttachmentUploadedAndOverwrittenEventHandler(_publishEndpointMock, Substitute.For<ILogger<ExistingAttachmentUploadedAndOverwrittenEventHandler>>());
         _publishEndpointMock
-            .When(x => x.Publish(Arg.Any<AttachmentCreatedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<AttachmentCreatedIntegrationEvent>>>()))
+            .When(x => x.Publish(Arg.Any<AttachmentUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<AttachmentUpdatedIntegrationEvent>>>()))
             .Do(info =>
             {
-                var evt = info.Arg<AttachmentCreatedIntegrationEvent>();
+                var evt = info.Arg<AttachmentUpdatedIntegrationEvent>();
                 _publishedIntegrationEvent = evt;
             });
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_AttachmentCreatedIntegrationEvent()
+    public async Task Handle_ShouldPublish_AttachmentUpdatedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_attachmentCreatedEvent, default);
+        await _dut.Handle(_existingAttachmentUploadedAndOverwrittenDomainEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
-            .Publish(Arg.Any<AttachmentCreatedIntegrationEvent>(),
-                Arg.Any<IPipe<PublishContext<AttachmentCreatedIntegrationEvent>>>());
+            .Publish(Arg.Any<AttachmentUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<AttachmentUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]
     public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_attachmentCreatedEvent, default);
+        await _dut.Handle(_existingAttachmentUploadedAndOverwrittenDomainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual($"Attachment {_attachmentCreatedEvent.Attachment.FileName} uploaded", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
+        Assert.AreEqual($"Attachment {_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.FileName} uploaded again", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
     }
 }

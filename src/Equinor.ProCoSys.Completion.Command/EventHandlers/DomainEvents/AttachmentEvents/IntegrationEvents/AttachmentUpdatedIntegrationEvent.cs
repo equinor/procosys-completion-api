@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
 
-public record AttachmentCreatedIntegrationEvent
+public record AttachmentUpdatedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
@@ -12,18 +12,18 @@ public record AttachmentCreatedIntegrationEvent
     string SourceType,
     string FileName,
     string BlobPath,
-    Guid CreatedByOid,
-    DateTime CreatedAtUtc
-) : IAttachmentCreatedV1
+    Guid ModifiedByOid,
+    DateTime ModifiedAtUtc
+) : IAttachmentUpdatedV1
 {
-    internal AttachmentCreatedIntegrationEvent(NewAttachmentUploadedDomainEvent domainEvent) : this(
-        $"Attachment {domainEvent.Attachment.FileName} uploaded",
+    internal AttachmentUpdatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent domainEvent) : this(
+        $"Attachment {domainEvent.Attachment.FileName} uploaded again",
         domainEvent.Attachment.Guid,
         domainEvent.Attachment.SourceGuid,
         domainEvent.Attachment.SourceType,
         domainEvent.Attachment.FileName,
         domainEvent.Attachment.BlobPath,
-        domainEvent.Attachment.CreatedBy.Guid,
-        domainEvent.Attachment.CreatedAtUtc)
+        domainEvent.Attachment.ModifiedBy!.Guid,
+        domainEvent.Attachment.ModifiedAtUtc!.Value)
     { }
 }

@@ -23,7 +23,7 @@ public class ExistingAttachmentUploadedAndOverwrittenEventHandler
     }
 
     public async Task Handle(ExistingAttachmentUploadedAndOverwrittenDomainEvent attachmentCreatedDomainEvent, CancellationToken cancellationToken)
-        => await _publishEndpoint.Publish(new AttachmentCreatedIntegrationEvent(attachmentCreatedDomainEvent),
+        => await _publishEndpoint.Publish(new AttachmentUpdatedIntegrationEvent(attachmentCreatedDomainEvent),
             context =>
             {
                 context.SetSessionId(attachmentCreatedDomainEvent.Attachment.Guid.ToString());

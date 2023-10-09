@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.A
 public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
 {
     private NewAttachmentUploadedEventHandler _dut;
-    private NewAttachmentUploadedDomainEvent _attachmentCreatedEvent;
+    private NewAttachmentUploadedDomainEvent _newAttachmentUploadedDomainEvent;
     private IPublishEndpoint _publishEndpointMock;
     private AttachmentCreatedIntegrationEvent _publishedIntegrationEvent;
 
@@ -22,7 +22,7 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
     {
         _attachment.SetCreated(_person);
 
-        _attachmentCreatedEvent = new NewAttachmentUploadedDomainEvent(_attachment);
+        _newAttachmentUploadedDomainEvent = new NewAttachmentUploadedDomainEvent(_attachment);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new NewAttachmentUploadedEventHandler(_publishEndpointMock, Substitute.For<ILogger<NewAttachmentUploadedEventHandler>>());
         _publishEndpointMock
@@ -39,7 +39,7 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_AttachmentCreatedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_attachmentCreatedEvent, default);
+        await _dut.Handle(_newAttachmentUploadedDomainEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
@@ -51,16 +51,16 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_attachmentCreatedEvent, default);
+        await _dut.Handle(_newAttachmentUploadedDomainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual($"Attachment {_attachmentCreatedEvent.Attachment.FileName} uploaded", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_attachmentCreatedEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
+        Assert.AreEqual($"Attachment {_newAttachmentUploadedDomainEvent.Attachment.FileName} uploaded", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
     }
 }

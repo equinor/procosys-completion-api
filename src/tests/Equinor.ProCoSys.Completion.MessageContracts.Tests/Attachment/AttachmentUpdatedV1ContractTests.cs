@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.Attachment;
 
 [TestClass]
-public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCreatedV1>
+public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpdatedV1>
 {
     [TestMethod]
     public override void Contract_Interface_DoNotChange()
@@ -20,8 +20,8 @@ public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCrea
             { "SourceType", typeof(string) },
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "CreatedByOid", typeof(Guid) },
-            { "CreatedAtUtc", typeof(DateTime) }
+            { "ModifiedByOid", typeof(Guid) },
+            { "ModifiedAtUtc", typeof(DateTime) }
         };
 
         // Act
