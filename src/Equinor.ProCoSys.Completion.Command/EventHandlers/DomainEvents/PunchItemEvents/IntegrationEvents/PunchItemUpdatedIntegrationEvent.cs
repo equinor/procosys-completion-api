@@ -69,7 +69,7 @@ public record PunchItemUpdatedIntegrationEvent
     }
 
     internal PunchItemUpdatedIntegrationEvent(PunchItemCategoryUpdatedDomainEvent punchItemDomainEvent) : this(
-        $"Punch item changed to {punchItemDomainEvent.PunchItem.Category}",
+        $"Punch item category changed to {punchItemDomainEvent.PunchItem.Category}",
         punchItemDomainEvent.PunchItem,
         new List<IProperty>
         {

@@ -56,7 +56,7 @@ public class PunchItemCategoryUpdatedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual($"Punch item changed to {_punchItemUpdatedEvent.PunchItem.Category}", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual($"Punch item category changed to {_punchItemUpdatedEvent.PunchItem.Category}", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_punchItemUpdatedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_punchItemUpdatedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
         Assert.AreEqual(_punchItemUpdatedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
