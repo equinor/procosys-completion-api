@@ -62,6 +62,13 @@ public class PunchItemValidator : IPunchItemValidator
         return punchItem?.VerifiedAtUtc is not null;
     }
 
+    public async Task<bool> HasCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
+    {
+        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
+
+        return punchItem is not null && punchItem.Category == category;
+    }
+
     private async Task<PunchItem?> GetPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var punchItem = await (from pi in _context.QuerySet<PunchItem>()
