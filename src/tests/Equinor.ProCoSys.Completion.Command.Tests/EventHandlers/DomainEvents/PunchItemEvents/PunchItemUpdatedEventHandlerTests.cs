@@ -44,8 +44,8 @@ public class PunchItemUpdatedEventHandlerTests : EventHandlerTestBase
 
         // Assert
         await _publishEndpointMock.Received(1)
-         .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
-             Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
+            .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }
 
     [TestMethod]

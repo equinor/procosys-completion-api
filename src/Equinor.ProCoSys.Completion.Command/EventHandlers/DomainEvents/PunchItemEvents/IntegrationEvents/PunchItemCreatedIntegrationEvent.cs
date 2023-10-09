@@ -1,6 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 
@@ -23,7 +23,7 @@ public record PunchItemCreatedIntegrationEvent
 ) : IPunchItemCreatedV1
 {
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent punchItemCreatedEvent) : this(
-        DisplayName: "Punch item created",
+        "Punch item created",
         punchItemCreatedEvent.PunchItem.Guid,
         punchItemCreatedEvent.PunchItem.Project.Guid,
         punchItemCreatedEvent.PunchItem.Project.Name,

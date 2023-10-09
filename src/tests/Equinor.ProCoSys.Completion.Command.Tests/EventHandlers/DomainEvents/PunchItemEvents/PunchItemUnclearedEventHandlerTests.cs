@@ -43,7 +43,7 @@ public class PunchItemUnclearedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemUnclearedEvent, default);
 
         // Assert
-       await _publishEndpointMock.Received()
+        await _publishEndpointMock.Received(1)
             .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
                 Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }

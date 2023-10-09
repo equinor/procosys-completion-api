@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentDomainEvents;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -33,7 +32,6 @@ public class CommentService : ICommentService
     {
         var comment = new Comment(sourceType, sourceGuid, text);
         _commentRepository.Add(comment);
-        comment.AddDomainEvent(new CommentCreatedDomainEvent(comment));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.PunchItem;
@@ -35,5 +37,6 @@ public class PunchItemUpdatedV1ContractTests : ContractTestBase<IPunchItemUpdate
     }
 
     [TestMethod]
-    public override void Contract_Namespace_DoNotChange() => AssertNamespaceNotChanged();
+    public override void Contract_Namespace_DoNotChange()
+        => AssertNamespaceNotChanged("Equinor.ProCoSys.Completion.MessageContracts.PunchItem");
 }

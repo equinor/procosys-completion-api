@@ -43,7 +43,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         await _dut.Handle(_punchItemRejectedEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received()
+        await _publishEndpointMock.Received(1)
             .Publish(Arg.Any<PunchItemUpdatedIntegrationEvent>(),
                 Arg.Any<IPipe<PublishContext<PunchItemUpdatedIntegrationEvent>>>());
     }

@@ -128,20 +128,42 @@ public class LinkServiceTests : TestsBase
             => _dut.UpdateAsync(Guid.NewGuid(), "T", "www", _rowVersion, default));
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldSaveOnce()
+    public async Task UpdateAsync_ShouldSaveOnce_WhenNoChanges()
     {
         // Act
-        await _dut.UpdateAsync(_existingLink.Guid, "T", "www", _rowVersion, default);
+        await _dut.UpdateAsync(_existingLink.Guid, _existingLink.Title, _existingLink.Url, _rowVersion, default);
 
         // Assert
         await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldAddLinkUpdatedEvent()
+    public async Task UpdateAsync_ShouldSaveOnce_WhenChanges()
     {
         // Act
-        await _dut.UpdateAsync(_existingLink.Guid, "T", "www", _rowVersion, default);
+        await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldNotAddLinkUpdatedEvent_WhenNoChanges()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingLink.Guid, _existingLink.Title, _existingLink.Url, _rowVersion, default);
+
+        // Assert
+        var linkUpdatedDomainEventAdded =
+            _existingLink.DomainEvents.Any(e => e.GetType() == typeof(LinkUpdatedDomainEvent));
+        Assert.IsFalse(linkUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldAddLinkUpdatedEvent_WhenChanges()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
 
         // Assert
         Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkUpdatedDomainEvent));
