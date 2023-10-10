@@ -88,7 +88,7 @@ public class UpdatePunchItemCategoryCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemAlreadyHasCategory()
+    public async Task Validate_ShouldFail_When_PunchItemAlreadyHaveSameCategory()
     {
         // Arrange
         _punchItemValidatorMock.HasCategoryAsync(_command.PunchItemGuid, _command.Category, default)

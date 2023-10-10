@@ -34,7 +34,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_command.Category, _punchItemPa.Category);
+        Assert.AreEqual(Category.PB, _punchItemPa.Category);
     }
 
     [TestMethod]

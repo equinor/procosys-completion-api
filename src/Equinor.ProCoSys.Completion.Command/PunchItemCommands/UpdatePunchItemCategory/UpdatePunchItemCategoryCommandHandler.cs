@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -31,12 +30,8 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
     public async Task<Result<string>> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
         var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
-        if (punchItem is null)
-        {
-            throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
-        }
 
-        punchItem.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
+        punchItem!.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
             punchItem,
             new Property<string>(
                 nameof(PunchItem.Category),

@@ -9,8 +9,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemC
 
 public class UpdatePunchItemCategoryCommandValidator : AbstractValidator<UpdatePunchItemCategoryCommand>
 {
-    // Business Validation is based on that Input Validation is done in advance, thus all replaced ..
-    // ... guid values are validated to be Guids
     public UpdatePunchItemCategoryCommandValidator(IPunchItemValidator punchItemValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
@@ -25,7 +23,7 @@ public class UpdatePunchItemCategoryCommandValidator : AbstractValidator<UpdateP
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => NotAlreadyBeClearedAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item is already cleared! Guid={command.PunchItemGuid}")
-            .MustAsync((command, cancellationToken) => NotHaveCategoryAsync(command.PunchItemGuid, command.Category, cancellationToken))
+            .MustAsync((command, cancellationToken) => NotHaveSameCategoryAsync(command.PunchItemGuid, command.Category, cancellationToken))
             .WithMessage(command => $"Punch item already have category {command.Category}! Guid={command.PunchItemGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -40,7 +38,7 @@ public class UpdatePunchItemCategoryCommandValidator : AbstractValidator<UpdateP
         async Task<bool> NotAlreadyBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
 
-        async Task<bool> NotHaveCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
+        async Task<bool> NotHaveSameCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
             => !await punchItemValidator.HasCategoryAsync(punchItemGuid, category, cancellationToken);
     }
 }
