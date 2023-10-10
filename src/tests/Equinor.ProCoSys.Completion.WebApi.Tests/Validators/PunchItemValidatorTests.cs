@@ -17,6 +17,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
+    private PunchItem _punchItemPb = null!;
     private PunchItem _punchItemInOpenProject = null!;
     private PunchItem _punchItemInClosedProject = null!;
     private PunchItem _notClearedPunchItem = null!;
@@ -41,6 +42,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
         var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
 
         _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x1", raisedByOrg, clearingByOrg);
+        _punchItemPb = _punchItemInOpenProject;
         _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), Category.PB, "x2", raisedByOrg, clearingByOrg);
         _notClearedPunchItem = _punchItemInOpenProject;
         _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x3", raisedByOrg, clearingByOrg);
@@ -259,6 +261,36 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
 
         // Act
         var result = await dut.IsVerifiedAsync(Guid.Empty, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+    #endregion
+
+    #region HasCategory
+    [TestMethod]
+    public async Task HasCategory_ShouldReturnTrue_WhenPunchItemHasSameCategory()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context, _checkListValidatorMock);
+
+        // Act
+        var result = await dut.HasCategoryAsync(_punchItemPb.Guid, Category.PB, default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task HasCategory_ShouldReturnFalse_WhenPunchItemHasOtherCategory()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context, _checkListValidatorMock);
+
+        // Act
+        var result = await dut.HasCategoryAsync(_punchItemPb.Guid, Category.PA, default);
 
         // Assert
         Assert.IsFalse(result);
