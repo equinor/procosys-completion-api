@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.EntityFrameworkCore;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Validators.ProjectValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Validators;
 
 public class ProjectValidator : IProjectValidator
 {

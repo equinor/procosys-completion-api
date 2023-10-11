@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Validators.CheckListValidators;
+namespace Equinor.ProCoSys.Completion.WebApi.Validators;
 
 public class CheckListValidator : ICheckListValidator
 {
