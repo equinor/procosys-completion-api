@@ -41,6 +41,7 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
+            DateTime.UtcNow,
             TestFactory.PriorityGuid,
             TestFactory.SortingGuid,
             TestFactory.TypeGuid);
@@ -154,9 +155,9 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
-            TestFactory.PriorityGuid,
-            TestFactory.SortingGuid,
-            TestFactory.TypeGuid);
+            priorityGuid: TestFactory.PriorityGuid,
+            sortingGuid: TestFactory.SortingGuid,
+            typeGuid: TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
         Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
@@ -202,9 +203,9 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
-            TestFactory.PriorityGuid,
-            TestFactory.SortingGuid,
-            TestFactory.TypeGuid);
+            priorityGuid: TestFactory.PriorityGuid,
+            sortingGuid: TestFactory.SortingGuid,
+            typeGuid: TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(description, punchItem.Description);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
