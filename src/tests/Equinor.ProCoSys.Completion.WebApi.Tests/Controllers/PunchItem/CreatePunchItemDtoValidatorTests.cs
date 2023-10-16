@@ -114,7 +114,7 @@ public class CreatePunchItemDtoValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenDueDateNotUtc()
+    public async Task Validate_ShouldFail_WhenDueDateNotOfKindUtc()
     {
         // Arrange
         var dto = new CreatePunchItemDto(
@@ -149,7 +149,7 @@ public class CreatePunchItemDtoValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_WhenMaterialETANotUtc()
+    public async Task Validate_ShouldFail_WhenMaterialETANotOfKindUtc()
     {
         // Arrange
         var dto = new CreatePunchItemDto(

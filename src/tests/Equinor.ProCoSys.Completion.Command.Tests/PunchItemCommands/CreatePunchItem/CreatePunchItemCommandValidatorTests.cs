@@ -445,6 +445,21 @@ public class CreatePunchItemCommandValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_When_OriginalWorkOrderIsClosed()
+    {
+        // Arrange
+        _workOrderValidatorMock.IsClosedAsync(_command.OriginalWorkOrderGuid!.Value, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Original WO is closed!"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_When_WorkOrderNotExists()
     {
         // Arrange
@@ -457,6 +472,21 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("WO does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_WorkOrderIsClosed()
+    {
+        // Arrange
+        _workOrderValidatorMock.IsClosedAsync(_command.WorkOrderGuid!.Value, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("WO is closed!"));
     }
 
     [TestMethod]

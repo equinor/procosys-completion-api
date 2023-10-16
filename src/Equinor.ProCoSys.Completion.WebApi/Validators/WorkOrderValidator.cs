@@ -20,10 +20,10 @@ public class WorkOrderValidator : IWorkOrderValidator
             where l.Guid == workOrderGuid
             select l).AnyAsync(cancellationToken);
 
-    public async Task<bool> IsClosedAsync(Guid projectGuid, CancellationToken cancellationToken)
+    public async Task<bool> IsClosedAsync(Guid workOrderGuid, CancellationToken cancellationToken)
     {
         var workOrder = await (from wo in _context.QuerySet<WorkOrder>()
-            where wo.Guid == projectGuid
+            where wo.Guid == workOrderGuid
             select wo).SingleOrDefaultAsync(cancellationToken);
 
         return workOrder is not null && workOrder.IsClosed;
