@@ -89,6 +89,7 @@ public static class PunchItemsControllerTestsHelper
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
+        DateTime? dueTimeUtc = null,
         Guid? priorityGuid = null,
         Guid? sortingGuid = null,
         Guid? typeGuid = null,
@@ -103,6 +104,7 @@ public static class PunchItemsControllerTestsHelper
             checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
             clearingByOrgGuid = clearingByOrgGuid.ToString(),
+            dueTimeUtc = dueTimeUtc?.ToString("O"),
             priorityGuid = priorityGuid?.ToString(),
             sortingGuid = sortingGuid?.ToString(),
             typeGuid = typeGuid?.ToString()

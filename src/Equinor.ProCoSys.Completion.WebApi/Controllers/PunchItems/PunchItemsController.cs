@@ -93,9 +93,20 @@ public class PunchItemsController : ControllerBase
             dto.CheckListGuid,
             dto.RaisedByOrgGuid, 
             dto.ClearingByOrgGuid,
+            dto.ActionByPersonOid,
+            dto.DueTimeUtc,
             dto.PriorityGuid,
             dto.SortingGuid,
-            dto.TypeGuid));
+            dto.TypeGuid,
+            dto.Estimate,
+            dto.OriginalWorkOrderGuid,
+            dto.WorkOrderGuid,
+            dto.SWCRGuid,
+            dto.DocumentGuid,
+            dto.ExternalItemNo,
+            dto.MaterialRequired,
+            dto.MaterialETAUtc,
+            dto.MaterialExternalNo));
         return this.FromResult(result);
     }
 

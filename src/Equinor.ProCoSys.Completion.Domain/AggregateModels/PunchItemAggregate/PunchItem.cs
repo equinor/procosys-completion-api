@@ -64,12 +64,10 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? TypeId { get; private set; }
     public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
-    // todo 104017 remember utc validation in POST and PATCH
     public DateTime? DueTimeUtc { get; set; }
     public int? Estimate { get; set; }
     public string? ExternalItemNo { get; set; }
     public bool MaterialRequired { get; set; }
-    // todo 104017 remember utc validation in POST and PATCH
     public DateTime? MaterialETAUtc { get; set; }
     public string? MaterialExternalNo { get; set; }
     public WorkOrder? WorkOrder { get; private set; }

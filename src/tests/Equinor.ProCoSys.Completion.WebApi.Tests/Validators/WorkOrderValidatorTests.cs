@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.WebApi.Validators;
@@ -10,58 +10,45 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 
 [TestClass]
-public class ProjectValidatorTests : ReadOnlyTestsBase
+public class WorkOrderValidatorTests : ReadOnlyTestsBase
 {
-    private Project _openProject = null!;
-    private Project _closedProject = null!;
+    private WorkOrder _knownWorkOrder = null!;
+    private WorkOrder _openWorkOrder = null!;
+    private WorkOrder _closedWorkOrder = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-            
-        _openProject = new Project(TestPlantA, Guid.NewGuid(), "Project 1", "D1");
-        _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2") { IsClosed = true };
-        context.Projects.Add(_openProject);
-        context.Projects.Add(_closedProject);
+
+        _knownWorkOrder = _openWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 1");
+        _closedWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
+        context.WorkOrders.Add(_openWorkOrder);
+        context.WorkOrders.Add(_closedWorkOrder);
 
         context.SaveChangesAsync().Wait();
     }
 
     #region ExistsAsync
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenProjectIsClosed()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);            
-        var dut = new ProjectValidator(context);
-
-        // Act
-        var result = await dut.ExistsAsync(_closedProject.Guid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenProjectIsOpen()
+    public async Task ExistsAsync_ShouldReturnTrue_WhenWorkOrderExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new ProjectValidator(context);
+        var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.ExistsAsync(_openProject.Guid, default);
+        var result = await dut.ExistsAsync(_knownWorkOrder.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnFalse_WhenProjectNotExist()
+    public async Task ExistsAsync_ShouldReturnFalse_WhenWorkOrderNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);    
-        var dut = new ProjectValidator(context);
+        var dut = new WorkOrderValidator(context);
 
         // Act
         var result = await dut.ExistsAsync(Guid.Empty, default);
@@ -73,39 +60,39 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
 
     #region IsClosed
     [TestMethod]
-    public async Task IsClosed_ShouldReturnTrue_WhenProjectIsClosed()
+    public async Task IsClosed_ShouldReturnTrue_WhenWorkOrderIsClosed()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new ProjectValidator(context);
+        var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_closedProject.Guid, default);
+        var result = await dut.IsClosedAsync(_closedWorkOrder.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task IsClosed_ShouldReturnFalse_WhenProjectIsOpen()
+    public async Task IsClosed_ShouldReturnFalse_WhenWorkOrderIsOpen()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new ProjectValidator(context);
+        var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_openProject.Guid, default);
+        var result = await dut.IsClosedAsync(_openWorkOrder.Guid, default);
 
         // Assert
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task IsClosed_ShouldReturnFalse_WhenProjectNotExist()
+    public async Task IsClosed_ShouldReturnFalse_WhenWorkOrderNotExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-        var dut = new ProjectValidator(context);
+        var dut = new WorkOrderValidator(context);
 
         // Act
         var result = await dut.IsClosedAsync(Guid.Empty, default);
