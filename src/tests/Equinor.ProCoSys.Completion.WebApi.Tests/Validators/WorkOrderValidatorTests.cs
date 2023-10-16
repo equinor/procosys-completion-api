@@ -12,14 +12,15 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
 [TestClass]
 public class WorkOrderValidatorTests : ReadOnlyTestsBase
 {
+    private WorkOrder _knownWorkOrder = null!;
     private WorkOrder _openWorkOrder = null!;
     private WorkOrder _closedWorkOrder = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-            
-        _openWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 1");
+
+        _knownWorkOrder = _openWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 1");
         _closedWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
         context.WorkOrders.Add(_openWorkOrder);
         context.WorkOrders.Add(_closedWorkOrder);
@@ -29,28 +30,14 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
 
     #region ExistsAsync
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenWorkOrderIsClosed()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);            
-        var dut = new WorkOrderValidator(context);
-
-        // Act
-        var result = await dut.ExistsAsync(_closedWorkOrder.Guid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenWorkOrderIsOpen()
+    public async Task ExistsAsync_ShouldReturnTrue_WhenWorkOrderExist()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.ExistsAsync(_openWorkOrder.Guid, default);
+        var result = await dut.ExistsAsync(_knownWorkOrder.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
