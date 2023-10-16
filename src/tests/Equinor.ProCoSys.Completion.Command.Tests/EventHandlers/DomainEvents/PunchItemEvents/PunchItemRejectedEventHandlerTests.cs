@@ -1,11 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.PunchItemEvents;
 
@@ -13,7 +15,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.P
 public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemRejectedEventHandler _dut;
-    private PunchItemRejectedDomainEvent _punchItemRejectedEvent;
+    private PunchItemRejectedDomainEvent _domainEvent;
     private IPublishEndpoint _publishEndpointMock;
     private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
@@ -24,7 +26,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         _punchItem.Reject(_person);
         _punchItem.SetModified(_person);
 
-        _punchItemRejectedEvent = new PunchItemRejectedDomainEvent(_punchItem);
+        _domainEvent = new PunchItemRejectedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemRejectedEventHandler(_publishEndpointMock,  Substitute.For<ILogger<PunchItemRejectedEventHandler>>());
         _publishEndpointMock
@@ -40,7 +42,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_punchItemRejectedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
@@ -49,18 +51,41 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithRequiredPropertiesSet()
     {
         // Act
-        await _dut.Handle(_punchItemRejectedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.RejectedAtUtc, _publishedIntegrationEvent.RejectedAtUtc);
-        Assert.AreEqual(_person.Guid, _publishedIntegrationEvent.RejectedByOid);
-        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_punchItemRejectedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
+        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
+        AssertNotCleared(_publishedIntegrationEvent);
+        AssertIsRejected(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithAllPropertiesSet()
+    {
+        // Arrange
+        FillOptionalProperties(_domainEvent.PunchItem);
+
+        // Act
+        await _dut.Handle(_domainEvent, default);
+
+        // Assert
+        Assert.IsNotNull(_publishedIntegrationEvent);
+        Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertNotCleared(_publishedIntegrationEvent);
+        AssertIsRejected(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
     }
 }

@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.P
 public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemDeletedEventHandler _dut;
-    private PunchItemDeletedDomainEvent _punchItemDeletedEvent;
+    private PunchItemDeletedDomainEvent _domainEvent;
     private IPublishEndpoint _publishEndpointMock;
     private PunchItemDeletedIntegrationEvent _publishedIntegrationEvent;
 
@@ -24,7 +24,7 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
         // ... both ModifiedBy and ModifiedAtUtc when entity is deleted
         _punchItem.SetModified(_person);
 
-        _punchItemDeletedEvent = new PunchItemDeletedDomainEvent(_punchItem);
+        _domainEvent = new PunchItemDeletedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemDeletedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemDeletedEventHandler>>());
         _publishEndpointMock
@@ -40,7 +40,7 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_PunchItemDeletedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_punchItemDeletedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
@@ -52,16 +52,16 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_punchItemDeletedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item deleted", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_punchItemDeletedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
-        Assert.AreEqual(_punchItemDeletedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
-        Assert.AreEqual(_punchItemDeletedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
+        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
+        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
     }
 }
