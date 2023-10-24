@@ -58,9 +58,8 @@ public class PunchItemUpdatedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item updated", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
         Assert.AreEqual(_domainEvent.Changes, _publishedIntegrationEvent.Changes);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
         AssertNotCleared(_publishedIntegrationEvent);
@@ -81,9 +80,8 @@ public class PunchItemUpdatedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item updated", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
         Assert.AreEqual(_domainEvent.Changes, _publishedIntegrationEvent.Changes);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertNotCleared(_publishedIntegrationEvent);

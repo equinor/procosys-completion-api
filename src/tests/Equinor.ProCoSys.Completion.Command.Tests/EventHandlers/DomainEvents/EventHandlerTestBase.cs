@@ -145,4 +145,10 @@ public class EventHandlerTestBase
         Assert.AreEqual(punchItem.SWCR!.No, integrationEvent.SWCRNo);
         Assert.AreEqual(punchItem.ActionBy!.Guid, integrationEvent.ActionByOid);
     }
+
+    protected void AssertModified(PunchItem punchItem, PunchItemUpdatedIntegrationEvent integrationEvent)
+    {
+        Assert.AreEqual(punchItem.ModifiedAtUtc, integrationEvent.ModifiedAtUtc);
+        Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.ModifiedByOid);
+    }
 }

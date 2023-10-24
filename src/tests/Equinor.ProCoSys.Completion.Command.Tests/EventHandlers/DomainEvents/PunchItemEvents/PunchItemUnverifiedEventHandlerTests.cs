@@ -59,8 +59,7 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item unverified", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
         AssertIsCleared(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);
@@ -81,6 +80,7 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item unverified", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertIsCleared(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);

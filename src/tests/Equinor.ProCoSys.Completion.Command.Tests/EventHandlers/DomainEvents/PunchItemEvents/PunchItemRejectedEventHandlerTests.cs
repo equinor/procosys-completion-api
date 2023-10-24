@@ -60,8 +60,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_domainEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
         AssertNotCleared(_publishedIntegrationEvent);
@@ -82,6 +81,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertNotCleared(_publishedIntegrationEvent);
