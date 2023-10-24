@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.P
 public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemUnverifiedEventHandler _dut;
-    private PunchItemUnverifiedDomainEvent _punchItemUnverifiedEvent;
+    private PunchItemUnverifiedDomainEvent _domainEvent;
     private IPublishEndpoint _publishEndpointMock;
     private PunchItemUpdatedIntegrationEvent _publishedIntegrationEvent;
 
@@ -22,9 +22,10 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
     {
         _punchItem.Clear(_person);
         _punchItem.Verify(_person);
+        _punchItem.Unverify();
         _punchItem.SetModified(_person);
 
-        _punchItemUnverifiedEvent = new PunchItemUnverifiedDomainEvent(_punchItem);
+        _domainEvent = new PunchItemUnverifiedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemUnverifiedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemUnverifiedEventHandler>>());
         _publishEndpointMock
@@ -40,7 +41,7 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_PunchItemUpdatedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_punchItemUnverifiedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         await _publishEndpointMock.Received(1)
@@ -49,16 +50,41 @@ public class PunchItemUnverifiedEventHandlerTests : EventHandlerTestBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithRequiredPropertiesSet()
     {
         // Act
-        await _dut.Handle(_punchItemUnverifiedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item unverified", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_punchItemUnverifiedEvent.PunchItem.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
+        AssertIsCleared(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);
+        AssertNotRejected(_publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithAllPropertiesSet()
+    {
+        // Arrange
+        FillOptionalProperties(_domainEvent.PunchItem);
+
+        // Act
+        await _dut.Handle(_domainEvent, default);
+
+        // Assert
+        Assert.IsNotNull(_publishedIntegrationEvent);
+        Assert.AreEqual("Punch item unverified", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertIsCleared(_domainEvent.PunchItem, _person, _publishedIntegrationEvent);
+        AssertNotRejected(_publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
     }
 }
