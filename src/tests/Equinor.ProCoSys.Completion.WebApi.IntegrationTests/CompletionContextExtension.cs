@@ -44,9 +44,7 @@ public static class CompletionContextExtension
     public static void SeedPlantData(this CompletionContext dbContext, IServiceProvider serviceProvider, KnownTestData knownTestData)
     {
         var userProvider = serviceProvider.GetRequiredService<CurrentUserProvider>();
-        //        var plantProvider = serviceProvider.GetRequiredService<PlantProvider>();
         userProvider.SetCurrentUserOid(new Guid(SeederOid));
-        //plantProvider.SetPlant(knownTestData.Plant);
         var plant = knownTestData.Plant;
             
         var project = SeedProject(
@@ -134,11 +132,11 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             KnownPlantData.OriginalWorkOrderGuid[plant]);
-
         SeedWorkOrder(
             dbContext,
             plant,
             KnownPlantData.WorkOrderGuid[plant]);
+
         var swcrNo = 10;
         SeedSWCR(
             dbContext,
