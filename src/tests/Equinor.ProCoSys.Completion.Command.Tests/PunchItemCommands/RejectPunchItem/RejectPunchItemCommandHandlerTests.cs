@@ -37,7 +37,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         Assert.AreEqual(_utcNow, _existingPunchItem.RejectedAtUtc);
-        Assert.AreEqual(CurrentPersonId, _existingPunchItem.RejectedById);
+        Assert.AreEqual(_currentPerson.Id, _existingPunchItem.RejectedById);
     }
 
     [TestMethod]

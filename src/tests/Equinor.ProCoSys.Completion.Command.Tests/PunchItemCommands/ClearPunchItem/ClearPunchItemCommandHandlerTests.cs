@@ -35,7 +35,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
 
             // Assert
             Assert.AreEqual(_utcNow, _existingPunchItem.ClearedAtUtc);
-            Assert.AreEqual(CurrentPersonId, _existingPunchItem.ClearedById);
+            Assert.AreEqual(_currentPerson.Id, _existingPunchItem.ClearedById);
         }
 
         [TestMethod]
