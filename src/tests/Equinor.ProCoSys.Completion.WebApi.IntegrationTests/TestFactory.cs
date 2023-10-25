@@ -26,9 +26,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public sealed class TestFactory : WebApplicationFactory<Startup>
 {
-    private const string WriterOid = "00000000-0000-0000-0000-000000000001";
-    private const string ReaderOid = "00000000-0000-0000-0000-000000000003";
-    private const string NoPermissionUserOid = "00000000-0000-0000-0000-000000000666";
     private readonly string _connectionString;
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
@@ -52,8 +49,14 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
     public static Guid SortingGuid => KnownPlantData.SortingGuid[KnownPlantData.PlantA];
     public static Guid TypeGuid => KnownPlantData.TypeGuid[KnownPlantData.PlantA];
+    public static Guid OriginalWorkOrderGuid => KnownPlantData.OriginalWorkOrderGuid[KnownPlantData.PlantA];
+    public static Guid WorkOrderGuid => KnownPlantData.WorkOrderGuid[KnownPlantData.PlantA];
+    public static Guid SWCRGuid => KnownPlantData.SWCRGuid[KnownPlantData.PlantA];
+    public static Guid DocumentGuid => KnownPlantData.DocumentGuid[KnownPlantData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
+    public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
+    public Guid ReaderOid => new(_testUsers[UserType.Reader].Profile.Oid);
 
     public Dictionary<string, KnownTestData> SeededData { get; }
 
@@ -190,15 +193,20 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         dbContext.CreateNewDatabaseWithCorrectSchema();
 
+        dbContext.SeedCurrentUser();
+
         SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantA);
         SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
+
+        dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
+        dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
     }
 
-    private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider scopeServiceProvider, string plant)
+    private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider serviceProvider, string plant)
     {
         var knownData = new KnownTestData(plant);
         SeededData.Add(plant, knownData);
-        dbContext.Seed(scopeServiceProvider, knownData);
+        dbContext.SeedPlantData(serviceProvider, knownData);
     }
 
     private void EnsureTestDatabaseDeletedAtTeardown(IServiceCollection services)
@@ -355,7 +363,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Access",
                         UserName = "NO",
                         Email = "no@pcs.com",
-                        Oid = NoPermissionUserOid
+                        Oid = "00000000-0000-0000-0000-000000000666"
                     },
                 AccessablePlants = new List<AccessablePlant>
                 {
@@ -382,7 +390,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Read",
                         UserName = "RR",
                         Email = "rr@pcs.com",
-                        Oid = ReaderOid
+                        Oid = "00000000-0000-0000-0000-000000000003"
                     },
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
@@ -409,7 +417,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Write",
                         UserName = "WW",
                         Email = "ww@pcs.com",
-                        Oid = WriterOid
+                        Oid = "00000000-0000-0000-0000-000000000001"
                     },
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>
