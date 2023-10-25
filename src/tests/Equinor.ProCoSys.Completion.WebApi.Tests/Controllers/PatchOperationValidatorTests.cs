@@ -79,6 +79,48 @@ public class PatchOperationValidatorTests
     }
 
     [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingIntAsSmallLong()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyInt)}",
+            null,
+            (long)2));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForInvalidReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingIntAsBigLong()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyInt)}",
+            null,
+            long.MaxValue));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForInvalidReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
+    }
+
+    [TestMethod]
     public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingInvalidInt()
     {
         // Assert
@@ -258,6 +300,48 @@ public class PatchOperationValidatorTests
         //Assert
         Assert.IsTrue(result1);
         Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingNullableIntAsSmallLong()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyNullableInt1)}",
+            null,
+            (long)2));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForInvalidReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsTrue(result1);
+        Assert.IsNull(result2);
+    }
+
+    [TestMethod]
+    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingNullableIntAsBigLong()
+    {
+        // Assert
+        _patchDocument.Operations.Clear();
+        // cheat to be able to set null to a non-nullable 
+        _patchDocument.Operations.Add(new Operation<PatchableObject>(
+            "replace",
+            $"/{nameof(PatchableObject.MyNullableInt1)}",
+            null,
+            long.MaxValue));
+
+        // Act
+        var result1 = _dut.HaveValidReplaceOperationsOnly(_patchDocument.Operations);
+        var result2 = _dut.GetMessageForInvalidReplaceOperations(_patchDocument.Operations);
+
+        //Assert
+        Assert.IsFalse(result1);
+        Assert.IsNotNull(result2);
     }
 
     [TestMethod]
