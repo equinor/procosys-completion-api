@@ -105,4 +105,20 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     public async Task GetByGuid_UnknownGuid_ShouldThrowEntityNotFoundException()
         // Act and Assert
         => await Assert.ThrowsExceptionAsync<EntityNotFoundException>(() => _dut.GetByGuidAsync(Guid.Empty));
+
+    [TestMethod]
+    public async Task ExistsAsync_KnownGuid_ShouldReturnTrue()
+    {
+        var result = await _dut.ExistsAsync(_knownGuid);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_UnknownGuid_ShouldReturnFalse()
+    {
+        var result = await _dut.ExistsAsync(Guid.Empty);
+
+        Assert.IsFalse(result);
+    }
 }
