@@ -246,18 +246,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldThrowException_WhenProjectNotExists()
-    {
-        // Arrange
-        _projectRepositoryMock
-            .GetByGuidAsync(_existingProject.Guid)
-            .Returns((Project)null);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_ShouldAddPunchItemCreatedEvent()
     {
         // Act

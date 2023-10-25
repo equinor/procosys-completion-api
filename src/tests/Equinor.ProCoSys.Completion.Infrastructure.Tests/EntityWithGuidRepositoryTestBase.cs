@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -101,10 +102,7 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     }
 
     [TestMethod]
-    public async Task GetByGuid_UnknownGuid_ShouldReturnNull()
-    {
-        var result = await _dut.GetByGuidAsync(Guid.Empty);
-
-        Assert.IsNull(result);
-    }
+    public async Task GetByGuid_UnknownGuid_ShouldThrowEntityNotFoundException()
+        // Act and Assert
+        => await Assert.ThrowsExceptionAsync<EntityNotFoundException>(() => _dut.GetByGuidAsync(Guid.Empty));
 }

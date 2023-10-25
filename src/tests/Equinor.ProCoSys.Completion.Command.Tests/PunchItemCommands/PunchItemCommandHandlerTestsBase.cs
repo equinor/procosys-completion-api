@@ -139,7 +139,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _personRepositoryMock
                 .GetByGuidAsync(person.Guid)
                 .Returns(person);
-
+            _personRepositoryMock
+                .ExistsAsync(person.Guid)
+                .Returns(true);
             return person;
         }
 
