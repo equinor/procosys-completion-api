@@ -57,4 +57,28 @@ public class KnownPlantData
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb11") },
         { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb22") }
     };
+
+    public static Dictionary<string, Guid> OriginalWorkOrderGuid = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb33") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb44") }
+    };
+
+    public static Dictionary<string, Guid> WorkOrderGuid = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb55") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb66") }
+    };
+
+    public static Dictionary<string, Guid> SWCRGuid = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb77") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb88") }
+    };
+
+    public static Dictionary<string, Guid> DocumentGuid = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb99") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb00") }
+    };
 }

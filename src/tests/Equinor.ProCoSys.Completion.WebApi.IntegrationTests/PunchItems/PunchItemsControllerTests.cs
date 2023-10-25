@@ -121,6 +121,23 @@ public class PunchItemsControllerTests : TestBase
         patchDocument.Replace("PriorityGuid", TestFactory.PriorityGuid);
         patchDocument.Replace("SortingGuid", TestFactory.SortingGuid);
         patchDocument.Replace("TypeGuid", TestFactory.TypeGuid);
+        patchDocument.Replace("ActionByPersonOid", TestFactory.Instance.WriterOid);
+        var newDueTimeUtc = DateTime.UtcNow.AddDays(7);
+        patchDocument.Replace("DueTimeUtc", newDueTimeUtc);
+        var newEstimate = 8;
+        patchDocument.Replace("Estimate", newEstimate);
+        patchDocument.Replace("OriginalWorkOrderGuid", TestFactory.OriginalWorkOrderGuid);
+        patchDocument.Replace("WorkOrderGuid", TestFactory.WorkOrderGuid);
+        patchDocument.Replace("SWCRGuid", TestFactory.SWCRGuid);
+        patchDocument.Replace("DocumentGuid", TestFactory.DocumentGuid);
+        var newExternalItemNo = "123a";
+        patchDocument.Replace("ExternalItemNo", newExternalItemNo);
+        const bool NewMaterialRequired = true;
+        patchDocument.Replace("MaterialRequired", NewMaterialRequired);
+        var newMaterialETAUtc = DateTime.UtcNow.AddDays(7);
+        patchDocument.Replace("MaterialETAUtc", newMaterialETAUtc);
+        var newMaterialExternalNo = "A-1";
+        patchDocument.Replace("MaterialExternalNo", newMaterialExternalNo);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
@@ -140,6 +157,17 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
+        Assert.AreEqual(TestFactory.Instance.WriterOid, punchItem.ActionBy!.Guid);
+        Assert.AreEqual(newDueTimeUtc, punchItem.DueTimeUtc);
+        Assert.AreEqual(newEstimate, punchItem.Estimate);
+        Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
+        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
+        Assert.AreEqual(newExternalItemNo, punchItem.ExternalItemNo);
+        Assert.AreEqual(NewMaterialRequired, punchItem.MaterialRequired);
+        Assert.AreEqual(newMaterialETAUtc, punchItem.MaterialETAUtc);
+        Assert.AreEqual(newMaterialExternalNo, punchItem.MaterialExternalNo);
     }
 
     [TestMethod]

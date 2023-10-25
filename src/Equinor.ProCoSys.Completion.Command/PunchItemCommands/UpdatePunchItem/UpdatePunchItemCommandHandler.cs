@@ -5,8 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
@@ -22,17 +26,29 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 {
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
+    private readonly IPersonRepository _personRepository;
+    private readonly IWorkOrderRepository _workOrderRepository;
+    private readonly ISWCRRepository _swcrRepository;
+    private readonly IDocumentRepository _documentRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
         ILibraryItemRepository libraryItemRepository,
+        IPersonRepository personRepository,
+        IWorkOrderRepository workOrderRepository,
+        ISWCRRepository swcrRepository,
+        IDocumentRepository documentRepository,
         IUnitOfWork unitOfWork,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
+        _personRepository = personRepository;
+        _workOrderRepository = workOrderRepository;
+        _swcrRepository = swcrRepository;
+        _documentRepository = documentRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -92,6 +108,18 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                     await PatchClearingByOrgGuidAsync(punchItem, patchedPunchItem, changes);
                     break;
 
+                case nameof(PatchablePunchItem.ActionByPersonOid):
+                    await PatchActionByPersonAsync(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.DueTimeUtc):
+                    PatchDueTime(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.Estimate):
+                    PatchEstimate(punchItem, patchedPunchItem, changes);
+                    break;
+
                 case nameof(PatchablePunchItem.PriorityGuid):
                     await PatchPriorityAsync(punchItem, patchedPunchItem, changes);
                     break;
@@ -104,12 +132,165 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                     await PatchTypeAsync(punchItem, patchedPunchItem, changes);
                     break;
 
+                case nameof(PatchablePunchItem.OriginalWorkOrderGuid):
+                    await PatchOriginalWorkOrderAsync(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.WorkOrderGuid):
+                    await PatchWorkOrderAsync(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.SWCRGuid):
+                    await PatchSWCRAsync(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.DocumentGuid):
+                    await PatchDocumentAsync(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.ExternalItemNo):
+                    PatchExternalItemNo(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.MaterialRequired):
+                    PatchMaterialRequired(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.MaterialETAUtc):
+                    PatchMaterialETA(punchItem, patchedPunchItem, changes);
+                    break;
+
+                case nameof(PatchablePunchItem.MaterialExternalNo):
+                    PatchMaterialExternalNo(punchItem, patchedPunchItem, changes);
+                    break;
+
                 default:
                     throw new NotImplementedException($"Patching property {propertyToReplace} not implemented");
             }
         }
 
         return changes;
+    }
+
+    private async Task PatchOriginalWorkOrderAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.OriginalWorkOrder?.Guid == patchedPunchItem.OriginalWorkOrderGuid)
+        {
+            return;
+        }
+
+        if (patchedPunchItem.OriginalWorkOrderGuid is not null)
+        {
+            var workOrder = await _workOrderRepository.GetByGuidAsync(patchedPunchItem.OriginalWorkOrderGuid.Value);
+            changes.Add(new Property<string?>(nameof(punchItem.OriginalWorkOrder),
+                punchItem.OriginalWorkOrder?.No,
+                workOrder!.No));
+            punchItem.SetOriginalWorkOrder(workOrder);
+        }
+        else
+        {
+            changes.Add(new Property<string?>(nameof(punchItem.OriginalWorkOrder),
+                punchItem.OriginalWorkOrder?.No,
+                null));
+            punchItem.ClearOriginalWorkOrder();
+        }
+    }
+
+    private async Task PatchWorkOrderAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.WorkOrder?.Guid == patchedPunchItem.WorkOrderGuid)
+        {
+            return;
+        }
+
+        if (patchedPunchItem.WorkOrderGuid is not null)
+        {
+            var workOrder = await _workOrderRepository.GetByGuidAsync(patchedPunchItem.WorkOrderGuid.Value);
+            changes.Add(new Property<string?>(nameof(punchItem.WorkOrder),
+                punchItem.WorkOrder?.No,
+                workOrder!.No));
+            punchItem.SetWorkOrder(workOrder);
+        }
+        else
+        {
+            changes.Add(new Property<string?>(nameof(punchItem.WorkOrder),
+                punchItem.WorkOrder?.No,
+                null));
+            punchItem.ClearWorkOrder();
+        }
+    }
+
+    private async Task PatchSWCRAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.SWCR?.Guid == patchedPunchItem.SWCRGuid)
+        {
+            return;
+        }
+
+        if (patchedPunchItem.SWCRGuid is not null)
+        {
+            var swcr = await _swcrRepository.GetByGuidAsync(patchedPunchItem.SWCRGuid.Value);
+            changes.Add(new Property<int?>(nameof(punchItem.SWCR),
+                punchItem.SWCR?.No,
+                swcr!.No));
+            punchItem.SetSWCR(swcr);
+        }
+        else
+        {
+            changes.Add(new Property<int?>(nameof(punchItem.SWCR),
+                punchItem.SWCR?.No,
+                null));
+            punchItem.ClearSWCR();
+        }
+    }
+
+    private async Task PatchDocumentAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.Document?.Guid == patchedPunchItem.DocumentGuid)
+        {
+            return;
+        }
+
+        if (patchedPunchItem.DocumentGuid is not null)
+        {
+            var document = await _documentRepository.GetByGuidAsync(patchedPunchItem.DocumentGuid.Value);
+            changes.Add(new Property<string?>(nameof(punchItem.Document),
+                punchItem.Document?.No,
+                document!.No));
+            punchItem.SetDocument(document);
+        }
+        else
+        {
+            changes.Add(new Property<string?>(nameof(punchItem.Document),
+                punchItem.Document?.No,
+                null));
+            punchItem.ClearDocument();
+        }
+    }
+
+    private async Task PatchActionByPersonAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.ActionBy?.Guid == patchedPunchItem.ActionByPersonOid)
+        {
+            return;
+        }
+
+        if (patchedPunchItem.ActionByPersonOid is not null)
+        {
+            // todo 107494 Sende Oid eller Navn på person?
+            var person = await _personRepository.GetByGuidAsync(patchedPunchItem.ActionByPersonOid.Value);
+            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
+                punchItem.ActionBy?.Guid,
+                person!.Guid));
+            punchItem.SetActionBy(person);
+        }
+        else
+        {
+            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
+                punchItem.ActionBy?.Guid,
+                null));
+            punchItem.ClearActionBy();
+        }
     }
 
     private async Task PatchTypeAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
@@ -233,6 +414,84 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             punchItem.Description,
             patchedPunchItem.Description));
         punchItem.Description = patchedPunchItem.Description;
+    }
+
+    private static void PatchDueTime(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.DueTimeUtc == patchedPunchItem.DueTimeUtc)
+        {
+            return;
+        }
+
+        changes.Add(new Property<DateTime?>(nameof(punchItem.DueTimeUtc),
+            punchItem.DueTimeUtc,
+            patchedPunchItem.DueTimeUtc));
+        punchItem.DueTimeUtc = patchedPunchItem.DueTimeUtc;
+    }
+
+    private static void PatchEstimate(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.Estimate == patchedPunchItem.Estimate)
+        {
+            return;
+        }
+
+        changes.Add(new Property<int?>(nameof(punchItem.Estimate),
+            punchItem.Estimate,
+            patchedPunchItem.Estimate));
+        punchItem.Estimate = patchedPunchItem.Estimate;
+    }
+
+    private static void PatchExternalItemNo(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.ExternalItemNo == patchedPunchItem.ExternalItemNo)
+        {
+            return;
+        }
+
+        changes.Add(new Property<string?>(nameof(punchItem.ExternalItemNo),
+            punchItem.ExternalItemNo,
+            patchedPunchItem.ExternalItemNo));
+        punchItem.ExternalItemNo = patchedPunchItem.ExternalItemNo;
+    }
+
+    private static void PatchMaterialRequired(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.MaterialRequired == patchedPunchItem.MaterialRequired)
+        {
+            return;
+        }
+
+        changes.Add(new Property<bool>(nameof(punchItem.MaterialRequired),
+            punchItem.MaterialRequired,
+            patchedPunchItem.MaterialRequired));
+        punchItem.MaterialRequired = patchedPunchItem.MaterialRequired;
+    }
+
+    private static void PatchMaterialETA(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.MaterialETAUtc == patchedPunchItem.MaterialETAUtc)
+        {
+            return;
+        }
+
+        changes.Add(new Property<DateTime?>(nameof(punchItem.MaterialETAUtc),
+            punchItem.MaterialETAUtc,
+            patchedPunchItem.MaterialETAUtc));
+        punchItem.MaterialETAUtc = patchedPunchItem.MaterialETAUtc;
+    }
+
+    private static void PatchMaterialExternalNo(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    {
+        if (punchItem.MaterialExternalNo == patchedPunchItem.MaterialExternalNo)
+        {
+            return;
+        }
+
+        changes.Add(new Property<string?>(nameof(punchItem.MaterialExternalNo),
+            punchItem.MaterialExternalNo,
+            patchedPunchItem.MaterialExternalNo));
+        punchItem.MaterialExternalNo = patchedPunchItem.MaterialExternalNo;
     }
 
     private static List<string> GetPropertiesToReplace(JsonPatchDocument<PatchablePunchItem> patchDocument)

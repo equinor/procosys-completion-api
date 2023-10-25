@@ -15,6 +15,7 @@ public class PunchItemRepository : EntityWithGuidRepository<PunchItem>, IPunchIt
                 .Include(p => p.ClearedBy)
                 .Include(p => p.RejectedBy)
                 .Include(p => p.VerifiedBy)
+                .Include(p => p.ActionBy)
                 .Include(p => p.RaisedByOrg)
                 .Include(p => p.ClearingByOrg)
                 .Include(p => p.Priority)

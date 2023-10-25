@@ -18,7 +18,7 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
         
         var currentUser = await GetByGuidAsync(currentUserOid);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             throw new Exception($"{nameof(Person)} {currentUserOid} not found");
         }
