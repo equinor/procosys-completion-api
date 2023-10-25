@@ -324,7 +324,7 @@ public class PatchOperationValidatorTests
     }
 
     [TestMethod]
-    public void HaveValidReplaceOperationsOnly_ShouldReturnTrue_WhenSettingNullableIntAsBigLong()
+    public void HaveValidReplaceOperationsOnly_ShouldReturnFalse_WhenSettingNullableIntAsBigLong()
     {
         // Assert
         _patchDocument.Operations.Clear();

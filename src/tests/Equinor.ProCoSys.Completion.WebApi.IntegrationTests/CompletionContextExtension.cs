@@ -155,7 +155,7 @@ public static class CompletionContextExtension
         var workOrder = new WorkOrder(plant, guid, Guid.NewGuid().ToString().Substring(0, WorkOrder.NoLengthMax));
         var workOrderRepository = new WorkOrderRepository(dbContext);
         workOrderRepository.Add(workOrder);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedSWCR(CompletionContext dbContext, string plant, Guid guid, int no)
@@ -163,7 +163,7 @@ public static class CompletionContextExtension
         var swcr = new SWCR(plant, guid, no);
         var swcrRepository = new SWCRRepository(dbContext);
         swcrRepository.Add(swcr);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedDocument(CompletionContext dbContext, string plant, Guid guid)
@@ -171,7 +171,7 @@ public static class CompletionContextExtension
         var document = new Document(plant, guid, Guid.NewGuid().ToString());
         var documentRepository = new DocumentRepository(dbContext);
         documentRepository.Add(document);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedPerson(CompletionContext dbContext, string oid, string firstName, string lastName, string userName, string email)
@@ -179,7 +179,7 @@ public static class CompletionContextExtension
         var person = new Person(new Guid(oid), firstName, lastName, userName, email);
         var personRepository = new PersonRepository(dbContext, null!);
         personRepository.Add(person);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static Project SeedProject(
@@ -192,7 +192,7 @@ public static class CompletionContextExtension
         var projectRepository = new ProjectRepository(dbContext);
         var project = new Project(plant, guid, name, desc);
         projectRepository.Add(project);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return project;
     }
 
@@ -224,7 +224,7 @@ public static class CompletionContextExtension
             punchItem.SetType(type);
         }
         punchItemRepository.Add(punchItem);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return punchItem;
     }
 
@@ -233,7 +233,7 @@ public static class CompletionContextExtension
         var linkRepository = new LinkRepository(dbContext);
         var link = new Link(sourceType, sourceGuid, title, url);
         linkRepository.Add(link);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return link;
     }
 
@@ -242,7 +242,7 @@ public static class CompletionContextExtension
         var commentRepository = new CommentRepository(dbContext);
         var comment = new Comment(sourceType, sourceGuid, text);
         commentRepository.Add(comment);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return comment;
     }
 
@@ -256,7 +256,7 @@ public static class CompletionContextExtension
         var attachmentRepository = new AttachmentRepository(dbContext);
         var attachment = new Attachment(sourceType, sourceGuid, plant, fileName);
         attachmentRepository.Add(attachment);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return attachment;
     }
 
@@ -270,7 +270,7 @@ public static class CompletionContextExtension
         var libraryItemRepository = new LibraryItemRepository(dbContext);
         var libraryItem = new LibraryItem(plant, guid, code, $"{code} desc", type);
         libraryItemRepository.Add(libraryItem);
-        dbContext.SaveChangesAsync().Wait();
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return libraryItem;
     }
 }
