@@ -16,10 +16,18 @@ public class PatchablePunchItem
     public Guid RaisedByOrgGuid { get; set; }
     [Required]
     public Guid ClearingByOrgGuid { get; set; }
-
+    public Guid? ActionByPersonOid { get; set; }
+    public DateTime? DueTimeUtc { get; set; }
     public Guid? PriorityGuid { get; set; }
     public Guid? SortingGuid { get; set; }
     public Guid? TypeGuid { get; set; }
-
-    //public DateTime? DueDate { get; set; }
+    public int? Estimate { get; set; }
+    public Guid? OriginalWorkOrderGuid { get; set; }
+    public Guid? WorkOrderGuid { get; set; }
+    public Guid? SWCRGuid { get; set; }
+    public Guid? DocumentGuid { get; set; }
+    public string? ExternalItemNo { get; set; }
+    public bool MaterialRequired { get; set; }
+    public DateTime? MaterialETAUtc { get; set; }
+    public string? MaterialExternalNo { get; set; }
 }

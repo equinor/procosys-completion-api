@@ -143,6 +143,12 @@ public class PatchOperationValidator : IPatchOperationValidator
             return true;
         }
 
+        // special case of assigning an long to an int-property
+        if ((propType == typeof(int) || propType == typeof(int?)) && value is long and < int.MaxValue)
+        {
+            return true;
+        }
+
         if (value is string str)
         {
             return TryParse(str, propType);
