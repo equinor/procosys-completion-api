@@ -52,10 +52,7 @@ public class LinkService : ILinkService
     }
 
     public async Task<bool> ExistsAsync(Guid guid)
-    {
-        var link = await _linkRepository.GetByGuidAsync(guid);
-        return link is not null;
-    }
+        => await _linkRepository.ExistsAsync(guid);
 
     public async Task<string> UpdateAsync(
         Guid guid,
@@ -65,11 +62,6 @@ public class LinkService : ILinkService
         CancellationToken cancellationToken)
     {
         var link = await _linkRepository.GetByGuidAsync(guid);
-
-        if (link is null)
-        {
-            throw new Exception($"Link with guid {guid} not found when updating");
-        }
 
         var changes = UpdateLink(link, title, url);
         if (changes.Any())
@@ -95,11 +87,6 @@ public class LinkService : ILinkService
         CancellationToken cancellationToken)
     {
         var link = await _linkRepository.GetByGuidAsync(guid);
-
-        if (link is null)
-        {
-            throw new Exception($"Link with guid {guid} not found when updating");
-        }
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

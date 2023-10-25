@@ -31,7 +31,7 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
     {
         var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
 
-        punchItem!.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
+        punchItem.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
             punchItem,
             new Property<string>(
                 nameof(PunchItem.Category),
