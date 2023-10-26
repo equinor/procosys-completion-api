@@ -205,9 +205,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             false,
             null,
             null);
-        _personRepositoryMock
-            .GetByGuidAsync(_nonExistingPersonOid)
-            .Returns((Person)null);
         var proCoSysPerson = new ProCoSysPerson
         {
             UserName = "YODA",
