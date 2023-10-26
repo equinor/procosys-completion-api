@@ -17,7 +17,6 @@ public class CreatePunchItemCommandValidatorTests
     private IProjectValidator _projectValidatorMock;
     private ICheckListValidator _checkListValidatorMock;
     private ILibraryItemValidator _libraryItemValidatorMock;
-    private IPersonValidator _personValidatorMock;
     private IWorkOrderValidator _workOrderValidatorMock;
     private ISWCRValidator _swcrValidatorMock;
     private IDocumentValidator _documentValidatorMock;
@@ -60,8 +59,6 @@ public class CreatePunchItemCommandValidatorTests
         SetupOkLibraryItem(_command.SortingGuid!.Value, LibraryType.PUNCHLIST_SORTING);
         SetupOkLibraryItem(_command.TypeGuid!.Value, LibraryType.PUNCHLIST_TYPE);
 
-        _personValidatorMock = Substitute.For<IPersonValidator>();
-        _personValidatorMock.ExistsAsync(_command.ActionByPersonOid!.Value, default).Returns(true);
         _workOrderValidatorMock = Substitute.For<IWorkOrderValidator>();
         _workOrderValidatorMock.ExistsAsync(_command.OriginalWorkOrderGuid!.Value, default).Returns(true);
         _workOrderValidatorMock.ExistsAsync(_command.WorkOrderGuid!.Value, default).Returns(true);
@@ -74,7 +71,6 @@ public class CreatePunchItemCommandValidatorTests
             _projectValidatorMock,
             _checkListValidatorMock,
             _libraryItemValidatorMock,
-            _personValidatorMock,
             _workOrderValidatorMock,
             _swcrValidatorMock,
             _documentValidatorMock);
@@ -412,21 +408,6 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Check list is not in given project!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_ActionByPersonNotExists()
-    {
-        // Arrange
-        _personValidatorMock.ExistsAsync(_command.ActionByPersonOid!.Value, default).Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Action by person does not exist!"));
     }
 
     [TestMethod]

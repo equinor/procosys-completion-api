@@ -13,7 +13,9 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
 {
     // Business Validation is based on that Input Validation is done in advance, thus all replaced ..
     // ... guid values are validated to be Guids
-    public UpdatePunchItemCommandValidator(IPunchItemValidator punchItemValidator, ILibraryItemValidator libraryItemValidator)
+    public UpdatePunchItemCommandValidator(
+        IPunchItemValidator punchItemValidator,
+        ILibraryItemValidator libraryItemValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

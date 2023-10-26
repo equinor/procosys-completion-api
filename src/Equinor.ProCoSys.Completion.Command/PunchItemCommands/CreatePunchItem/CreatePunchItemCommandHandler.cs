@@ -151,20 +151,24 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var personExists = await _personRepository.ExistsAsync(actionByPersonOid.Value);
-        Person person;
+        var person = await GetOrCreatePersonAsync(actionByPersonOid.Value);
+        punchItem.SetActionBy(person);
+    }
+
+    private async Task<Person> GetOrCreatePersonAsync(Guid oid)
+    {
+        var personExists = await _personRepository.ExistsAsync(oid);
         // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
         if (personExists)
         {
-            person = await _personRepository.GetAsync(actionByPersonOid.Value);
+            return await _personRepository.GetAsync(oid);
         }
-        else
-        {
-            var pcsPerson = await _personCache.GetAsync(actionByPersonOid.Value);
-            person = new Person(actionByPersonOid.Value, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
-            _personRepository.Add(person);
-        }
-        punchItem.SetActionBy(person);
+
+        var pcsPerson = await _personCache.GetAsync(oid);
+        var person = new Person(oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+        _personRepository.Add(person);
+
+        return person;
     }
 
     private async Task SetLibraryItemAsync(PunchItem punchItem, Guid? libraryGuid, LibraryType libraryType)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -26,6 +27,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 {
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
+    private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly ISWCRRepository _swcrRepository;
@@ -36,6 +38,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     public UpdatePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
         ILibraryItemRepository libraryItemRepository,
+        IPersonCache personCache,
         IPersonRepository personRepository,
         IWorkOrderRepository workOrderRepository,
         ISWCRRepository swcrRepository,
@@ -45,6 +48,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     {
         _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
+        _personCache = personCache;
         _personRepository = personRepository;
         _workOrderRepository = workOrderRepository;
         _swcrRepository = swcrRepository;
@@ -274,7 +278,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         if (patchedPunchItem.ActionByPersonOid is not null)
         {
             // todo 107494 Sende Oid eller Navn på person?
-            var person = await _personRepository.GetAsync(patchedPunchItem.ActionByPersonOid.Value);
+            var person = await GetOrCreatePersonAsync(patchedPunchItem.ActionByPersonOid.Value);
             changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
                 punchItem.ActionBy?.Guid,
                 person.Guid));
@@ -494,4 +498,20 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         => patchDocument.Operations
             .Where(op => op.OperationType == OperationType.Replace)
             .Select(op => op.path.TrimStart('/')).ToList();
+
+    private async Task<Person> GetOrCreatePersonAsync(Guid oid)
+    {
+        var personExists = await _personRepository.ExistsAsync(oid);
+        // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
+        if (personExists)
+        {
+            return await _personRepository.GetAsync(oid);
+        }
+
+        var pcsPerson = await _personCache.GetAsync(oid);
+        var person = new Person(oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+        _personRepository.Add(person);
+
+        return person;
+    }
 }
