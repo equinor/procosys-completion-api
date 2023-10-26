@@ -13,7 +13,6 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         IProjectValidator projectValidator,
         ICheckListValidator checkListValidator,
         ILibraryItemValidator libraryItemValidator,
-        IPersonValidator personValidator,
         IWorkOrderValidator workOrderValidator,
         ISWCRValidator swcrValidator,
         IDocumentValidator documentValidator)
@@ -135,13 +134,6 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
                 $"Guid={command.TypeGuid!.Value}")
             .When(command => command.TypeGuid.HasValue, ApplyConditionTo.CurrentValidator)
 
-            // validate ActionByPerson, if given
-            .MustAsync((command, cancellationToken)
-                => BeAnExistingPersonAsync(command.ActionByPersonOid!.Value, cancellationToken))
-            .WithMessage(command
-                => $"Action by person does not exist! Guid={command.ActionByPersonOid!.Value}")
-            .When(command => command.ActionByPersonOid.HasValue, ApplyConditionTo.CurrentValidator)
-
             // validate OriginalWorkOrder, if given
             .MustAsync((command, cancellationToken)
                 => BeAnExistingWorkOrderAsync(command.OriginalWorkOrderGuid!.Value, cancellationToken))
@@ -213,9 +205,6 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 
         async Task<bool> NotBeAVoidedLibraryItemAsync(Guid guid, CancellationToken cancellationToken)
             => !await libraryItemValidator.IsVoidedAsync(guid, cancellationToken);
-
-        async Task<bool> BeAnExistingPersonAsync(Guid oid, CancellationToken cancellationToken)
-            => await personValidator.ExistsAsync(oid, cancellationToken);
 
         async Task<bool> BeAnExistingWorkOrderAsync(Guid guid, CancellationToken cancellationToken)
             => await workOrderValidator.ExistsAsync(guid, cancellationToken);

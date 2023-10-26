@@ -16,6 +16,9 @@ public class UpdatePunchItemCommandValidatorTests
     private UpdatePunchItemCommandValidator _dut;
     private IPunchItemValidator _punchItemValidatorMock;
     private ILibraryItemValidator _libraryItemValidatorMock;
+    private IWorkOrderValidator _workOrderValidatorMock;
+    private ISWCRValidator _swcrValidatorMock;
+    private IDocumentValidator _documentValidatorMock;
     private UpdatePunchItemCommand _command;
     private readonly JsonPatchDocument<PatchablePunchItem> _jsonPatchDocument = new();
     private readonly Guid _raisedByOrgGuid = Guid.NewGuid();
@@ -23,6 +26,10 @@ public class UpdatePunchItemCommandValidatorTests
     private readonly Guid _priorityGuid = Guid.NewGuid();
     private readonly Guid _sortingGuid = Guid.NewGuid();
     private readonly Guid _typeGuid = Guid.NewGuid();
+    private readonly Guid _originalWorkOrderGuid = Guid.NewGuid();
+    private readonly Guid _workOrderGuid = Guid.NewGuid();
+    private readonly Guid _swcrGuid = Guid.NewGuid();
+    private readonly Guid _documentGuid = Guid.NewGuid();
 
     [TestInitialize]
     public void Setup_OkState()
@@ -33,6 +40,10 @@ public class UpdatePunchItemCommandValidatorTests
         _command.PatchDocument.Replace(p => p.PriorityGuid, _priorityGuid);
         _command.PatchDocument.Replace(p => p.SortingGuid, _sortingGuid);
         _command.PatchDocument.Replace(p => p.TypeGuid, _typeGuid);
+        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _originalWorkOrderGuid);
+        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _workOrderGuid);
+        _command.PatchDocument.Replace(p => p.SWCRGuid, _swcrGuid);
+        _command.PatchDocument.Replace(p => p.DocumentGuid, _documentGuid);
 
         _command.EnsureValidInputValidation();
 
@@ -40,6 +51,13 @@ public class UpdatePunchItemCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
+        _workOrderValidatorMock = Substitute.For<IWorkOrderValidator>();
+        _workOrderValidatorMock.ExistsAsync(_originalWorkOrderGuid, default).Returns(true);
+        _workOrderValidatorMock.ExistsAsync(_workOrderGuid, default).Returns(true);
+        _swcrValidatorMock = Substitute.For<ISWCRValidator>();
+        _swcrValidatorMock.ExistsAsync(_swcrGuid, default).Returns(true);
+        _documentValidatorMock = Substitute.For<IDocumentValidator>();
+        _documentValidatorMock.ExistsAsync(_documentGuid, default).Returns(true);
 
         SetupOkLibraryItem(_raisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         SetupOkLibraryItem(_clearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
@@ -47,7 +65,12 @@ public class UpdatePunchItemCommandValidatorTests
         SetupOkLibraryItem(_sortingGuid, LibraryType.PUNCHLIST_SORTING);
         SetupOkLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE);
 
-        _dut = new UpdatePunchItemCommandValidator(_punchItemValidatorMock, _libraryItemValidatorMock);
+        _dut = new UpdatePunchItemCommandValidator(
+            _punchItemValidatorMock,
+            _libraryItemValidatorMock,
+            _workOrderValidatorMock,
+            _swcrValidatorMock,
+            _documentValidatorMock);
     }
 
     [TestMethod]
@@ -412,6 +435,127 @@ public class UpdatePunchItemCommandValidatorTests
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
             $"Type library item is not a {LibraryType.PUNCHLIST_TYPE}!"));
     }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_OriginalWorkOrderGuid_NotExists()
+    {
+        // Arrange
+        _workOrderValidatorMock.ExistsAsync(_originalWorkOrderGuid, default).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Original WO does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_OriginalWorkOrderGuid_IsClosed()
+    {
+        // Arrange
+        _workOrderValidatorMock.IsClosedAsync(_originalWorkOrderGuid, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Original WO is closed!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_WorkOrderGuid_NotExists()
+    {
+        // Arrange
+        _workOrderValidatorMock.ExistsAsync(_workOrderGuid, default).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("WO does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_WorkOrderGuid_IsClosed()
+    {
+        // Arrange
+        _workOrderValidatorMock.IsClosedAsync(_workOrderGuid, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("WO is closed!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_SWCRGuid_NotExists()
+    {
+        // Arrange
+        _swcrValidatorMock.ExistsAsync(_swcrGuid, default).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("SWCR does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_SWCRGuid_IsVoided()
+    {
+        // Arrange
+        _swcrValidatorMock.IsVoidedAsync(_swcrGuid, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("SWCR is voided!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_DocumentGuid_NotExists()
+    {
+        // Arrange
+        _documentValidatorMock.ExistsAsync(_documentGuid, default).Returns(false);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Document does not exist!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_DocumentGuid_IsVoided()
+    {
+        // Arrange
+        _documentValidatorMock.IsVoidedAsync(_documentGuid, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Document is voided!"));
+    }
+
     private void SetupOkLibraryItem(Guid guid, LibraryType libraryType)
     {
         _libraryItemValidatorMock.ExistsAsync(guid, default).Returns(true);

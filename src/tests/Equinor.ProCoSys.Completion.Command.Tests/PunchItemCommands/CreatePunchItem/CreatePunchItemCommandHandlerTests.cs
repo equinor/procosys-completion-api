@@ -28,7 +28,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
     private CreatePunchItemCommandHandler _dut;
     private CreatePunchItemCommand _command;
-    private readonly Guid _nonExistingPersonOid = Guid.NewGuid();
 
     [TestInitialize]
     public void Setup()
@@ -184,6 +183,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
     {
         // Arrange
+        var nonExistingPersonOid = Guid.NewGuid();
         var command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
@@ -191,7 +191,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _existingCheckListGuid,
             _existingRaisedByOrg1.Guid,
             _existingClearingByOrg1.Guid,
-            _nonExistingPersonOid,
+            nonExistingPersonOid,
             null,
             null,
             null,
@@ -211,9 +211,9 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             FirstName = "YO",
             LastName = "DA",
             Email = "@",
-            AzureOid = _nonExistingPersonOid.ToString()
+            AzureOid = nonExistingPersonOid.ToString()
         };
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(nonExistingPersonOid)
             .Returns(proCoSysPerson);
 
         // Act
@@ -223,8 +223,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.IsNotNull(_personAddedToRepository);
         Assert.IsNotNull(_punchItemAddedToRepository.ActionBy);
-        Assert.AreEqual(_nonExistingPersonOid, _punchItemAddedToRepository.ActionBy!.Guid);
-        Assert.AreEqual(_nonExistingPersonOid, _personAddedToRepository.Guid);
+        Assert.AreEqual(nonExistingPersonOid, _punchItemAddedToRepository.ActionBy!.Guid);
+        Assert.AreEqual(nonExistingPersonOid, _personAddedToRepository.Guid);
         Assert.AreEqual(proCoSysPerson.AzureOid, _personAddedToRepository.Guid.ToString());
         Assert.AreEqual(proCoSysPerson.UserName, _personAddedToRepository.UserName);
         Assert.AreEqual(proCoSysPerson.FirstName, _personAddedToRepository.FirstName);
