@@ -43,7 +43,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingProject.SetProtectedIdForTesting(10);
         _projectRepositoryMock = Substitute.For<IProjectRepository>();
         _projectRepositoryMock
-            .GetByGuidAsync(_existingProject.Guid)
+            .GetAsync(_existingProject.Guid)
             .Returns(_existingProject);
 
         _personRepositoryMock

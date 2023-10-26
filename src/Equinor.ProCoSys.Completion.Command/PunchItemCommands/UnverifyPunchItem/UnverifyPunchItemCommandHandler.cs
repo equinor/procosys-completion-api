@@ -28,7 +28,7 @@ public class UnverifyPunchItemCommandHandler : IRequestHandler<UnverifyPunchItem
 
     public async Task<Result<string>> Handle(UnverifyPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
 
         punchItem.Unverify();
         punchItem.SetRowVersion(request.RowVersion);

@@ -104,7 +104,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
+        var attachment = await _attachmentRepository.GetAsync(guid);
 
         var fullBlobPath = attachment.GetFullBlobPath();
         await _azureBlobService.DeleteAsync(

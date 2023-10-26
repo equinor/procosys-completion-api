@@ -33,7 +33,7 @@ public class VerifyPunchItemCommandHandler : IRequestHandler<VerifyPunchItemComm
 
     public async Task<Result<string>> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
         if (punchItem == null)
         {
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");

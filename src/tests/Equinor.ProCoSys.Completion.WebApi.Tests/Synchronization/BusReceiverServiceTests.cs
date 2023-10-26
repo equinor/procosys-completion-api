@@ -32,7 +32,7 @@ public class BusReceiverServiceTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _project1 = new Project(Plant, _projectGuid, Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
         _projectRepository = Substitute.For<IProjectRepository>();
-        _projectRepository.GetByGuidAsync(_projectGuid)
+        _projectRepository.GetAsync(_projectGuid)
             .Returns(_project1);
         _projectRepository.ExistsAsync(_projectGuid)
             .Returns(true);
@@ -73,7 +73,7 @@ public class BusReceiverServiceTests
         // Assert
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _plantSetter.Received(1).SetPlant(Plant);
-        await _projectRepository.Received(1).GetByGuidAsync(_projectGuid);
+        await _projectRepository.Received(1).GetAsync(_projectGuid);
         Assert.AreEqual(message.ProjectName, _project1.Name);
         Assert.AreEqual(message.Description, _project1.Description);
         Assert.IsTrue(_project1.IsClosed);
@@ -102,7 +102,7 @@ public class BusReceiverServiceTests
         // Assert
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _plantSetter.Received(1).SetPlant(Plant);
-        await _projectRepository.Received(0).GetByGuidAsync(_projectGuid);
+        await _projectRepository.Received(0).GetAsync(_projectGuid);
         Assert.IsNotNull(_projectedAddedToRepository);
         Assert.AreEqual(message.ProCoSysGuid, _projectedAddedToRepository.Guid);
         Assert.AreEqual(message.ProjectName, _projectedAddedToRepository.Name);
@@ -132,7 +132,7 @@ public class BusReceiverServiceTests
         // Assert
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _plantSetter.Received(1).SetPlant(Plant);
-        await _projectRepository.Received(1).GetByGuidAsync(_projectGuid);
+        await _projectRepository.Received(1).GetAsync(_projectGuid);
         Assert.AreEqual(oldName, _project1.Name);
         Assert.AreEqual(oldDescription, _project1.Description);
         Assert.IsTrue(_project1.IsDeletedInSource);

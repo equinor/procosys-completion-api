@@ -33,7 +33,7 @@ public class LinkServiceTests : TestsBase
                 _linkAddedToRepository = info.Arg<Link>();
             });
         _existingLink = new Link("Whatever", _sourceGuid, "T", "www");
-        _linkRepositoryMock.GetByGuidAsync(_existingLink.Guid)
+        _linkRepositoryMock.GetAsync(_existingLink.Guid)
             .Returns(_existingLink);
 
         _dut = new LinkService(

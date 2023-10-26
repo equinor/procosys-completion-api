@@ -68,7 +68,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _existingPunchItem.SetRowVersion(OriginalRowVersion);
             _punchItemPa = _existingPunchItem;
 
-            _punchItemRepositoryMock.GetByGuidAsync(_existingPunchItem.Guid)
+            _punchItemRepositoryMock.GetAsync(_existingPunchItem.Guid)
                 .Returns(_existingPunchItem);
 
             _existingRaisedByOrg1 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
@@ -104,7 +104,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             document.SetProtectedIdForTesting(++id);
 
             _documentRepositoryMock
-                .GetByGuidAsync(document.Guid)
+                .GetAsync(document.Guid)
                 .Returns(document);
 
             return document;
@@ -115,7 +115,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var swcr = new SWCR(TestPlantA, Guid.NewGuid(), id);
             swcr.SetProtectedIdForTesting(id);
             _swcrRepositoryMock
-                .GetByGuidAsync(swcr.Guid)
+                .GetAsync(swcr.Guid)
                 .Returns(swcr);
 
             return swcr;
@@ -126,7 +126,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), null!);
             workOrder.SetProtectedIdForTesting(id);
             _workOrderRepositoryMock
-                .GetByGuidAsync(workOrder.Guid)
+                .GetAsync(workOrder.Guid)
                 .Returns(workOrder);
 
             return workOrder;
@@ -137,7 +137,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var person = new Person(Guid.NewGuid(), null!, null!, null!, null!);
             person.SetProtectedIdForTesting(id);
             _personRepositoryMock
-                .GetByGuidAsync(person.Guid)
+                .GetAsync(person.Guid)
                 .Returns(person);
             _personRepositoryMock
                 .ExistsAsync(person.Guid)

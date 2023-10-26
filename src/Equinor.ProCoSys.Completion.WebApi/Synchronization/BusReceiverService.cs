@@ -60,7 +60,7 @@ public class BusReceiverService : IBusReceiverService
         var projectExists = await _projectRepository.ExistsAsync(projectEvent.ProCoSysGuid);
         if (projectExists)
         {
-            project = await _projectRepository.GetByGuidAsync(projectEvent.ProCoSysGuid);
+            project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid);
             if (projectEvent.Behavior == "delete")
             {
                 project.IsDeletedInSource = true;

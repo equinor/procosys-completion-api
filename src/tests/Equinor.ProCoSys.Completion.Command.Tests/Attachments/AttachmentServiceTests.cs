@@ -48,7 +48,7 @@ public class AttachmentServiceTests : TestsBase
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock
-            .GetByGuidAsync(_existingAttachment.Guid)
+            .GetAsync(_existingAttachment.Guid)
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock.GetAttachmentWithFileNameForSourceAsync(
@@ -56,7 +56,7 @@ public class AttachmentServiceTests : TestsBase
                 _existingAttachment.FileName)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetByGuidAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid)
             .Returns(_existingAttachment);
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();

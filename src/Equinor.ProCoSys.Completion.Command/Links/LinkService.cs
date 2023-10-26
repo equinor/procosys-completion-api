@@ -61,7 +61,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetByGuidAsync(guid);
+        var link = await _linkRepository.GetAsync(guid);
 
         var changes = UpdateLink(link, title, url);
         if (changes.Any())
@@ -86,7 +86,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetByGuidAsync(guid);
+        var link = await _linkRepository.GetAsync(guid);
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

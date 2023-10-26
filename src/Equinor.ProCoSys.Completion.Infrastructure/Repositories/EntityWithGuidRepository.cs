@@ -19,7 +19,7 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
     {
     }
 
-    public virtual async Task<TEntity> GetByGuidAsync(Guid guid)
+    public virtual async Task<TEntity> GetAsync(Guid guid)
     {
         var entity = await DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
         if (entity is null)

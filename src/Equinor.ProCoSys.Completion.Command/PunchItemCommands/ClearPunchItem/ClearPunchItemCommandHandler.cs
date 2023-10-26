@@ -32,7 +32,7 @@ public class ClearPunchItemCommandHandler : IRequestHandler<ClearPunchItemComman
 
     public async Task<Result<string>> Handle(ClearPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
 
         var currentPerson = await _personRepository.GetCurrentPersonAsync();
         punchItem.Clear(currentPerson);

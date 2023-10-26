@@ -16,6 +16,6 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
         
-        return await GetByGuidAsync(currentUserOid);
+        return await GetAsync(currentUserOid);
     }
 }
