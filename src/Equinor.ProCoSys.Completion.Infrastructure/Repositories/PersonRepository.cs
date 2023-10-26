@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
@@ -17,12 +16,6 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
         
-        var currentUser = await GetByGuidAsync(currentUserOid);
-        if (currentUser is null)
-        {
-            throw new Exception($"{nameof(Person)} {currentUserOid} not found");
-        }
-
-        return currentUser;
+        return await GetAsync(currentUserOid);
     }
 }

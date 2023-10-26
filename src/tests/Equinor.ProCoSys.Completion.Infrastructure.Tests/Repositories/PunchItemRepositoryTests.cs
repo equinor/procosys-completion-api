@@ -54,10 +54,10 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), Category.PA, null!, _raisedByOrg, _clearingByOrg);
 
     [TestMethod]
-    public async Task GetByGuid_KnownGuid_ShouldReturnEntityWithNavigationProperties()
+    public async Task GetAsync_KnownGuid_ShouldReturnEntityWithNavigationProperties()
     {
         // Act
-        var result = await _dut.GetByGuidAsync(_knownGuid);
+        var result = await _dut.GetAsync(_knownGuid);
 
         // Assert
         Assert.IsNotNull(result);

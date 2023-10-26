@@ -48,16 +48,15 @@ public class AttachmentServiceTests : TestsBase
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock
-            .GetByGuidAsync(_existingAttachment.Guid)
+            .GetAsync(_existingAttachment.Guid)
             .Returns(_existingAttachment);
-
 
         _attachmentRepositoryMock.GetAttachmentWithFileNameForSourceAsync(
                 _existingAttachment.SourceGuid,
                 _existingAttachment.FileName)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetByGuidAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid)
             .Returns(_existingAttachment);
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
@@ -140,9 +139,7 @@ public class AttachmentServiceTests : TestsBase
        await _azureBlobServiceMock.Received(1).UploadAsync(
             _blobContainer,
             p,
-            Arg.Any<Stream>(),
-            false,
-            default);
+            Arg.Any<Stream>());
 
     }
     #endregion
@@ -225,6 +222,10 @@ public class AttachmentServiceTests : TestsBase
     [TestMethod]
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
     {
+        // Arrange
+        _attachmentRepositoryMock.ExistsAsync(_existingAttachment.Guid)
+            .Returns(true);
+
         // Act
         var result = await _dut.ExistsAsync(_existingAttachment.Guid);
 
@@ -266,24 +267,6 @@ public class AttachmentServiceTests : TestsBase
         await _azureBlobServiceMock.Received(1).DeleteAsync(
                 _blobContainer,
                 p);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldThrowException_WhenUnknownAttachment()
-    {
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.DeleteAsync(Guid.NewGuid(), _rowVersion, default));
-
-        // Assert
-        _attachmentRepositoryMock.Received(0)
-            .Remove(
-                Arg.Any<Attachment>());
-        await _azureBlobServiceMock.Received(0)
-            .DeleteAsync(
-                Arg.Any<string>(),
-                Arg.Any<string>());
-
     }
     #endregion
 }

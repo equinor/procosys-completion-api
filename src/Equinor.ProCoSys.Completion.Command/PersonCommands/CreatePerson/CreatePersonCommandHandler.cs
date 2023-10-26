@@ -35,32 +35,35 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Result<Unit>> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
-        var person = await _personRepository.GetByGuidAsync(request.Oid);
+        var personExists = await _personRepository.ExistsAsync(request.Oid);
 
-        if (person is null)
+        if (personExists)
         {
-            var pcsPerson = await _personCache.GetAsync(request.Oid);
-            if (pcsPerson is null)
-            {
-                throw new Exception($"Details for user with oid {request.Oid:D} not found in ProCoSys");
-            }
-
-            string type;
-            if (!pcsPerson.ServicePrincipal)
-            {
-                person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
-                type = "Person";
-            }
-            else
-            {
-                person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, _options.CurrentValue.ServicePrincipalMail);
-                type = "ServicePrincipal";
-            }
-            _personRepository.Add(person);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("{Type} with oid {Oid} created", type, person.Guid);
+            return new SuccessResult<Unit>(Unit.Value);
         }
+
+        var pcsPerson = await _personCache.GetAsync(request.Oid);
+        if (pcsPerson is null)
+        {
+            throw new Exception($"Details for user with oid {request.Oid:D} not found in ProCoSys");
+        }
+
+        Person person;
+        string type;
+        if (!pcsPerson.ServicePrincipal)
+        {
+            person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+            type = "Person";
+        }
+        else
+        {
+            person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, _options.CurrentValue.ServicePrincipalMail);
+            type = "ServicePrincipal";
+        }
+        _personRepository.Add(person);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("{Type} with oid {Oid} created", type, person.Guid);
 
         return new SuccessResult<Unit>(Unit.Value);
     }

@@ -43,7 +43,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingProject.SetProtectedIdForTesting(10);
         _projectRepositoryMock = Substitute.For<IProjectRepository>();
         _projectRepositoryMock
-            .GetByGuidAsync(_existingProject.Guid)
+            .GetAsync(_existingProject.Guid)
             .Returns(_existingProject);
 
         _personRepositoryMock
@@ -205,9 +205,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             false,
             null,
             null);
-        _personRepositoryMock
-            .GetByGuidAsync(_nonExistingPersonOid)
-            .Returns((Person)null);
         var proCoSysPerson = new ProCoSysPerson
         {
             UserName = "YODA",
@@ -243,18 +240,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldThrowException_WhenProjectNotExists()
-    {
-        // Arrange
-        _projectRepositoryMock
-            .GetByGuidAsync(_existingProject.Guid)
-            .Returns((Project)null);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
     }
 
     [TestMethod]

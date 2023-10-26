@@ -119,8 +119,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
     public async Task HandlingCommand_ShouldNotAddPersonToRepository_WhenPersonAlreadyExists()
     {
         // Arrange
-        _personRepositoryMock.GetByGuidAsync(_azureOid)
-            .Returns(new Person(_azureOid, FistName, LastName, UserName, Email));
+        _personRepositoryMock.ExistsAsync(_azureOid).Returns(true);
 
         // Act
         await _dut.Handle(_command, default);

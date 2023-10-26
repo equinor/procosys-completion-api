@@ -55,11 +55,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
     public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
-        if (punchItem is null)
-        {
-            throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
-        }
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
 
         var changes = await PatchAsync(punchItem, request.PatchDocument);
 
@@ -181,10 +177,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.OriginalWorkOrderGuid is not null)
         {
-            var workOrder = await _workOrderRepository.GetByGuidAsync(patchedPunchItem.OriginalWorkOrderGuid.Value);
+            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.OriginalWorkOrderGuid.Value);
             changes.Add(new Property<string?>(nameof(punchItem.OriginalWorkOrder),
                 punchItem.OriginalWorkOrder?.No,
-                workOrder!.No));
+                workOrder.No));
             punchItem.SetOriginalWorkOrder(workOrder);
         }
         else
@@ -205,10 +201,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.WorkOrderGuid is not null)
         {
-            var workOrder = await _workOrderRepository.GetByGuidAsync(patchedPunchItem.WorkOrderGuid.Value);
+            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.WorkOrderGuid.Value);
             changes.Add(new Property<string?>(nameof(punchItem.WorkOrder),
                 punchItem.WorkOrder?.No,
-                workOrder!.No));
+                workOrder.No));
             punchItem.SetWorkOrder(workOrder);
         }
         else
@@ -229,10 +225,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.SWCRGuid is not null)
         {
-            var swcr = await _swcrRepository.GetByGuidAsync(patchedPunchItem.SWCRGuid.Value);
+            var swcr = await _swcrRepository.GetAsync(patchedPunchItem.SWCRGuid.Value);
             changes.Add(new Property<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
-                swcr!.No));
+                swcr.No));
             punchItem.SetSWCR(swcr);
         }
         else
@@ -253,10 +249,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.DocumentGuid is not null)
         {
-            var document = await _documentRepository.GetByGuidAsync(patchedPunchItem.DocumentGuid.Value);
+            var document = await _documentRepository.GetAsync(patchedPunchItem.DocumentGuid.Value);
             changes.Add(new Property<string?>(nameof(punchItem.Document),
                 punchItem.Document?.No,
-                document!.No));
+                document.No));
             punchItem.SetDocument(document);
         }
         else
@@ -278,10 +274,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         if (patchedPunchItem.ActionByPersonOid is not null)
         {
             // todo 107494 Sende Oid eller Navn på person?
-            var person = await _personRepository.GetByGuidAsync(patchedPunchItem.ActionByPersonOid.Value);
+            var person = await _personRepository.GetAsync(patchedPunchItem.ActionByPersonOid.Value);
             changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
                 punchItem.ActionBy?.Guid,
-                person!.Guid));
+                person.Guid));
             punchItem.SetActionBy(person);
         }
         else

@@ -104,12 +104,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
-
-        if (attachment is null)
-        {
-            throw new Exception($"Attachment with guid {guid} not found when updating");
-        }
+        var attachment = await _attachmentRepository.GetAsync(guid);
 
         var fullBlobPath = attachment.GetFullBlobPath();
         await _azureBlobService.DeleteAsync(
@@ -153,8 +148,5 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<bool> ExistsAsync(Guid guid)
-    {
-        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
-        return attachment is not null;
-    }
+        => await _attachmentRepository.ExistsAsync(guid);
 }

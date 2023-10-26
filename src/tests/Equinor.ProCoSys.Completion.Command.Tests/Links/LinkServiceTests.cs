@@ -33,7 +33,7 @@ public class LinkServiceTests : TestsBase
                 _linkAddedToRepository = info.Arg<Link>();
             });
         _existingLink = new Link("Whatever", _sourceGuid, "T", "www");
-        _linkRepositoryMock.GetByGuidAsync(_existingLink.Guid)
+        _linkRepositoryMock.GetAsync(_existingLink.Guid)
             .Returns(_existingLink);
 
         _dut = new LinkService(
@@ -87,6 +87,10 @@ public class LinkServiceTests : TestsBase
     [TestMethod]
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownLink()
     {
+        // Arrange
+        _linkRepositoryMock.ExistsAsync(_existingLink.Guid)
+            .Returns(true);
+
         // Act
         var result = await _dut.ExistsAsync(_existingLink.Guid);
 
@@ -120,12 +124,6 @@ public class LinkServiceTests : TestsBase
         Assert.AreEqual(url, _existingLink.Url);
         Assert.AreEqual(title, _existingLink.Title);
     }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldThrowException_WhenUnknownLink() =>
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.UpdateAsync(Guid.NewGuid(), "T", "www", _rowVersion, default));
 
     [TestMethod]
     public async Task UpdateAsync_ShouldSaveOnce_WhenNoChanges()
@@ -193,12 +191,6 @@ public class LinkServiceTests : TestsBase
         // Assert
         _linkRepositoryMock.Received(1).Remove(_existingLink);
     }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldThrowException_WhenUnknownLink() =>
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.DeleteAsync(Guid.NewGuid(), _rowVersion, default));
 
     [TestMethod]
     public async Task DeleteAsync_ShouldSaveOnce()

@@ -61,11 +61,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetByGuidAsync(request.ProjectGuid);
-        if (project is null)
-        {
-            throw new Exception($"Could not find {nameof(Project)} with Guid {request.ProjectGuid} in plant {_plantProvider.Plant}");
-        }
+        var project = await _projectRepository.GetAsync(request.ProjectGuid);
 
         var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
@@ -111,8 +107,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var doc = await _documentRepository.GetByGuidAsync(documentGuid.Value);
-        punchItem.SetDocument(doc!);
+        var doc = await _documentRepository.GetAsync(documentGuid.Value);
+        punchItem.SetDocument(doc);
     }
 
     private async Task SetSWCRAsync(PunchItem punchItem, Guid? swcrGuid)
@@ -122,8 +118,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var swcr = await _swcrRepository.GetByGuidAsync(swcrGuid.Value);
-        punchItem.SetSWCR(swcr!);
+        var swcr = await _swcrRepository.GetAsync(swcrGuid.Value);
+        punchItem.SetSWCR(swcr);
     }
 
     private async Task SetOriginalWorkOrderAsync(PunchItem punchItem, Guid? originalWorkOrderGuid)
@@ -133,8 +129,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var wo = await _woRepository.GetByGuidAsync(originalWorkOrderGuid.Value);
-        punchItem.SetOriginalWorkOrder(wo!);
+        var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value);
+        punchItem.SetOriginalWorkOrder(wo);
     }
 
     private async Task SetWorkOrderAsync(PunchItem punchItem, Guid? workOrderGuid)
@@ -144,8 +140,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var wo = await _woRepository.GetByGuidAsync(workOrderGuid.Value);
-        punchItem.SetWorkOrder(wo!);
+        var wo = await _woRepository.GetAsync(workOrderGuid.Value);
+        punchItem.SetWorkOrder(wo);
     }
 
     private async Task SetActionByAsync(PunchItem punchItem, Guid? actionByPersonOid)
@@ -155,10 +151,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var person = await _personRepository.GetByGuidAsync(actionByPersonOid.Value);
-
+        var personExists = await _personRepository.ExistsAsync(actionByPersonOid.Value);
+        Person person;
         // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
-        if (person is null)
+        if (personExists)
+        {
+            person = await _personRepository.GetAsync(actionByPersonOid.Value);
+        }
+        else
         {
             var pcsPerson = await _personCache.GetAsync(actionByPersonOid.Value);
             person = new Person(actionByPersonOid.Value, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
