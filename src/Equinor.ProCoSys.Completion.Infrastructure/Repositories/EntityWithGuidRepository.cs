@@ -24,8 +24,8 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
         var entity = await DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
         if (entity is null)
         {
-            var type = typeof(TEntity).Name;
-            throw new EntityNotFoundException($"Could not find {type} with Guid {guid}");
+            var typeName = typeof(TEntity).Name;
+            throw new EntityNotFoundException($"Could not find {typeName} with Guid {guid}");
         }
         return entity;
     }
