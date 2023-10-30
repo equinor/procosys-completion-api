@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.3" />
-    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.0.6" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.2.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.0.16" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
@@ -23,7 +23,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="NSubstitute" Version="5.0.0" />
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
     <PackageReference Include="System.Text.Json" Version="7.0.2" />

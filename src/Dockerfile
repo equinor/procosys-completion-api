@@ -18,9 +18,14 @@ WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 # Build
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
+ARG ENV_TYPE
 ARG FEED_TOKEN
 
-RUN FEED_ACCESSTOKEN_DECODED=$(echo $FEED_TOKEN|base64 -d) && \
+RUN if [ $ENV_TYPE = "local" ]; then \
+            FEED_ACCESSTOKEN_DECODED=$FEED_TOKEN; \
+        else \
+            FEED_ACCESSTOKEN_DECODED=$(echo $FEED_TOKEN | base64 -d); \
+        fi && \
     export VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN_DECODED}\"}]}" && \
     wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash && \
     dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /app/build
