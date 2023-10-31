@@ -6,3 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - db
+  db:
+    image: procosys.azurecr.io/sandbox:latest
+    ports:
+      - "1433:1433"
