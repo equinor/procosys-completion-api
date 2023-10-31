@@ -21,7 +21,7 @@ ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
 ARG ENV_TYPE
 ARG FEED_TOKEN
 
-RUN if [ $ENV_TYPE = "local" ]; then \
+RUN if [ "$ENV_TYPE" = "local" ]; then \
             FEED_ACCESSTOKEN_DECODED=$FEED_TOKEN; \
         else \
             FEED_ACCESSTOKEN_DECODED=$(echo $FEED_TOKEN | base64 -d); \

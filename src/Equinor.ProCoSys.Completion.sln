@@ -19,11 +19,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\doc\adr\0001-record-architecture-decisions.md = ..\doc\adr\0001-record-architecture-decisions.md
 		..\doc\adr\0002-use-net-core-with-ef.md = ..\doc\adr\0002-use-net-core-with-ef.md
 		..\doc\adr\0003-use-masstransit.md = ..\doc\adr\0003-use-masstransit.md
+		Dockerfile = Dockerfile
 		nuget.config = nuget.config
+		..\radixconfig.yaml = ..\radixconfig.yaml
 		..\README.md = ..\README.md
 		usersecrets_minimum.json = usersecrets_minimum.json
-		..\radixconfig.yaml = ..\radixconfig.yaml
-		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DFB50BC5-5201-42FD-A049-CF0259AA7AE8}"
@@ -50,7 +50,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.ForeignApiTests", "tests\Equinor.ProCoSys.Completion.ForeignApiTests\Equinor.ProCoSys.Completion.ForeignApiTests.csproj", "{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.IaC", "..\Infrastructure\Equinor.ProCoSys.Completion.IaC.csproj", "{25DC4610-096C-4287-A5B4-6367F01C3DC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.IaC", "..\Infrastructure\Equinor.ProCoSys.Completion.IaC.csproj", "{25DC4610-096C-4287-A5B4-6367F01C3DC8}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{680A3102-2853-4C03-88BC-44142512352D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +128,10 @@ Global
 		{25DC4610-096C-4287-A5B4-6367F01C3DC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25DC4610-096C-4287-A5B4-6367F01C3DC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25DC4610-096C-4287-A5B4-6367F01C3DC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680A3102-2853-4C03-88BC-44142512352D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680A3102-2853-4C03-88BC-44142512352D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
