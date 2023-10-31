@@ -4,7 +4,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -13,6 +16,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
+    public const int ExternalItemNoLengthMax = 100;
+    public const int MaterialExternalNoLengthMax = 100;
 
 #pragma warning disable CS8618
     protected PunchItem()
@@ -25,49 +30,73 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         string plant,
         Project project,
         Guid checkListGuid,
+        Category category,
         string description,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg)
         : base(plant)
     {
-        if (project.Plant != plant)
-        {
-            throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
-        }
-        ProjectId = project.Id;
         CheckListGuid = checkListGuid;
+        Category = category;
         Description = description;
         Guid = Guid.NewGuid();
 
+        SetProject(plant, project);
         SetRaisedByOrg(raisedByOrg);
         SetClearingByOrg(clearingByOrg);
     }
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
+    public Project Project { get; private set; } = null!;
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
+    public Category Category { get; set; }
     public int ItemNo => Id;
     public string Description { get; set; }
+    public LibraryItem RaisedByOrg { get; private set; } = null!;
     public int RaisedByOrgId { get; private set; }
+    public LibraryItem ClearingByOrg { get; private set; } = null!;
     public int ClearingByOrgId { get; private set; }
+    public LibraryItem? Sorting { get; private set; }
     public int? SortingId { get; private set; }
+    public LibraryItem? Type { get; private set; }
     public int? TypeId { get; private set; }
+    public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
+    public DateTime? DueTimeUtc { get; set; }
+    public int? Estimate { get; set; }
+    public string? ExternalItemNo { get; set; }
+    public bool MaterialRequired { get; set; }
+    public DateTime? MaterialETAUtc { get; set; }
+    public string? MaterialExternalNo { get; set; }
+    public WorkOrder? WorkOrder { get; private set; }
+    public int? WorkOrderId { get; private set; }
+    public WorkOrder? OriginalWorkOrder { get; private set; }
+    public int? OriginalWorkOrderId { get; private set; }
+    public Document? Document { get; private set; }
+    public int? DocumentId { get; private set; }
+    public SWCR? SWCR { get; private set; }
+    public int? SWCRId { get; private set; }
+    public Person? ActionBy { get; private set; }
+    public int? ActionById { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
-    public Guid CreatedByOid { get; private set; }
+    public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
-    public Guid? ModifiedByOid { get; private set; }
+    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public DateTime? ClearedAtUtc { get; private set; }
     public int? ClearedById { get; private set; }
+    public Person? ClearedBy { get; private set; }
     public DateTime? RejectedAtUtc { get; private set; }
     public int? RejectedById { get; private set; }
+    public Person? RejectedBy { get; private set; }
     public DateTime? VerifiedAtUtc { get; private set; }
     public int? VerifiedById { get; private set; }
+    public Person? VerifiedBy { get; private set; }
 
     public bool IsReadyToBeCleared => !ClearedAtUtc.HasValue;
     public bool IsReadyToBeRejected => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
@@ -82,6 +111,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be cleared");
         }
         ClearedAtUtc = TimeService.UtcNow;
+        ClearedBy = clearedBy;
         ClearedById = clearedBy.Id;
         RejectedAtUtc = null;
         RejectedById = null;
@@ -94,8 +124,10 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be rejected");
         }
         RejectedAtUtc = TimeService.UtcNow;
+        RejectedBy = rejectedBy;
         RejectedById = rejectedBy.Id;
         ClearedAtUtc = null;
+        ClearedBy = null;
         ClearedById = null;
     }
 
@@ -106,6 +138,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be verified");
         }
         VerifiedAtUtc = TimeService.UtcNow;
+        VerifiedBy = verifiedBy;
         VerifiedById = verifiedBy.Id;
     }
 
@@ -116,6 +149,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be uncleared");
         }
         ClearedAtUtc = null;
+        ClearedBy = null;
         ClearedById = null;
     }
 
@@ -126,21 +160,22 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new Exception($"{nameof(PunchItem)} can not be unverified");
         }
         VerifiedAtUtc = null;
+        VerifiedBy = null;
         VerifiedById = null;
     }
 
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;
+        CreatedBy = createdBy;
         CreatedById = createdBy.Id;
-        CreatedByOid = createdBy.Guid;
     }
 
     public void SetModified(Person modifiedBy)
     {
         ModifiedAtUtc = TimeService.UtcNow;
+        ModifiedBy = modifiedBy;
         ModifiedById = modifiedBy.Id;
-        ModifiedByOid = modifiedBy.Guid;
     }
 
     public void SetRaisedByOrg(LibraryItem raisedByOrg)
@@ -154,6 +189,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {raisedByOrg.Type} as {nameof(raisedByOrg)}");
         }
 
+        RaisedByOrg = raisedByOrg;
         RaisedByOrgId = raisedByOrg.Id;
     }
 
@@ -168,6 +204,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {clearingByOrg.Type} as {nameof(clearingByOrg)}");
         }
 
+        ClearingByOrg = clearingByOrg;
         ClearingByOrgId = clearingByOrg.Id;
     }
 
@@ -182,6 +219,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {sorting.Type} as {nameof(sorting)}");
         }
 
+        Sorting = sorting;
         SortingId = sorting.Id;
     }
 
@@ -196,6 +234,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {type.Type} as {nameof(type)}");
         }
 
+        Type = type;
         TypeId = type.Id;
     }
 
@@ -210,10 +249,116 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
             throw new ArgumentException($"Can't relate a {priority.Type} as {nameof(priority)}");
         }
 
+        Priority = priority;
         PriorityId = priority.Id;
     }
 
-    public void ClearSorting() => SortingId = null;
-    public void ClearPriority() => PriorityId = null;
-    public void ClearType() => TypeId = null;
+    public void ClearSorting()
+    {
+        Sorting = null;
+        SortingId = null;
+    }
+
+    public void ClearPriority()
+    {
+        Priority = null;
+        PriorityId = null;
+    }
+
+    public void ClearType()
+    {
+        Type = null;
+        TypeId = null;
+    }
+
+    public void SetWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        WorkOrder = workOrder;
+        WorkOrderId = workOrder.Id;
+    }
+
+    public void ClearWorkOrder()
+    {
+        WorkOrder = null;
+        WorkOrderId = null;
+    }
+
+    public void SetOriginalWorkOrder(WorkOrder workOrder)
+    {
+        if (workOrder.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(workOrder)} in {workOrder.Plant} to item in {Plant}");
+        }
+
+        OriginalWorkOrder = workOrder;
+        OriginalWorkOrderId = workOrder.Id;
+    }
+
+    public void ClearOriginalWorkOrder()
+    {
+        OriginalWorkOrder = null;
+        OriginalWorkOrderId = null;
+    }
+
+    public void SetDocument(Document document)
+    {
+        if (document.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(document)} in {document.Plant} to item in {Plant}");
+        }
+
+        Document = document;
+        DocumentId = document.Id;
+    }
+
+    public void ClearDocument()
+    {
+        Document = null;
+        DocumentId = null;
+    }
+
+    public void SetSWCR(SWCR swcr)
+    {
+        if (swcr.Plant != Plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(swcr)} in {swcr.Plant} to item in {Plant}");
+        }
+
+        SWCR = swcr;
+        SWCRId = swcr.Id;
+    }
+
+    public void ClearSWCR()
+    {
+        SWCR = null;
+        SWCRId = null;
+    }
+
+    public void SetActionBy(Person person)
+    {
+        ActionBy = person;
+        ActionById = person.Id;
+    }
+
+    public void ClearActionBy()
+    {
+        ActionBy = null;
+        ActionById = null;
+    }
+
+    private void SetProject(string plant, Project project)
+    {
+        if (project.Plant != plant)
+        {
+            throw new ArgumentException($"Can't relate {nameof(project)} in {project.Plant} to item in {plant}");
+        }
+
+        ProjectId = project.Id;
+        Project = project;
+    }
 }

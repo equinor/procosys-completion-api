@@ -17,6 +17,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
@@ -86,14 +87,26 @@ public class PunchItemsController : ControllerBase
         [FromBody] CreatePunchItemDto dto)
     {
         var result = await _mediator.Send(new CreatePunchItemCommand(
+            dto.Category,
             dto.Description,
             dto.ProjectGuid,
             dto.CheckListGuid,
             dto.RaisedByOrgGuid, 
             dto.ClearingByOrgGuid,
+            dto.ActionByPersonOid,
+            dto.DueTimeUtc,
             dto.PriorityGuid,
             dto.SortingGuid,
-            dto.TypeGuid));
+            dto.TypeGuid,
+            dto.Estimate,
+            dto.OriginalWorkOrderGuid,
+            dto.WorkOrderGuid,
+            dto.SWCRGuid,
+            dto.DocumentGuid,
+            dto.ExternalItemNo,
+            dto.MaterialRequired,
+            dto.MaterialETAUtc,
+            dto.MaterialExternalNo));
         return this.FromResult(result);
     }
 
@@ -109,6 +122,21 @@ public class PunchItemsController : ControllerBase
     {
         var result = await _mediator.Send(
             new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion));
+        return this.FromResult(result);
+    }
+
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
+    [HttpPatch("{guid}/UpdateCategory")]
+    public async Task<ActionResult<string>> UpdatePunchItemCategory(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        [FromRoute] Guid guid,
+        [FromBody] UpdatePunchItemCategoryDto updatePunchItemCategoryDto)
+    {
+        var result = await _mediator.Send(
+            new UpdatePunchItemCategoryCommand(guid, updatePunchItemCategoryDto.Category, updatePunchItemCategoryDto.RowVersion));
         return this.FromResult(result);
     }
 

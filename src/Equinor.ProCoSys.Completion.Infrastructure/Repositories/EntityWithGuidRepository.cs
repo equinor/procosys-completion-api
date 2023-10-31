@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
@@ -18,6 +19,17 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
     {
     }
 
-    public virtual Task<TEntity?> GetByGuidAsync(Guid guid) =>
-        DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
+    public virtual async Task<TEntity> GetAsync(Guid guid)
+    {
+        var entity = await DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
+        if (entity is null)
+        {
+            var typeName = typeof(TEntity).Name;
+            throw new EntityNotFoundException($"Could not find {typeName} with Guid {guid}");
+        }
+        return entity;
+    }
+
+    public virtual async Task<bool> ExistsAsync(Guid guid)
+        => await Set.AnyAsync(e => e.Guid == guid);
 }

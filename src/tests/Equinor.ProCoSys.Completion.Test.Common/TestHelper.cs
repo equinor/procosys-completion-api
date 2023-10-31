@@ -94,4 +94,20 @@ public static class TestHelper
             !type.IsAbstract;
         return isATestClass;
     }
+
+    public static void AssertPropertiesNotChanged(
+        Dictionary<string, Type> expectedProperties,
+        Dictionary<string, Type> actualProperties)
+    {
+        CollectionAssert.AreEquivalent(expectedProperties.Keys, actualProperties.Keys,
+            "The number expected properties does not match number of interface properties, " +
+            "test needs to be updated if the change is non breaking(non required property added)");
+
+        foreach (var expectedProperty in expectedProperties)
+        {
+            Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key],
+                $"Property type mismatch for {expectedProperty.Key}. " +
+                "Consider creating a new version instead of modifying the existing one.");
+        }
+    }
 }

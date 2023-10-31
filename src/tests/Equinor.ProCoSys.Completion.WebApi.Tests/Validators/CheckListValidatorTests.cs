@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.WebApi.Validators.CheckListValidators;
+using Equinor.ProCoSys.Completion.WebApi.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 

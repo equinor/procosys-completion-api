@@ -14,11 +14,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
 {
     private new ProjectRepository _dut;
-    private readonly string _knownProjectName = "ProjectName";
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var project = new Project(TestPlant, Guid.NewGuid(), _knownProjectName, "Description of project");
+        var project = new Project(TestPlant, Guid.NewGuid(), "P", "Description of project");
         _knownGuid = project.Guid;
         project.SetProtectedIdForTesting(_knownId);
 

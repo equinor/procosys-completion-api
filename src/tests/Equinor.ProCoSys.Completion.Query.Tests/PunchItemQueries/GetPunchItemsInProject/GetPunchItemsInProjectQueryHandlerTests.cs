@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
@@ -17,13 +18,20 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 {
     private PunchItem _punchItemInProjectA;
     private PunchItem _punchItemInProjectB;
+    private Project _projectA;
+    private Project _projectB;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "A", _raisedByOrg, _clearingByOrg);
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), "B", _raisedByOrg, _clearingByOrg);
+        _projectA = context.Projects.Single(p => p.Id == _projectAId);
+        _projectB = context.Projects.Single(p => p.Id == _projectBId);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+
+        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PA, "A", raisedByOrg, clearingByOrg);
+        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), Category.PA, "B", raisedByOrg, clearingByOrg);
 
         context.PunchItems.Add(_punchItemInProjectA);
         context.PunchItems.Add(_punchItemInProjectB);
@@ -71,6 +79,7 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)
     {
         Assert.AreEqual(punchItem.ItemNo, punchItemDto.ItemNo);
+        Assert.AreEqual(punchItem.Category, punchItemDto.Category);
         Assert.AreEqual(punchItem.Description, punchItemDto.Description);
         Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDto.RowVersion);
         var project = GetProjectById(punchItem.ProjectId);

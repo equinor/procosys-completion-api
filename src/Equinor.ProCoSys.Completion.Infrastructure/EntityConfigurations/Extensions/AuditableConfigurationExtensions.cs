@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
+﻿using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,10 +12,9 @@ public static class AuditableConfigurationExtensions
             .Property(x => x.CreatedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.CreatedBy)
             .WithMany()
-            .HasForeignKey(x => x.CreatedById)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.NoAction);
     }
 
@@ -26,10 +24,8 @@ public static class AuditableConfigurationExtensions
             .Property(x => x.ModifiedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.ModifiedBy)
             .WithMany()
-            .HasForeignKey(x => x.ModifiedById)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.NoAction);
     }

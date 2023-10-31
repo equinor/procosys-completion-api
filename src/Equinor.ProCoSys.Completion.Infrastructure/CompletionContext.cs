@@ -7,16 +7,19 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using MassTransit;
 using ConcurrencyException = Equinor.ProCoSys.Common.Misc.ConcurrencyException;
 using IDomainMarker = Equinor.ProCoSys.Completion.Domain.IDomainMarker;
 
@@ -69,6 +72,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Comment> Comments => Set<Comment>();
     public virtual DbSet<Attachment> Attachments => Set<Attachment>();
     public virtual DbSet<LibraryItem> Library => Set<LibraryItem>();
+    public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public virtual DbSet<Document> Documents => Set<Document>();
+    public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
     private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
     {
@@ -187,7 +193,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .ToList();
         var modifiedEntries = ChangeTracker
             .Entries<IModificationAuditable>()
-            // Also update modifiedBy / modifiedAt when deleting. This to be able to log who performed the deletion
+            // Also update modifiedBy / modifiedAt when deleting ...
+            // ... This to be able to create integration events with info about who performed the deletion and when
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted)
             .ToList();
 

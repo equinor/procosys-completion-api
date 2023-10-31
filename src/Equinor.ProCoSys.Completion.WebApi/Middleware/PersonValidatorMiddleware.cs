@@ -20,7 +20,7 @@ public class PersonValidatorMiddleware
         IPersonCache personCache,
         ILogger<PersonValidatorMiddleware> logger)
     {
-        logger.LogInformation($"----- {GetType().Name} start");
+        logger.LogDebug("----- {MiddlewareName} start", GetType().Name);
         if (currentUserProvider.HasCurrentUser)
         {
             var oid = currentUserProvider.GetCurrentUserOid();
@@ -32,7 +32,7 @@ public class PersonValidatorMiddleware
             }
         }
 
-        logger.LogInformation($"----- {GetType().Name} complete");
+        logger.LogDebug("----- {MiddlewareName} complete", GetType().Name);
         // Call the next delegate/middleware in the pipeline
         await _next(context);
     }

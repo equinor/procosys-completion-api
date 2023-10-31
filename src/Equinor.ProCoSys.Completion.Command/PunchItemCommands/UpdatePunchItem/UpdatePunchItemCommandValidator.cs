@@ -13,7 +13,12 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
 {
     // Business Validation is based on that Input Validation is done in advance, thus all replaced ..
     // ... guid values are validated to be Guids
-    public UpdatePunchItemCommandValidator(IPunchItemValidator punchItemValidator, ILibraryItemValidator libraryItemValidator)
+    public UpdatePunchItemCommandValidator(
+        IPunchItemValidator punchItemValidator,
+        ILibraryItemValidator libraryItemValidator,
+        IWorkOrderValidator workOrderValidator,
+        ISWCRValidator swcrValidator,
+        IDocumentValidator documentValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -219,6 +224,110 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
             .When(command => ValueIsReplacedWithGuid(
                     command.PatchDocument.Operations,
                     nameof(PatchablePunchItem.TypeGuid)),
+                ApplyConditionTo.CurrentValidator)
+
+            // validate OriginalWorkOrder, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingWorkOrderAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.OriginalWorkOrderGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"Original WO does not exist! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.OriginalWorkOrderGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.OriginalWorkOrderGuid)),
+                ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAClosedWorkOrderAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.OriginalWorkOrderGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"Original WO is closed! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.OriginalWorkOrderGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.OriginalWorkOrderGuid)),
+                ApplyConditionTo.CurrentValidator)
+
+            // validate WorkOrder, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingWorkOrderAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.WorkOrderGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"WO does not exist! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.WorkOrderGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.WorkOrderGuid)),
+                ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAClosedWorkOrderAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.WorkOrderGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"WO is closed! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.WorkOrderGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.WorkOrderGuid)),
+                ApplyConditionTo.CurrentValidator)
+
+            // validate SWCR, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingSWCRAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.SWCRGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"SWCR does not exist! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.SWCRGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.SWCRGuid)),
+                ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAVoidedSWCRAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.SWCRGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"SWCR is voided! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.SWCRGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.SWCRGuid)),
+                ApplyConditionTo.CurrentValidator)
+
+            // validate Document, if given
+            .MustAsync((command, cancellationToken)
+                => BeAnExistingDocumentAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.DocumentGuid), 
+                    cancellationToken))
+            .WithMessage(command
+                => $"Document does not exist! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.DocumentGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.DocumentGuid)),
+                ApplyConditionTo.CurrentValidator)
+            .MustAsync((command, cancellationToken)
+                => NotBeAVoidedDocumentAsync(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.DocumentGuid),
+                    cancellationToken))
+            .WithMessage(command
+                => $"Document is voided! " +
+                   $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.DocumentGuid))}")
+            .When(command => ValueIsReplacedWithGuid(
+                    command.PatchDocument.Operations,
+                    nameof(PatchablePunchItem.DocumentGuid)),
                 ApplyConditionTo.CurrentValidator);
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -279,6 +388,60 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
         {
             var guid = GetGuidValue(operations, propName);
             return !await libraryItemValidator.IsVoidedAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> BeAnExistingWorkOrderAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return await workOrderValidator.ExistsAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> NotBeAClosedWorkOrderAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return !await workOrderValidator.IsClosedAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> BeAnExistingSWCRAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return await swcrValidator.ExistsAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> NotBeAVoidedSWCRAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return !await swcrValidator.IsVoidedAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> BeAnExistingDocumentAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return await documentValidator.ExistsAsync(guid, cancellationToken);
+        }
+
+        async Task<bool> NotBeAVoidedDocumentAsync(
+            List<Operation<PatchablePunchItem>> operations,
+            string propName,
+            CancellationToken cancellationToken)
+        {
+            var guid = GetGuidValue(operations, propName);
+            return !await documentValidator.IsVoidedAsync(guid, cancellationToken);
         }
     }
 }

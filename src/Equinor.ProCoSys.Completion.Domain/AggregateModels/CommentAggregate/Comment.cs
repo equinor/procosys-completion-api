@@ -25,13 +25,13 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     public Guid SourceGuid { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
-    public Guid CreatedByOid { get; private set; }
+    public Person CreatedBy { get; private set; } = null!;
     public Guid Guid { get; private set; }
 
     public void SetCreated(Person createdBy)
     {
         CreatedAtUtc = TimeService.UtcNow;
         CreatedById = createdBy.Id;
-        CreatedByOid = createdBy.Guid;
+        CreatedBy = createdBy;
     }
 }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
-using Equinor.ProCoSys.Completion.WebApi.Validators.ProjectValidators;
+using Equinor.ProCoSys.Completion.WebApi.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

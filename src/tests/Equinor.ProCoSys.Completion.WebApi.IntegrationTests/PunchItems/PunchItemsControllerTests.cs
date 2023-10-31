@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,16 +29,19 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange
         var description = Guid.NewGuid().ToString();
+        var category = "PB";
 
         // Act
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            category,
             description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
+            DateTime.UtcNow,
             TestFactory.PriorityGuid,
             TestFactory.SortingGuid,
             TestFactory.TypeGuid);
@@ -49,7 +51,8 @@ public class PunchItemsControllerTests : TestBase
         var newPunchItem = await PunchItemsControllerTestsHelper
             .GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.IsNotNull(newPunchItem);
-        Assert.IsTrue(!newPunchItem.Description.IsEmpty());
+        Assert.AreEqual(category, newPunchItem.Category);
+        Assert.AreEqual(description, newPunchItem.Description);
         Assert.IsTrue(newPunchItem.ItemNo >= PunchItem.IdentitySeed);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, newPunchItem.ClearingByOrg.Guid);
@@ -99,6 +102,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -117,6 +121,23 @@ public class PunchItemsControllerTests : TestBase
         patchDocument.Replace("PriorityGuid", TestFactory.PriorityGuid);
         patchDocument.Replace("SortingGuid", TestFactory.SortingGuid);
         patchDocument.Replace("TypeGuid", TestFactory.TypeGuid);
+        patchDocument.Replace("ActionByPersonOid", TestFactory.Instance.WriterOid);
+        var newDueTimeUtc = DateTime.UtcNow.AddDays(7);
+        patchDocument.Replace("DueTimeUtc", newDueTimeUtc);
+        var newEstimate = 8;
+        patchDocument.Replace("Estimate", newEstimate);
+        patchDocument.Replace("OriginalWorkOrderGuid", TestFactory.OriginalWorkOrderGuid);
+        patchDocument.Replace("WorkOrderGuid", TestFactory.WorkOrderGuid);
+        patchDocument.Replace("SWCRGuid", TestFactory.SWCRGuid);
+        patchDocument.Replace("DocumentGuid", TestFactory.DocumentGuid);
+        var newExternalItemNo = "123a";
+        patchDocument.Replace("ExternalItemNo", newExternalItemNo);
+        const bool NewMaterialRequired = true;
+        patchDocument.Replace("MaterialRequired", NewMaterialRequired);
+        var newMaterialETAUtc = DateTime.UtcNow.AddDays(7);
+        patchDocument.Replace("MaterialETAUtc", newMaterialETAUtc);
+        var newMaterialExternalNo = "A-1";
+        patchDocument.Replace("MaterialExternalNo", newMaterialExternalNo);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
@@ -136,6 +157,17 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
+        Assert.AreEqual(TestFactory.Instance.WriterOid, punchItem.ActionBy!.Guid);
+        Assert.AreEqual(newDueTimeUtc, punchItem.DueTimeUtc);
+        Assert.AreEqual(newEstimate, punchItem.Estimate);
+        Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
+        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
+        Assert.AreEqual(newExternalItemNo, punchItem.ExternalItemNo);
+        Assert.AreEqual(NewMaterialRequired, punchItem.MaterialRequired);
+        Assert.AreEqual(newMaterialETAUtc, punchItem.MaterialETAUtc);
+        Assert.AreEqual(newMaterialExternalNo, punchItem.MaterialExternalNo);
     }
 
     [TestMethod]
@@ -145,14 +177,15 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
-            TestFactory.PriorityGuid,
-            TestFactory.SortingGuid,
-            TestFactory.TypeGuid);
+            priorityGuid: TestFactory.PriorityGuid,
+            sortingGuid: TestFactory.SortingGuid,
+            typeGuid: TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
         Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
@@ -192,14 +225,15 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             description,
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
-            TestFactory.PriorityGuid,
-            TestFactory.SortingGuid,
-            TestFactory.TypeGuid);
+            priorityGuid: TestFactory.PriorityGuid,
+            sortingGuid: TestFactory.SortingGuid,
+            typeGuid: TestFactory.TypeGuid);
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(description, punchItem.Description);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
@@ -230,12 +264,44 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task UpdatePunchItemCategory_AsWriter_ShouldUpdatePunchItemCategory()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.AreEqual("PA", punchItem.Category);
+
+        // Act
+        var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemCategoryAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            "PB",
+            guidAndRowVersion.RowVersion);
+
+        // Assert
+        AssertRowVersionChange(guidAndRowVersion.RowVersion, newRowVersion);
+        punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.AreEqual("PB", punchItem.Category);
+    }
+
+    [TestMethod]
     public async Task DeletePunchItem_AsWriter_ShouldDeletePunchItem()
     {
         // Arrange
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -515,6 +581,7 @@ public class PunchItemsControllerTests : TestBase
         var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -655,6 +722,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -677,6 +745,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,
@@ -698,6 +767,7 @@ public class PunchItemsControllerTests : TestBase
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
+            "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuid,

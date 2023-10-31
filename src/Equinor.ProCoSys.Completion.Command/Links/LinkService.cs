@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Links;
@@ -48,10 +52,7 @@ public class LinkService : ILinkService
     }
 
     public async Task<bool> ExistsAsync(Guid guid)
-    {
-        var link = await _linkRepository.GetByGuidAsync(guid);
-        return link is not null;
-    }
+        => await _linkRepository.ExistsAsync(guid);
 
     public async Task<string> UpdateAsync(
         Guid guid,
@@ -60,18 +61,15 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetByGuidAsync(guid);
+        var link = await _linkRepository.GetAsync(guid);
 
-        if (link is null)
+        var changes = UpdateLink(link, title, url);
+        if (changes.Any())
         {
-            throw new Exception($"Link with guid {guid} not found when updating");
+            link.AddDomainEvent(new LinkUpdatedDomainEvent(link, changes));
         }
 
         link.SetRowVersion(rowVersion);
-        link.Url = url;
-        link.Title = title;
-        link.AddDomainEvent(new LinkUpdatedDomainEvent(link));
-
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {SourceType} : {LinkSourceGuid}", 
@@ -88,12 +86,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetByGuidAsync(guid);
-
-        if (link is null)
-        {
-            throw new Exception($"Link with guid {guid} not found when updating");
-        }
+        var link = await _linkRepository.GetAsync(guid);
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency
@@ -109,5 +102,29 @@ public class LinkService : ILinkService
             link.Guid,
             link.SourceType, 
             link.SourceGuid);
+    }
+
+    private List<IProperty> UpdateLink(Link link, string title, string url)
+    {
+        var changes = new List<IProperty>();
+
+        if (link.Url != url)
+        {
+            changes.Add(new Property<string>(
+                nameof(Link.Url), 
+                link.Url,
+                url));
+            link.Url = url;
+        }
+        if (link.Title != title)
+        {
+            changes.Add(new Property<string>(
+                nameof(Link.Title),
+                link.Title,
+                title));
+            link.Title = title;
+        }
+
+        return changes;
     }
 }

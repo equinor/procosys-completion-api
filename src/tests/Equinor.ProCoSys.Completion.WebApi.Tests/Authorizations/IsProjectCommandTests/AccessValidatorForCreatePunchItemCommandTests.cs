@@ -1,5 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
@@ -8,15 +9,69 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectComma
 public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForIIsProjectCommandTests<CreatePunchItemCommand>
 {
     protected override CreatePunchItemCommand GetProjectCommandWithAccessToBothProjectAndContent()
-        => new(null!, ProjectGuidWithAccess, CheckListGuidWithAccessToContent, Guid.Empty, Guid.Empty);
+        => new(
+            Category.PA,
+            null!,
+            ProjectGuidWithAccess,
+            CheckListGuidWithAccessToContent,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            false,
+            null,
+            null);
 
     protected override CreatePunchItemCommand GetProjectCommandWithAccessToProjectButNotContent()
-        => new(null!, 
+        => new(Category.PA, 
+            null!, 
             ProjectGuidWithAccess, 
             CheckListGuidWithoutAccessToContent,
-            Guid.Empty,
-            Guid.Empty);
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            false,
+            null,
+            null);
 
     protected override CreatePunchItemCommand GetProjectCommandWithoutAccessToProject()
-        => new(null!, ProjectGuidWithoutAccess, Guid.Empty, Guid.Empty, Guid.Empty);
+        => new(Category.PA,
+            null!,
+            ProjectGuidWithoutAccess,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            null,
+            false,
+            null,
+            null);
 }

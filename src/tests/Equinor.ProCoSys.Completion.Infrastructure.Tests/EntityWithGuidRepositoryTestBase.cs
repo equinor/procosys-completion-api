@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -92,19 +93,44 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> where TEntity: E
     }
 
     [TestMethod]
-    public async Task GetByGuid_KnownGuid_ShouldReturnEntity()
+    public async Task GetAsync_KnownGuid_ShouldReturnEntity()
     {
-        var result = await _dut.GetByGuidAsync(_knownGuid);
+        var result = await _dut.GetAsync(_knownGuid);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownGuid, result.Guid);
     }
 
     [TestMethod]
-    public async Task GetByGuid_UnknownGuid_ShouldReturnNull()
+    public async Task GetAsync_UnknownGuid_ShouldThrowEntityNotFoundException() // Act and Assert
     {
-        var result = await _dut.GetByGuidAsync(Guid.Empty);
+        // Arrange
+        var guid = Guid.NewGuid();
+        
+        // Act
+        var entityNotFoundException = await Assert.ThrowsExceptionAsync<EntityNotFoundException>(() => _dut.GetAsync(guid));
 
-        Assert.IsNull(result);
+        // Assert
+        Assert.IsNotNull(entityNotFoundException);
+        Assert.IsNotNull(entityNotFoundException.Message);
+        Assert.IsTrue(entityNotFoundException.Message.Contains(guid.ToString()));
+        var typeName = typeof(TEntity).Name;
+        Assert.IsTrue(entityNotFoundException.Message.Contains(typeName));
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_KnownGuid_ShouldReturnTrue()
+    {
+        var result = await _dut.ExistsAsync(_knownGuid);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_UnknownGuid_ShouldReturnFalse()
+    {
+        var result = await _dut.ExistsAsync(Guid.Empty);
+
+        Assert.IsFalse(result);
     }
 }

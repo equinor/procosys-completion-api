@@ -20,7 +20,7 @@ public class PunchItemRejectedEventHandler : INotificationHandler<PunchItemRejec
     }
 
     public async Task Handle(PunchItemRejectedDomainEvent punchItemRejectedEvent, CancellationToken cancellationToken)
-        => await _publishEndpoint.Publish(new PunchItemRejectedIntegrationEvent(punchItemRejectedEvent),
+        => await _publishEndpoint.Publish(new PunchItemUpdatedIntegrationEvent(punchItemRejectedEvent),
             context =>
             {
                 context.SetSessionId(punchItemRejectedEvent.PunchItem.Guid.ToString());

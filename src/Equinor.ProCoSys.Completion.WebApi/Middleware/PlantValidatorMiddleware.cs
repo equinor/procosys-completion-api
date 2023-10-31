@@ -19,7 +19,7 @@ public class PlantValidatorMiddleware
         IPermissionCache permissionCache,
         ILogger<PlantValidatorMiddleware> logger)
     {
-        logger.LogInformation($"----- {GetType().Name} start");
+        logger.LogDebug("----- {MiddlewareName} start", GetType().Name);
         var plantId = plantProvider.Plant;
         if (context.User.Identity is not null && context.User.Identity.IsAuthenticated && plantId is not null)
         {
@@ -34,7 +34,7 @@ public class PlantValidatorMiddleware
             }
         }
 
-        logger.LogInformation($"----- {GetType().Name} complete");
+        logger.LogDebug("----- {MiddlewareName} complete", GetType().Name);
         // Call the next delegate/middleware in the pipeline
         await _next(context);
     }
