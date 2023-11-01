@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 
 public interface IAttachmentUpdatedV1 : IAttachment, IIntegrationEvent
 {
-    Guid ModifiedByOid { get; }
+    IUser ModifiedBy { get; }
     DateTime ModifiedAtUtc { get; }
 }

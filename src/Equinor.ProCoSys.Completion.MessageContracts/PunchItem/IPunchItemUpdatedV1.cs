@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 
 public interface IPunchItemUpdatedV1 : IPunchItem, IIntegrationEvent
 {
-    Guid ModifiedByOid { get; }
+    IUser ModifiedBy { get; }
     DateTime ModifiedAtUtc { get; }
     List<IProperty> Changes { get; }
 }

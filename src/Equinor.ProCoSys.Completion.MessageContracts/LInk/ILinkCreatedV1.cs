@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.Link;
 
 public interface ILinkCreatedV1 : ILink, IIntegrationEvent
 {
-    Guid CreatedByOid { get; }
+    IUser CreatedBy { get; }
     DateTime CreatedAtUtc { get;  }
 }

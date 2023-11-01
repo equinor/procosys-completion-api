@@ -5,6 +5,6 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 public interface IAttachmentDeletedV1 : IIntegrationEvent
 {
     Guid SourceGuid { get; }
-    Guid DeletedByOid { get; }
+    IUser DeletedBy { get; }
     DateTime DeletedAtUtc { get; }
 }
