@@ -41,4 +41,6 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
         ModifiedById = modifiedBy.Id;
         ModifiedBy = modifiedBy;
     }
+
+    public string GetFullName() => $"{FirstName} {LastName}";
 }

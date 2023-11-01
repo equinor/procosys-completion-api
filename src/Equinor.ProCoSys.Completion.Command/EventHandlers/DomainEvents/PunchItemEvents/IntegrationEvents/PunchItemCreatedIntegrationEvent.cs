@@ -1,5 +1,7 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
@@ -30,50 +32,58 @@ public record PunchItemCreatedIntegrationEvent
     string? OriginalWorkOrderNo,
     string? DocumentNo,
     int? SWCRNo,
-    Guid? ActionByOid,
-    Guid? ClearedByOid,
+    IUser? ActionBy,
+    IUser? ClearedBy,
     DateTime? ClearedAtUtc,
-    Guid? RejectedByOid,
+    IUser? RejectedBy,
     DateTime? RejectedAtUtc,
-    Guid? VerifiedByOid,
+    IUser? VerifiedBy,
     DateTime? VerifiedAtUtc,
-    Guid CreatedByOid,
+    IUser CreatedBy,
     DateTime CreatedAtUtc
 ) : IPunchItemCreatedV1
 {
-    internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent punchItemCreatedEvent) : this(
+    internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent domainEvent) : this(
         "Punch item created",
-        punchItemCreatedEvent.PunchItem.Guid,
-        punchItemCreatedEvent.PunchItem.Project.Guid,
-        punchItemCreatedEvent.PunchItem.Project.Name,
-        punchItemCreatedEvent.PunchItem.Project.Description,
-        punchItemCreatedEvent.PunchItem.CheckListGuid,
-        punchItemCreatedEvent.PunchItem.Category.ToString(),
-        punchItemCreatedEvent.PunchItem.ItemNo,
-        punchItemCreatedEvent.PunchItem.Description,
-        punchItemCreatedEvent.PunchItem.RaisedByOrg.Code,
-        punchItemCreatedEvent.PunchItem.ClearingByOrg.Code,
-        punchItemCreatedEvent.PunchItem.Sorting?.Code,
-        punchItemCreatedEvent.PunchItem.Type?.Code,
-        punchItemCreatedEvent.PunchItem.Priority?.Code,
-        punchItemCreatedEvent.PunchItem.DueTimeUtc,
-        punchItemCreatedEvent.PunchItem.Estimate,
-        punchItemCreatedEvent.PunchItem.ExternalItemNo,
-        punchItemCreatedEvent.PunchItem.MaterialRequired,
-        punchItemCreatedEvent.PunchItem.MaterialETAUtc,
-        punchItemCreatedEvent.PunchItem.MaterialExternalNo,
-        punchItemCreatedEvent.PunchItem.WorkOrder?.No,
-        punchItemCreatedEvent.PunchItem.OriginalWorkOrder?.No,
-        punchItemCreatedEvent.PunchItem.Document?.No,
-        punchItemCreatedEvent.PunchItem.SWCR?.No,
-        punchItemCreatedEvent.PunchItem.ActionBy?.Guid,
-        punchItemCreatedEvent.PunchItem.ClearedBy?.Guid,
-        punchItemCreatedEvent.PunchItem.ClearedAtUtc,
-        punchItemCreatedEvent.PunchItem.RejectedBy?.Guid,
-        punchItemCreatedEvent.PunchItem.RejectedAtUtc,
-        punchItemCreatedEvent.PunchItem.VerifiedBy?.Guid,
-        punchItemCreatedEvent.PunchItem.VerifiedAtUtc,
-        punchItemCreatedEvent.PunchItem.CreatedBy.Guid,
-        punchItemCreatedEvent.PunchItem.CreatedAtUtc)
+        domainEvent.PunchItem.Guid,
+        domainEvent.PunchItem.Project.Guid,
+        domainEvent.PunchItem.Project.Name,
+        domainEvent.PunchItem.Project.Description,
+        domainEvent.PunchItem.CheckListGuid,
+        domainEvent.PunchItem.Category.ToString(),
+        domainEvent.PunchItem.ItemNo,
+        domainEvent.PunchItem.Description,
+        domainEvent.PunchItem.RaisedByOrg.Code,
+        domainEvent.PunchItem.ClearingByOrg.Code,
+        domainEvent.PunchItem.Sorting?.Code,
+        domainEvent.PunchItem.Type?.Code,
+        domainEvent.PunchItem.Priority?.Code,
+        domainEvent.PunchItem.DueTimeUtc,
+        domainEvent.PunchItem.Estimate,
+        domainEvent.PunchItem.ExternalItemNo,
+        domainEvent.PunchItem.MaterialRequired,
+        domainEvent.PunchItem.MaterialETAUtc,
+        domainEvent.PunchItem.MaterialExternalNo,
+        domainEvent.PunchItem.WorkOrder?.No,
+        domainEvent.PunchItem.OriginalWorkOrder?.No,
+        domainEvent.PunchItem.Document?.No,
+        domainEvent.PunchItem.SWCR?.No,
+        domainEvent.PunchItem.ActionBy is null ?
+            null :
+            new User(domainEvent.PunchItem.ActionBy.Guid, domainEvent.PunchItem.ActionBy.GetFullName()),
+        domainEvent.PunchItem.ClearedBy is null ?
+            null :
+            new User(domainEvent.PunchItem.ClearedBy.Guid, domainEvent.PunchItem.ClearedBy.GetFullName()),
+        domainEvent.PunchItem.ClearedAtUtc,
+        domainEvent.PunchItem.RejectedBy is null ?
+            null :
+            new User(domainEvent.PunchItem.RejectedBy.Guid, domainEvent.PunchItem.RejectedBy.GetFullName()),
+        domainEvent.PunchItem.RejectedAtUtc,
+        domainEvent.PunchItem.VerifiedBy is null ?
+            null :
+            new User(domainEvent.PunchItem.VerifiedBy.Guid, domainEvent.PunchItem.VerifiedBy.GetFullName()),
+        domainEvent.PunchItem.VerifiedAtUtc,
+        new User(domainEvent.PunchItem.CreatedBy.Guid, domainEvent.PunchItem.CreatedBy.GetFullName()),
+        domainEvent.PunchItem.CreatedAtUtc)
     { }
 }

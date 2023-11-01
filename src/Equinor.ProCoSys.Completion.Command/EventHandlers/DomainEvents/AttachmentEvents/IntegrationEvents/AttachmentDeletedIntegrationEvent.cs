@@ -1,5 +1,7 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
@@ -9,7 +11,7 @@ public record AttachmentDeletedIntegrationEvent
     string DisplayName,
     Guid Guid,
     Guid SourceGuid,
-    Guid DeletedByOid,
+    IUser DeletedBy,
     DateTime DeletedAtUtc
 ) : IAttachmentDeletedV1
 {
@@ -19,7 +21,7 @@ public record AttachmentDeletedIntegrationEvent
         domainEvent.Attachment.SourceGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
-        domainEvent.Attachment.ModifiedBy!.Guid,
+        new User(domainEvent.Attachment.ModifiedBy!.Guid, domainEvent.Attachment.ModifiedBy!.GetFullName()),
         domainEvent.Attachment.ModifiedAtUtc!.Value)
     { }
 }
