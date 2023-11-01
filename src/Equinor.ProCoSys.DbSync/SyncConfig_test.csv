@@ -1,0 +1,3 @@
+Source table,Target table,Source column,Target column,is primary key, Type, convertion method
+punchitem,punchlistitem,guid,procosys_guid,true, string
+punchitem,punchlistitem,description,description,false, string
