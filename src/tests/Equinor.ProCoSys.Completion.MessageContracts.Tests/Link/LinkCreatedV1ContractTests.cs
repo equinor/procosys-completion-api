@@ -20,7 +20,7 @@ public class LinkCreatedV1ContractTests : ContractTestBase<ILinkCreatedV1>
             { "SourceType", typeof(string) },
             { "Title", typeof(string) },
             { "Url", typeof(string) },
-            { "CreatedByOid", typeof(Guid) },
+            { "CreatedBy", typeof(IUser) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

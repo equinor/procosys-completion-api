@@ -21,5 +21,6 @@ public class PersonTests
         Assert.AreEqual("LastName", _dut.LastName);
         Assert.AreEqual("UserName", _dut.UserName);
         Assert.AreEqual("EmailAddress", _dut.Email);
+        Assert.AreEqual("FirstName LastName", _dut.GetFullName());
     }
 }

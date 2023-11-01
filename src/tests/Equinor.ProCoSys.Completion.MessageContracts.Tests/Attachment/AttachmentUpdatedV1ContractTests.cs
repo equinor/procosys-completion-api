@@ -20,7 +20,7 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
             { "SourceType", typeof(string) },
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "ModifiedByOid", typeof(Guid) },
+            { "ModifiedBy", typeof(IUser) },
             { "ModifiedAtUtc", typeof(DateTime) }
         };
 

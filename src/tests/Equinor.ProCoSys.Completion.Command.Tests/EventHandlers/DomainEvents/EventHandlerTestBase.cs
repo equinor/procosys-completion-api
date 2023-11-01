@@ -31,7 +31,7 @@ public class EventHandlerTestBase
     public void SetupBase()
     {
         TimeService.SetProvider(new ManualTimeProvider(_now));
-        _person = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+        _person = new Person(Guid.NewGuid(), "Yo", "Da", "YD", "@");
         _person.SetProtectedIdForTesting(3);
 
         _project = new Project(_testPlant, Guid.NewGuid(), null!, null!);
@@ -53,7 +53,8 @@ public class EventHandlerTestBase
         Assert.AreEqual(punchItem.RaisedByOrg.Code, integrationEvent.RaisedByOrgCode);
         Assert.AreEqual(punchItem.ClearingByOrg.Code, integrationEvent.ClearingByOrgCode);
         Assert.AreEqual(punchItem.CreatedAtUtc, integrationEvent.CreatedAtUtc);
-        Assert.AreEqual(punchItem.CreatedBy.Guid, integrationEvent.CreatedByOid);
+        Assert.AreEqual(punchItem.CreatedBy.Guid, integrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(punchItem.CreatedBy.GetFullName(), integrationEvent.CreatedBy.FullName);
     }
 
     protected void FillOptionalProperties(PunchItem punchItem)
@@ -76,37 +77,44 @@ public class EventHandlerTestBase
 
     protected void AssertIsVerified(PunchItem punchItem, Person person, PunchItemUpdatedIntegrationEvent integrationEvent)
     {
+        Assert.IsNotNull(integrationEvent.VerifiedAtUtc);
         Assert.AreEqual(punchItem.VerifiedAtUtc, integrationEvent.VerifiedAtUtc);
-        Assert.AreEqual(person.Guid, integrationEvent.VerifiedByOid);
+        Assert.IsNotNull(integrationEvent.VerifiedBy);
+        Assert.AreEqual(person.Guid, integrationEvent.VerifiedBy.Oid);
+        Assert.AreEqual(person.GetFullName(), integrationEvent.VerifiedBy.FullName);
     }
 
     protected void AssertNotVerified(IPunchItem integrationEvent)
     {
-        Assert.IsNull(integrationEvent.VerifiedByOid);
+        Assert.IsNull(integrationEvent.VerifiedBy);
         Assert.IsNull(integrationEvent.VerifiedAtUtc);
     }
 
     protected void AssertIsRejected(PunchItem punchItem, Person person, PunchItemUpdatedIntegrationEvent integrationEvent)
     {
+        Assert.IsNotNull(integrationEvent.RejectedAtUtc);
         Assert.AreEqual(punchItem.RejectedAtUtc, integrationEvent.RejectedAtUtc);
-        Assert.AreEqual(person.Guid, integrationEvent.RejectedByOid);
+        Assert.IsNotNull(integrationEvent.RejectedBy);
+        Assert.AreEqual(person.Guid, integrationEvent.RejectedBy.Oid);
+        Assert.AreEqual(person.GetFullName(), integrationEvent.RejectedBy.FullName);
     }
 
     protected void AssertNotRejected(IPunchItem integrationEvent)
     {
-        Assert.IsNull(integrationEvent.RejectedByOid);
+        Assert.IsNull(integrationEvent.RejectedBy);
         Assert.IsNull(integrationEvent.RejectedAtUtc);
     }
 
     protected void AssertIsCleared(PunchItem punchItem, Person person, PunchItemUpdatedIntegrationEvent integrationEvent)
     {
         Assert.AreEqual(punchItem.ClearedAtUtc, integrationEvent.ClearedAtUtc);
-        Assert.AreEqual(person.Guid, integrationEvent.ClearedByOid);
+        Assert.AreEqual(person.Guid, integrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(person.GetFullName(), integrationEvent.CreatedBy.FullName);
     }
 
     protected void AssertNotCleared(IPunchItem integrationEvent)
     {
-        Assert.IsNull(integrationEvent.ClearedByOid);
+        Assert.IsNull(integrationEvent.ClearedBy);
         Assert.IsNull(integrationEvent.ClearedAtUtc);
     }
 
@@ -125,7 +133,7 @@ public class EventHandlerTestBase
         Assert.IsNull(integrationEvent.OriginalWorkOrderNo);
         Assert.IsNull(integrationEvent.DocumentNo);
         Assert.IsNull(integrationEvent.SWCRNo);
-        Assert.IsNull(integrationEvent.ActionByOid);
+        Assert.IsNull(integrationEvent.ActionBy);
     }
 
     protected void AssertOptionalProperties(PunchItem punchItem, IPunchItem integrationEvent)
@@ -143,12 +151,15 @@ public class EventHandlerTestBase
         Assert.AreEqual(punchItem.OriginalWorkOrder!.No, integrationEvent.OriginalWorkOrderNo);
         Assert.AreEqual(punchItem.Document!.No, integrationEvent.DocumentNo);
         Assert.AreEqual(punchItem.SWCR!.No, integrationEvent.SWCRNo);
-        Assert.AreEqual(punchItem.ActionBy!.Guid, integrationEvent.ActionByOid);
+        Assert.IsNotNull(integrationEvent.ActionBy);
+        Assert.AreEqual(punchItem.ActionBy!.Guid, integrationEvent.ActionBy.Oid);
+        Assert.AreEqual(punchItem.ActionBy!.GetFullName(), integrationEvent.ActionBy.FullName);
     }
 
     protected void AssertModified(PunchItem punchItem, PunchItemUpdatedIntegrationEvent integrationEvent)
     {
         Assert.AreEqual(punchItem.ModifiedAtUtc, integrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.ModifiedByOid);
+        Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(punchItem.ModifiedBy!.GetFullName(), integrationEvent.CreatedBy.FullName);
     }
 }

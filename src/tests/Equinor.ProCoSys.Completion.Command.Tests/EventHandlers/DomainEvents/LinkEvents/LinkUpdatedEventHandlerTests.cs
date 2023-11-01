@@ -64,6 +64,7 @@ public class LinkUpdatedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_linkUpdatedEvent.Link.Title, _publishedIntegrationEvent.Title);
         Assert.AreEqual(_linkUpdatedEvent.Link.Url, _publishedIntegrationEvent.Url);
         Assert.AreEqual(_linkUpdatedEvent.Link.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_linkUpdatedEvent.Link.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedByOid);
+        Assert.AreEqual(_linkUpdatedEvent.Link.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedBy.Oid);
+        Assert.AreEqual(_linkUpdatedEvent.Link.ModifiedBy!.GetFullName(), _publishedIntegrationEvent.ModifiedBy.FullName);
     }
 }
