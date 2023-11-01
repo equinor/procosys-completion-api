@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.AspNetCore.JsonPatch;
@@ -371,12 +372,12 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             null,
             _existingType1.Code);
-        AssertChange(
+        AssertPersonChange(
             punchItemUpdatedDomainEventAdded
                 .Changes
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
             null,
-            _existingPerson1.Guid);
+            new User(_existingPerson1.Guid, _existingPerson1.GetFullName()));
         AssertChange(
             punchItemUpdatedDomainEventAdded
                 .Changes
@@ -501,11 +502,11 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             _existingType1.Code,
             null);
-        AssertChange(
+        AssertPersonChange(
             punchItemUpdatedDomainEventAdded
                 .Changes
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
-            _existingPerson1.Guid,
+            new User(_existingPerson1.Guid, _existingPerson1.GetFullName()),
             null);
         AssertChange(
             punchItemUpdatedDomainEventAdded
@@ -876,12 +877,12 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsNotNull(punchItemUpdatedDomainEventAdded.Changes);
         Assert.AreEqual(1, _command.PatchDocument.Operations.Count);
         Assert.AreEqual(_command.PatchDocument.Operations.Count, punchItemUpdatedDomainEventAdded.Changes.Count);
-        AssertChange(
+        AssertPersonChange(
             punchItemUpdatedDomainEventAdded
                 .Changes
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
             null,
-            nonExistingPersonOid);
+            new User(nonExistingPersonOid, $"{proCoSysPerson.FirstName} {proCoSysPerson.LastName}"));
         Assert.IsNotNull(_personAddedToRepository);
         Assert.AreEqual(nonExistingPersonOid, _existingPunchItem.ActionBy!.Guid);
         Assert.AreEqual(nonExistingPersonOid, _personAddedToRepository.Guid);
@@ -990,5 +991,32 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
         Assert.AreEqual(newValue, change.NewValue);
+    }
+
+    private void AssertPersonChange(IProperty change, User oldValue, User newValue)
+    {
+        Assert.IsNotNull(change);
+        if (change.OldValue is null)
+        {
+            Assert.IsNull(oldValue);
+        }
+        else
+        {
+            var user = change.OldValue as User;
+            Assert.IsNotNull(user);
+            Assert.AreEqual(oldValue.Oid, user.Oid);
+            Assert.AreEqual(oldValue.FullName, user.FullName);
+        }
+        if (change.NewValue is null)
+        {
+            Assert.IsNull(newValue);
+        }
+        else
+        {
+            var user = change.NewValue as User;
+            Assert.IsNotNull(user);
+            Assert.AreEqual(newValue.Oid, user.Oid);
+            Assert.AreEqual(newValue.FullName, user.FullName);
+        }
     }
 }
