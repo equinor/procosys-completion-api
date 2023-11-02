@@ -16,7 +16,7 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
         SourceType = sourceType;
         SourceGuid = sourceGuid;
         Text = text;
-        Guid = Guid.NewGuid();
+        Guid = MassTransit.NewId.NextSequentialGuid();
     }
 
     // private setters needed for Entity Framework
