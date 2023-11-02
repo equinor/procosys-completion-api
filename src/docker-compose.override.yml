@@ -4,7 +4,7 @@ services:
   equinor.procosys.completion.webapi:
     build:
       args:
-        ENV_TYPE: ${ENV_TYPE}
+        ENV_TYPE: local
         FEED_TOKEN: ${FEED_TOKEN}
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
