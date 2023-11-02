@@ -18,7 +18,7 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
         SourceGuid = sourceGuid;
         Title = title;
         Url = url;
-        Guid = Guid.NewGuid();
+        Guid = MassTransit.NewId.NextGuid();
     }
 
     // private setters needed for Entity Framework

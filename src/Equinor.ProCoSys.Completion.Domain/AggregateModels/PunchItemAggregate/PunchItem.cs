@@ -1,13 +1,13 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -39,7 +39,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         CheckListGuid = checkListGuid;
         Category = category;
         Description = description;
-        Guid = Guid.NewGuid();
+        Guid = MassTransit.NewId.NextGuid();
 
         SetProject(plant, project);
         SetRaisedByOrg(raisedByOrg);
