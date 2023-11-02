@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Completion.Domain.Audit;
+using System.Threading;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.PunchItemAggregate;
 
@@ -157,6 +158,25 @@ public class PunchItemTests : IModificationAuditableTests
                 _raisedByOrg,
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
 
+
+    [TestMethod]
+    public void Constructor_ShouldCreateSequentialUniqueIdentifiers()
+    {
+        // Arrange
+        var prevGuid = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg,
+            _clearingByOrg).Guid;
+
+        // Act and Assert
+        for (var i = 0; i < 20; i++)
+        {
+            var nextGuid = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg,
+                _clearingByOrg).Guid;
+            Assert.IsTrue(prevGuid < nextGuid);
+            Console.WriteLine(prevGuid);
+            prevGuid = nextGuid;
+            Thread.Sleep(5);
+        }
+    }
     #endregion
 
     #region ItemNo

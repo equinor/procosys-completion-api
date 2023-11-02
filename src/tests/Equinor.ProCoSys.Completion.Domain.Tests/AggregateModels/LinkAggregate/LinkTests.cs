@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Threading;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
+using MassTransit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.LinkAggregate;
@@ -31,4 +33,20 @@ public class LinkTests : IModificationAuditableTests
         Assert.AreNotEqual(Guid.Empty, _dut.Guid);
     }
 
+    [TestMethod]
+    public void Constructor_ShouldCreateSequentialUniqueIdentifiers()
+    {
+        // Arrange
+        var prevGuid = new Link(_sourceType, _sourceGuid, _title, _url).Guid;
+
+        // Act and Assert
+        for (var i = 0; i < 20; i++)
+        {
+            var nextGuid = new Link(_sourceType, _sourceGuid, _title, _url).Guid;
+            Assert.IsTrue(prevGuid < nextGuid);
+            Console.WriteLine(prevGuid);
+            prevGuid = nextGuid;
+            Thread.Sleep(5);
+        }
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,5 +27,22 @@ public class CommentTests : ICreationAuditableTests
         Assert.AreEqual(_sourceGuid, _dut.SourceGuid);
         Assert.AreNotEqual(_sourceGuid, _dut.Guid);
         Assert.AreNotEqual(Guid.Empty, _dut.Guid);
+    }
+
+    [TestMethod]
+    public void Constructor_ShouldCreateSequentialUniqueIdentifiers()
+    {
+        // Arrange
+        var prevGuid = new Comment(_sourceType, _sourceGuid, _text).Guid;
+
+        // Act and Assert
+        for (var i = 0; i < 20; i++)
+        {
+            var nextGuid = new Comment(_sourceType, _sourceGuid, _text).Guid;
+            Assert.IsTrue(prevGuid < nextGuid);
+            Console.WriteLine(prevGuid);
+            prevGuid = nextGuid;
+            Thread.Sleep(5);
+        }
     }
 }

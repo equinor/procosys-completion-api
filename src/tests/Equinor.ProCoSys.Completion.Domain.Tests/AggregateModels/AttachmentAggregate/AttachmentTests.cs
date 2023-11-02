@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -40,5 +41,22 @@ public class AttachmentTests : IModificationAuditableTests
 
         // Arrange
         Assert.AreEqual(2, _dut.RevisionNumber);
+    }
+
+    [TestMethod]
+    public void Constructor_ShouldCreateSequentialUniqueIdentifiers()
+    {
+        // Arrange
+        var prevGuid = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName).Guid;
+
+        // Act and Assert
+        for (var i = 0; i < 20; i++)
+        {
+            var nextGuid = new Attachment(_sourceType, _sourceGuid, "PCS$Plant", _fileName).Guid;
+            Assert.IsTrue(prevGuid < nextGuid);
+            Console.WriteLine(prevGuid);
+            prevGuid = nextGuid;
+            Thread.Sleep(5);
+        }
     }
 }
