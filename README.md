@@ -21,6 +21,7 @@ Before running the application, you need to set up the following:
 
 Ensure you have a populated `secret.json` created from Equinor.ProCoSys.Completion.WebApi.
 Either with full setup, or minimal.
+Ask a colleague for a copy if you dont have one.
 
 ### 2. Environment Variables
 
@@ -28,9 +29,15 @@ Create a `.env` file in the src directory (next to docker-compose) with the foll
 
 FEED_TOKEN= `ACCESSTOKEN`
 
+![img.png](img.png)
 
-Replace `ACCESSTOKEN` with your actual access key to the ProCoSys Official NuGet feed. 
-Created here: https://statoildeveloper.visualstudio.com/_usersSettings/tokens
+The .env file should never be checked in to source control. As long as its placed in the src folder, it will be ignored by git.
+But always double check before committing.
+
+Replace `ACCESSTOKEN` with your actual access key to the ProCoSys Official NuGet feed.
+We use Personal AccessTokens and the token needs the permission `Packaging (read)`.
+This means that you give the container permission to access the feed on your behalf.
+If you dont already have one, it can be created here: https://statoildeveloper.visualstudio.com/_usersSettings/tokens
 
 ### 3. Login to Azure Container Registry
 
@@ -38,8 +45,14 @@ Follow the guide provided [here](https://github.com/equinor/procosys-infra/tree/
 
 ### 4. Update Database Connection String
 
-Modify the `server` in the `databaseconnectionstring` to use `db` instead of `127.0.0.1` or similar.
-Like: `Server=db;Database=pcs-completion-dev-db;User Id=sa;Password=** ....`
+Modify the `server` part of the `databaseconnectionstring` to use `db` instead of `127.0.0.1` .
+You find the connection string in the `secret.json`. Change the value of  `"ConnectionStrings:CompletionContext":` 
+
+from `Server=127.0.0.1;Database=pcs-co...`
+
+to `Server=db;Database=pcs-co...`
+
+
 ## Running the Application
 
 Once all configuration is done, you can start the application by running the following command from the startup project:
