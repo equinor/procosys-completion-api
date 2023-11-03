@@ -52,3 +52,9 @@ and then
 
 This will pull the necessary images, build the services, and start the application. You can access it once it's up and running.
 
+## 03.11.2023: Create the Database inside the container 
+Until the sandbox image is updated with the completion database,
+you will have to create the database manually after spinning up the container.
+This means the application may not run correct the first time.
+To create it, connect to Sql server using MsSql Management Studio, right click Databases folder and select New Database.
+Create a db called pcs-completion-dev-db, then rerun docker compose up.
