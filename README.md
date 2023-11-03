@@ -45,7 +45,7 @@ Follow the guide provided [here](https://github.com/equinor/procosys-infra/tree/
 
 ### 4. Update Database Connection String
 
-Modify the `server` part of the `databaseconnectionstring` to use `db` instead of `127.0.0.1` .
+Modify the `server` part of the database connection string to use `db` instead of `127.0.0.1` .
 You find the connection string in the `secret.json`. Change the value of  `"ConnectionStrings:CompletionContext":` 
 
 from `Server=127.0.0.1;Database=pcs-co...`
