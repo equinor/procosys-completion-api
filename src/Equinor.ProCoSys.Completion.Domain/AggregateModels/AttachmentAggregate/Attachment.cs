@@ -24,7 +24,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
         SourceType = sourceType;
         SourceGuid = sourceGuid;
         FileName = fileName;
-        Guid = Guid.NewGuid();
+        Guid = MassTransit.NewId.NextGuid();
         if (plant.Length < 5)
         {
             throw new ArgumentException($"{nameof(plant)} must have minimum length 5");
