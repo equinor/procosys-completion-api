@@ -33,7 +33,7 @@ public class LinkServiceTests : TestsBase
                 _linkAddedToRepository = info.Arg<Link>();
             });
         _existingLink = new Link("Whatever", _sourceGuid, "T", "www");
-        _linkRepositoryMock.GetAsync(_existingLink.Guid)
+        _linkRepositoryMock.GetAsync(_existingLink.Guid, default)
             .Returns(_existingLink);
 
         _dut = new LinkService(
@@ -88,11 +88,11 @@ public class LinkServiceTests : TestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownLink()
     {
         // Arrange
-        _linkRepositoryMock.ExistsAsync(_existingLink.Guid)
+        _linkRepositoryMock.ExistsAsync(_existingLink.Guid, default)
             .Returns(true);
 
         // Act
-        var result = await _dut.ExistsAsync(_existingLink.Guid);
+        var result = await _dut.ExistsAsync(_existingLink.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -102,7 +102,7 @@ public class LinkServiceTests : TestsBase
     public async Task ExistsAsync_ShouldReturnNull_WhenUnknownLink()
     {
         // Act
-        var result = await _dut.ExistsAsync(Guid.NewGuid());
+        var result = await _dut.ExistsAsync(Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);
