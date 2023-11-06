@@ -16,6 +16,7 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
             { "CheckListGuid", typeof(Guid) },
             { "ProjectName", typeof(string) },

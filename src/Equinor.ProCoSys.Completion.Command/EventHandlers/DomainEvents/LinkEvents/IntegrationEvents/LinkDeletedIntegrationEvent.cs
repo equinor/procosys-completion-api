@@ -10,7 +10,7 @@ public record LinkDeletedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
-    Guid SourceGuid,
+    Guid ParentGuid,
     IUser DeletedBy,
     DateTime DeletedAtUtc
 ) : ILinkDeletedV1

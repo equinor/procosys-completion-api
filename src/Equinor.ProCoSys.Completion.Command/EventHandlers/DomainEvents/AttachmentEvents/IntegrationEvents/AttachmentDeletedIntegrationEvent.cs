@@ -10,7 +10,7 @@ public record AttachmentDeletedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
-    Guid SourceGuid,
+    Guid ParentGuid,
     IUser DeletedBy,
     DateTime DeletedAtUtc
 ) : IAttachmentDeletedV1
