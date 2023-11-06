@@ -10,6 +10,7 @@ public record PunchItemCreatedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
+    Guid ParentGuid,
     Guid ProjectGuid,
     string ProjectName,
     string ProjectDescription,
@@ -46,6 +47,7 @@ public record PunchItemCreatedIntegrationEvent
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent domainEvent) : this(
         "Punch item created",
         domainEvent.PunchItem.Guid,
+        domainEvent.PunchItem.CheckListGuid,
         domainEvent.PunchItem.Project.Guid,
         domainEvent.PunchItem.Project.Name,
         domainEvent.PunchItem.Project.Description,

@@ -10,8 +10,8 @@ public record AttachmentUpdatedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
-    Guid SourceGuid,
-    string SourceType,
+    Guid ParentGuid,
+    string ParentType,
     string FileName,
     string BlobPath,
     IUser ModifiedBy,

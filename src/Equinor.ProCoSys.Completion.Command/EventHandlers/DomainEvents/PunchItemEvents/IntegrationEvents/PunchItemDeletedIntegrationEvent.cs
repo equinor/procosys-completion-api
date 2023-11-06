@@ -10,6 +10,7 @@ public record PunchItemDeletedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
+    Guid ParentGuid,
     IUser DeletedBy,
     DateTime DeletedAtUtc
 ) : IPunchItemDeletedV1
@@ -17,6 +18,7 @@ public record PunchItemDeletedIntegrationEvent
     internal PunchItemDeletedIntegrationEvent(PunchItemDeletedDomainEvent domainEvent) : this(
         "Punch item deleted",
         domainEvent.PunchItem.Guid,
+        domainEvent.PunchItem.CheckListGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
         new User(domainEvent.PunchItem.ModifiedBy!.Guid, domainEvent.PunchItem.ModifiedBy!.GetFullName()),

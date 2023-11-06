@@ -10,8 +10,8 @@ public record LinkCreatedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
-    Guid SourceGuid,
-    string SourceType,
+    Guid ParentGuid,
+    string ParentType,
     string Title,
     string Url,
     IUser CreatedBy,
