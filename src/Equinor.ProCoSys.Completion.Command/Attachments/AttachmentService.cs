@@ -44,7 +44,7 @@ public class AttachmentService : IAttachmentService
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
 
         if (attachment is not null)
         {
@@ -74,7 +74,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
 
         if (attachment is null)
         {
@@ -93,9 +93,9 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName)
+    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName, CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
         return attachment is not null;
     }
 
@@ -104,7 +104,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAsync(guid);
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
 
         var fullBlobPath = attachment.GetFullBlobPath();
         await _azureBlobService.DeleteAsync(
@@ -147,6 +147,7 @@ public class AttachmentService : IAttachmentService
             attachment.SourceGuid);
     }
 
-    public async Task<bool> ExistsAsync(Guid guid)
-        => await _attachmentRepository.ExistsAsync(guid);
+    public async Task<bool> ExistsAsync(Guid guid,
+        CancellationToken cancellationToken)
+        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
 }

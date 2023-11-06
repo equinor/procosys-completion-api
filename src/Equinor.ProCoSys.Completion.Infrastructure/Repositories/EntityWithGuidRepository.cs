@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain;
@@ -19,9 +20,9 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
     {
     }
 
-    public virtual async Task<TEntity> GetAsync(Guid guid)
+    public virtual async Task<TEntity> GetAsync(Guid guid, CancellationToken cancellationToken)
     {
-        var entity = await DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid);
+        var entity = await DefaultQuery.SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken);
         if (entity is null)
         {
             var typeName = typeof(TEntity).Name;
@@ -30,6 +31,6 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
         return entity;
     }
 
-    public virtual async Task<bool> ExistsAsync(Guid guid)
-        => await Set.AnyAsync(e => e.Guid == guid);
+    public virtual async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
+        => await Set.AnyAsync(e => e.Guid == guid, cancellationToken);
 }

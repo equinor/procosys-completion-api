@@ -28,7 +28,7 @@ public class UnclearPunchItemCommandHandler : IRequestHandler<UnclearPunchItemCo
 
     public async Task<Result<string>> Handle(UnclearPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         punchItem.Unclear();
         punchItem.SetRowVersion(request.RowVersion);

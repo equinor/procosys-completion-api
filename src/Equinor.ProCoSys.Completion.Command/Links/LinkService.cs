@@ -51,8 +51,8 @@ public class LinkService : ILinkService
         return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
     }
 
-    public async Task<bool> ExistsAsync(Guid guid)
-        => await _linkRepository.ExistsAsync(guid);
+    public async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
+        => await _linkRepository.ExistsAsync(guid, cancellationToken);
 
     public async Task<string> UpdateAsync(
         Guid guid,
@@ -61,7 +61,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetAsync(guid);
+        var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
         var changes = UpdateLink(link, title, url);
         if (changes.Any())
@@ -86,7 +86,7 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetAsync(guid);
+        var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

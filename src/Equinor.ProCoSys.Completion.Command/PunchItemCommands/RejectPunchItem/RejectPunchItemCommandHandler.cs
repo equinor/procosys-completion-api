@@ -32,9 +32,9 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
 
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
-        var currentPerson = await _personRepository.GetCurrentPersonAsync();
+        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Reject(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
         punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(punchItem));

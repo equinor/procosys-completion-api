@@ -22,7 +22,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractVali
             .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Tag owning punch item is voided!")
-            .MustAsync((command, _) => HaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName))
+            .MustAsync((command, cancellationToken) => HaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName, cancellationToken))
             .WithMessage(command => $"Punch item don't have an attachment with filename {command.FileName}!");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -34,7 +34,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractVali
         async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
 
-        async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName)
-            => await attachmentService.FileNameExistsForSourceAsync(punchItemGuid, fileName);
+        async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName, CancellationToken cancellationToken)
+            => await attachmentService.FileNameExistsForSourceAsync(punchItemGuid, fileName, cancellationToken);
     }
 }
