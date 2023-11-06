@@ -58,6 +58,7 @@ public class PunchItemDeletedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item deleted", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.PunchItem.CheckListGuid, _publishedIntegrationEvent.ParentGuid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
