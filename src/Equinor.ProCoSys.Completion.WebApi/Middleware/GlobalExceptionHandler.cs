@@ -71,6 +71,14 @@ public class GlobalExceptionHandler
             _logger.LogDebug(Message);
             await context.Response.WriteAsync(Message);
         }
+        catch (TaskCanceledException)
+        {
+            context.Response.StatusCode = 499; //Client Closed Request;
+            context.Response.ContentType = "application/text";
+            const string Message = "Request canceled";
+            _logger.LogInformation(Message);
+            await context.Response.WriteAsync(Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An exception occurred");
