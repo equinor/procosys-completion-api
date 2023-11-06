@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
@@ -14,7 +15,7 @@ public record LinkUpdatedIntegrationEvent
     string SourceType,
     string Title,
     string Url,
-    Guid ModifiedByOid,
+    IUser ModifiedBy,
     DateTime ModifiedAtUtc,
     List<IProperty> Changes
 ) : ILinkUpdatedV1
@@ -26,7 +27,7 @@ public record LinkUpdatedIntegrationEvent
         domainEvent.Link.SourceType,
         domainEvent.Link.Title,
         domainEvent.Link.Url,
-        domainEvent.Link.ModifiedBy!.Guid,
+        new User(domainEvent.Link.ModifiedBy!.Guid, domainEvent.Link.ModifiedBy!.GetFullName()),
         domainEvent.Link.ModifiedAtUtc!.Value,
         domainEvent.Changes)
     { }

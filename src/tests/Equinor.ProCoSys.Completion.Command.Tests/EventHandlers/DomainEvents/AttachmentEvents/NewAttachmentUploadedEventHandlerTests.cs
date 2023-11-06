@@ -61,6 +61,7 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedBy.GetFullName(), _publishedIntegrationEvent.CreatedBy.FullName);
     }
 }

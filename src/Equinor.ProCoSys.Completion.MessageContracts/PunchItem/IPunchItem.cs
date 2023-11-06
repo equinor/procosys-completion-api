@@ -26,13 +26,13 @@ public interface IPunchItem
     string? OriginalWorkOrderNo { get; }
     string? DocumentNo { get; }
     int? SWCRNo { get; }
-    Guid? ActionByOid { get; }
-    Guid? ClearedByOid { get; }
+    IUser? ActionBy { get; }
+    IUser? ClearedBy { get; }
     DateTime? ClearedAtUtc { get; }
-    Guid? RejectedByOid { get; }
+    IUser? RejectedBy { get; }
     DateTime? RejectedAtUtc { get; }
-    Guid? VerifiedByOid { get; }
+    IUser? VerifiedBy { get; }
     DateTime? VerifiedAtUtc { get; }
-    Guid CreatedByOid { get; }
+    IUser CreatedBy { get; }
     DateTime CreatedAtUtc { get; }
 }

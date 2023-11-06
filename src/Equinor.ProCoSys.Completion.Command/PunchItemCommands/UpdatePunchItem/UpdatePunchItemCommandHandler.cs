@@ -277,17 +277,16 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.ActionByPersonOid is not null)
         {
-            // todo 107494 Sende Oid eller Navn på person?
             var person = await GetOrCreatePersonAsync(patchedPunchItem.ActionByPersonOid.Value);
-            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
-                punchItem.ActionBy?.Guid,
-                person.Guid));
+            changes.Add(new Property<User?>(nameof(punchItem.ActionBy),
+                punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
+                new User(person.Guid, person.GetFullName())));
             punchItem.SetActionBy(person);
         }
         else
         {
-            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
-                punchItem.ActionBy?.Guid,
+            changes.Add(new Property<User?>(nameof(punchItem.ActionBy),
+                new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName()),
                 null));
             punchItem.ClearActionBy();
         }

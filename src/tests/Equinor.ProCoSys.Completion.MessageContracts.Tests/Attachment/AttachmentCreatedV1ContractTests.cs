@@ -20,7 +20,7 @@ public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCrea
             { "SourceType", typeof(string) },
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "CreatedByOid", typeof(Guid) },
+            { "CreatedBy", typeof(IUser) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

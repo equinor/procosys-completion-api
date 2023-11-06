@@ -1,5 +1,7 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
@@ -12,7 +14,7 @@ public record AttachmentUpdatedIntegrationEvent
     string SourceType,
     string FileName,
     string BlobPath,
-    Guid ModifiedByOid,
+    IUser ModifiedBy,
     DateTime ModifiedAtUtc
 ) : IAttachmentUpdatedV1
 {
@@ -23,7 +25,7 @@ public record AttachmentUpdatedIntegrationEvent
         domainEvent.Attachment.SourceType,
         domainEvent.Attachment.FileName,
         domainEvent.Attachment.BlobPath,
-        domainEvent.Attachment.ModifiedBy!.Guid,
+        new User(domainEvent.Attachment.ModifiedBy!.Guid, domainEvent.Attachment.ModifiedBy!.GetFullName()),
         domainEvent.Attachment.ModifiedAtUtc!.Value)
     { }
 }

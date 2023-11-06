@@ -20,7 +20,7 @@ public class LinkUpdatedV1ContractTests : ContractTestBase<ILinkUpdatedV1>
             { "SourceType", typeof(string) },
             { "Title", typeof(string) },
             { "Url", typeof(string) },
-            { "ModifiedByOid", typeof(Guid) },
+            { "ModifiedBy", typeof(IUser) },
             { "ModifiedAtUtc", typeof(DateTime) },
             { "Changes", typeof(List<IProperty>) }
         };

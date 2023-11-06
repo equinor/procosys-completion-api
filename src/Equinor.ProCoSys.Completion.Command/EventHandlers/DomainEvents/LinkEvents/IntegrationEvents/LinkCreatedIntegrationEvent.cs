@@ -1,5 +1,7 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents.IntegrationEvents;
@@ -12,7 +14,7 @@ public record LinkCreatedIntegrationEvent
     string SourceType,
     string Title,
     string Url,
-    Guid CreatedByOid,
+    IUser CreatedBy,
     DateTime CreatedAtUtc
 ) : ILinkCreatedV1
 {
@@ -23,7 +25,7 @@ public record LinkCreatedIntegrationEvent
         domainEvent.Link.SourceType,
         domainEvent.Link.Title,
         domainEvent.Link.Url,
-        domainEvent.Link.CreatedBy.Guid,
+        new User(domainEvent.Link.CreatedBy.Guid, domainEvent.Link.CreatedBy.GetFullName()),
         domainEvent.Link.CreatedAtUtc)
     { }
 }
