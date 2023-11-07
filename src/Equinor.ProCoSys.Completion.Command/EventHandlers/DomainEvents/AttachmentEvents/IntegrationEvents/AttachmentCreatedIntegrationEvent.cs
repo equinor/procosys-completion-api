@@ -21,8 +21,8 @@ public record AttachmentCreatedIntegrationEvent
     internal AttachmentCreatedIntegrationEvent(NewAttachmentUploadedDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} uploaded",
         domainEvent.Attachment.Guid,
-        domainEvent.Attachment.SourceGuid,
-        domainEvent.Attachment.SourceType,
+        domainEvent.Attachment.ParentGuid,
+        domainEvent.Attachment.ParentType,
         domainEvent.Attachment.FileName,
         domainEvent.Attachment.BlobPath,
         new User(domainEvent.Attachment.CreatedBy.Guid, domainEvent.Attachment.CreatedBy.GetFullName()),

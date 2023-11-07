@@ -21,8 +21,8 @@ public record AttachmentUpdatedIntegrationEvent
     internal AttachmentUpdatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} uploaded again",
         domainEvent.Attachment.Guid,
-        domainEvent.Attachment.SourceGuid,
-        domainEvent.Attachment.SourceType,
+        domainEvent.Attachment.ParentGuid,
+        domainEvent.Attachment.ParentType,
         domainEvent.Attachment.FileName,
         domainEvent.Attachment.BlobPath,
         new User(domainEvent.Attachment.ModifiedBy!.Guid, domainEvent.Attachment.ModifiedBy!.GetFullName()),

@@ -57,8 +57,8 @@ public class ExistingAttachmentUploadedAndOverwrittenEventHandlerTests : EventHa
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual($"Attachment {_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.FileName} uploaded again", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.SourceGuid, _publishedIntegrationEvent.ParentGuid);
-        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.SourceType, _publishedIntegrationEvent.ParentType);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ParentType, _publishedIntegrationEvent.ParentType);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedBy.Oid);

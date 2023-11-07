@@ -30,23 +30,23 @@ public class LinkService : ILinkService
     }
 
     public async Task<LinkDto> AddAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string title,
         string url,
         CancellationToken cancellationToken)
     {
-        var link = new Link(sourceType, sourceGuid, title, url);
+        var link = new Link(parentType, parentGuid, title, url);
         _linkRepository.Add(link);
         link.AddDomainEvent(new LinkCreatedDomainEvent(link));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {SourceType} : {LinkSourceGuid}", 
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {ParentType} : {LinkParentGuid}", 
             link.Title, 
             link.Guid,
-            link.SourceType, 
-            link.SourceGuid);
+            link.ParentType, 
+            link.ParentGuid);
 
         return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
     }
@@ -72,11 +72,11 @@ public class LinkService : ILinkService
         link.SetRowVersion(rowVersion);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {SourceType} : {LinkSourceGuid}", 
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {ParentType} : {LinkParentGuid}", 
             link.Title, 
             link.Guid,
-            link.SourceType, 
-            link.SourceGuid);
+            link.ParentType, 
+            link.ParentGuid);
 
         return link.RowVersion.ConvertToString();
     }
@@ -97,11 +97,11 @@ public class LinkService : ILinkService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {SourceType} : {LinkSourceGuid}", 
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {ParentType} : {LinkParentGuid}", 
             link.Title, 
             link.Guid,
-            link.SourceType, 
-            link.SourceGuid);
+            link.ParentType, 
+            link.ParentGuid);
     }
 
     private List<IProperty> UpdateLink(Link link, string title, string url)

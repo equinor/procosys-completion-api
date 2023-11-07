@@ -18,7 +18,7 @@ public record LinkDeletedIntegrationEvent
     internal LinkDeletedIntegrationEvent(LinkDeletedDomainEvent domainEvent) : this(
         $"Link {domainEvent.Link.Title} deleted",
         domainEvent.Link.Guid,
-        domainEvent.Link.SourceGuid,
+        domainEvent.Link.ParentGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
         new User(domainEvent.Link.ModifiedBy!.Guid, domainEvent.Link.ModifiedBy!.GetFullName()),

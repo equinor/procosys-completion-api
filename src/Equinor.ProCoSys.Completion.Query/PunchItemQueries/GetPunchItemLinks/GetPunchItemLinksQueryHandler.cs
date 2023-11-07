@@ -15,7 +15,7 @@ public class GetPunchItemLinksQueryHandler : IRequestHandler<GetPunchItemLinksQu
 
     public async Task<Result<IEnumerable<LinkDto>>> Handle(GetPunchItemLinksQuery request, CancellationToken cancellationToken)
     {
-        var linkDtos = await _linkService.GetAllForSourceAsync(request.PunchItemGuid, cancellationToken);
+        var linkDtos = await _linkService.GetAllForParentAsync(request.PunchItemGuid, cancellationToken);
         return new SuccessResult<IEnumerable<LinkDto>>(linkDtos);
     }
 }

@@ -35,6 +35,6 @@ public class UploadNewPunchItemAttachmentCommandValidator : AbstractValidator<Up
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
 
         async Task<bool> NotHaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName)
-            => !await attachmentService.FileNameExistsForSourceAsync(punchItemGuid, fileName);
+            => !await attachmentService.FileNameExistsForParentAsync(punchItemGuid, fileName);
     }
 }

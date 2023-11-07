@@ -16,11 +16,11 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
 {
     private new AttachmentRepository _dut;
     private const string KnownFileName = "a.txt";
-    private readonly Guid _knownSourceGuid = Guid.NewGuid();
+    private readonly Guid _knownParentGuid = Guid.NewGuid();
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var attachment = new Attachment("Whatever", _knownSourceGuid, TestPlant, KnownFileName);
+        var attachment = new Attachment("Whatever", _knownParentGuid, TestPlant, KnownFileName);
         _knownGuid = attachment.Guid;
         attachment.SetProtectedIdForTesting(_knownId);
 
@@ -40,26 +40,26 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     protected override Attachment GetNewEntity() => new("Whatever", Guid.NewGuid(), TestPlant, "new-file.txt");
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_KnownFileName_ShouldReturnAttachment()
+    public async Task GetAttachmentWithFileNameForParent_KnownFileName_ShouldReturnAttachment()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, KnownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, KnownFileName);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(KnownFileName, result.FileName);
     }
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_UnknownFileName_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForParent_UnknownFileName_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, "abc.pdf");
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, "abc.pdf");
 
         Assert.IsNull(result);
     }
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_UnknownSource_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForParent_UnknownParent_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(Guid.NewGuid(), KnownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(Guid.NewGuid(), KnownFileName);
 
         Assert.IsNull(result);
     }

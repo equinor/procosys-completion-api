@@ -21,8 +21,8 @@ public record LinkCreatedIntegrationEvent
     internal LinkCreatedIntegrationEvent(LinkCreatedDomainEvent domainEvent) : this(
         $"Link {domainEvent.Link.Title} created",
         domainEvent.Link.Guid,
-        domainEvent.Link.SourceGuid,
-        domainEvent.Link.SourceType,
+        domainEvent.Link.ParentGuid,
+        domainEvent.Link.ParentType,
         domainEvent.Link.Title,
         domainEvent.Link.Url,
         new User(domainEvent.Link.CreatedBy.Guid, domainEvent.Link.CreatedBy.GetFullName()),

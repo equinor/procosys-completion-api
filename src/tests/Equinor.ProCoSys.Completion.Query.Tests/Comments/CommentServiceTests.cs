@@ -14,34 +14,34 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.Comments;
 public class CommentServiceTests : ReadOnlyTestsBase
 {
     private Comment _createdComment;
-    private Guid _sourceGuid;
+    private Guid _parentGuid;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _sourceGuid = Guid.NewGuid();
-        _createdComment = new Comment("X", _sourceGuid, "T");
+        _parentGuid = Guid.NewGuid();
+        _createdComment = new Comment("X", _parentGuid, "T");
 
         context.Comments.Add(_createdComment);
         context.SaveChangesAsync().Wait();
     }
 
     [TestMethod]
-    public async Task GetAllForSourceAsync_ShouldReturnCorrectDtos()
+    public async Task GetAllForParentAsync_ShouldReturnCorrectDtos()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new CommentService(context);
 
         // Act
-        var result = await dut.GetAllForSourceAsync(_sourceGuid, default);
+        var result = await dut.GetAllForParentAsync(_parentGuid, default);
 
         // Assert
         var commentDtos = result.ToList();
         Assert.AreEqual(1, commentDtos.Count);
         var commentDto = commentDtos.ElementAt(0);
-        Assert.AreEqual(_createdComment.SourceGuid, commentDto.SourceGuid);
+        Assert.AreEqual(_createdComment.ParentGuid, commentDto.ParentGuid);
         Assert.AreEqual(_createdComment.Guid, commentDto.Guid);
         Assert.AreEqual(_createdComment.Text, commentDto.Text);
         var createdBy = commentDto.CreatedBy;

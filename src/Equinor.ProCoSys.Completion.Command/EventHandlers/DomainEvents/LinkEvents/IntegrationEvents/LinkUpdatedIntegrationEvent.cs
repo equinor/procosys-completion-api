@@ -23,8 +23,8 @@ public record LinkUpdatedIntegrationEvent
     internal LinkUpdatedIntegrationEvent(LinkUpdatedDomainEvent domainEvent) : this(
         $"Link {domainEvent.Link.Title} updated",
         domainEvent.Link.Guid,
-        domainEvent.Link.SourceGuid,
-        domainEvent.Link.SourceType,
+        domainEvent.Link.ParentGuid,
+        domainEvent.Link.ParentType,
         domainEvent.Link.Title,
         domainEvent.Link.Url,
         new User(domainEvent.Link.ModifiedBy!.Guid, domainEvent.Link.ModifiedBy!.GetFullName()),
