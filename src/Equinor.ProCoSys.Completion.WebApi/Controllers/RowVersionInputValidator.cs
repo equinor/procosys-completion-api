@@ -2,7 +2,7 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public class RowVersionValidator : IRowVersionValidator
+public class RowVersionInputValidator : IRowVersionInputValidator
 {
     public bool IsValid(string rowVersion)
         => !string.IsNullOrWhiteSpace(rowVersion) && TryConvertBase64StringToByteArray(rowVersion);

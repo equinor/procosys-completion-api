@@ -11,13 +11,13 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.PunchItem;
 [TestClass]
 public class PatchPunchItemDtoValidatorTests : PatchDtoValidatorTests<PatchPunchItemDto, PatchablePunchItem>
 {
-    private IRowVersionValidator _rowVersionValidatorMock = null!;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
     private PatchPunchItemDtoValidator _dut = null!;
     private readonly string _rowVersion = "r";
 
     protected override void SetupDut()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
         _dut = new PatchPunchItemDtoValidator(_rowVersionValidatorMock, _patchOperationValidator);
     }

@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.EntityFrameworkCore;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Validators;
+namespace Equinor.ProCoSys.Completion.Command.Validators;
 
 public class WorkOrderValidator : IWorkOrderValidator
 {

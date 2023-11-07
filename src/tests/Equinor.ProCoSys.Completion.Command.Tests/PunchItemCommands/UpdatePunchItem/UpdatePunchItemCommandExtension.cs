@@ -11,7 +11,7 @@ public static class UpdatePunchItemCommandExtension
     // This due to rather complex input rules for UpdatePunchItemCommand.PatchDocument
     public static void EnsureValidInputValidation(this UpdatePunchItemCommand command)
     {
-        var inputValidator = new PatchPunchItemDtoValidator(new RowVersionValidator(), new PatchOperationValidator());
+        var inputValidator = new PatchPunchItemDtoValidator(new RowVersionInputValidator(), new PatchOperationInputValidator());
         var patchPunchItemDto = new PatchPunchItemDto
         {
             PatchDocument = command.PatchDocument,

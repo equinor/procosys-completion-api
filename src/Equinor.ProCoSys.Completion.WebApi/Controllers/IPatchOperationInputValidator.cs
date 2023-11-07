@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public interface IPatchOperationValidator
+public interface IPatchOperationInputValidator
 {
     bool HaveValidReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class;
     string? GetMessageForInvalidReplaceOperations<T>(List<Operation<T>> operations) where T : class;

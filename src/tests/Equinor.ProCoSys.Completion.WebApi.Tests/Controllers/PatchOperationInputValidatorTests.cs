@@ -8,10 +8,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 
 [TestClass]
-public class PatchOperationValidatorTests
+public class PatchOperationInputValidatorTests
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
-    private PatchOperationValidator _dut = null!;
+    private PatchOperationInputValidator _dut = null!;
     private JsonPatchDocument<PatchableObject> _patchDocument = null!;
 
     [TestInitialize]
@@ -40,7 +40,7 @@ public class PatchOperationValidatorTests
         _patchDocument.Replace(p => p.MyNullableDateTime1, DateTime.Now);
         _patchDocument.Replace(p => p.MyNullableDateTime2, null);
 
-        _dut = new PatchOperationValidator();
+        _dut = new PatchOperationInputValidator();
     }
 
     #region HaveValidReplaceOperationsOnly and GetMessageForInvalidReplaceOperations

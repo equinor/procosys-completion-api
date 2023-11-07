@@ -10,4 +10,8 @@
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -6,8 +6,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 public class PatchPunchItemDtoValidator : PatchDtoValidator<PatchPunchItemDto, PatchablePunchItem>
 {
     public PatchPunchItemDtoValidator(
-        IRowVersionValidator rowVersionValidator,
-        IPatchOperationValidator patchOperationValidator)
+        IRowVersionInputValidator rowVersionValidator,
+        IPatchOperationInputValidator patchOperationValidator)
         : base(patchOperationValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;

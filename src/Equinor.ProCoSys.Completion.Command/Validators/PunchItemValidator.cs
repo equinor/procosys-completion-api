@@ -8,7 +8,7 @@ using Equinor.ProCoSys.Common;
 using System;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Validators;
+namespace Equinor.ProCoSys.Completion.Command.Validators;
 
 public class PunchItemValidator : IPunchItemValidator
 {
