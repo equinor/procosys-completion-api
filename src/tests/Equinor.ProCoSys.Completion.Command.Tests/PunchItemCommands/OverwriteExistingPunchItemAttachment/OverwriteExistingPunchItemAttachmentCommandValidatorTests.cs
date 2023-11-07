@@ -28,7 +28,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(true);
         _dut = new OverwriteExistingPunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
@@ -97,7 +98,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         // Arrange
         _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid,
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(false);
 
         // Act

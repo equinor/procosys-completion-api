@@ -42,7 +42,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     [TestMethod]
     public async Task GetAttachmentWithFileNameForParent_KnownFileName_ShouldReturnAttachment()
     {
-        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, KnownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, KnownFileName, default);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(KnownFileName, result.FileName);
@@ -51,7 +51,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     [TestMethod]
     public async Task GetAttachmentWithFileNameForParent_UnknownFileName_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, "abc.pdf");
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, "abc.pdf", default);
 
         Assert.IsNull(result);
     }
@@ -59,7 +59,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
     [TestMethod]
     public async Task GetAttachmentWithFileNameForParent_UnknownParent_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForParentAsync(Guid.NewGuid(), KnownFileName);
+        var result = await _dut.GetAttachmentWithFileNameForParentAsync(Guid.NewGuid(), KnownFileName, default);
 
         Assert.IsNull(result);
     }

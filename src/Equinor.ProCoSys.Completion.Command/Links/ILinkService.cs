@@ -25,5 +25,5 @@ public interface ILinkService
         string rowVersion,
         CancellationToken cancellationToken);
     
-    Task<bool> ExistsAsync(Guid guid);
+    Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken);
 }

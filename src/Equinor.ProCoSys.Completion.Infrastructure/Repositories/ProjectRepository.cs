@@ -6,7 +6,6 @@ public class ProjectRepository : EntityWithGuidRepository<Project>, IProjectRepo
 {
     public ProjectRepository(CompletionContext context)
         : base(context, context.Projects)
-            
     {
     }
 }

@@ -6,7 +6,6 @@ public class SWCRRepository : EntityWithGuidRepository<SWCR>, ISWCRRepository
 {
     public SWCRRepository(CompletionContext context)
         : base(context, context.SWCRs)
-            
     {
     }
 }

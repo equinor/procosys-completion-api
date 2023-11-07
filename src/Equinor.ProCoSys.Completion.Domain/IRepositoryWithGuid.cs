@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 
@@ -12,6 +13,6 @@ public interface IRepositoryWithGuid<TEntity> : IRepository<TEntity> where TEnti
     /// <param name="guid">Guid of entity to get</param>
     /// <returns>The entity</returns>
     /// <exception cref="EntityNotFoundException"></exception>
-    Task<TEntity> GetAsync(Guid guid);
-    Task<bool> ExistsAsync(Guid guid);
+    Task<TEntity> GetAsync(Guid guid, CancellationToken cancellationToken);
+    Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken);
 }

@@ -44,19 +44,20 @@ public class AttachmentServiceTests : TestsBase
         _existingAttachment = new Attachment(_parentType, _parentGuid, TestPlantA, _existingFileName);
 
         _attachmentRepositoryMock
-            .GetAttachmentWithFileNameForParentAsync(_existingAttachment.ParentGuid, _existingAttachment.FileName)
+            .GetAttachmentWithFileNameForParentAsync(_existingAttachment.ParentGuid, _existingAttachment.FileName, default)
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock
-            .GetAsync(_existingAttachment.Guid)
+            .GetAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock.GetAttachmentWithFileNameForParentAsync(
                 _existingAttachment.ParentGuid,
-                _existingAttachment.FileName)
+                _existingAttachment.FileName,
+                default)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
@@ -223,11 +224,11 @@ public class AttachmentServiceTests : TestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
     {
         // Arrange
-        _attachmentRepositoryMock.ExistsAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.ExistsAsync(_existingAttachment.Guid, default)
             .Returns(true);
 
         // Act
-        var result = await _dut.ExistsAsync(_existingAttachment.Guid);
+        var result = await _dut.ExistsAsync(_existingAttachment.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -238,7 +239,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         // Act
-        var result = await _dut.ExistsAsync(Guid.NewGuid());
+        var result = await _dut.ExistsAsync(Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);

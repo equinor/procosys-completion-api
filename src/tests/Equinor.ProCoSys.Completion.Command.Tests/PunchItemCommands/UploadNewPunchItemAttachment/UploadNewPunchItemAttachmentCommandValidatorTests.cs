@@ -92,7 +92,8 @@ public class UploadNewPunchItemAttachmentCommandValidatorTests
         // Arrange
         _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
-                _command.FileName)
+                _command.FileName, 
+                default)
             .Returns(true);
 
         // Act
