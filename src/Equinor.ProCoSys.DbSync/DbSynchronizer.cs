@@ -1,27 +1,115 @@
-﻿using System.Text;
+﻿using System.Configuration;
+using System.Reflection;
+using System.Text;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Oracle.ManagedDataAccess.Client;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Equinor.ProCoSys.DbSyncPOC.Column;
 
 namespace Equinor.ProCoSys.DbSyncPOC
 {
 
     public class DbSynchronizer
     {
+        public static void SetOracleConnection(string oracleConn)
+        {
+            connectionString = oracleConn;
+        }
 
-        string connectionString = "User Id=PROCOSYS_REGRESSION_DEV1;Password=Ioyfgybpr1sXH6UyzcEpAYpY;Data Source=localhost:1521/ORCLPDB1;";
+        private static string? connectionString { get; set; }
 
         List<ColumnSyncConfig> _syncConfig = new List<ColumnSyncConfig>();
 
         public DbSynchronizer()
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../SyncConfig_test.csv");
+            //Read sync configuration from file 
+            string filePath = "C:/procosys/SyncConfig_test.csv";
 
             string[] lines = File.ReadAllLines(filePath);
             for (var i = 1; i < lines.Length; i++)
             {
                 var columns = lines[i].Split(',');
-                var config = new ColumnSyncConfig() { SourceTable = columns[0], TargetTable = columns[1], SourceColumn = columns[2], TargetColumn = columns[3], IsPrimaryKey = bool.Parse(columns[4]) };
+
+                DataType type = (DataType)Enum.Parse(typeof(DataType), columns[5]);
+
+                var config = new ColumnSyncConfig() { SourceTable = columns[0], TargetTable = columns[1], SourceColumn = columns[2], TargetColumn = columns[3], IsPrimaryKey = bool.Parse(columns[4]), Type = type };
                 _syncConfig.Add(config);
             }
+        }
+
+        static public void SyncChangesToMain(object entity, List<IProperty> changes)
+        {
+            if (changes.Any())
+            {
+                var dbSynchronizer = new DbSynchronizer();
+
+                var syncEvent = dbSynchronizer.BuildSyncEventForUpdate(entity, changes);
+
+
+                dbSynchronizer.HandleEvent(syncEvent);
+            }
+        }
+
+        private SyncEvent BuildSyncEventForUpdate(object entity, List<IProperty> changes)
+        {
+            var sourceTableName = entity.GetType().Name.ToLower();
+
+            //Get config for columns
+            var columnConfigs = _syncConfig.Where(config =>
+                    config.SourceTable.Equals(sourceTableName)).ToDictionary(column => column.SourceColumn);
+
+            if (columnConfigs.Count < 0)
+            {
+                throw new Exception("Map configuraiton is missing.");
+            }
+
+
+            //Create list with changes for columns 
+            var columns = new List<Column>();
+            foreach (var change in changes)
+            {
+                var column = new Column() { Name = change.Name, Value = change.NewValue?.ToString(), Type = columnConfigs[change.Name].Type };
+                columns.Add(column);
+            }
+
+
+            //find primary key using reflection
+            var primaryKeyConfig = columnConfigs.Where(config => config.Value.IsPrimaryKey == true).Single().Value;
+            Type entityType = entity.GetType();
+            PropertyInfo primaryKeyInfo = entityType.GetProperty("Guid");
+
+            string primaryKeyValue = "";
+
+            if (primaryKeyInfo != null)
+            {
+                object verdi = primaryKeyInfo.GetValue(entity);
+                if (verdi != null)
+                {
+                    primaryKeyValue = verdi.ToString();
+                }
+                else
+                {
+                    //kast exception
+                }
+            }
+            else
+            {
+                //kast exception
+            }
+
+            var primaryKey = new Column() { Name = primaryKeyConfig.SourceColumn, Value = primaryKeyValue, Type = primaryKeyConfig.Type };
+
+
+            //Create sync event 
+            var syncEvent = new SyncEvent()
+            {
+                Operation = SyncEvent.OperationType.Update,
+                Table = sourceTableName,
+                Columns = columns,
+                PrimaryKey = primaryKey
+            };
+
+            return syncEvent;
         }
 
         public void HandleEvent(SyncEvent syncEvent)
@@ -90,8 +178,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
                 //todo: Flytt type inn i config og bort fra syncevent. Lage en metode som returnerer string basert på config og column.
 
-                var parameterValueStr = GetSqlParameter(column, columnConfigs[column.Name]);
-                insertStatement.Append($"{parameterValueStr}");
+                insertStatement.Append($"{column.getSqlParameter()}");
 
                 if (column != syncEvent.Columns.Last())
                 {
@@ -106,8 +193,6 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
         private string BuildUpdateStatement(SyncEvent syncEvent)
         {
-
-
             //Get config for columns
             var columnConfigs = _syncConfig.Where(config =>
                     config.SourceTable.Equals(syncEvent.Table.ToLower())).ToDictionary(column => column.SourceColumn);
@@ -119,12 +204,9 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
             //find primary key 
             var primaryKeyConfig = columnConfigs.Where(config => config.Value.IsPrimaryKey == true).Single().Value;
-            var primaryKey = syncEvent.Columns.Where(column => column.Name == primaryKeyConfig.SourceColumn).Single();
-
-            string primaryKeyValue = GetSqlParameter(primaryKey, primaryKeyConfig);
 
             //Verify that one and only one row exist in target db, for given primarykey
-            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {primaryKeyValue}";
+            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {syncEvent.PrimaryKey.getSqlParameter()}";
 
             var noOfRowsInTarget = ExecuteDBQueryCountingRows(noOfRowsInTargetQuery);
 
@@ -145,8 +227,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
                     continue;
                 }
 
-                var paramStr = GetSqlParameter(column, columnConfigs[column.Name]);
-                updateStatement.Append($"{column.Name} = {paramStr}");
+                updateStatement.Append($"{column.Name} = {column.getSqlParameter()}");
 
                 if (column != syncEvent.Columns.Last())
                 {
@@ -154,26 +235,10 @@ namespace Equinor.ProCoSys.DbSyncPOC
                 }
             }
 
-            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {primaryKeyValue}");
+            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {syncEvent.PrimaryKey.getSqlParameter()}");
 
             return updateStatement.ToString();
         }
-
-        private string GetSqlParameter(Column column, ColumnSyncConfig columnSyncConfig)
-        {
-            switch (column.Type)
-            {
-                case Column.DataType.String:
-                    return $"'{column.Value}'";
-                case Column.DataType.Int:
-                    return $"{column.Value}";
-                case Column.DataType.Date:
-                    return $"'{column.Value}'";
-                default:
-                    throw new NotImplementedException($"Column type {column.Type} not implemented.");
-            };
-        }
-
 
         private void ExecuteDBWrite(string sqlStatement)
         {

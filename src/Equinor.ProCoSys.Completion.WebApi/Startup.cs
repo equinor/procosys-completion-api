@@ -27,6 +27,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
+using Equinor.ProCoSys.DbSyncPOC;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -197,6 +198,13 @@ public class Startup
             services.AddSingleton<IPcsBusSender>(new DisabledServiceBusSender());
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
+
+        //POC
+        var oracleConn = Configuration.GetValue<string>("OracleDBConnectionPOC");
+        if (oracleConn != null)
+        {
+            DbSynchronizer.SetOracleConnection(oracleConn);
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

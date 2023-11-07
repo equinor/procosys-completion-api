@@ -65,7 +65,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         try
         {
             //Lagre i PCS 5
-
             var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
 
             var changes = await PatchAsync(punchItem, request.PatchDocument);
@@ -78,15 +77,15 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
-
             //Hvis systemet går ned her, har vi lagret i PCS5 men ikke i main. Vi kan lage systemet mer robust ved at vi 
             //starter transaksjonen i PCS 5 ved å legge inn en 'ongoing task' i en egen tabell. Siste steg i transaksjonen blir da å slette 'ongoing task'. 
             //Vi må da overvåke 'onging tasks', og håndtere problemer manuelt. Bør ikke skje ofte. Vi trenger source tabell og rad som er endret. Vi vet at det er PCS 5 data som er master.
             //Vi commiter PCS 5 før vi starter på main-transaksjon. Dette for å unngå at main får endringer som ikke blir lagret i PCS 5, som er master. Det er ikke så lett å rulle tilbake main. 
 
             //Lagre i main
-            SyncWithMain(punchItem, changes);
+            DbSynchronizer.SyncChangesToMain(punchItem, changes);
+
+            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
@@ -97,24 +96,9 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             transaction.Rollback();
             throw;
         }
-
-    }
-
-    private void SyncWithMain(PunchItem punchItem, List<IProperty> changes)
-    {
-        if (changes.Any())
+        finally
         {
-            var sourceTableName = punchItem.GetType().Name;
-            var columns = new List<Column>();
-
-            foreach (var change in changes)
-            {
-                var column = new Column() { Name = change.Name, Value = change.NewValue?.ToString() };
-                columns.Add(column);
-            }
-            var syncEvent = new SyncEvent() { Operation = SyncEvent.OperationType.Update, Table = sourceTableName, Columns = columns };
-            var DbSynchronizer = new DbSynchronizer();
-            DbSynchronizer.HandleEvent(syncEvent);
+            transaction.Commit();
         }
     }
 
