@@ -30,8 +30,8 @@ public class AttachmentService : IAttachmentService
         _blobStorageOptions = blobStorageOptions;
     }
 
-    public async Task<IEnumerable<AttachmentDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
+        Guid parent,
         CancellationToken cancellationToken)
     {
         var attachments =
@@ -40,9 +40,9 @@ public class AttachmentService : IAttachmentService
                         on a.CreatedById equals createdByUser.Id
                     from modifiedByUser in _context.QuerySet<Person>()
                         .Where(p => p.Id == a.ModifiedById).DefaultIfEmpty() //left join!
-                   where a.SourceGuid == sourceGuid
+                   where a.ParentGuid == parent
                    select new AttachmentDto(
-                       a.SourceGuid,
+                       a.ParentGuid,
                        a.Guid,
                        a.GetFullBlobPath(),
                        a.FileName,
@@ -63,7 +63,7 @@ public class AttachmentService : IAttachmentService
                        a.ModifiedAtUtc,
                        a.RowVersion.ConvertToString()
                ))
-                .TagWith($"{nameof(AttachmentService)}.{nameof(GetAllForSourceAsync)}")
+                .TagWith($"{nameof(AttachmentService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
         return attachments;

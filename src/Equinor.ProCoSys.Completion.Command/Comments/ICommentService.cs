@@ -7,8 +7,8 @@ namespace Equinor.ProCoSys.Completion.Command.Comments;
 public interface ICommentService
 {
     Task<CommentDto> AddAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string text,
         CancellationToken cancellationToken);
 }

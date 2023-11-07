@@ -3,7 +3,7 @@
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public record LinkDto(
-    Guid SourceGuid,
+    Guid ParentGuid,
     Guid Guid,
     string Title,
     string Url,

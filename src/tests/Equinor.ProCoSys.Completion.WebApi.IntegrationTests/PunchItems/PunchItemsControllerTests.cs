@@ -794,7 +794,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(links);
         Assert.AreEqual(1, links.Count);
         var link = links[0];
-        Assert.AreEqual(punchItemGuid, link.SourceGuid);
+        Assert.AreEqual(punchItemGuid, link.ParentGuid);
         Assert.AreEqual(linkGuid, link.Guid);
         Assert.AreEqual(linkRowVersion, link.RowVersion);
         Assert.AreEqual(title, link.Title);
@@ -810,7 +810,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(comments);
         Assert.AreEqual(1, comments.Count);
         var comment = comments[0];
-        Assert.AreEqual(punchItemGuid, comment.SourceGuid);
+        Assert.AreEqual(punchItemGuid, comment.ParentGuid);
         Assert.AreEqual(commentGuid, comment.Guid);
         Assert.AreEqual(text, comment.Text);
         Assert.IsNotNull(comment.CreatedBy);
@@ -827,7 +827,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(attachments);
         Assert.AreEqual(1, attachments.Count);
         var attachment = attachments[0];
-        Assert.AreEqual(punchItemGuid, attachment.SourceGuid);
+        Assert.AreEqual(punchItemGuid, attachment.ParentGuid);
         Assert.AreEqual(attachmentGuid, attachment.Guid);
         Assert.AreEqual(attachmentRowVersion, attachment.RowVersion);
         Assert.AreEqual(fileName, attachment.FileName);

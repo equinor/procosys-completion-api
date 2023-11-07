@@ -7,8 +7,8 @@ namespace Equinor.ProCoSys.Completion.Command.Links;
 public interface ILinkService
 {
     Task<LinkDto> AddAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string title,
         string url,
         CancellationToken cancellationToken);

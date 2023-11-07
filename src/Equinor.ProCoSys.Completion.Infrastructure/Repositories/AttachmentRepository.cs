@@ -12,6 +12,6 @@ public class AttachmentRepository : EntityWithGuidRepository<Attachment>, IAttac
     {
     }
 
-    public Task<Attachment?> GetAttachmentWithFileNameForSourceAsync(Guid sourceGuid, string fileName)
-        => DefaultQuery.SingleOrDefaultAsync(a => a.SourceGuid == sourceGuid && a.FileName == fileName);
+    public Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName)
+        => DefaultQuery.SingleOrDefaultAsync(a => a.ParentGuid == parentGuid && a.FileName == fileName);
 }

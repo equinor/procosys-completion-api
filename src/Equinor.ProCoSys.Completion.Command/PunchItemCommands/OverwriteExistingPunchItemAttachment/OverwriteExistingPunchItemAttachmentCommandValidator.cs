@@ -35,6 +35,6 @@ public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractVali
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
 
         async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName)
-            => await attachmentService.FileNameExistsForSourceAsync(punchItemGuid, fileName);
+            => await attachmentService.FileNameExistsForParentAsync(punchItemGuid, fileName);
     }
 }

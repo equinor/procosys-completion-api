@@ -3,7 +3,7 @@
 namespace Equinor.ProCoSys.Completion.Query.Comments;
 
 public record CommentDto(
-    Guid SourceGuid,
+    Guid ParentGuid,
     Guid Guid,
     string Text,
     PersonDto CreatedBy,
