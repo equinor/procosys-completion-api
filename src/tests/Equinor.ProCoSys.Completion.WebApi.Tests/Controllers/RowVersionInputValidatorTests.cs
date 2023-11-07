@@ -4,12 +4,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers;
 
 [TestClass]
-public class RowVersionValidatorTests
+public class RowVersionInputValidatorTests
 {
-    private RowVersionValidator _dut = null!;
+    private RowVersionInputValidator _dut = null!;
 
     [TestInitialize]
-    public void SetUp() => _dut = new RowVersionValidator();
+    public void SetUp() => _dut = new RowVersionInputValidator();
 
     [TestMethod]
     public void IsValid_ValidRowVersion_ShouldReturnTrue()

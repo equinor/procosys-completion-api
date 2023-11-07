@@ -2,16 +2,17 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.Validators;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Validators;
+namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
-public class CheckListValidator : ICheckListValidator
+// This class is temporary while Pcs4 is master of CheckLists.
+// The class will probably die when Pcs5 become master of CheckLists 
+public class ProCoSys4CheckListValidator : ICheckListValidator
 {
     private readonly ICheckListCache _checkListCache;
     private readonly IPlantProvider _plantProvider;
 
-    public CheckListValidator(ICheckListCache checkListCache, IPlantProvider plantProvider)
+    public ProCoSys4CheckListValidator(ICheckListCache checkListCache, IPlantProvider plantProvider)
     {
         _checkListCache = checkListCache;
         _plantProvider = plantProvider;

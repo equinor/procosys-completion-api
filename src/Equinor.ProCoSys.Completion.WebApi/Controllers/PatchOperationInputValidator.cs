@@ -14,7 +14,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 //      * RequiredAttribute: Check if property is required or not (Can't just check if property is nullable or not, since property type of string and string? are both "System.String")
 //      * StringLengthAttribute: check min / max length of values to set in string properties
 //          NB: Using StringLengthAttribute on non-string properties has no affect
-public class PatchOperationValidator : IPatchOperationValidator
+public class PatchOperationInputValidator : IPatchOperationInputValidator
 {
     public bool HaveValidReplaceOperationsOnly<T>(List<Operation<T>> operations) where T : class
     {

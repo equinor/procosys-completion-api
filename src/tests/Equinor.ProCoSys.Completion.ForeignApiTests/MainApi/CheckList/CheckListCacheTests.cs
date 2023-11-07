@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.ForeignApiTests;
+namespace Equinor.ProCoSys.Completion.ForeignApiTests.MainApi.CheckList;
 
 [TestClass]
 public class CheckListCacheTests

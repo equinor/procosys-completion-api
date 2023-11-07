@@ -5,12 +5,12 @@ using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
-using Equinor.ProCoSys.Completion.WebApi.Validators;
+using Equinor.ProCoSys.Completion.Command.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 
 [TestClass]
 public class PersonValidatorTests : ReadOnlyTestsBase
@@ -91,7 +91,7 @@ public class PersonValidatorTests : ReadOnlyTestsBase
     {
         // Arrange
         var unknownOid = Guid.NewGuid();
-        _personCacheMock.GetAsync(unknownOid).Returns((ProCoSysPerson?)null);
+        _personCacheMock.GetAsync(unknownOid).Returns((ProCoSysPerson)null);
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new PersonValidator(context, _personCacheMock);
 

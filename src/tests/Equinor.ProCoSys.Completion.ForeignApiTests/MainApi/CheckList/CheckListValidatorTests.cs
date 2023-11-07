@@ -2,17 +2,16 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.WebApi.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.ForeignApiTests.MainApi.CheckList;
 
 [TestClass]
 public class CheckListValidatorTests
 {
     private readonly string _plant = "P";
-    private CheckListValidator _dut = null!;
+    private ProCoSys4CheckListValidator _dut = null!;
     private ICheckListCache _checkListCacheMock = null!;
     private IPlantProvider _plantProviderMock = null!;
     private static readonly Guid s_projectGuid = Guid.NewGuid();
@@ -27,7 +26,7 @@ public class CheckListValidatorTests
         _plantProviderMock = Substitute.For<IPlantProvider>();
         _plantProviderMock.Plant.Returns(_plant);
 
-        _dut = new CheckListValidator(_checkListCacheMock, _plantProviderMock);
+        _dut = new ProCoSys4CheckListValidator(_checkListCacheMock, _plantProviderMock);
     }
 
     #region ExistsAsync

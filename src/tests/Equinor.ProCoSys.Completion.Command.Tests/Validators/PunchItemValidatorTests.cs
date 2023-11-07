@@ -7,12 +7,12 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
-using Equinor.ProCoSys.Completion.WebApi.Validators;
+using Equinor.ProCoSys.Completion.Command.Validators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Validators;
+namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase

@@ -1,6 +1,6 @@
 ﻿namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public interface IRowVersionValidator
+public interface IRowVersionInputValidator
 {
     bool IsValid(string rowVersion);
 }
