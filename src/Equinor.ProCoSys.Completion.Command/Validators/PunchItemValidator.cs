@@ -15,6 +15,9 @@ public class PunchItemValidator : IPunchItemValidator
     private readonly IReadOnlyContext _context;
     private readonly ICheckListValidator _checkListValidator;
 
+    // Trick to write LINQ queries to let EF create effective SQL queries is
+    // 1) use Any
+    // 2) select a projection with as few columns as needed
     public PunchItemValidator(IReadOnlyContext context, ICheckListValidator checkListValidator)
     {
         _context = context;
@@ -24,56 +27,43 @@ public class PunchItemValidator : IPunchItemValidator
     public async Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken) =>
         await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid
-            select pi).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
+        var dto = await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid
+            select new
+            {
+                pi.CheckListGuid
+            }).SingleOrDefaultAsync(cancellationToken);
 
-        if (punchItem is null)
+        if (dto is null)
         {
             return false;
         }
 
-        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(punchItem.CheckListGuid);
+        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(dto.CheckListGuid);
     }
 
     public async Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var project = await (from pi in _context.QuerySet<PunchItem>()
+        => await (from pi in _context.QuerySet<PunchItem>()
             join proj in _context.QuerySet<Project>() on pi.ProjectId equals proj.Id
-            where pi.Guid == punchItemGuid
-            select proj).SingleOrDefaultAsync(cancellationToken);
-
-        return project is not null && project.IsClosed;
-    }
+            where pi.Guid == punchItemGuid && proj.IsClosed == true
+            select proj).AnyAsync(cancellationToken);
 
     public async Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
-
-        return punchItem?.ClearedAtUtc is not null;
-    }
+        => await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid && pi.ClearedAtUtc != null
+            select pi).AnyAsync(cancellationToken);
 
     public async Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
-
-        return punchItem?.VerifiedAtUtc is not null;
-    }
+        => await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid && pi.VerifiedAtUtc != null
+            select pi).AnyAsync(cancellationToken);
 
     public async Task<bool> HasCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
-    {
-        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
-
-        return punchItem is not null && punchItem.Category == category;
-    }
-
-    private async Task<PunchItem?> GetPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var punchItem = await (from pi in _context.QuerySet<PunchItem>()
-            where pi.Guid == punchItemGuid
-            select pi).SingleOrDefaultAsync(cancellationToken);
-        return punchItem;
-    }
+        => await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid && pi.Category == category
+            select pi).AnyAsync(cancellationToken);
 }

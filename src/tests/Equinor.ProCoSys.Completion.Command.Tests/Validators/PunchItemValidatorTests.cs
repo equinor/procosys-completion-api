@@ -163,6 +163,21 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
         // Assert
         Assert.IsFalse(result);
     }
+
+    [TestMethod]
+    public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemNotExist()
+    {
+        // Arrange
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(false);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemValidator(context, _checkListValidatorMock);
+
+        // Act
+        var result = await dut.TagOwningPunchItemIsVoidedAsync(Guid.NewGuid(), default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
     #endregion
 
     #region IsCleared
