@@ -13,8 +13,8 @@ public class AttachmentRepository : EntityWithGuidRepository<Attachment>, IAttac
     {
     }
 
-    public Task<Attachment?> GetAttachmentWithFileNameForSourceAsync(Guid sourceGuid, string fileName, CancellationToken cancellationToken)
+    public Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
         => DefaultQuery.SingleOrDefaultAsync(
-            a => a.SourceGuid == sourceGuid && a.FileName == fileName, 
+            a => a.ParentGuid == parentGuid && a.FileName == fileName,
             cancellationToken);
 }

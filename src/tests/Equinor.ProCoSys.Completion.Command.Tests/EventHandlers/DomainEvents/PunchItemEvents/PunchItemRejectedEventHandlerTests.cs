@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MassTransit;
 using Microsoft.Extensions.Logging;

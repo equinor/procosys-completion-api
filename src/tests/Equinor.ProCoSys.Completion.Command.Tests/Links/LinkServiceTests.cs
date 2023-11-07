@@ -16,7 +16,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Links;
 public class LinkServiceTests : TestsBase
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
-    private readonly Guid _sourceGuid = Guid.NewGuid();
+    private readonly Guid _parentGuid = Guid.NewGuid();
     private ILinkRepository _linkRepositoryMock;
     private LinkService _dut;
     private Link _linkAddedToRepository;
@@ -32,7 +32,7 @@ public class LinkServiceTests : TestsBase
             {
                 _linkAddedToRepository = info.Arg<Link>();
             });
-        _existingLink = new Link("Whatever", _sourceGuid, "T", "www");
+        _existingLink = new Link("Whatever", _parentGuid, "T", "www");
         _linkRepositoryMock.GetAsync(_existingLink.Guid, default)
             .Returns(_existingLink);
 
@@ -47,17 +47,17 @@ public class LinkServiceTests : TestsBase
     public async Task AddAsync_ShouldAddLinkToRepository()
     {
         // Arrange 
-        var sourceType = "Whatever";
+        var parentType = "Whatever";
         var title = "T";
         var url = "U";
 
         // Act
-        await _dut.AddAsync(sourceType, _sourceGuid, title, url, default);
+        await _dut.AddAsync(parentType, _parentGuid, title, url, default);
 
         // Assert
         Assert.IsNotNull(_linkAddedToRepository);
-        Assert.AreEqual(_sourceGuid, _linkAddedToRepository.SourceGuid);
-        Assert.AreEqual(sourceType, _linkAddedToRepository.SourceType);
+        Assert.AreEqual(_parentGuid, _linkAddedToRepository.ParentGuid);
+        Assert.AreEqual(parentType, _linkAddedToRepository.ParentType);
         Assert.AreEqual(title, _linkAddedToRepository.Title);
         Assert.AreEqual(url, _linkAddedToRepository.Url);
     }
@@ -66,7 +66,7 @@ public class LinkServiceTests : TestsBase
     public async Task AddAsync_ShouldSaveOnce()
     {
         // Act
-        await _dut.AddAsync("Whatever", _sourceGuid, "T", "www", default);
+        await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
@@ -76,7 +76,7 @@ public class LinkServiceTests : TestsBase
     public async Task AddAsync_ShouldAddLinkCreatedEvent()
     {
         // Act
-        await _dut.AddAsync("Whatever", _sourceGuid, "T", "www", default);
+        await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
 
         // Assert
         Assert.IsInstanceOfType(_linkAddedToRepository.DomainEvents.First(), typeof(LinkCreatedDomainEvent));

@@ -9,22 +9,22 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.CommentAggreg
 public class CommentTests : ICreationAuditableTests
 {
     private Comment _dut;
-    private readonly string _sourceType = "X";
-    private readonly Guid _sourceGuid = Guid.NewGuid();
+    private readonly string _parentType = "X";
+    private readonly Guid _parentGuid = Guid.NewGuid();
     private readonly string _text = "A";
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Comment(_sourceType, _sourceGuid, _text);
+    public void Setup() => _dut = new Comment(_parentType, _parentGuid, _text);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()
     {
         Assert.AreEqual(_text, _dut.Text);
-        Assert.AreEqual(_sourceType, _dut.SourceType);
-        Assert.AreEqual(_sourceGuid, _dut.SourceGuid);
-        Assert.AreNotEqual(_sourceGuid, _dut.Guid);
+        Assert.AreEqual(_parentType, _dut.ParentType);
+        Assert.AreEqual(_parentGuid, _dut.ParentGuid);
+        Assert.AreNotEqual(_parentGuid, _dut.Guid);
         Assert.AreNotEqual(Guid.Empty, _dut.Guid);
     }
 }

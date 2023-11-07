@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.Comments;
 
 public interface ICommentService
 {
-    Task<IEnumerable<CommentDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    Task<IEnumerable<CommentDto>> GetAllForParentAsync(
+        Guid parentGuid,
         CancellationToken cancellationToken);
 }

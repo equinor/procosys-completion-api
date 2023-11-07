@@ -26,7 +26,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
                 _command.FileName,
                 default)
@@ -96,7 +96,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_AttachmentWithFileNameNotExists()
     {
         // Arrange
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid,
                 _command.FileName,
                 default)

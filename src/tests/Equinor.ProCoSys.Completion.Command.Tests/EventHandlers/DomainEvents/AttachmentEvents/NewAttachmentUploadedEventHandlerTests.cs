@@ -57,8 +57,8 @@ public class NewAttachmentUploadedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual($"Attachment {_newAttachmentUploadedDomainEvent.Attachment.FileName} uploaded", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
-        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.SourceType, _publishedIntegrationEvent.SourceType);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
+        Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.ParentType, _publishedIntegrationEvent.ParentType);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
         Assert.AreEqual(_newAttachmentUploadedDomainEvent.Attachment.CreatedBy.Guid, _publishedIntegrationEvent.CreatedBy.Oid);

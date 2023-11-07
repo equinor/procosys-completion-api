@@ -16,17 +16,17 @@ public class CommentService : ICommentService
 
     public CommentService(IReadOnlyContext context) => _context = context;
 
-    public async Task<IEnumerable<CommentDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    public async Task<IEnumerable<CommentDto>> GetAllForParentAsync(
+        Guid parentGuid,
         CancellationToken cancellationToken)
     {
         var comments =
             await (from c in _context.QuerySet<Comment>()
                     join createdByUser in _context.QuerySet<Person>()
                         on c.CreatedById equals createdByUser.Id
-                   where c.SourceGuid == sourceGuid
+                   where c.ParentGuid == parentGuid
                    select new CommentDto(
-                       c.SourceGuid,
+                       c.ParentGuid,
                        c.Guid,
                        c.Text,
                        new PersonDto(
@@ -37,7 +37,7 @@ public class CommentService : ICommentService
                            createdByUser.Email),
                        c.CreatedAtUtc
                ))
-                .TagWith($"{nameof(CommentService)}.{nameof(GetAllForSourceAsync)}")
+                .TagWith($"{nameof(CommentService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
         return comments;

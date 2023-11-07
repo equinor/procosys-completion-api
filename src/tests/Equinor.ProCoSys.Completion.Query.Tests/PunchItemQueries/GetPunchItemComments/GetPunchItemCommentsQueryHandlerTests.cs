@@ -34,7 +34,7 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
             _commentDto
         };
         _commentServiceMock = Substitute.For<ICommentService>();
-        _commentServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+        _commentServiceMock.GetAllForParentAsync(_query.PunchItemGuid, default)
             .Returns(commentDtos);
 
         _dut = new GetPunchItemCommentsQueryHandler(_commentServiceMock);
@@ -49,7 +49,7 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         // Assert
         Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<CommentDto>));
         var comment = result.Data.Single();
-        Assert.AreEqual(_commentDto.SourceGuid, comment.SourceGuid);
+        Assert.AreEqual(_commentDto.ParentGuid, comment.ParentGuid);
         Assert.AreEqual(_commentDto.Guid, comment.Guid);
         Assert.AreEqual(_commentDto.CreatedAtUtc, comment.CreatedAtUtc);
         var createdBy = comment.CreatedBy;
@@ -63,13 +63,13 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_Should_CallGetAllForSource_OnCommentService()
+    public async Task HandlingQuery_Should_CallGetAllForParent_OnCommentService()
     {
         // Act
         await _dut.Handle(_query, default);
 
         // Assert
-        await _commentServiceMock.Received(1).GetAllForSourceAsync(
+        await _commentServiceMock.Received(1).GetAllForParentAsync(
             _query.PunchItemGuid,
             default);
     }

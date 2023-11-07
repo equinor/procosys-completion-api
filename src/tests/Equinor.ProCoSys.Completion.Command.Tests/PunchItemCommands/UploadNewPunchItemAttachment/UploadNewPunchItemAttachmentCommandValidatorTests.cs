@@ -90,7 +90,7 @@ public class UploadNewPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_AttachmentWithFilenameExists()
     {
         // Arrange
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
                 _command.FileName, 
                 default)

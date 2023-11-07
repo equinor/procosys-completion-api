@@ -38,22 +38,22 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<AttachmentDto> UploadNewAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
         if (attachment is not null)
         {
-            throw new Exception($"{sourceType} {sourceGuid} already has an attachment with filename {fileName}");
+            throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
         }
 
         attachment = new Attachment(
-            sourceType,
-            sourceGuid,
+            parentType,
+            parentGuid,
             _plantProvider.Plant,
             fileName);
         _attachmentRepository.Add(attachment);
@@ -67,18 +67,18 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<string> UploadOverwriteAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
         if (attachment is null)
         {
-            throw new Exception($"{sourceType} {sourceGuid} don't have an attachment with filename {fileName}");
+            throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
         }
 
         attachment.IncreaseRevisionNumber();
@@ -93,9 +93,9 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName, CancellationToken cancellationToken)
+    public async Task<bool> FileNameExistsForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName, cancellationToken);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
         return attachment is not null;
     }
 
@@ -121,10 +121,10 @@ public class AttachmentService : IAttachmentService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentSourceGuid}",
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
             attachment.FileName, 
             attachment.Guid, 
-            attachment.SourceGuid);
+            attachment.ParentGuid);
     }
 
     private async Task UploadAsync(
@@ -141,10 +141,10 @@ public class AttachmentService : IAttachmentService
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentSourceGuid}", 
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}", 
             attachment.FileName, 
             attachment.Guid, 
-            attachment.SourceGuid);
+            attachment.ParentGuid);
     }
 
     public async Task<bool> ExistsAsync(Guid guid,

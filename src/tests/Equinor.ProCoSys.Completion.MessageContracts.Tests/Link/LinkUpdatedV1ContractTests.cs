@@ -16,8 +16,8 @@ public class LinkUpdatedV1ContractTests : ContractTestBase<ILinkUpdatedV1>
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
-            { "SourceGuid", typeof(Guid) },
-            { "SourceType", typeof(string) },
+            { "ParentGuid", typeof(Guid) },
+            { "ParentType", typeof(string) },
             { "Title", typeof(string) },
             { "Url", typeof(string) },
             { "ModifiedBy", typeof(IUser) },

@@ -10,7 +10,7 @@ public record AttachmentDeletedIntegrationEvent
 (
     string DisplayName,
     Guid Guid,
-    Guid SourceGuid,
+    Guid ParentGuid,
     IUser DeletedBy,
     DateTime DeletedAtUtc
 ) : IAttachmentDeletedV1
@@ -18,7 +18,7 @@ public record AttachmentDeletedIntegrationEvent
     internal AttachmentDeletedIntegrationEvent(AttachmentDeletedDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} deleted",
         domainEvent.Attachment.Guid,
-        domainEvent.Attachment.SourceGuid,
+        domainEvent.Attachment.ParentGuid,
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
         new User(domainEvent.Attachment.ModifiedBy!.Guid, domainEvent.Attachment.ModifiedBy!.GetFullName()),

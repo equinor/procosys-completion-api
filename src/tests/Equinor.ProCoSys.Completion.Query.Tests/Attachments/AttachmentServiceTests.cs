@@ -21,7 +21,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     private Guid _createdAttachmentGuid;
     private Attachment _modifiedAttachment;
     private Guid _modifiedAttachmentGuid;
-    private Guid _sourceGuid;
+    private Guid _parentGuid;
     private IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
     private IAzureBlobService _azureBlobServiceMock;
 
@@ -29,9 +29,9 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _sourceGuid = Guid.NewGuid();
-        _createdAttachment = new Attachment("X", _sourceGuid, TestPlantA, "t1.txt");
-        _modifiedAttachment = new Attachment("X", _sourceGuid, TestPlantA, "t2.txt");
+        _parentGuid = Guid.NewGuid();
+        _createdAttachment = new Attachment("X", _parentGuid, TestPlantA, "t1.txt");
+        _modifiedAttachment = new Attachment("X", _parentGuid, TestPlantA, "t2.txt");
 
         context.Attachments.Add(_createdAttachment);
         context.Attachments.Add(_modifiedAttachment);
@@ -54,14 +54,14 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task GetAllForSourceAsync_ShouldReturnCorrect_CreatedDtos()
+    public async Task GetAllForParentAsync_ShouldReturnCorrect_CreatedDtos()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
-        var result = await dut.GetAllForSourceAsync(_sourceGuid, default);
+        var result = await dut.GetAllForParentAsync(_parentGuid, default);
 
         // Assert
         var attachmentDtos = result.ToList();
@@ -149,7 +149,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
     private void AssertAttachmentDto(Attachment attachment, AttachmentDto attachmentDto)
     {
-        Assert.AreEqual(attachment.SourceGuid, attachmentDto.SourceGuid);
+        Assert.AreEqual(attachment.ParentGuid, attachmentDto.ParentGuid);
         Assert.AreEqual(attachment.Guid, attachmentDto.Guid);
         Assert.AreEqual(attachment.GetFullBlobPath(), attachmentDto.FullBlobPath);
         Assert.AreEqual(attachment.FileName, attachmentDto.FileName);

@@ -8,15 +8,15 @@ namespace Equinor.ProCoSys.Completion.Command.Attachments;
 public interface IAttachmentService
 {
     Task<AttachmentDto> UploadNewAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         CancellationToken cancellationToken);
 
     Task<string> UploadOverwriteAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         string rowVersion,
@@ -27,8 +27,8 @@ public interface IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken);
 
-    Task<bool> FileNameExistsForSourceAsync(
-        Guid sourceGuid,
+    Task<bool> FileNameExistsForParentAsync(
+        Guid parentGuid,
         string fileName,
         CancellationToken cancellationToken);
 
