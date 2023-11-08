@@ -31,19 +31,16 @@ public class PunchItemValidator : IPunchItemValidator
 
     public async Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var dto = await (from pi in _context.QuerySet<PunchItem>()
+        var checkListGuid = await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid
-            select new
-            {
-                pi.CheckListGuid
-            }).SingleOrDefaultAsync(cancellationToken);
+            select pi.CheckListGuid).SingleOrDefaultAsync(cancellationToken);
 
-        if (dto is null)
+        if (checkListGuid == default)
         {
             return false;
         }
 
-        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(dto.CheckListGuid);
+        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid);
     }
 
     public async Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
