@@ -1,9 +1,7 @@
-﻿using System.Configuration;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Oracle.ManagedDataAccess.Client;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using static Equinor.ProCoSys.DbSyncPOC.Column;
 
 namespace Equinor.ProCoSys.DbSyncPOC
@@ -32,7 +30,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
                 DataType type = (DataType)Enum.Parse(typeof(DataType), columns[5]);
 
-                var config = new ColumnSyncConfig() { SourceTable = columns[0], TargetTable = columns[1], SourceColumn = columns[2], TargetColumn = columns[3], IsPrimaryKey = bool.Parse(columns[4]), Type = type };
+                var config = new ColumnSyncConfig() { SourceTable = columns[0], TargetTable = columns[1], SourceColumn = columns[2], TargetColumn = columns[3], IsPrimaryKey = bool.Parse(columns[4]), SourceType = type, ValueConvertionMethod = columns[5] };
                 _syncConfig.Add(config);
             }
         }
@@ -44,7 +42,6 @@ namespace Equinor.ProCoSys.DbSyncPOC
                 var dbSynchronizer = new DbSynchronizer();
 
                 var syncEvent = dbSynchronizer.BuildSyncEventForUpdate(entity, changes);
-
 
                 dbSynchronizer.HandleEvent(syncEvent);
             }
@@ -68,15 +65,14 @@ namespace Equinor.ProCoSys.DbSyncPOC
             var columns = new List<Column>();
             foreach (var change in changes)
             {
-                var column = new Column() { Name = change.Name, Value = change.NewValue?.ToString(), Type = columnConfigs[change.Name].Type };
+                var column = new Column() { Name = change.Name, Value = change.NewValue?.ToString(), Type = columnConfigs[change.Name].SourceType };
                 columns.Add(column);
             }
-
 
             //find primary key using reflection
             var primaryKeyConfig = columnConfigs.Where(config => config.Value.IsPrimaryKey == true).Single().Value;
             Type entityType = entity.GetType();
-            PropertyInfo primaryKeyInfo = entityType.GetProperty("Guid");
+            PropertyInfo primaryKeyInfo = entityType.GetProperty(primaryKeyConfig.SourceType.ToString());
 
             string primaryKeyValue = "";
 
@@ -97,7 +93,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
                 //kast exception
             }
 
-            var primaryKey = new Column() { Name = primaryKeyConfig.SourceColumn, Value = primaryKeyValue, Type = primaryKeyConfig.Type };
+            var primaryKey = new Column() { Name = primaryKeyConfig.SourceColumn, Value = primaryKeyValue, Type = primaryKeyConfig.SourceType };
 
 
             //Create sync event 
@@ -138,6 +134,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
         private void HandleUpdateEvent(SyncEvent syncEvent)
         {
             //todo: kast exception hvis vi mangler config for en kolonne
+
             string updateStatement = BuildUpdateStatement(syncEvent);
             Console.WriteLine($"SQL update statement: {updateStatement}");
             ExecuteDBWrite(updateStatement);
@@ -145,6 +142,12 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
         private string BuildInsertStatement(SyncEvent syncEvent)
         {
+
+
+            //DENNE ER IKKE IMPLEMENTERT FERDIG
+
+
+
             //Get config for columns
             var columnConfigs = _syncConfig.Where(config =>
                     config.SourceTable.Equals(syncEvent.Table.ToLower())).ToDictionary(column => column.SourceColumn);
@@ -178,7 +181,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
                 //todo: Flytt type inn i config og bort fra syncevent. Lage en metode som returnerer string basert på config og column.
 
-                insertStatement.Append($"{column.getSqlParameter()}");
+                insertStatement.Append($"{column.Value}");
 
                 if (column != syncEvent.Columns.Last())
                 {
@@ -206,7 +209,7 @@ namespace Equinor.ProCoSys.DbSyncPOC
             var primaryKeyConfig = columnConfigs.Where(config => config.Value.IsPrimaryKey == true).Single().Value;
 
             //Verify that one and only one row exist in target db, for given primarykey
-            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {syncEvent.PrimaryKey.getSqlParameter()}";
+            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {getSqlParameter(syncEvent.PrimaryKey.Value, syncEvent.PrimaryKey.Type)}";
 
             var noOfRowsInTarget = ExecuteDBQueryCountingRows(noOfRowsInTargetQuery);
 
@@ -221,13 +224,15 @@ namespace Equinor.ProCoSys.DbSyncPOC
 
             foreach (var column in syncEvent.Columns)
             {
-                //primary key should not be included
+                //primary key must not be included (da må det være en bug et sted...)
                 if (column.Name == primaryKeyConfig.SourceColumn)
                 {
                     continue;
                 }
 
-                updateStatement.Append($"{column.Name} = {column.getSqlParameter()}");
+                var value = getValueForColumn(column, columnConfigs[column.Name]);
+
+                updateStatement.Append($"{column.Name} = {value}");
 
                 if (column != syncEvent.Columns.Last())
                 {
@@ -235,10 +240,60 @@ namespace Equinor.ProCoSys.DbSyncPOC
                 }
             }
 
-            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {syncEvent.PrimaryKey.getSqlParameter()}");
+            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {getSqlParameter(syncEvent.PrimaryKey.Value, syncEvent.PrimaryKey.Type)}");
 
             return updateStatement.ToString();
         }
+
+        private string getValueForColumn(Column column, ColumnSyncConfig columnConfig)
+        {
+            var value = column.Value;
+
+            var convertionMethod = columnConfig.ValueConvertionMethod;
+            if (convertionMethod != null && column.Value != null)
+            {
+                switch (convertionMethod)
+                {
+                    case "ChecklistGuidToTagCheckId":
+                        value = GuidToMainLibId(column.Value);
+                        break;
+                }
+            };
+
+            return getSqlParameter(value, column.Type);
+        }
+
+        private string GuidToMainLibId(string procosys_guid)
+        {
+            var sqlQuery = $"select library_id from library where procosys_guid = {procosys_guid}";
+
+            var libraryId = ExecuteDBQueryForValueLookup(sqlQuery);
+            if (libraryId != null)
+            {
+                return libraryId;
+            }
+
+            //kast exception eller log
+            throw new Exception($"Not able to find a Tagcheck in main with procosys_guid = {procosys_guid}");
+        }
+
+        public string getSqlParameter(string? value, DataType type)
+        {
+            switch (type)
+            {
+                case DataType.String:
+                    return $"'{value}'";
+                case DataType.Int:
+                    return value ?? ""; //todo
+                case DataType.Date:
+                    return $"'{value}'"; //todo
+                case DataType.Guid:
+                    return value == null ? "''" : $"'{value.Replace("-", string.Empty).ToUpper()}'";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
 
         private void ExecuteDBWrite(string sqlStatement)
         {
@@ -256,6 +311,32 @@ namespace Equinor.ProCoSys.DbSyncPOC
                 }
             }
         }
+
+        private string? ExecuteDBQueryForValueLookup(string sqlQuery)
+        {
+            using (OracleConnection connection = new OracleConnection(connectionString))
+            {
+                connection.Open();
+
+                using (OracleCommand command = new OracleCommand(sqlQuery, connection))
+                {
+                    using (OracleDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            //todo: Bør kanskje sjekke at vi bare for returnert én rad
+                            var value = Convert.ToString(command.ExecuteScalar());
+                            if (value != null)
+                            {
+                                return value;
+                            }
+                        }
+                        return null;
+                    }
+                }
+            }
+        }
+
 
         private int ExecuteDBQueryCountingRows(string sqlQuery)
         {

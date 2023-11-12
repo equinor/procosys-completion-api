@@ -64,7 +64,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         try
         {
-            //Lagre i PCS 5
             var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
 
             var changes = await PatchAsync(punchItem, request.PatchDocument);
@@ -75,15 +74,17 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             }
 
             punchItem.SetRowVersion(request.RowVersion);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //Hvis systemet går ned her, har vi lagret i PCS5 men ikke i main. Vi kan lage systemet mer robust ved at vi 
-            //starter transaksjonen i PCS 5 ved å legge inn en 'ongoing task' i en egen tabell. Siste steg i transaksjonen blir da å slette 'ongoing task'. 
-            //Vi må da overvåke 'onging tasks', og håndtere problemer manuelt. Bør ikke skje ofte. Vi trenger source tabell og rad som er endret. Vi vet at det er PCS 5 data som er master.
-            //Vi commiter PCS 5 før vi starter på main-transaksjon. Dette for å unngå at main får endringer som ikke blir lagret i PCS 5, som er master. Det er ikke så lett å rulle tilbake main. 
+            //Jeg synes ikke det er naturlig å lage et post-save-event her, for å gjøre sync mot main. Det gis inntrykk av at dette skjer etter at vi har gjennomført transaksjons mot
+            //completion, og det er ikke korrekt. Det blir heller ikke riktig å ha a domain event, da dette blir utført før vi gjør oppdatering mot completion. 
+            //Grunnen til at vi gjør oppdatering mot completion først er at vi har ikke muligheten her for å ta rollback av transaksjonen mot main (slik vi gjør det nå, i hvertfall. 
+            //Jeg synes det egentlig blir feil å bruke event her, da vi jo her bygger opp en transaksjon som har to oppdateringer. Det som skjer i eventer bør være helt frakoblet det som skjer her. 
 
-            //Lagre i main
             DbSynchronizer.SyncChangesToMain(punchItem, changes);
+
+            transaction.Commit();
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
 
@@ -95,10 +96,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             _logger.LogError("Punch item ikke oppdatert", ex);
             transaction.Rollback();
             throw;
-        }
-        finally
-        {
-            transaction.Commit();
         }
     }
 

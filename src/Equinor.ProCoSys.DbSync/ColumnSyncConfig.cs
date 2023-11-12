@@ -8,8 +8,8 @@ namespace Equinor.ProCoSys.DbSyncPOC
         public required string TargetTable { get; set; }
         public required string SourceColumn { get; set; }
         public required string TargetColumn { get; set; }
-        public bool IsPrimaryKey { get; set; } = false;
-        public required DataType Type { get; set; }
-        public IValueConvertion? ValueConvertion { get; set; }
+        public required bool IsPrimaryKey { get; set; } = false;
+        public required DataType SourceType { get; set; }
+        public string? ValueConvertionMethod { get; set; }
     }
 }
