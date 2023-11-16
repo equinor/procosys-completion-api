@@ -15,17 +15,20 @@ public class PersonValidator : IPersonValidator
     private readonly IReadOnlyContext _context;
     private readonly IPersonCache _personCache;
 
+    // Trick to write LINQ queries to let EF create effective SQL queries is
+    // 1) use Any
+    // 2) select a projection with as few columns as needed
     public PersonValidator(IReadOnlyContext context, IPersonCache personCache)
     {
         _context = context;
         _personCache = personCache;
     }
 
-    public async Task<bool> ExistsAsync(Guid oid, CancellationToken cancellationToken)
+    public async Task<bool> ExistsLocalOrInProCoSysAsync(Guid oid, CancellationToken cancellationToken)
     {
         var exists = await (from p in _context.QuerySet<Person>()
             where p.Guid == oid
-            select p).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
         if (exists)
         {
             return true;

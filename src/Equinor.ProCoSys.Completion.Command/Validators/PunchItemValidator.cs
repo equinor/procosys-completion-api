@@ -47,20 +47,20 @@ public class PunchItemValidator : IPunchItemValidator
         => await (from pi in _context.QuerySet<PunchItem>()
             join proj in _context.QuerySet<Project>() on pi.ProjectId equals proj.Id
             where pi.Guid == punchItemGuid && proj.IsClosed == true
-            select proj).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid && pi.ClearedAtUtc != null
-            select pi).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid && pi.VerifiedAtUtc != null
-            select pi).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> HasCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid && pi.Category == category
-            select pi).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 }

@@ -13,19 +13,18 @@ public class DocumentValidator : IDocumentValidator
 {
     private readonly IReadOnlyContext _context;
 
+    // Trick to write LINQ queries to let EF create effective SQL queries is
+    // 1) use Any
+    // 2) select a projection with as few columns as needed
     public DocumentValidator(IReadOnlyContext context) => _context = context;
 
     public async Task<bool> ExistsAsync(Guid documentGuid, CancellationToken cancellationToken) =>
-        await (from l in _context.QuerySet<Document>()
-            where l.Guid == documentGuid
-            select l).AnyAsync(cancellationToken);
+        await (from d in _context.QuerySet<Document>()
+            where d.Guid == documentGuid
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsVoidedAsync(Guid documentGuid, CancellationToken cancellationToken)
-    {
-        var document = await(from d in _context.QuerySet<Document>()
-            where d.Guid == documentGuid
-            select d).SingleOrDefaultAsync(cancellationToken);
-
-        return document is not null && document.IsVoided;
-    }
+        => await (from d in _context.QuerySet<Document>()
+            where d.Guid == documentGuid && d.IsVoided
+            select 1).AnyAsync(cancellationToken);
 }

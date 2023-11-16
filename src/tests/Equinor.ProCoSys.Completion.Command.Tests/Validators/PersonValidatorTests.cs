@@ -33,23 +33,23 @@ public class PersonValidatorTests : ReadOnlyTestsBase
         _personCacheMock = Substitute.For<IPersonCache>();
     }
 
-    #region ExistsAsync
+    #region ExistsLocalOrInProCoSysAsync
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenLocalPersonExists()
+    public async Task ExistsLocalOrInProCoSysAsync_ShouldReturnTrue_WhenLocalPersonExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);            
         var dut = new PersonValidator(context, _personCacheMock);
 
         // Act
-        var result = await dut.ExistsAsync(_localPersonOid, default);
+        var result = await dut.ExistsLocalOrInProCoSysAsync(_localPersonOid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenLocalPersonNotExists_ButExistsInProCoSysAsPerson()
+    public async Task ExistsLocalOrInProCoSysAsync_ShouldReturnTrue_WhenLocalPersonNotExists_ButExistsInProCoSysAsPerson()
     {
         // Arrange
         _personCacheMock.GetAsync(_pcsPersonOid).Returns(new ProCoSysPerson
@@ -61,14 +61,14 @@ public class PersonValidatorTests : ReadOnlyTestsBase
         var dut = new PersonValidator(context, _personCacheMock);
 
         // Act
-        var result = await dut.ExistsAsync(_pcsPersonOid, default);
+        var result = await dut.ExistsLocalOrInProCoSysAsync(_pcsPersonOid, default);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnFalse_WhenLocalPersonNotExists_ButExistsInProCoSysAsServicePrincipal()
+    public async Task ExistsLocalOrInProCoSysAsync_ShouldReturnFalse_WhenLocalPersonNotExists_ButExistsInProCoSysAsServicePrincipal()
     {
         // Arrange
         _personCacheMock.GetAsync(_pcsPersonOid).Returns(new ProCoSysPerson
@@ -80,14 +80,14 @@ public class PersonValidatorTests : ReadOnlyTestsBase
         var dut = new PersonValidator(context, _personCacheMock);
 
         // Act
-        var result = await dut.ExistsAsync(_pcsPersonOid, default);
+        var result = await dut.ExistsLocalOrInProCoSysAsync(_pcsPersonOid, default);
 
         // Assert
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task ExistsAsync_ShouldReturnFalse_WhenPersonNotExist_NeitherLocalOrInProCoSys()
+    public async Task ExistsLocalOrInProCoSysAsync_ShouldReturnFalse_WhenPersonNotExist_NeitherLocalOrInProCoSys()
     {
         // Arrange
         var unknownOid = Guid.NewGuid();
@@ -96,7 +96,7 @@ public class PersonValidatorTests : ReadOnlyTestsBase
         var dut = new PersonValidator(context, _personCacheMock);
 
         // Act
-        var result = await dut.ExistsAsync(unknownOid, default);
+        var result = await dut.ExistsLocalOrInProCoSysAsync(unknownOid, default);
 
         // Assert
         Assert.IsFalse(result);

@@ -13,19 +13,18 @@ public class WorkOrderValidator : IWorkOrderValidator
 {
     private readonly IReadOnlyContext _context;
 
+    // Trick to write LINQ queries to let EF create effective SQL queries is
+    // 1) use Any
+    // 2) select a projection with as few columns as needed
     public WorkOrderValidator(IReadOnlyContext context) => _context = context;
 
     public async Task<bool> ExistsAsync(Guid workOrderGuid, CancellationToken cancellationToken) =>
         await (from l in _context.QuerySet<WorkOrder>()
             where l.Guid == workOrderGuid
-            select l).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsClosedAsync(Guid workOrderGuid, CancellationToken cancellationToken)
-    {
-        var workOrder = await (from wo in _context.QuerySet<WorkOrder>()
-            where wo.Guid == workOrderGuid
-            select wo).SingleOrDefaultAsync(cancellationToken);
-
-        return workOrder is not null && workOrder.IsClosed;
-    }
+        => await (from wo in _context.QuerySet<WorkOrder>()
+            where wo.Guid == workOrderGuid && wo.IsClosed == true
+            select 1).AnyAsync(cancellationToken);
 }
