@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.Domain.Validators;
 
 public interface IPersonValidator
 {
-    Task<bool> ExistsAsync(Guid oid, CancellationToken cancellationToken);
+    Task<bool> ExistsLocalOrInProCoSysAsync(Guid oid, CancellationToken cancellationToken);
 }
