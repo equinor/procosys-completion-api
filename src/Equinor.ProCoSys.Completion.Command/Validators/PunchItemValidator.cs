@@ -15,9 +15,6 @@ public class PunchItemValidator : IPunchItemValidator
     private readonly IReadOnlyContext _context;
     private readonly ICheckListValidator _checkListValidator;
 
-    // Trick to write LINQ queries to let EF create effective SQL queries is
-    // 1) use Any
-    // 2) select a projection with as few columns as needed
     public PunchItemValidator(IReadOnlyContext context, ICheckListValidator checkListValidator)
     {
         _context = context;

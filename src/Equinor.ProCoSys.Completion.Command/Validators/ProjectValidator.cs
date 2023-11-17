@@ -15,17 +15,22 @@ public class ProjectValidator : IProjectValidator
 
     public ProjectValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid projectGuid, CancellationToken cancellationToken) =>
-        await (from p in _context.QuerySet<Project>()
-            where p.Guid == projectGuid
-            select 1).AnyAsync(cancellationToken);
+    public async Task<bool> ExistsAsync(Guid projectGuid, CancellationToken cancellationToken)
+    {
+        var project = await GetProjectAsync(projectGuid, cancellationToken);
+
+        return project is not null;
+    }
 
     public async Task<bool> IsClosedAsync(Guid projectGuid, CancellationToken cancellationToken)
     {
-        var project = await (from p in _context.QuerySet<Project>()
-            where p.Guid == projectGuid
-            select p).SingleOrDefaultAsync(cancellationToken);
+        var project = await GetProjectAsync(projectGuid, cancellationToken);
 
         return project is not null && project.IsClosed;
     }
+
+    private async Task<Project?> GetProjectAsync(Guid projectGuid, CancellationToken cancellationToken)
+        => await (from p in _context.QuerySet<Project>()
+            where p.Guid == projectGuid
+            select p).SingleOrDefaultAsync(cancellationToken);
 }
