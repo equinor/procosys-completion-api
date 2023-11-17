@@ -121,7 +121,6 @@ public static class ApplicationModule
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
-        services.AddScoped<IPersonValidator, PersonValidator>();
         services.AddScoped<IWorkOrderValidator, WorkOrderValidator>();
         services.AddScoped<ISWCRValidator, SWCRValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
