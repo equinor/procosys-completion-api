@@ -15,17 +15,22 @@ public class DocumentValidator : IDocumentValidator
 
     public DocumentValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid documentGuid, CancellationToken cancellationToken) =>
-        await (from l in _context.QuerySet<Document>()
-            where l.Guid == documentGuid
-            select 1).AnyAsync(cancellationToken);
+    public async Task<bool> ExistsAsync(Guid documentGuid, CancellationToken cancellationToken)
+    {
+        var document = await GetDocumentAsync(documentGuid, cancellationToken);
+
+        return document is not null;
+    }
 
     public async Task<bool> IsVoidedAsync(Guid documentGuid, CancellationToken cancellationToken)
     {
-        var document = await(from d in _context.QuerySet<Document>()
-            where d.Guid == documentGuid
-            select d).SingleOrDefaultAsync(cancellationToken);
+        var document = await GetDocumentAsync(documentGuid, cancellationToken);
 
         return document is not null && document.IsVoided;
     }
+
+    private async Task<Document?> GetDocumentAsync(Guid documentGuid, CancellationToken cancellationToken)
+        => await (from d in _context.QuerySet<Document>()
+            where d.Guid == documentGuid
+            select d).SingleOrDefaultAsync(cancellationToken);
 }

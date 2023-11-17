@@ -15,29 +15,32 @@ public class LibraryItemValidator : ILibraryItemValidator
 
     public LibraryItemValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid libraryItemGuid, CancellationToken cancellationToken) =>
-        await (from l in _context.QuerySet<LibraryItem>()
-            where l.Guid == libraryItemGuid
-            select 1).AnyAsync(cancellationToken);
+    public async Task<bool> ExistsAsync(Guid libraryItemGuid, CancellationToken cancellationToken)
+    {
+        var libraryItem = await GetLibraryItemAsync(libraryItemGuid, cancellationToken);
+
+        return libraryItem is not null;
+    }
 
     public async Task<bool> HasTypeAsync(
         Guid libraryItemGuid,
         LibraryType type,
         CancellationToken cancellationToken)
     {
-        var libraryItem = await(from p in _context.QuerySet<LibraryItem>()
-            where p.Guid == libraryItemGuid
-            select p).SingleOrDefaultAsync(cancellationToken);
+        var libraryItem = await GetLibraryItemAsync(libraryItemGuid, cancellationToken);
 
         return libraryItem is not null && libraryItem.Type == type;
     }
 
     public async Task<bool> IsVoidedAsync(Guid libraryItemGuid, CancellationToken cancellationToken)
     {
-        var libraryItem = await (from p in _context.QuerySet<LibraryItem>()
-            where p.Guid == libraryItemGuid
-            select p).SingleOrDefaultAsync(cancellationToken);
+        var libraryItem = await GetLibraryItemAsync(libraryItemGuid, cancellationToken);
 
         return libraryItem is not null && libraryItem.IsVoided;
     }
+
+    private async Task<LibraryItem?> GetLibraryItemAsync(Guid libraryItemGuid, CancellationToken cancellationToken)
+        => await (from li in _context.QuerySet<LibraryItem>()
+            where li.Guid == libraryItemGuid
+            select li).SingleOrDefaultAsync(cancellationToken);
 }
