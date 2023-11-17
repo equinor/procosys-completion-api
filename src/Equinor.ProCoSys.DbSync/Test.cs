@@ -1,37 +1,39 @@
-﻿using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
+﻿using System.Configuration;
+using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
+using Microsoft.Extensions.Configuration;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
+
+    public class PunchItem
+    {
+        public Guid? Guid { get; set; }
+        public string? Description { get; set; }
+        public string? RaisedByOrg { get; set; }
+
+    }
+
+
     public class Test
     {
 
         public static void Main()
         {
+            var builder = new ConfigurationBuilder().AddUserSecrets<Test>();
 
-            DbSynchronizer.SetOracleConnection("");
+            IConfigurationRoot configuration = builder.Build();
 
-            var Value = "asdasfqwef-qwefqwef-qwef124";
-            //var test2 = Value.Replace("-", string.Empty);
+            string dbConn = configuration["OracleDBConnectionPOC"];
 
+            DbSynchronizer.SetOracleConnection(dbConn);
             var test = new Test();
             test.UpdatePunchTest();
         }
 
         public void UpdatePunchTest()
         {
-            SyncEvent updatePunch = new SyncEvent
-            {
-                Operation = SyncEvent.OperationType.Update,
-                Table = "punchitem",
-                Columns = new List<Column> {
-                   new Column { Name="description", Value="7003 - LOW DFT AS PER ATTACHED DRAWING MARKT 3(PCSwin: 2151 - X001 / Item 3)"}
-                },
-                PrimaryKey = new Column { Type = Column.DataType.Guid, Name = "Guid", Value = "eb38cccb-4917-d926-e053-2810000ac5b2" }
-            };
-
-            var dbSync = new DbSynchronizer();
-
-            dbSync.HandleEvent(updatePunch);
+            var punchItem = new PunchItem { Guid = new Guid("eb38cccb-4917-d926-e053-2810000ac5b2"), Description = "sdf" };
+            DbSynchronizer.SyncChangesToMain(punchItem);
         }
     }
 }
