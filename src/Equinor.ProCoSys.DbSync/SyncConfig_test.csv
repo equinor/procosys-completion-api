@@ -1,4 +1,0 @@
-Source table,Target table,Source column,Target column,Is primary key, Source Type, Convertion method
-punchitem,punchlistitem,Guid,Procosys_guid,true, Guid
-punchitem,punchlistitem,Description,Description,false, String
-punchitem,punchlistitem,RaisedByOrgId,RaisedByOrg_id,false, Guid, LibIdToMainLibId

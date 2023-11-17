@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.ForeignApiTests", "tests\Equinor.ProCoSys.Completion.ForeignApiTests\Equinor.ProCoSys.Completion.ForeignApiTests.csproj", "{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.DbSyncPOC", "Equinor.ProCoSys.DbSync\Equinor.ProCoSys.DbSyncPOC.csproj", "{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.DbSync\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

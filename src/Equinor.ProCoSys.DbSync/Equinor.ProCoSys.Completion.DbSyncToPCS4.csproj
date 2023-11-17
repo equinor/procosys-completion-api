@@ -17,4 +17,10 @@
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SyncMappingConfig.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

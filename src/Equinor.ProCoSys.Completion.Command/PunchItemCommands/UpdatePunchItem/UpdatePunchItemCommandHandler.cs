@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -15,7 +16,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
-using Equinor.ProCoSys.DbSyncPOC;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -76,11 +76,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             punchItem.SetRowVersion(request.RowVersion);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            //Jeg synes ikke det er naturlig å lage et post-save-event her, for å gjøre sync mot main. Det gis inntrykk av at dette skjer etter at vi har gjennomført transaksjons mot
-            //completion, og det er ikke korrekt. Det blir heller ikke riktig å ha a domain event, da dette blir utført før vi gjør oppdatering mot completion. 
-            //Grunnen til at vi gjør oppdatering mot completion først er at vi har ikke muligheten her for å ta rollback av transaksjonen mot main (slik vi gjør det nå, i hvertfall. 
-            //Jeg synes det egentlig blir feil å bruke event her, da vi jo her bygger opp en transaksjon som har to oppdateringer. Det som skjer i eventer bør være helt frakoblet det som skjer her. 
 
             DbSynchronizer.SyncChangesToMain(punchItem, changes);
 

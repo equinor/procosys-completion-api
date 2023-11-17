@@ -1,0 +1,4 @@
+Source table;     Source column;  Target table;     Target column;  Is primary key;     Source Type;    Convertion method
+punchitem;        Guid;           punchlistitem;    Procosys_guid;  true;               Guid;
+punchitem;        Description;    punchlistitem;    Description;    false;              String;
+punchitem;        RaisedByOrg;    punchlistitem;    RaisedByOrg_id; false;              String;         CodeToMainLibId 

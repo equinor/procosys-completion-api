@@ -1,8 +1,8 @@
-﻿using static Equinor.ProCoSys.DbSyncPOC.Column;
+﻿using static Equinor.ProCoSys.Completion.DbSyncToPCS4.Column;
 
-namespace Equinor.ProCoSys.DbSyncPOC
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
-    internal class ColumnSyncConfig
+    public class ColumnSyncConfig
     {
         public required string SourceTable { get; set; }
         public required string TargetTable { get; set; }

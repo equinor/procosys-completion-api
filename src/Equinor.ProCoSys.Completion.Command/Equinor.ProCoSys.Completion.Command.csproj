@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
-    <ProjectReference Include="..\Equinor.ProCoSys.DbSync\Equinor.ProCoSys.DbSyncPOC.csproj" />
+    <ProjectReference Include="..\Equinor.ProCoSys.DbSync\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj" />
   </ItemGroup>
 
 </Project>

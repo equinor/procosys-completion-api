@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection.Metadata.Ecma335;
 
-namespace Equinor.ProCoSys.DbSyncPOC
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public class Column
     {

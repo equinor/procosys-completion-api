@@ -27,7 +27,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
-using Equinor.ProCoSys.DbSyncPOC;
+using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 

@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.DbSyncPOC
+﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public class SyncEvent
     {
