@@ -15,17 +15,22 @@ public class SWCRValidator : ISWCRValidator
 
     public SWCRValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid swcrGuid, CancellationToken cancellationToken) =>
-        await (from l in _context.QuerySet<SWCR>()
-            where l.Guid == swcrGuid
-            select l).AnyAsync(cancellationToken);
+    public async Task<bool> ExistsAsync(Guid swcrGuid, CancellationToken cancellationToken)
+    {
+        var swcr = await GetSWCRAsync(swcrGuid, cancellationToken);
+
+        return swcr is not null;
+    }
 
     public async Task<bool> IsVoidedAsync(Guid swcrGuid, CancellationToken cancellationToken)
     {
-        var swcr = await (from s in _context.QuerySet<SWCR>()
-            where s.Guid == swcrGuid
-            select s).SingleOrDefaultAsync(cancellationToken);
+        var swcr = await GetSWCRAsync(swcrGuid, cancellationToken);
 
         return swcr is not null && swcr.IsVoided;
     }
+
+    private async Task<SWCR?> GetSWCRAsync(Guid swcrGuid, CancellationToken cancellationToken)
+        => await (from s in _context.QuerySet<SWCR>()
+            where s.Guid == swcrGuid
+            select s).SingleOrDefaultAsync(cancellationToken);
 }
