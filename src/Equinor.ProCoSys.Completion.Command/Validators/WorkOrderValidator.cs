@@ -18,7 +18,7 @@ public class WorkOrderValidator : IWorkOrderValidator
     public async Task<bool> ExistsAsync(Guid workOrderGuid, CancellationToken cancellationToken) =>
         await (from l in _context.QuerySet<WorkOrder>()
             where l.Guid == workOrderGuid
-            select l).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsClosedAsync(Guid workOrderGuid, CancellationToken cancellationToken)
     {

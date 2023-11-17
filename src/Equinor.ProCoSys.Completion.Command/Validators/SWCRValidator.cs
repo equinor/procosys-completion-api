@@ -18,7 +18,7 @@ public class SWCRValidator : ISWCRValidator
     public async Task<bool> ExistsAsync(Guid swcrGuid, CancellationToken cancellationToken) =>
         await (from l in _context.QuerySet<SWCR>()
             where l.Guid == swcrGuid
-            select l).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsVoidedAsync(Guid swcrGuid, CancellationToken cancellationToken)
     {

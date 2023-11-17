@@ -15,10 +15,7 @@ public class LocalPersonRepository : ILocalPersonRepository
     public LocalPersonRepository(IReadOnlyContext context) => _context = context;
 
     public async Task<bool> ExistsAsync(Guid userOid)
-    {
-        var exists = await (from person in _context.QuerySet<Person>()
+        => await (from person in _context.QuerySet<Person>()
             where person.Guid == userOid
-            select person).AnyAsync();
-        return exists;
-    }
+            select 1).AnyAsync();
 }

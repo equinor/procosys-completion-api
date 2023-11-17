@@ -18,7 +18,7 @@ public class LibraryItemValidator : ILibraryItemValidator
     public async Task<bool> ExistsAsync(Guid libraryItemGuid, CancellationToken cancellationToken) =>
         await (from l in _context.QuerySet<LibraryItem>()
             where l.Guid == libraryItemGuid
-            select l).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> HasTypeAsync(
         Guid libraryItemGuid,

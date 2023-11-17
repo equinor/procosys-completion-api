@@ -24,6 +24,7 @@ public class PunchItemValidator : IPunchItemValidator
         _checkListValidator = checkListValidator;
     }
 
+    // TODO 108105 Use Any when query by Guid will be safe since we will have unique constraint
     public async Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken) =>
         await (from pi in _context.QuerySet<PunchItem>()
             where pi.Guid == punchItemGuid

@@ -21,11 +21,11 @@ public class PersonValidator : IPersonValidator
         _personCache = personCache;
     }
 
-    public async Task<bool> ExistsAsync(Guid oid, CancellationToken cancellationToken)
+    public async Task<bool> ExistsLocalOrInProCoSysAsync(Guid oid, CancellationToken cancellationToken)
     {
         var exists = await (from p in _context.QuerySet<Person>()
             where p.Guid == oid
-            select p).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
         if (exists)
         {
             return true;

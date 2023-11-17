@@ -18,7 +18,7 @@ public class DocumentValidator : IDocumentValidator
     public async Task<bool> ExistsAsync(Guid documentGuid, CancellationToken cancellationToken) =>
         await (from l in _context.QuerySet<Document>()
             where l.Guid == documentGuid
-            select l).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsVoidedAsync(Guid documentGuid, CancellationToken cancellationToken)
     {

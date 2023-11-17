@@ -18,7 +18,7 @@ public class ProjectValidator : IProjectValidator
     public async Task<bool> ExistsAsync(Guid projectGuid, CancellationToken cancellationToken) =>
         await (from p in _context.QuerySet<Project>()
             where p.Guid == projectGuid
-            select p).AnyAsync(cancellationToken);
+            select 1).AnyAsync(cancellationToken);
 
     public async Task<bool> IsClosedAsync(Guid projectGuid, CancellationToken cancellationToken)
     {
