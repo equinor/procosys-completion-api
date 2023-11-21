@@ -11,6 +11,7 @@ public interface IRepositoryWithGuid<TEntity> : IRepository<TEntity> where TEnti
     /// Get entity by its Guid
     /// </summary>
     /// <param name="guid">Guid of entity to get</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The entity</returns>
     /// <exception cref="EntityNotFoundException"></exception>
     Task<TEntity> GetAsync(Guid guid, CancellationToken cancellationToken);
