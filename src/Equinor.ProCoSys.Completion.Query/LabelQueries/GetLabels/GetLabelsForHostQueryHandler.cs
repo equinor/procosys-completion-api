@@ -26,7 +26,7 @@ public class GetLabelsForHostQueryHandler : IRequestHandler<GetLabelsForHostQuer
                 .TagWith($"{nameof(GetLabelsForHostQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
-        if (labelHost == null)
+        if (labelHost is null)
         {
             return new SuccessResult<IEnumerable<string>>(new List<string>());
         }

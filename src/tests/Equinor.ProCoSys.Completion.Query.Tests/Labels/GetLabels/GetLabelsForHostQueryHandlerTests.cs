@@ -20,15 +20,13 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
     private Label _labelD;
     private LabelHost _labelHostWith3Labels;
     private LabelHost _labelHostWithoutLabels;
-    private HostType _hostTypeWith3Labels;
-    private HostType _hostTypeWithoutLabels;
+    private readonly HostType _hostTypeWith3Labels = HostType.PunchComment;
+    private readonly HostType _hostTypeWithoutLabels = HostType.GeneralComment;
+    private readonly HostType _nonExistingHostType = HostType.GeneralPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-
-        _hostTypeWith3Labels = HostType.PunchComment;
-        _hostTypeWithoutLabels = HostType.GeneralComment;
 
         _labelA = new Label("A");
         _labelB = new Label("B");
@@ -49,6 +47,24 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
         context.LabelHosts.Add(_labelHostWithoutLabels);
 
         context.SaveChangesAsync().Wait();
+    }
+
+    [TestMethod]
+    public async Task Handler_ShouldReturnEmptyList_WhenHostDontExists()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+
+        var query = new GetLabelsForHostQuery(_nonExistingHostType);
+        var dut = new GetLabelsForHostQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.AreEqual(0, result.Data.Count());
     }
 
     [TestMethod]
