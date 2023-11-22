@@ -69,8 +69,11 @@ and then
 
 `docker compose up`
 
-
 This will pull the necessary images, build the services, and start the application. You can access it once it's up and running.
+
+to debug, you can run the application from visual studio.
+
+![img_1.png](img_1.png)
 
 ## 03.11.2023: Create the Database inside the container 
 Until the sandbox image is updated with the completion database,
