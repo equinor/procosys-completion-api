@@ -3,7 +3,14 @@ REST API for the completion module in Project Completion System (ProCoSys (PCS))
 
 TODO Document setup #103905
 
-# Local Docker Development Setup
+### Secrets
+Before running the application, some settings need to be set. These are defined in appsettings.json. To avoid the possibility to commit secrets, move parts of the configuration to the secrets.json file on your computer.
+Typical settings that should be moved to secrets.json are:
+* AD IDs
+* Keys
+* Local URLs
+* Other secrets
+
 
 This guide will help you set up your local environment to run the application using Docker Compose.
 
