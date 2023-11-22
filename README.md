@@ -59,15 +59,30 @@ from `Server=127.0.0.1;Database=pcs-co...`
 
 to `Server=db;Database=pcs-co...`
 
+## Setting up self trusted certificate
+
+run the following command to add a self trusted certificate for the project in a folder where docker can reach it
+
+```
+dotnet dev-certs https -ep $env:APPDATA\ASP.NET\Https\Equinor.ProCoSys.Completion.WebApiiiiii.pfx -p <superSecretPassword>
+```
+
+and then
+```dotnet dev-certs https --trust```
+
+add this line to `secret.json` using the same password
+
+```
+"Kestrel:Certificates:Development:Password":  "<superSecretPassword>",
+```
 
 ## Running the Application
 
-Once all configuration is done, you can start the application by running the following command from the startup project:
+Once all configuration is done, you can start the application by running the following command from the src folder:
 
-`cd src/Equinor.ProCoSys.Completion.WebApi`
-and then
+`cd src` and then
 
-`docker compose up`
+```docker compose up```
 
 This will pull the necessary images, build the services, and start the application. You can access it once it's up and running.
 
