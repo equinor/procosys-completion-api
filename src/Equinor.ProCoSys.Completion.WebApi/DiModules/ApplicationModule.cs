@@ -28,7 +28,7 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Equinor.ProCoSys.Completion.WebApi.Validators;
+using Equinor.ProCoSys.Completion.Command.Validators;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -121,13 +121,12 @@ public static class ApplicationModule
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
-        services.AddScoped<IPersonValidator, PersonValidator>();
         services.AddScoped<IWorkOrderValidator, WorkOrderValidator>();
         services.AddScoped<ISWCRValidator, SWCRValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
-        services.AddScoped<ICheckListValidator, CheckListValidator>();
-        services.AddScoped<IRowVersionValidator, RowVersionValidator>();
-        services.AddScoped<IPatchOperationValidator, PatchOperationValidator>();
+        services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
+        services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
+        services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
 

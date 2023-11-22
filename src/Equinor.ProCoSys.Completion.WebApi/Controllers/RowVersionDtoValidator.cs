@@ -4,7 +4,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 public class RowVersionDtoValidator : AbstractValidator<RowVersionDto>
 {
-    public RowVersionDtoValidator(IRowVersionValidator rowVersionValidator)
+    public RowVersionDtoValidator(IRowVersionInputValidator rowVersionValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

@@ -3,7 +3,7 @@
 namespace Equinor.ProCoSys.Completion.Query.Attachments;
 
 public record AttachmentDto(
-    Guid SourceGuid,
+    Guid ParentGuid,
     Guid Guid,
     string FullBlobPath,
     string FileName,

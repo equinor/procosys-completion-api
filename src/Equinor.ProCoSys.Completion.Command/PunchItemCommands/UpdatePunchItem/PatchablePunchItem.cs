@@ -6,8 +6,11 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
 public class PatchablePunchItem
 {
+    // A required property in patch context don't mean that value for the property MUST be given ...
+    // ... it mean: if value for a property is given to be patched, and it's required, it can't be null
+
     // need RequiredAttribute to distinguish between type of string and nullable string?
-    // when using refection to check property type of string and string? both return "System.String"
+    // when using reflection to check property type of string and string? both return "System.String"
     // the ideal has been to just check if type is nullable or not to determine if it's required
     [Required]
     [StringLength(PunchItem.DescriptionLengthMax, MinimumLength = PunchItem.DescriptionLengthMin)]

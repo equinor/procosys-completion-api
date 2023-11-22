@@ -6,7 +6,6 @@ public class WorkOrderRepository : EntityWithGuidRepository<WorkOrder>, IWorkOrd
 {
     public WorkOrderRepository(CompletionContext context)
         : base(context, context.WorkOrders)
-            
     {
     }
 }

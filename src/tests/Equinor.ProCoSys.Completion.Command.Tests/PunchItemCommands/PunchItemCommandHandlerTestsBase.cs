@@ -68,7 +68,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _existingPunchItem.SetRowVersion(OriginalRowVersion);
             _punchItemPa = _existingPunchItem;
 
-            _punchItemRepositoryMock.GetAsync(_existingPunchItem.Guid)
+            _punchItemRepositoryMock.GetAsync(_existingPunchItem.Guid, default)
                 .Returns(_existingPunchItem);
 
             _existingRaisedByOrg1 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
@@ -83,7 +83,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _existingType2 = SetupLibraryItem(LibraryType.PUNCHLIST_TYPE, ++id);
 
             _currentPerson = SetupPerson(++id);
-            _personRepositoryMock.GetCurrentPersonAsync()
+            _personRepositoryMock.GetCurrentPersonAsync(default)
                 .Returns(_currentPerson);
             _existingPerson1 = SetupPerson(++id);
             _existingPerson2 = SetupPerson(++id);
@@ -104,7 +104,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             document.SetProtectedIdForTesting(++id);
 
             _documentRepositoryMock
-                .GetAsync(document.Guid)
+                .GetAsync(document.Guid, default)
                 .Returns(document);
 
             return document;
@@ -115,7 +115,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var swcr = new SWCR(TestPlantA, Guid.NewGuid(), id);
             swcr.SetProtectedIdForTesting(id);
             _swcrRepositoryMock
-                .GetAsync(swcr.Guid)
+                .GetAsync(swcr.Guid, default)
                 .Returns(swcr);
 
             return swcr;
@@ -126,7 +126,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), null!);
             workOrder.SetProtectedIdForTesting(id);
             _workOrderRepositoryMock
-                .GetAsync(workOrder.Guid)
+                .GetAsync(workOrder.Guid, default)
                 .Returns(workOrder);
 
             return workOrder;
@@ -134,13 +134,13 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Person SetupPerson(int id)
         {
-            var person = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+            var person = new Person(Guid.NewGuid(), $"F{id}", $"L{id}", $"U{id}", "@");
             person.SetProtectedIdForTesting(id);
             _personRepositoryMock
-                .GetAsync(person.Guid)
+                .GetAsync(person.Guid, default)
                 .Returns(person);
             _personRepositoryMock
-                .ExistsAsync(person.Guid)
+                .ExistsAsync(person.Guid, default)
                 .Returns(true);
             return person;
         }
@@ -155,7 +155,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                 libraryGuid.ToString(),
                 libraryType);
             libraryItem.SetProtectedIdForTesting(id);
-            _libraryItemRepositoryMock.GetByGuidAndTypeAsync(libraryGuid, libraryType)
+            _libraryItemRepositoryMock.GetByGuidAndTypeAsync(libraryGuid, libraryType, default)
                 .Returns(libraryItem);
 
             return libraryItem;

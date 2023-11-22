@@ -4,7 +4,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
 public class UpdatePunchItemCategoryDtoValidator : AbstractValidator<UpdatePunchItemCategoryDto>
 {
-    public UpdatePunchItemCategoryDtoValidator(IRowVersionValidator rowVersionValidator)
+    public UpdatePunchItemCategoryDtoValidator(IRowVersionInputValidator rowVersionValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

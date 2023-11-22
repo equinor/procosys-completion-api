@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
 public class PatchDtoValidator<T1, T2> : AbstractValidator<T1> where T1 : PatchDto<T2> where T2: class
 {
-    public PatchDtoValidator(IPatchOperationValidator patchOperationValidator)
+    public PatchDtoValidator(IPatchOperationInputValidator patchOperationValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

@@ -11,7 +11,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests;
 public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> where T2: class
 {
     private PatchDtoValidator<T1, T2> _dut = null!;
-    protected IPatchOperationValidator _patchOperationValidator = null!;
+    protected IPatchOperationInputValidator _patchOperationValidator = null!;
 
     protected abstract void SetupDut();
     protected abstract T1 GetPatchDto();
@@ -19,7 +19,7 @@ public abstract class PatchDtoValidatorTests<T1, T2> where T1 : PatchDto<T2> whe
     [TestInitialize]
     public void Setup_OkState()
     {
-        _patchOperationValidator = Substitute.For<IPatchOperationValidator>();
+        _patchOperationValidator = Substitute.For<IPatchOperationInputValidator>();
         _patchOperationValidator.HaveUniqueReplaceOperations(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.HaveReplaceOperationsOnly(Arg.Any<List<Operation<T2>>>()).Returns(true);
         _patchOperationValidator.AllRequiredFieldsHaveValue(Arg.Any<List<Operation<T2>>>()).Returns(true);

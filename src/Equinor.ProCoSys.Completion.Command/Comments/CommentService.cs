@@ -25,20 +25,20 @@ public class CommentService : ICommentService
     }
 
     public async Task<CommentDto> AddAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string text,
         CancellationToken cancellationToken)
     {
-        var comment = new Comment(sourceType, sourceGuid, text);
+        var comment = new Comment(parentType, parentGuid, text);
         _commentRepository.Add(comment);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentSourceGuid}", 
+        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}", 
             comment.Guid, 
-            comment.SourceType,
-            comment.SourceGuid);
+            comment.ParentType,
+            comment.ParentGuid);
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }

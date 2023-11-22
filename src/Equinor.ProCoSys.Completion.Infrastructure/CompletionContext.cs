@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -65,6 +66,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
     public static LibraryTypeConverter LibraryTypeConverter { get; } = new();
 
+    public virtual DbSet<Label> Labels => Set<Label>();
     public virtual DbSet<Person> Persons => Set<Person>();
     public virtual DbSet<PunchItem> PunchItems => Set<PunchItem>();
     public virtual DbSet<Project> Projects => Set<Project>();

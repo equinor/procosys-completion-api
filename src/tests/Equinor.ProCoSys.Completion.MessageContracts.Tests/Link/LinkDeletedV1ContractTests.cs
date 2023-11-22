@@ -16,8 +16,8 @@ public class LinkDeletedV1ContractTests : ContractTestBase<ILinkDeletedV1>
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
-            { "SourceGuid", typeof(Guid) },
-            { "DeletedByOid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid) },
+            { "DeletedBy", typeof(IUser) },
             { "DeletedAtUtc", typeof(DateTime) }
         };
 

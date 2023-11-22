@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
@@ -12,10 +13,10 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
         : base(context, context.Persons) =>
         _currentUserProvider = currentUserProvider;
 
-    public async Task<Person> GetCurrentPersonAsync()
+    public async Task<Person> GetCurrentPersonAsync(CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
         
-        return await GetAsync(currentUserOid);
+        return await GetAsync(currentUserOid, cancellationToken);
     }
 }

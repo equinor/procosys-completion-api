@@ -19,8 +19,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Attachments;
 public class AttachmentServiceTests : TestsBase
 {
     private readonly string _blobContainer = "bc";
-    private readonly string _sourceType = "Whatever";
-    private readonly Guid _sourceGuid = Guid.NewGuid();
+    private readonly string _parentType = "Whatever";
+    private readonly Guid _parentGuid = Guid.NewGuid();
     private IAttachmentRepository _attachmentRepositoryMock;
     private AttachmentService _dut;
     private Attachment _attachmentAddedToRepository;
@@ -41,22 +41,23 @@ public class AttachmentServiceTests : TestsBase
                 _attachmentAddedToRepository = callInfo.Arg<Attachment>();
             });
 
-        _existingAttachment = new Attachment(_sourceType, _sourceGuid, TestPlantA, _existingFileName);
+        _existingAttachment = new Attachment(_parentType, _parentGuid, TestPlantA, _existingFileName);
 
         _attachmentRepositoryMock
-            .GetAttachmentWithFileNameForSourceAsync(_existingAttachment.SourceGuid, _existingAttachment.FileName)
+            .GetAttachmentWithFileNameForParentAsync(_existingAttachment.ParentGuid, _existingAttachment.FileName, default)
             .Returns(_existingAttachment);
 
         _attachmentRepositoryMock
-            .GetAsync(_existingAttachment.Guid)
+            .GetAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetAttachmentWithFileNameForSourceAsync(
-                _existingAttachment.SourceGuid,
-                _existingAttachment.FileName)
+        _attachmentRepositoryMock.GetAttachmentWithFileNameForParentAsync(
+                _existingAttachment.ParentGuid,
+                _existingAttachment.FileName,
+                default)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
@@ -84,7 +85,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.UploadNewAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), default));
+            => _dut.UploadNewAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), default));
 
         // Assert
        await _azureBlobServiceMock.Received(0).UploadAsync(
@@ -98,12 +99,12 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         Assert.IsNotNull(_attachmentAddedToRepository);
-        Assert.AreEqual(_sourceGuid, _attachmentAddedToRepository.SourceGuid);
-        Assert.AreEqual(_sourceType, _attachmentAddedToRepository.SourceType);
+        Assert.AreEqual(_parentGuid, _attachmentAddedToRepository.ParentGuid);
+        Assert.AreEqual(_parentType, _attachmentAddedToRepository.ParentType);
         Assert.AreEqual(_newFileName, _attachmentAddedToRepository.FileName);
         Assert.AreEqual(1, _attachmentAddedToRepository.RevisionNumber);
     }
@@ -112,7 +113,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldSaveOnce_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
@@ -122,7 +123,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddAttachmentUploadedEvent_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         Assert.IsInstanceOfType(_attachmentAddedToRepository.DomainEvents.First(), typeof(NewAttachmentUploadedDomainEvent));
@@ -132,7 +133,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldUploadToBlobStorage_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_sourceType, _sourceGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         var p = _attachmentAddedToRepository.GetFullBlobPath();
@@ -149,7 +150,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadOverwriteAsync_ShouldNotAddNewAttachmentToRepository_WhenFileNameExist()
     {
         // Act
-        await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         Assert.IsNull(_attachmentAddedToRepository);
@@ -162,7 +163,7 @@ public class AttachmentServiceTests : TestsBase
         Assert.AreEqual(1, _existingAttachment.RevisionNumber);
 
         // Act
-        await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         Assert.AreEqual(2, _existingAttachment.RevisionNumber);
@@ -172,7 +173,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadOverwriteAsync_ShouldSaveOnce_WhenFileNameExist()
     {
         // Act
-        await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
@@ -182,7 +183,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadOverwriteAsync_ShouldAddExistingAttachmentUploadedAndOverwrittenEvent_WhenFileNameExist()
     {
         // Act
-        await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         Assert.IsInstanceOfType(_existingAttachment.DomainEvents.First(), typeof(ExistingAttachmentUploadedAndOverwrittenDomainEvent));
@@ -192,7 +193,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadOverwriteAsync_ShouldUploadToBlobStorage_WhenFileNameExist()
     {
         // Act
-        await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         var p = _existingAttachment.GetFullBlobPath();
@@ -208,7 +209,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadOverwriteAsync_ShouldSetAndReturnRowVersion()
     {
         // Act
-        var result = await _dut.UploadOverwriteAsync(_sourceType, _sourceGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
+        var result = await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
         // In real life EF Core will create a new RowVersion when save.
@@ -223,11 +224,11 @@ public class AttachmentServiceTests : TestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
     {
         // Arrange
-        _attachmentRepositoryMock.ExistsAsync(_existingAttachment.Guid)
+        _attachmentRepositoryMock.ExistsAsync(_existingAttachment.Guid, default)
             .Returns(true);
 
         // Act
-        var result = await _dut.ExistsAsync(_existingAttachment.Guid);
+        var result = await _dut.ExistsAsync(_existingAttachment.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -238,7 +239,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         // Act
-        var result = await _dut.ExistsAsync(Guid.NewGuid());
+        var result = await _dut.ExistsAsync(Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);

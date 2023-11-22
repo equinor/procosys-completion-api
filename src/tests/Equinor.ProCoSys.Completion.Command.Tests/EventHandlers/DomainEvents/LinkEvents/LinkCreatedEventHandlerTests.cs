@@ -57,11 +57,12 @@ public class LinkCreatedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual($"Link {_linkCreatedEvent.Link.Title} created", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_linkCreatedEvent.Link.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_linkCreatedEvent.Link.SourceGuid, _publishedIntegrationEvent.SourceGuid);
-        Assert.AreEqual(_linkCreatedEvent.Link.SourceType, _publishedIntegrationEvent.SourceType);
+        Assert.AreEqual(_linkCreatedEvent.Link.ParentGuid, _publishedIntegrationEvent.ParentGuid);
+        Assert.AreEqual(_linkCreatedEvent.Link.ParentType, _publishedIntegrationEvent.ParentType);
         Assert.AreEqual(_linkCreatedEvent.Link.Title, _publishedIntegrationEvent.Title);
         Assert.AreEqual(_linkCreatedEvent.Link.Url, _publishedIntegrationEvent.Url);
         Assert.AreEqual(_linkCreatedEvent.Link.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_linkCreatedEvent.Link.CreatedBy.Guid, _publishedIntegrationEvent.CreatedByOid);
+        Assert.AreEqual(_linkCreatedEvent.Link.CreatedBy.Guid, _publishedIntegrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(_linkCreatedEvent.Link.CreatedBy.GetFullName(), _publishedIntegrationEvent.CreatedBy.FullName);
     }
 }

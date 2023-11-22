@@ -4,6 +4,8 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 
 public interface IPunchItemDeletedV1 : IIntegrationEvent
 {
-    Guid DeletedByOid { get; }
+    // Guid of the entity owning the Punch
+    Guid ParentGuid { get; }
+    IUser DeletedBy { get; }
     DateTime DeletedAtUtc { get;  }
 }

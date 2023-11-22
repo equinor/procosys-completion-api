@@ -24,7 +24,7 @@ public class UpdatePunchItemLinkCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _linkServiceMock = Substitute.For<ILinkService>();
-        _linkServiceMock.ExistsAsync(_command.LinkGuid)
+        _linkServiceMock.ExistsAsync(_command.LinkGuid, default)
             .Returns(true);
 
         _dut = new UpdatePunchItemLinkCommandValidator(
@@ -62,7 +62,7 @@ public class UpdatePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_LinkNotExists()
     {
         // Arrange
-        _linkServiceMock.ExistsAsync(_command.LinkGuid)
+        _linkServiceMock.ExistsAsync(_command.LinkGuid, default)
             .Returns(false);
 
         // Act

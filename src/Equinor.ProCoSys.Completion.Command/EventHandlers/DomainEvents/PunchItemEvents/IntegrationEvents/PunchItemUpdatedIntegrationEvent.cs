@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
@@ -33,69 +34,66 @@ public record PunchItemUpdatedIntegrationEvent
     string? OriginalWorkOrderNo,
     string? DocumentNo,
     int? SWCRNo,
-    Guid? ActionByOid,
-    Guid? ClearedByOid,
+    IUser? ActionBy,
+    IUser? ClearedBy,
     DateTime? ClearedAtUtc,
-    Guid? RejectedByOid,
+    IUser? RejectedBy,
     DateTime? RejectedAtUtc,
-    Guid? VerifiedByOid,
+    IUser? VerifiedBy,
     DateTime? VerifiedAtUtc,
-    Guid CreatedByOid,
+    IUser CreatedBy,
     DateTime CreatedAtUtc,
-    Guid ModifiedByOid,
+    IUser ModifiedBy,
     DateTime ModifiedAtUtc,
     List<IProperty> Changes
 ) : IPunchItemUpdatedV1
 {
-    internal PunchItemUpdatedIntegrationEvent(PunchItemUpdatedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemUpdatedDomainEvent domainEvent) : this(
         "Punch item updated",
-        punchItemDomainEvent.PunchItem,
-        punchItemDomainEvent.Changes)
+        domainEvent.PunchItem,
+        domainEvent.Changes)
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemClearedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemClearedDomainEvent domainEvent) : this(
         "Punch item cleared",
-        punchItemDomainEvent.PunchItem,
+        domainEvent.PunchItem,
         new List<IProperty>())
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemUnclearedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemUnclearedDomainEvent domainEvent) : this(
         "Punch item uncleared",
-        punchItemDomainEvent.PunchItem,
+        domainEvent.PunchItem,
         new List<IProperty>())
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemRejectedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemRejectedDomainEvent domainEvent) : this(
         "Punch item rejected",
-        punchItemDomainEvent.PunchItem,
+        domainEvent.PunchItem,
         new List<IProperty>())
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemVerifiedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemVerifiedDomainEvent domainEvent) : this(
         "Punch item verified",
-        punchItemDomainEvent.PunchItem,
+        domainEvent.PunchItem,
         new List<IProperty>())
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemUnverifiedDomainEvent punchItemDomainEvent) : this(
+    internal PunchItemUpdatedIntegrationEvent(PunchItemUnverifiedDomainEvent domainEvent) : this(
         "Punch item unverified",
-        punchItemDomainEvent.PunchItem,
+        domainEvent.PunchItem,
         new List<IProperty>())
     {
     }
 
-    internal PunchItemUpdatedIntegrationEvent(PunchItemCategoryUpdatedDomainEvent punchItemDomainEvent) : this(
-        $"Punch item category changed to {punchItemDomainEvent.PunchItem.Category}",
-        punchItemDomainEvent.PunchItem,
-        new List<IProperty>
-        {
-            punchItemDomainEvent.Change
-        })
+    internal PunchItemUpdatedIntegrationEvent(PunchItemCategoryUpdatedDomainEvent domainEvent) : this(
+        $"Punch item category changed to {domainEvent.PunchItem.Category}",
+        domainEvent.PunchItem,
+        new List<IProperty> { domainEvent.Change })
     {
     }
 
@@ -124,16 +122,16 @@ public record PunchItemUpdatedIntegrationEvent
         punchItem.OriginalWorkOrder?.No,
         punchItem.Document?.No,
         punchItem.SWCR?.No,
-        punchItem.ActionBy?.Guid,
-        punchItem.ClearedBy?.Guid,
+        punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
+        punchItem.ClearedBy is null ? null : new User(punchItem.ClearedBy.Guid, punchItem.ClearedBy.GetFullName()),
         punchItem.ClearedAtUtc,
-        punchItem.RejectedBy?.Guid,
+        punchItem.RejectedBy is null ? null : new User(punchItem.RejectedBy.Guid, punchItem.RejectedBy.GetFullName()),
         punchItem.RejectedAtUtc,
-        punchItem.VerifiedBy?.Guid,
+        punchItem.VerifiedBy is null ? null : new User(punchItem.VerifiedBy.Guid, punchItem.VerifiedBy.GetFullName()),
         punchItem.VerifiedAtUtc,
-        punchItem.CreatedBy.Guid,
+        new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
         punchItem.CreatedAtUtc,
-        punchItem.ModifiedBy!.Guid,
+        new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
         punchItem.ModifiedAtUtc!.Value,
         changes)
     {

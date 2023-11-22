@@ -16,8 +16,8 @@ public class AttachmentDeletedV1ContractTests : ContractTestBase<IAttachmentDele
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
-            { "SourceGuid", typeof(Guid) },
-            { "DeletedByOid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid) },
+            { "DeletedBy", typeof(IUser) },
             { "DeletedAtUtc", typeof(DateTime) }
         };
 

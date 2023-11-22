@@ -29,7 +29,7 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
 
     public async Task<Result<string>> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         punchItem.AddDomainEvent(new PunchItemCategoryUpdatedDomainEvent(
             punchItem,
