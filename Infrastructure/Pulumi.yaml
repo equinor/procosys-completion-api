@@ -1,9 +1,0 @@
-name: completion-api-infrastructure
-runtime: dotnet
-description: Infrastructure as code  for Completion API
-config: 
-  completion-api-infrastructure:EquinorIp: 143.97.2.35
-  completion-api-infrastructure:BouvetStavangerIp: 213.236.148.45
-  completion-api-infrastructure:BouvetVpnIpRange: 8.29.230.8/31
-  completion-api-infrastructure:EquinorTenantId: 3aa4a235-b6e2-48d5-9195-7fcf05b459b0
-  completion-api-infrastructure:PcsDeveloperObjectId: ff10241c-9a6c-47c3-aebd-5d8bd75ae9de
