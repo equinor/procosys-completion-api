@@ -4,8 +4,10 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileFile>../Dockerfile</DockerfileFile>
     <UserSecretsId>1d7e27f0-e993-47db-8382-fee6e116c3ac</UserSecretsId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +30,6 @@
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
     <PackageReference Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
@@ -36,9 +37,12 @@
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Query\Equinor.ProCoSys.Completion.Query.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Content Include="..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
+  </ItemGroup>
 </Project>
