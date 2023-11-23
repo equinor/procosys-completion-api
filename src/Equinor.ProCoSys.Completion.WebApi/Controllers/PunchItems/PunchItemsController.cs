@@ -44,6 +44,9 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
+/// <summary>
+/// PunchItem endpoints
+/// </summary>
 [ApiController]
 [Route("PunchItems")]
 public class PunchItemsController : ControllerBase
@@ -53,6 +56,14 @@ public class PunchItemsController : ControllerBase
     public PunchItemsController(IMediator mediator) => _mediator = mediator;
 
     #region PunchItems
+    /// <summary>
+    /// Get a PunchItem by its Guid
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>Found PunchItem</returns>
+    /// <response code="404">PunchItem not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}")]
     public async Task<ActionResult<PunchItemDetailsDto>> GetPunchItemByGuid(
@@ -67,6 +78,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Get all PunchItems in given project (no filtering available yet)
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="projectGuid">Guid of project where to get PunchItems</param>
+    /// <returns>List of PunchItems (or empty list)</returns>
+    /// <response code="404">Project not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PunchItemDto>>> GetPunchItemsInProject(
@@ -82,6 +101,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Create new PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="dto"></param>
+    /// <returns>Guid and RowVersion of created PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_CREATE, Permissions.APPLICATION_TESTER)]
     [HttpPost]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchItem(
@@ -120,11 +147,13 @@ public class PunchItemsController : ControllerBase
     /// <summary>
     /// Patch a PunchItem
     /// </summary>
-    /// <param name="plant">ID of plant in PCS$PLANTNAME format</param>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
-    /// <param name="guid">Guid on PunchItem to be patched</param>
-    /// <param name="patchPunchDto">How to patch. See details in remark</param>
-    /// <returns></returns>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto">How to patch. See details in remark</param>
+    /// <returns>New RowVersion of PunchItem. If no changes done, same RowVersion as previous returned</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    /// <response code="404">Not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPatch("{guid}")]
     [SwaggerRequestExample(typeof(PatchPunchItemDto), typeof(PatchPunchItemDtoExample))]
@@ -135,14 +164,25 @@ public class PunchItemsController : ControllerBase
         string plant,
         CancellationToken cancellationToken,
         [FromRoute] Guid guid,
-        [FromBody] PatchPunchItemDto patchPunchDto)
+        [FromBody] PatchPunchItemDto dto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion), 
+            new UpdatePunchItemCommand(guid, dto.PatchDocument, dto.RowVersion), 
             cancellationToken);
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Change category on PunchItem (PA->PB or PB->PA)
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto">dto</param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    /// <response code="404">Not found</response>
+    /// <remarks>Will give validation error if set same category as PunchItem already have</remarks>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPatch("{guid}/UpdateCategory")]
     public async Task<ActionResult<string>> UpdatePunchItemCategory(
@@ -152,14 +192,23 @@ public class PunchItemsController : ControllerBase
         string plant,
         CancellationToken cancellationToken,
         [FromRoute] Guid guid,
-        [FromBody] UpdatePunchItemCategoryDto updatePunchItemCategoryDto)
+        [FromBody] UpdatePunchItemCategoryDto dto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchItemCategoryCommand(guid, updatePunchItemCategoryDto.Category, updatePunchItemCategoryDto.RowVersion), 
+            new UpdatePunchItemCategoryCommand(guid, dto.Category, dto.RowVersion), 
             cancellationToken);
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Clear new or rejected PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_CLEAR, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Clear")]
     public async Task<ActionResult<string>> ClearPunchItem(
@@ -176,6 +225,15 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Unclear cleared PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_CLEAR, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Unclear")]
     public async Task<ActionResult<string>> UnclearPunchItem(
@@ -192,6 +250,15 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Reject cleared PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_CLEAR, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Reject")]
     public async Task<ActionResult<string>> RejectPunchItem(
@@ -208,6 +275,15 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Verify cleared PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_VERIFY, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Verify")]
     public async Task<ActionResult<string>> VerifyPunchItem(
@@ -224,6 +300,15 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Unverify verified PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of PunchItem</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_VERIFY, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Unverify")]
     public async Task<ActionResult<string>> UnverifyPunchItem(
@@ -240,6 +325,13 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Delete PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
     [AuthorizeAny(Permissions.PUNCHITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}")]
     public async Task<ActionResult> DeletePunchItem(
@@ -257,6 +349,15 @@ public class PunchItemsController : ControllerBase
     #endregion
 
     #region Links
+    /// <summary>
+    /// Add link to PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>Guid and RowVersion of created link</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Links")]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchItemLink(
@@ -274,6 +375,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Get all links on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>List of links (or empty list)</returns>
+    /// <response code="404">PunchItem not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Links")]
     public async Task<ActionResult<IEnumerable<LinkDto>>> GetPunchItemLinks(
@@ -288,6 +397,16 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Update a link on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="linkGuid">Guid on link</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of link</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Links/{linkGuid}")]
     public async Task<ActionResult<string>> UpdatePunchItemLink(
@@ -306,6 +425,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Delete a link from a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="linkGuid">Guid on link</param>
+    /// <param name="dto"></param>
     [AuthorizeAny(Permissions.PUNCHITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Links/{linkGuid}")]
     public async Task<ActionResult> DeleteLink(
@@ -326,6 +453,15 @@ public class PunchItemsController : ControllerBase
     #endregion
 
     #region Comments
+    /// <summary>
+    /// Add a comment to a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>Guid and RowVersion of created comment</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Comments")]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchItemComment(
@@ -341,6 +477,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Get all comments on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>List of comments (or empty list)</returns>
+    /// <response code="404">PunchItem not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Comments")]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetPunchItemComments(
@@ -357,6 +501,16 @@ public class PunchItemsController : ControllerBase
     #endregion
 
     #region Attachments
+    /// <summary>
+    /// Add (upload) an new attachment/picture to a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>Guid and RowVersion of created attachment/picture</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    /// <remarks>Will give validation error if uploading same attachment with same filename as an existing attachment. Use PUT endpoint if overwrite is intended</remarks>
     [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Attachments")]
     public async Task<ActionResult<GuidAndRowVersion>> UploadPunchItemAttachment(
@@ -378,6 +532,16 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Add (upload) and overwrite an existing attachment/picture on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of attachment/picture</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    /// <remarks>Will give validation error if attachment with same filename don't exists. Use POST endpoint if uploading new attachment is intended</remarks>
     [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Attachments")]
     public async Task<ActionResult<string>> OverwriteExistingPunchItemAttachment(
@@ -400,6 +564,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Get all attachments/pictures on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>List of attachments/pictures (or empty list)</returns>
+    /// <response code="404">PunchItem not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Attachments")]
     public async Task<ActionResult<IEnumerable<AttachmentDto>>> GetPunchItemAttachments(
@@ -414,6 +586,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Delete an attachment/picture from a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="attachmentGuid">Guid on attachment/picture</param>
+    /// <param name="dto"></param>
     [AuthorizeAny(Permissions.PUNCHITEM_DELETE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult> DeleteAttachment(
@@ -432,6 +612,16 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Get the download url for an attachment/picture on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="attachmentGuid">Guid on attachment/picture</param>
+    /// <returns>Download url</returns>
+    /// <response code="404">PunchItem or attachment/picture not found</response>
+    /// <remarks>The url is valid for a short period (some minutes). The period is configured in app settings, key BlobClockSkewMinutes</remarks>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult<string>> GetPunchItemAttachmentDownloadUrl(
