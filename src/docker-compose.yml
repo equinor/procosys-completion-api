@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  equinor.procosys.completion.webapi:
+    image: equinor.procosys.completion.webapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+  db:
+    image: procosys.azurecr.io/sandbox:latest
+    ports:
+      - "1433:1433"

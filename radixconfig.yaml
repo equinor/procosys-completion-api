@@ -1,0 +1,52 @@
+#file: noinspection KubernetesUnknownResourcesInspection
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: procosys-completion-api
+spec:
+  build:
+    secrets:
+      - FEED_TOKEN
+  environments:
+    - name: dev
+      build:
+        from: radix
+#    - name: feature
+#      build:
+#        from: feature/* # Any repo named feature/*whatever* will trigger this build
+    - name: test
+      build:
+        from: main
+  components:
+    - name: webapi
+      src: ./src # Dockerfile location
+#      secrets:
+#        - ConnectionStrings__ServiceBus
+#        - ConnectionStrings__CompletionContext
+#        - Authenticator__CompletionApiSecret
+#        - ApplicationInsights__ConnectionString
+#        - BlobStorage__ConnectionString
+      variables:
+        UseAzureAppConfiguration: false
+        ASPNETCORE_URLS: "http://*:5000"
+        Swagger__ClientId: ""
+        Swagger__AuthorizationUrl: ""  
+        ApplicationInsights__ConnectionString: ""
+        ConnectionStrings__AppConfig: ""
+        SeedDummyData: ""
+        MigrateDatabase: ""
+        MainApi__BaseAddress: ""
+        MainApi__ApiVersion: ""
+        DebugEntityFrameworkInDevelopment: ""
+        Authenticator__MainApiScope: ""
+        Authenticator__Instance: ""
+        Authenticator__DisableProjectUserDataClaims: true
+        Authenticator__DisableRestrictionRoleUserDataClaims: false
+        Authenticator__CompletionApiClientId: ""
+        Authenticator__CompletionApiObjectId: ""
+        API__Authority:  "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/"
+        API__Audience: ""
+      ports:
+        - name: http
+          port: 5000
+      publicPort: http
