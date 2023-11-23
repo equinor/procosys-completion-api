@@ -150,7 +150,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid on PunchItem</param>
-    /// <param name="dto">How to patch. See details in remark</param>
+    /// <param name="dto"></param>
     /// <returns>New RowVersion of PunchItem. If no changes done, same RowVersion as previous returned</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
     /// <response code="404">Not found</response>
