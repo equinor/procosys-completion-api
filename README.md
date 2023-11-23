@@ -10,6 +10,19 @@ Typical settings that should be moved to secrets.json are:
 * Keys
 * Local URLs
 * Other secrets
+### Migration
+When running in development environment, the database is auto-migrated on application startup. This can be changed using the setting in appsettings.development.json.
+
+### Seeding
+The datebase can be seeded with test data. To do this, enable the feature in appsettings.development.json and start the application.
+>Note: This will run every time the application starts. To avoid multiple seedings, disable the feature after the application has started.
+
+## Visual Studio
+### Set secrets
+To open secrets.json, right-click on the startup project and select 'Manage User Secrets'.
+### Run
+
+Choose to run as *Equinor.ProcoSys.Completion.WebApi* in the dropdown menu and hit F5.
 
 
 This guide will help you set up your local environment to run the application using Docker Compose.
