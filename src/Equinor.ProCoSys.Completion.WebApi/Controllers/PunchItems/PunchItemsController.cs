@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
@@ -57,9 +58,10 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemQuery(guid));
+        var result = await _mediator.Send(new GetPunchItemQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -70,10 +72,11 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [Required]
         [FromQuery] Guid projectGuid)
     {
-        var result = await _mediator.Send(new GetPunchItemsInProjectQuery(projectGuid));
+        var result = await _mediator.Send(new GetPunchItemsInProjectQuery(projectGuid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -84,6 +87,7 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromBody] CreatePunchItemDto dto)
     {
         var result = await _mediator.Send(new CreatePunchItemCommand(
@@ -106,7 +110,8 @@ public class PunchItemsController : ControllerBase
             dto.ExternalItemNo,
             dto.MaterialRequired,
             dto.MaterialETAUtc,
-            dto.MaterialExternalNo));
+            dto.MaterialExternalNo), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -117,11 +122,13 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] PatchPunchItemDto patchPunchDto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion));
+            new UpdatePunchItemCommand(guid, patchPunchDto.PatchDocument, patchPunchDto.RowVersion), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -132,11 +139,13 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] UpdatePunchItemCategoryDto updatePunchItemCategoryDto)
     {
         var result = await _mediator.Send(
-            new UpdatePunchItemCategoryCommand(guid, updatePunchItemCategoryDto.Category, updatePunchItemCategoryDto.RowVersion));
+            new UpdatePunchItemCategoryCommand(guid, updatePunchItemCategoryDto.Category, updatePunchItemCategoryDto.RowVersion), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -147,11 +156,12 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
         var result = await _mediator.Send(
-            new ClearPunchItemCommand(guid, dto.RowVersion));
+            new ClearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -162,11 +172,12 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
         var result = await _mediator.Send(
-            new UnclearPunchItemCommand(guid, dto.RowVersion));
+            new UnclearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -177,11 +188,12 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
         var result = await _mediator.Send(
-            new RejectPunchItemCommand(guid, dto.RowVersion));
+            new RejectPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -192,11 +204,12 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
         var result = await _mediator.Send(
-            new VerifyPunchItemCommand(guid, dto.RowVersion));
+            new VerifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -207,11 +220,12 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
         var result = await _mediator.Send(
-            new UnverifyPunchItemCommand(guid, dto.RowVersion));
+            new UnverifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -222,10 +236,11 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion));
+        var result = await _mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
     #endregion
@@ -238,10 +253,13 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] CreateLinkDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchItemLinkCommand(guid, dto.Title, dto.Url));
+        var result = await _mediator.Send(
+            new CreatePunchItemLinkCommand(guid, dto.Title, dto.Url), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -252,9 +270,10 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemLinksQuery(guid));
+        var result = await _mediator.Send(new GetPunchItemLinksQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -265,11 +284,14 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromRoute] Guid linkGuid,
         [FromBody] UpdateLinkDto dto)
     {
-        var result = await _mediator.Send(new UpdatePunchItemLinkCommand(guid, linkGuid, dto.Title, dto.Url, dto.RowVersion));
+        var result = await _mediator.Send(
+            new UpdatePunchItemLinkCommand(guid, linkGuid, dto.Title, dto.Url, dto.RowVersion), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -280,11 +302,14 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromRoute] Guid linkGuid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(new DeletePunchItemLinkCommand(guid, linkGuid, dto.RowVersion));
+        var result = await _mediator.Send(
+            new DeletePunchItemLinkCommand(guid, linkGuid, dto.RowVersion), 
+            cancellationToken);
         return this.FromResult(result);
     }
     #endregion
@@ -297,10 +322,11 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromBody] CreateCommentDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchItemCommentCommand(guid, dto.Text));
+        var result = await _mediator.Send(new CreatePunchItemCommentCommand(guid, dto.Text), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -311,9 +337,10 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemCommentsQuery(guid));
+        var result = await _mediator.Send(new GetPunchItemCommentsQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
     #endregion
@@ -326,6 +353,7 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromForm] UploadNewAttachmentDto dto)
     {
@@ -334,7 +362,8 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
             guid,
             dto.File.FileName,
-            stream));
+            stream), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -345,6 +374,7 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromForm] OverwriteAttachmentDto dto)
     {
@@ -354,7 +384,8 @@ public class PunchItemsController : ControllerBase
             guid, 
             dto.File.FileName,
             dto.RowVersion,
-            stream));
+            stream), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -365,9 +396,10 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid));
+        var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -378,11 +410,14 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromRoute] Guid attachmentGuid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion));
+        var result = await _mediator.Send(
+            new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion), 
+            cancellationToken);
         return this.FromResult(result);
     }
 
@@ -393,10 +428,13 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [FromRoute] Guid guid,
         [FromRoute] Guid attachmentGuid)
     {
-        var result = await _mediator.Send(new GetPunchItemAttachmentDownloadUrlQuery(guid, attachmentGuid));
+        var result = await _mediator.Send(
+            new GetPunchItemAttachmentDownloadUrlQuery(guid, attachmentGuid), 
+            cancellationToken);
 
         if (result.ResultType != ResultType.Ok)
         {

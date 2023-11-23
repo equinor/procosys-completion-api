@@ -57,7 +57,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     public async Task GetAsync_KnownGuid_ShouldReturnEntityWithNavigationProperties()
     {
         // Act
-        var result = await _dut.GetAsync(_knownGuid);
+        var result = await _dut.GetAsync(_knownGuid, default);
 
         // Assert
         Assert.IsNotNull(result);

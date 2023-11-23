@@ -17,20 +17,20 @@ public class CurrentBearerTokenMiddleware
         IBearerTokenSetterForAll bearerTokenSetterForAll,
         ILogger<CurrentBearerTokenMiddleware> logger)
     {
-        logger.LogInformation($"----- {GetType().Name} start");
+        logger.LogDebug("----- {MiddlewareName} start", GetType().Name);
         if (httpContextAccessor.HttpContext is not null)
         {
             var authorizationHeader = httpContextAccessor.HttpContext.Request.Headers["Authorization"];
-            var tokens = authorizationHeader.ToString()?.Split(' ');
+            var tokens = authorizationHeader.ToString().Split(' ');
 
-            if (tokens is not null && tokens.Length > 1)
+            if (tokens.Length > 1)
             {
                 var token = tokens[1];
                 bearerTokenSetterForAll.SetBearerToken(token);
             }
         }
 
-        logger.LogInformation($"----- {GetType().Name} complete");
+        logger.LogDebug("----- {MiddlewareName} complete", GetType().Name);
         // Call the next delegate/middleware in the pipeline
         await _next(context);
     }

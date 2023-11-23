@@ -27,7 +27,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

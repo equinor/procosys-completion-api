@@ -67,13 +67,14 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid);
+            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
-            var changes = await PatchAsync(punchItem, request.PatchDocument);
+            var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
+
 
             if (changes.Any())
             {
-                punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+                // punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));   // HAR KOMMENTERT UT MIDLERTIDIG PGA AV BUG SOM JAN INGE FIKSER
             }
             punchItem.SetRowVersion(request.RowVersion);
 
@@ -82,7 +83,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             // To be removed when sync to PCS 4 is no longer needed
             //---
             await _syncToPCS4Service.SyncUpdates(punchItem, cancellationToken);
-            //new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes)), cancellationToken);
             //---
 
             transaction.Commit();
@@ -93,8 +93,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
         catch (Exception ex)
         {
-            //Ikke vellykket transaksjon. Rollback
-            _logger.LogError("Punch item ikke oppdatert", ex);
+            _logger.LogError($"Error occured on update of punch item with guid {request.PunchItemGuid}.", ex);
             transaction.Rollback();
             throw;
         }
@@ -102,7 +101,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
     private async Task<List<IProperty>> PatchAsync(
         PunchItem punchItem,
-        JsonPatchDocument<PatchablePunchItem> patchDocument)
+        JsonPatchDocument<PatchablePunchItem> patchDocument,
+        CancellationToken cancellationToken)
     {
         var changes = new List<IProperty>();
 
@@ -125,15 +125,15 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                     break;
 
                 case nameof(PatchablePunchItem.RaisedByOrgGuid):
-                    await PatchRaisedByOrgAsync(punchItem, patchedPunchItem, changes);
+                    await PatchRaisedByOrgAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.ClearingByOrgGuid):
-                    await PatchClearingByOrgGuidAsync(punchItem, patchedPunchItem, changes);
+                    await PatchClearingByOrgGuidAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.ActionByPersonOid):
-                    await PatchActionByPersonAsync(punchItem, patchedPunchItem, changes);
+                    await PatchActionByPersonAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.DueTimeUtc):
@@ -145,31 +145,31 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                     break;
 
                 case nameof(PatchablePunchItem.PriorityGuid):
-                    await PatchPriorityAsync(punchItem, patchedPunchItem, changes);
+                    await PatchPriorityAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.SortingGuid):
-                    await PatchSortingAsync(punchItem, patchedPunchItem, changes);
+                    await PatchSortingAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.TypeGuid):
-                    await PatchTypeAsync(punchItem, patchedPunchItem, changes);
+                    await PatchTypeAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.OriginalWorkOrderGuid):
-                    await PatchOriginalWorkOrderAsync(punchItem, patchedPunchItem, changes);
+                    await PatchOriginalWorkOrderAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.WorkOrderGuid):
-                    await PatchWorkOrderAsync(punchItem, patchedPunchItem, changes);
+                    await PatchWorkOrderAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.SWCRGuid):
-                    await PatchSWCRAsync(punchItem, patchedPunchItem, changes);
+                    await PatchSWCRAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.DocumentGuid):
-                    await PatchDocumentAsync(punchItem, patchedPunchItem, changes);
+                    await PatchDocumentAsync(punchItem, patchedPunchItem, changes, cancellationToken);
                     break;
 
                 case nameof(PatchablePunchItem.ExternalItemNo):
@@ -196,7 +196,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         return changes;
     }
 
-    private async Task PatchOriginalWorkOrderAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchOriginalWorkOrderAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.OriginalWorkOrder?.Guid == patchedPunchItem.OriginalWorkOrderGuid)
         {
@@ -205,7 +209,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.OriginalWorkOrderGuid is not null)
         {
-            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.OriginalWorkOrderGuid.Value);
+            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.OriginalWorkOrderGuid.Value, cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.OriginalWorkOrder),
                 punchItem.OriginalWorkOrder?.No,
                 workOrder.No));
@@ -220,7 +224,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchWorkOrderAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchWorkOrderAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.WorkOrder?.Guid == patchedPunchItem.WorkOrderGuid)
         {
@@ -229,7 +237,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.WorkOrderGuid is not null)
         {
-            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.WorkOrderGuid.Value);
+            var workOrder = await _workOrderRepository.GetAsync(patchedPunchItem.WorkOrderGuid.Value, cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.WorkOrder),
                 punchItem.WorkOrder?.No,
                 workOrder.No));
@@ -244,7 +252,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchSWCRAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchSWCRAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.SWCR?.Guid == patchedPunchItem.SWCRGuid)
         {
@@ -253,7 +265,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.SWCRGuid is not null)
         {
-            var swcr = await _swcrRepository.GetAsync(patchedPunchItem.SWCRGuid.Value);
+            var swcr = await _swcrRepository.GetAsync(patchedPunchItem.SWCRGuid.Value, cancellationToken);
             changes.Add(new Property<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
                 swcr.No));
@@ -268,7 +280,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchDocumentAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchDocumentAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.Document?.Guid == patchedPunchItem.DocumentGuid)
         {
@@ -277,7 +293,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.DocumentGuid is not null)
         {
-            var document = await _documentRepository.GetAsync(patchedPunchItem.DocumentGuid.Value);
+            var document = await _documentRepository.GetAsync(patchedPunchItem.DocumentGuid.Value, cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.Document),
                 punchItem.Document?.No,
                 document.No));
@@ -292,7 +308,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchActionByPersonAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchActionByPersonAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.ActionBy?.Guid == patchedPunchItem.ActionByPersonOid)
         {
@@ -301,23 +321,26 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.ActionByPersonOid is not null)
         {
-            // todo 107494 Sende Oid eller Navn på person?
-            var person = await GetOrCreatePersonAsync(patchedPunchItem.ActionByPersonOid.Value);
-            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
-                punchItem.ActionBy?.Guid,
-                person.Guid));
+            var person = await GetOrCreatePersonAsync(patchedPunchItem.ActionByPersonOid.Value, cancellationToken);
+            changes.Add(new Property<User?>(nameof(punchItem.ActionBy),
+                punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
+                new User(person.Guid, person.GetFullName())));
             punchItem.SetActionBy(person);
         }
         else
         {
-            changes.Add(new Property<Guid?>(nameof(punchItem.ActionBy),
-                punchItem.ActionBy?.Guid,
+            changes.Add(new Property<User?>(nameof(punchItem.ActionBy),
+                new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName()),
                 null));
             punchItem.ClearActionBy();
         }
     }
 
-    private async Task PatchTypeAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchTypeAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.Type?.Guid == patchedPunchItem.TypeGuid)
         {
@@ -328,7 +351,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         {
             var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
                 patchedPunchItem.TypeGuid.Value,
-                LibraryType.PUNCHLIST_TYPE);
+                LibraryType.PUNCHLIST_TYPE,
+                cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.Type),
                 punchItem.Type?.Code,
                 libraryItem.Code));
@@ -343,7 +367,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchSortingAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchSortingAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.Sorting?.Guid == patchedPunchItem.SortingGuid)
         {
@@ -354,7 +382,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         {
             var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
                 patchedPunchItem.SortingGuid.Value,
-                LibraryType.PUNCHLIST_SORTING);
+                LibraryType.PUNCHLIST_SORTING,
+                cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.Sorting),
                 punchItem.Sorting?.Code,
                 libraryItem.Code));
@@ -369,7 +398,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchPriorityAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchPriorityAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.Priority?.Guid == patchedPunchItem.PriorityGuid)
         {
@@ -380,7 +413,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         {
             var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
                 patchedPunchItem.PriorityGuid.Value,
-                LibraryType.PUNCHLIST_PRIORITY);
+                LibraryType.PUNCHLIST_PRIORITY,
+                cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.Priority),
                 punchItem.Priority?.Code,
                 libraryItem.Code));
@@ -395,7 +429,11 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
     }
 
-    private async Task PatchClearingByOrgGuidAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchClearingByOrgGuidAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.ClearingByOrg.Guid == patchedPunchItem.ClearingByOrgGuid)
         {
@@ -404,14 +442,19 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
             patchedPunchItem.ClearingByOrgGuid,
-            LibraryType.COMPLETION_ORGANIZATION);
+            LibraryType.COMPLETION_ORGANIZATION,
+            cancellationToken);
         changes.Add(new Property<string>(nameof(punchItem.ClearingByOrg),
             punchItem.ClearingByOrg.Code,
             libraryItem.Code));
         punchItem.SetClearingByOrg(libraryItem);
     }
 
-    private async Task PatchRaisedByOrgAsync(PunchItem punchItem, PatchablePunchItem patchedPunchItem, List<IProperty> changes)
+    private async Task PatchRaisedByOrgAsync(
+        PunchItem punchItem,
+        PatchablePunchItem patchedPunchItem,
+        List<IProperty> changes,
+        CancellationToken cancellationToken)
     {
         if (punchItem.RaisedByOrg.Guid == patchedPunchItem.RaisedByOrgGuid)
         {
@@ -420,7 +463,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
             patchedPunchItem.RaisedByOrgGuid,
-            LibraryType.COMPLETION_ORGANIZATION);
+            LibraryType.COMPLETION_ORGANIZATION,
+            cancellationToken);
         changes.Add(new Property<string>(nameof(punchItem.RaisedByOrg),
             punchItem.RaisedByOrg.Code,
             libraryItem.Code));
@@ -523,13 +567,13 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             .Where(op => op.OperationType == OperationType.Replace)
             .Select(op => op.path.TrimStart('/')).ToList();
 
-    private async Task<Person> GetOrCreatePersonAsync(Guid oid)
+    private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
     {
-        var personExists = await _personRepository.ExistsAsync(oid);
+        var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
         // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
         if (personExists)
         {
-            return await _personRepository.GetAsync(oid);
+            return await _personRepository.GetAsync(oid, cancellationToken);
         }
 
         var pcsPerson = await _personCache.GetAsync(oid);

@@ -29,7 +29,9 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Equinor.ProCoSys.Completion.WebApi.Validators;
+using Equinor.ProCoSys.Completion.Command.Validators;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -111,6 +113,8 @@ public static class ApplicationModule
         services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ISWCRRepository, SWCRRepository>();
+        services.AddScoped<ILabelRepository, LabelRepository>();
+        services.AddScoped<ILabelHostRepository, LabelHostRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
@@ -123,13 +127,12 @@ public static class ApplicationModule
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
-        services.AddScoped<IPersonValidator, PersonValidator>();
         services.AddScoped<IWorkOrderValidator, WorkOrderValidator>();
         services.AddScoped<ISWCRValidator, SWCRValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
-        services.AddScoped<ICheckListValidator, CheckListValidator>();
-        services.AddScoped<IRowVersionValidator, RowVersionValidator>();
-        services.AddScoped<IPatchOperationValidator, PatchOperationValidator>();
+        services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
+        services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
+        services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
         services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();

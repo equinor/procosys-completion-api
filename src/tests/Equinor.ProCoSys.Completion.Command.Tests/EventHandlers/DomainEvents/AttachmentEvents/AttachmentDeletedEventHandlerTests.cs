@@ -58,11 +58,12 @@ public class AttachmentDeletedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual($"Attachment {_attachmentDeletedEvent.Attachment.FileName} deleted", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_attachmentDeletedEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_attachmentDeletedEvent.Attachment.SourceGuid, _publishedIntegrationEvent.SourceGuid);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
         // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
         Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.DeletedAtUtc);
-        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedByOid);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.DeletedBy.Oid);
+        Assert.AreEqual(_attachmentDeletedEvent.Attachment.ModifiedBy!.GetFullName(), _publishedIntegrationEvent.DeletedBy.FullName);
     }
 }

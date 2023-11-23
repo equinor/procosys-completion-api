@@ -16,6 +16,7 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
             { "CheckListGuid", typeof(Guid) },
             { "ProjectName", typeof(string) },
@@ -38,14 +39,14 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
             { "OriginalWorkOrderNo", typeof(string) },
             { "DocumentNo", typeof(string) },
             { "SWCRNo", typeof(int?) },
-            { "ActionByOid", typeof(Guid?) },
-            { "ClearedByOid", typeof(Guid?) },
+            { "ActionBy", typeof(IUser) },
+            { "ClearedBy", typeof(IUser) },
             { "ClearedAtUtc", typeof(DateTime?) },
-            { "RejectedByOid", typeof(Guid?) },
+            { "RejectedBy", typeof(IUser) },
             { "RejectedAtUtc", typeof(DateTime?) },
-            { "VerifiedByOid", typeof(Guid?) },
+            { "VerifiedBy", typeof(IUser) },
             { "VerifiedAtUtc", typeof(DateTime?) },
-            { "CreatedByOid", typeof(Guid) },
+            { "CreatedBy", typeof(IUser) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

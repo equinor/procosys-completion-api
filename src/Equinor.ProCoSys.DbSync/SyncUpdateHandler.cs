@@ -92,7 +92,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
         private async Task<string> BuildUpdateStatement(ColumnSyncConfig primaryKeyConfig, string primaryKeyValue, Dictionary<string, ColumnSyncConfig> columnConfigs, List<Column> updateColumns)
         {
-            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {GetSqlParameter(primaryKeyValue, primaryKeyConfig.SourceType)}";
+            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {ValueConvertion.GetSqlParameterValue(primaryKeyValue, primaryKeyConfig.SourceType)}";
 
             var noOfRowsInTarget = await _oracleDBExecutor.ExecuteDBQueryCountingRows(noOfRowsInTargetQuery);
 
@@ -121,7 +121,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                 }
             }
 
-            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = { ValueConvertion.GetSqlParameterValue(primaryKeyValue, primaryKeyConfig.SourceType)}");
+            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {ValueConvertion.GetSqlParameterValue(primaryKeyValue, primaryKeyConfig.SourceType)}");
 
             return updateStatement.ToString();
         }
@@ -143,6 +143,6 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             return ValueConvertion.GetSqlParameterValue(sourceValue, column.Type);
         }
 
-       
+
     }
 }

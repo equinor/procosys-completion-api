@@ -4,7 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <UserSecretsId>d8abc718-bf08-42e3-b814-eb89d1ac3148</UserSecretsId>
   </PropertyGroup>
 

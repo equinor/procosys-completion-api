@@ -35,7 +35,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
     public async Task<Result<Unit>> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
-        var personExists = await _personRepository.ExistsAsync(request.Oid);
+        var personExists = await _personRepository.ExistsAsync(request.Oid, cancellationToken);
 
         if (personExists)
         {

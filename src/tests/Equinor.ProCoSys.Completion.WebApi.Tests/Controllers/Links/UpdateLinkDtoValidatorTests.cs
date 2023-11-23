@@ -12,12 +12,12 @@ public class UpdateLinkDtoValidatorTests
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
     private UpdateLinkDtoValidator _dut = null!;
-    private IRowVersionValidator _rowVersionValidatorMock = null!;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
         _dut = new UpdateLinkDtoValidator(_rowVersionValidatorMock);

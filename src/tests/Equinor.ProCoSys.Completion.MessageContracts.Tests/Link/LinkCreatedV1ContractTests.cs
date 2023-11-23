@@ -16,11 +16,11 @@ public class LinkCreatedV1ContractTests : ContractTestBase<ILinkCreatedV1>
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
-            { "SourceGuid", typeof(Guid) },
-            { "SourceType", typeof(string) },
+            { "ParentGuid", typeof(Guid) },
+            { "ParentType", typeof(string) },
             { "Title", typeof(string) },
             { "Url", typeof(string) },
-            { "CreatedByOid", typeof(Guid) },
+            { "CreatedBy", typeof(IUser) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

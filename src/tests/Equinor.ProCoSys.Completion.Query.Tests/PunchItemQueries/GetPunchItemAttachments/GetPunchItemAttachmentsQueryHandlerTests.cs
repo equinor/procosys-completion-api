@@ -38,7 +38,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             _attachmentDto
         };
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
-        _attachmentServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+        _attachmentServiceMock.GetAllForParentAsync(_query.PunchItemGuid, default)
             .Returns(attachmentDtos);
 
         _dut = new GetPunchItemAttachmentsQueryHandler(_attachmentServiceMock);
@@ -53,7 +53,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         // Assert
         Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<AttachmentDto>));
         var attachment = result.Data.Single();
-        Assert.AreEqual(_attachmentDto.SourceGuid, attachment.SourceGuid);
+        Assert.AreEqual(_attachmentDto.ParentGuid, attachment.ParentGuid);
         Assert.AreEqual(_attachmentDto.Guid, attachment.Guid);
         Assert.AreEqual(_attachmentDto.FileName, attachment.FileName);
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
@@ -80,13 +80,13 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_Should_CallGetAllForSource_OnAttachmentService()
+    public async Task HandlingQuery_Should_CallGetAllForParent_OnAttachmentService()
     {
         // Act
         await _dut.Handle(_query, default);
 
         // Assert
-        await _attachmentServiceMock.Received(1).GetAllForSourceAsync(
+        await _attachmentServiceMock.Received(1).GetAllForParentAsync(
             _query.PunchItemGuid,
             default);
     }

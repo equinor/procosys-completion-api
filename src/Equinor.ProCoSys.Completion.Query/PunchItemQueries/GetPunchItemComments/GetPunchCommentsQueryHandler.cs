@@ -15,7 +15,7 @@ public class GetPunchItemCommentsQueryHandler : IRequestHandler<GetPunchItemComm
 
     public async Task<Result<IEnumerable<CommentDto>>> Handle(GetPunchItemCommentsQuery request, CancellationToken cancellationToken)
     {
-        var commentDtos = await _commentService.GetAllForSourceAsync(request.PunchItemGuid, cancellationToken);
+        var commentDtos = await _commentService.GetAllForParentAsync(request.PunchItemGuid, cancellationToken);
         return new SuccessResult<IEnumerable<CommentDto>>(commentDtos);
     }
 }

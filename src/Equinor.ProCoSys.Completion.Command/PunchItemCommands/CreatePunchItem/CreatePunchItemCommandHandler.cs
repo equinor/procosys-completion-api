@@ -61,10 +61,16 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetAsync(request.ProjectGuid);
+        var project = await _projectRepository.GetAsync(request.ProjectGuid, cancellationToken);
 
-        var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
-        var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(request.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
+        var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+            request.RaisedByOrgGuid,
+            LibraryType.COMPLETION_ORGANIZATION,
+            cancellationToken);
+        var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+            request.ClearingByOrgGuid,
+            LibraryType.COMPLETION_ORGANIZATION,
+            cancellationToken);
 
         var punchItem = new PunchItem(
             _plantProvider.Plant,
@@ -75,16 +81,16 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             raisedByOrg,
             clearingByOrg);
 
-        await SetActionByAsync(punchItem, request.ActionByPersonOid);
+        await SetActionByAsync(punchItem, request.ActionByPersonOid, cancellationToken);
         punchItem.DueTimeUtc = request.DueTimeUtc;
-        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY);
-        await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING);
-        await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE);
+        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
+        await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
+        await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
         punchItem.Estimate = request.Estimate;
-        await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid);
-        await SetWorkOrderAsync(punchItem, request.WorkOrderGuid);
-        await SetSWCRAsync(punchItem, request.SWCRGuid);
-        await SetDocumentAsync(punchItem, request.DocumentGuid);
+        await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid, cancellationToken);
+        await SetWorkOrderAsync(punchItem, request.WorkOrderGuid, cancellationToken);
+        await SetSWCRAsync(punchItem, request.SWCRGuid, cancellationToken);
+        await SetDocumentAsync(punchItem, request.DocumentGuid, cancellationToken);
         punchItem.ExternalItemNo = request.ExternalItemNo;
         punchItem.MaterialRequired = request.MaterialRequired;
         punchItem.MaterialETAUtc = request.MaterialETAUtc;
@@ -100,68 +106,68 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
     }
 
-    private async Task SetDocumentAsync(PunchItem punchItem, Guid? documentGuid)
+    private async Task SetDocumentAsync(PunchItem punchItem, Guid? documentGuid, CancellationToken cancellationToken)
     {
         if (!documentGuid.HasValue)
         {
             return;
         }
 
-        var doc = await _documentRepository.GetAsync(documentGuid.Value);
+        var doc = await _documentRepository.GetAsync(documentGuid.Value, cancellationToken);
         punchItem.SetDocument(doc);
     }
 
-    private async Task SetSWCRAsync(PunchItem punchItem, Guid? swcrGuid)
+    private async Task SetSWCRAsync(PunchItem punchItem, Guid? swcrGuid, CancellationToken cancellationToken)
     {
         if (!swcrGuid.HasValue)
         {
             return;
         }
 
-        var swcr = await _swcrRepository.GetAsync(swcrGuid.Value);
+        var swcr = await _swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
         punchItem.SetSWCR(swcr);
     }
 
-    private async Task SetOriginalWorkOrderAsync(PunchItem punchItem, Guid? originalWorkOrderGuid)
+    private async Task SetOriginalWorkOrderAsync(PunchItem punchItem, Guid? originalWorkOrderGuid, CancellationToken cancellationToken)
     {
         if (!originalWorkOrderGuid.HasValue)
         {
             return;
         }
 
-        var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value);
+        var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);
     }
 
-    private async Task SetWorkOrderAsync(PunchItem punchItem, Guid? workOrderGuid)
+    private async Task SetWorkOrderAsync(PunchItem punchItem, Guid? workOrderGuid, CancellationToken cancellationToken)
     {
         if (!workOrderGuid.HasValue)
         {
             return;
         }
 
-        var wo = await _woRepository.GetAsync(workOrderGuid.Value);
+        var wo = await _woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
         punchItem.SetWorkOrder(wo);
     }
 
-    private async Task SetActionByAsync(PunchItem punchItem, Guid? actionByPersonOid)
+    private async Task SetActionByAsync(PunchItem punchItem, Guid? actionByPersonOid, CancellationToken cancellationToken)
     {
         if (!actionByPersonOid.HasValue)
         {
             return;
         }
 
-        var person = await GetOrCreatePersonAsync(actionByPersonOid.Value);
+        var person = await GetOrCreatePersonAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
     }
 
-    private async Task<Person> GetOrCreatePersonAsync(Guid oid)
+    private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
     {
-        var personExists = await _personRepository.ExistsAsync(oid);
+        var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
         // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
         if (personExists)
         {
-            return await _personRepository.GetAsync(oid);
+            return await _personRepository.GetAsync(oid, cancellationToken);
         }
 
         var pcsPerson = await _personCache.GetAsync(oid);
@@ -171,13 +177,17 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         return person;
     }
 
-    private async Task SetLibraryItemAsync(PunchItem punchItem, Guid? libraryGuid, LibraryType libraryType)
+    private async Task SetLibraryItemAsync(
+        PunchItem punchItem,
+        Guid? libraryGuid,
+        LibraryType libraryType,
+        CancellationToken cancellationToken)
     {
         if (!libraryGuid.HasValue)
         {
             return;
         }
-        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType);
+        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
 
         switch (libraryType)
         {

@@ -16,11 +16,11 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
-            { "SourceGuid", typeof(Guid) },
-            { "SourceType", typeof(string) },
+            { "ParentGuid", typeof(Guid) },
+            { "ParentType", typeof(string) },
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "ModifiedByOid", typeof(Guid) },
+            { "ModifiedBy", typeof(IUser) },
             { "ModifiedAtUtc", typeof(DateTime) }
         };
 

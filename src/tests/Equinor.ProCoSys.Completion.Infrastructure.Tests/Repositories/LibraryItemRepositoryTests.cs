@@ -42,7 +42,7 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
     [TestMethod]
     public async Task GetByGuidAndTypeAsync_ShouldReturnItem_WhenKnownGuidAndType()
     {
-        var result = await _dut.GetByGuidAndTypeAsync(_knownGuid, _knownLibraryType);
+        var result = await _dut.GetByGuidAndTypeAsync(_knownGuid, _knownLibraryType, default);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownGuid, result.Guid);
@@ -53,11 +53,11 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
     public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownGuid() =>
         // Act and Assert
         await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
-            => _dut.GetByGuidAndTypeAsync(Guid.NewGuid(), _knownLibraryType));
+            => _dut.GetByGuidAndTypeAsync(Guid.NewGuid(), _knownLibraryType, default));
 
     [TestMethod]
     public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownType() =>
         // Act and Assert
         await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
-            => _dut.GetByGuidAndTypeAsync(_knownGuid, LibraryType.PUNCHLIST_SORTING));
+            => _dut.GetByGuidAndTypeAsync(_knownGuid, LibraryType.PUNCHLIST_SORTING, default));
 }

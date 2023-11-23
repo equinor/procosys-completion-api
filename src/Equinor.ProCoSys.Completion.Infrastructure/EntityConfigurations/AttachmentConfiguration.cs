@@ -21,8 +21,8 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .Property(x => x.CreatedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder.Property(x => x.SourceType)
-            .HasMaxLength(Attachment.SourceTypeLengthMax)
+        builder.Property(x => x.ParentType)
+            .HasMaxLength(Attachment.ParentTypeLengthMax)
             .IsRequired();
 
         builder.Property(x => x.FileName)
@@ -34,8 +34,8 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .IsRequired();
 
         builder
-            .HasIndex(x => x.SourceGuid)
-            .HasDatabaseName("IX_Attachments_SourceGuid")
+            .HasIndex(x => x.ParentGuid)
+            .HasDatabaseName("IX_Attachments_ParentGuid")
             .IncludeProperties(x => new
             {
                 x.Guid,

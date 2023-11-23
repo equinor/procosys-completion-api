@@ -16,16 +16,16 @@ public class LinkService : ILinkService
 
     public LinkService(IReadOnlyContext context) => _context = context;
 
-    public async Task<IEnumerable<LinkDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    public async Task<IEnumerable<LinkDto>> GetAllForParentAsync(
+        Guid parentGuid,
         CancellationToken cancellationToken)
     {
         var links =
             await (from l in _context.QuerySet<Link>()
-                   where l.SourceGuid == sourceGuid
-                   select new LinkDto(l.SourceGuid, l.Guid, l.Title, l.Url, l.RowVersion.ConvertToString()
+                   where l.ParentGuid == parentGuid
+                   select new LinkDto(l.ParentGuid, l.Guid, l.Title, l.Url, l.RowVersion.ConvertToString()
                ))
-                .TagWith($"{nameof(LinkService)}.{nameof(GetAllForSourceAsync)}")
+                .TagWith($"{nameof(LinkService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
         return links;
