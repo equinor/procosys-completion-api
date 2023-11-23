@@ -61,7 +61,7 @@ to `Server=db;Database=pcs-co...`
 
 ## Setting up self trusted certificate
 
-run the following command to add a self trusted certificate for the project in a folder where docker can reach it
+run the following command to add a self trusted certificate for the project in a folder where docker can reach it (the folder we mount)
 
 ```
 dotnet dev-certs https -ep $env:APPDATA\ASP.NET\Https\Equinor.ProCoSys.Completion.WebApiiiiii.pfx -p <superSecretPassword>
