@@ -1,8 +1,6 @@
 # procosys-completion-api
 REST API for the completion module in Project Completion System (ProCoSys (PCS))
 
-TODO Document setup #103905
-
 ### Secrets
 Before running the application, some settings need to be set. These are defined in appsettings.json. To avoid the possibility to commit secrets, move parts of the configuration to the secrets.json file on your computer.
 Typical settings that should be moved to secrets.json are:
@@ -25,15 +23,16 @@ To open secrets.json, right-click on the startup project and select 'Manage User
 Choose to run as *Equinor.ProcoSys.Completion.WebApi* in the dropdown menu and hit F5.
 
 
+## Run the application using Docker Compose
 This guide will help you set up your local environment to run the application using Docker Compose.
 
-## Prerequisites
+### Prerequisites
 
 - Docker and Docker Compose installed.
 - Access to ProCoSys Official NuGet feed.
 - Access to Azure Container Registry.
 
-## Configuration
+### Configuration
 
 Before running the application, you need to set up the following:
 
@@ -46,6 +45,8 @@ Ask a colleague for a copy if you dont have one.
 ### 2. Environment Variables
 
 Create a `.env` file in the src directory (next to docker-compose) with the following content:
+.env is and should be ignored by git.
+>Note: Make sure to double check that this file is not added to source control. 
 
 FEED_TOKEN= `ACCESSTOKEN`
 
@@ -72,7 +73,7 @@ from `Server=127.0.0.1;Database=pcs-co...`
 
 to `Server=db;Database=pcs-co...`
 
-## Setting up self trusted certificate
+### Setting up self trusted certificate
 
 run the following command to add a self trusted certificate for the project in a folder where docker can reach it (the folder we mount)
 
@@ -89,7 +90,7 @@ add this line to `secret.json` using the same password
 "Kestrel:Certificates:Development:Password":  "<superSecretPassword>",
 ```
 
-## Running the Application
+### Running the Application
 
 Once all configuration is done, you can start the application by running the following command from the src folder:
 
@@ -99,11 +100,11 @@ Once all configuration is done, you can start the application by running the fol
 
 This will pull the necessary images, build the services, and start the application. You can access it once it's up and running.
 
-to debug, you can run the application from visual studio.
+>To debug in the container, you can run the application from visual studio or rider.
 
-![img_1.png](img_1.png)
+![visualstudio-compose.PNG](visualstudio-compose.PNG)
 
-## 03.11.2023: Create the Database inside the container 
+### 03.11.2023: Create the Database inside the container 
 Until the sandbox image is updated with the completion database,
 you will have to create the database manually after spinning up the container.
 This means the application may not run correct the first time.
