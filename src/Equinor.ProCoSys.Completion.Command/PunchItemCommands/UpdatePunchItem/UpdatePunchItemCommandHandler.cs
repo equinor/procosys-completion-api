@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -33,6 +33,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly ISWCRRepository _swcrRepository;
     private readonly IDocumentRepository _documentRepository;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
@@ -44,6 +45,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         IWorkOrderRepository workOrderRepository,
         ISWCRRepository swcrRepository,
         IDocumentRepository documentRepository,
+        ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
@@ -54,6 +56,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         _workOrderRepository = workOrderRepository;
         _swcrRepository = swcrRepository;
         _documentRepository = documentRepository;
+        _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -72,12 +75,15 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             {
                 punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
             }
-
             punchItem.SetRowVersion(request.RowVersion);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            DbSynchronizer.SyncChangesToMain(punchItem, changes);
+            // To be removed when sync to PCS 4 is no longer needed
+            //---
+            await _syncToPCS4Service.SyncUpdates(punchItem, cancellationToken);
+            //new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes)), cancellationToken);
+            //---
 
             transaction.Commit();
 

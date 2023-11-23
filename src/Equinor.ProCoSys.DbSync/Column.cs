@@ -1,11 +1,7 @@
-﻿using System;
-using System.Reflection.Metadata.Ecma335;
-
-namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public class Column
     {
-
         public enum DataType
         {
             String,

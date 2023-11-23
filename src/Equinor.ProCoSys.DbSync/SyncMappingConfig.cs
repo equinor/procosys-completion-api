@@ -2,27 +2,19 @@
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
-
     /**
-     * Singleton that holds the configuration of the synchronization mapping. 
-     * The instance will be created at startup. When the mapping is updated, the system will need to be resarted.
+     * Holds the configuration of the synchronization mapping. 
      * The data for the configuration is given by the SyncMappingConfig.csv file found in this folder.
      */
-    public sealed class SyncMappingConfig
+    public class SyncMappingConfig
     {
-        private static readonly SyncMappingConfig s_instance = new();
+        public List<ColumnSyncConfig> _syncMappingList;
 
-        private readonly List<ColumnSyncConfig> _syncMapping;
-
-        private SyncMappingConfig()
+        public SyncMappingConfig()
         {
-            _syncMapping = new List<ColumnSyncConfig>();
+            _syncMappingList = new List<ColumnSyncConfig>();
             LoadMappingConfiguration();
         }
-
-        public static SyncMappingConfig GetInstance() => s_instance;
-
-        public List<ColumnSyncConfig> getSyncMappingList() => _syncMapping;
 
         private void LoadMappingConfiguration()
         {
@@ -51,7 +43,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                     ValueConvertionMethod = columns[6]
                 };
 
-                _syncMapping.Add(config);
+                _syncMappingList.Add(config);
             }
         }
     }

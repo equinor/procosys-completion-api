@@ -74,6 +74,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
     }
@@ -159,7 +160,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem.SetDocument(_existingDocument1);
         _existingPunchItem.ExternalItemNo = _newExternalItemNo;
         _existingPunchItem.MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem.MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem.MaterialExternalNo = _newMaterialExternalNo;
 
         Assert.IsNotNull(_existingPunchItem.PriorityId);
         Assert.IsNotNull(_existingPunchItem.SortingId);
@@ -324,7 +325,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldRaisedByCode = _existingPunchItem.RaisedByOrg.Code;
         var oldClearingByOrg = _existingPunchItem.ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem.MaterialRequired;
-        
+
         // Act
         await _dut.Handle(_command, default);
 
@@ -470,7 +471,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem.SetSWCR(_existingSWCR1);
         _existingPunchItem.SetDocument(_existingDocument1);
         _existingPunchItem.ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem.MaterialETAUtc= _newMaterialETAUtc;
+        _existingPunchItem.MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem.MaterialExternalNo = _newMaterialExternalNo;
 
         // Act
@@ -837,7 +838,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem.MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem.MaterialExternalNo = _newMaterialExternalNo;
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
 
         // Act
@@ -916,7 +917,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldMaterialRequired = _existingPunchItem.MaterialRequired;
         var oldMaterialETAUtc = _existingPunchItem.MaterialETAUtc;
         var oldMaterialExternalNo = _existingPunchItem.MaterialExternalNo;
-        
+
         // Act
         await _dut.Handle(_command, default);
 

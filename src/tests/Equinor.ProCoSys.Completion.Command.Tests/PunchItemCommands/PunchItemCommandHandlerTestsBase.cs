@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -23,6 +24,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected IWorkOrderRepository _workOrderRepositoryMock;
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
+        protected ISyncToPCS4Service _syncToPCS4ServiceMock;
         protected PunchItem _existingPunchItem;
         protected PunchItem _punchItemPa;
         protected Person _currentPerson;
@@ -54,6 +56,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _workOrderRepositoryMock = Substitute.For<IWorkOrderRepository>();
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
+            _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
 
             var id = 5;
             var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);

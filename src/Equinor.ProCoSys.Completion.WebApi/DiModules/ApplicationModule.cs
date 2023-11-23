@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
@@ -46,6 +47,7 @@ public static class ApplicationModule
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
         services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
+        services.Configure<OracleDBConnectionOptions>(configuration.GetSection("OracleDBConnection"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -62,20 +64,20 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
-            
-            x.UsingAzureServiceBus((_,cfg) =>
+
+            x.UsingAzureServiceBus((_, cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
-                
+
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
-                
-                
+
+
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
                 });
-                
+
                 cfg.AutoStart = true;
             });
         });
@@ -130,8 +132,11 @@ public static class ApplicationModule
         services.AddScoped<IPatchOperationValidator, PatchOperationValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
+        services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IEmailService, EmailService>();
+        services.AddSingleton<IOracleDBExecutor, OracleDBExecutor>();
+
     }
 }

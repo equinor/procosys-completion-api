@@ -27,7 +27,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
-using Equinor.ProCoSys.Completion.DbSyncToPOCS4;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -199,12 +199,11 @@ public class Startup
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
 
-        //POC
-        var oracleConn = Configuration.GetValue<string>("OracleDBConnectionPOC");
-        if (oracleConn != null)
-        {
-            DbSynchronizer.SetOracleConnection(oracleConn);
-        }
+        // var oracleConn = Configuration.GetValue<string>("OracleDBConnectionPOC");
+        // if (oracleConn != null)
+        // {
+        //    OracleDBExecutor.SetOracleConnection(oracleConn);
+        // }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
