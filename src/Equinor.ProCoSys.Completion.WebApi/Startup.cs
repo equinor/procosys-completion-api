@@ -29,6 +29,7 @@ using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
 using Swashbuckle.AspNetCore.Filters;
+using System.IO;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -146,6 +147,8 @@ public class Startup
 
             c.ExampleFilters();
             c.OperationFilter<AddRoleDocumentation>();
+            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+            c.IncludeXmlComments(filePath);
         });
 
         services.ConfigureSwaggerGen(options =>

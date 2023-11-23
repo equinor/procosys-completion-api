@@ -117,6 +117,14 @@ public class PunchItemsController : ControllerBase
         return this.FromResult(result);
     }
 
+    /// <summary>
+    /// Patch a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANTNAME format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem to be patched</param>
+    /// <param name="patchPunchDto">How to patch. See details in remark</param>
+    /// <returns></returns>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPatch("{guid}")]
     [SwaggerRequestExample(typeof(PatchPunchItemDto), typeof(PatchPunchItemDtoExample))]
