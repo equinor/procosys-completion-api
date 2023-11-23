@@ -20,7 +20,7 @@ The database can be seeded with test data. To do this, enable the feature in app
 To open secrets.json, right-click on the startup project and select 'Manage User Secrets'.
 ### Run
 
-Choose to run as *Equinor.ProcoSys.Completion.WebApi* in the dropdown menu and hit F5.
+Choose to run as *Equinor.ProCoSys.Completion.WebApi* in the dropdown menu and hit F5.
 
 
 ## Run the application using Docker Compose
