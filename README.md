@@ -12,7 +12,7 @@ Typical settings that should be moved to secrets.json are:
 When running in development environment, the database is auto-migrated on application startup. This can be changed using the setting in appsettings.development.json.
 
 ### Seeding
-The datebase can be seeded with test data. To do this, enable the feature in appsettings.development.json and start the application.
+The database can be seeded with test data. To do this, enable the feature in appsettings.development.json and start the application.
 >Note: This will run every time the application starts. To avoid multiple seedings, disable the feature after the application has started.
 
 ## Visual Studio
