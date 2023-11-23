@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.12" />
     <PackageReference Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
 

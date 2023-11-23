@@ -35,10 +35,12 @@ using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServiceResult;
 using ServiceResult.ApiExtensions;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
@@ -117,6 +119,7 @@ public class PunchItemsController : ControllerBase
 
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPatch("{guid}")]
+    [SwaggerRequestExample(typeof(PatchPunchItemDto), typeof(PatchPunchItemDtoExample))]
     public async Task<ActionResult<string>> UpdatePunchItem(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
