@@ -1,4 +1,4 @@
-﻿using static Equinor.ProCoSys.Completion.DbSyncToPCS4.Column;
+﻿using static Equinor.ProCoSys.Completion.DbSyncToPCS4.SyncMappingConfig;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
@@ -9,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         public required string SourceColumn { get; set; }
         public required string TargetColumn { get; set; }
         public required bool IsPrimaryKey { get; set; } = false;
-        public required DataType SourceType { get; set; }
+        public required DataColumnType SourceType { get; set; }
         public string? ValueConvertionMethod { get; set; }
     }
 }
