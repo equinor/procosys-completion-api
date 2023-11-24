@@ -6,6 +6,6 @@ public interface IPunchItemDeletedV1 : IIntegrationEvent
 {
     // Guid of the entity owning the Punch
     Guid ParentGuid { get; }
-    IUser DeletedBy { get; }
+    User DeletedBy { get; }
     DateTime DeletedAtUtc { get;  }
 }

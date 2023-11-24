@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
@@ -33,14 +32,14 @@ public record PunchItemCreatedIntegrationEvent
     string? OriginalWorkOrderNo,
     string? DocumentNo,
     int? SWCRNo,
-    IUser? ActionBy,
-    IUser? ClearedBy,
+    User? ActionBy,
+    User? ClearedBy,
     DateTime? ClearedAtUtc,
-    IUser? RejectedBy,
+    User? RejectedBy,
     DateTime? RejectedAtUtc,
-    IUser? VerifiedBy,
+    User? VerifiedBy,
     DateTime? VerifiedAtUtc,
-    IUser CreatedBy,
+    User CreatedBy,
     DateTime CreatedAtUtc
 ) : IPunchItemCreatedV1
 {

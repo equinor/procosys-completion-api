@@ -14,7 +14,7 @@ public record AttachmentCreatedIntegrationEvent
     string ParentType,
     string FileName,
     string BlobPath,
-    IUser CreatedBy,
+    User CreatedBy,
     DateTime CreatedAtUtc
 ) : IAttachmentCreatedV1
 {

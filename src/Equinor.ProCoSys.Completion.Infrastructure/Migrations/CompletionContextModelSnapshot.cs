@@ -17,7 +17,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "7.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -370,14 +370,14 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasIndex("Type")
                         .IsUnique();
 
-                    b.ToTable("LabelHost", t =>
+                    b.ToTable("LabelHosts", t =>
                         {
                             t.HasCheckConstraint("host_type_valid_type", "Type in ('GeneralPicture','GeneralComment','PunchPicture','PunchComment')");
                         });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("LabelHostHistory");
+                                ttb.UseHistoryTable("LabelHostsHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -1192,6 +1192,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<Guid>("MessageId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("OutboxId")
                         .HasColumnType("uniqueidentifier");

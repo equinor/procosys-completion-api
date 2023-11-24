@@ -200,6 +200,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
+
+        dbContext.SeedLabels();
     }
 
     private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider serviceProvider, string plant)

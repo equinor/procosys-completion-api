@@ -4,6 +4,8 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -40,6 +42,23 @@ public static class CompletionContextExtension
 
     public static void SeedPersonData(this CompletionContext dbContext, TestProfile profile)
         => SeedPerson(dbContext, profile.Oid, profile.FirstName, profile.LastName, profile.UserName, profile.Email);
+
+    public static void SeedLabels(this CompletionContext dbContext)
+    {
+        var labelA = new Label("A");
+        var labelB = new Label("B");
+        var labelRepository = new LabelRepository(dbContext);
+        labelRepository.Add(labelA);
+        labelRepository.Add(labelB);
+
+        var labelHost = new LabelHost(KnownPlantData.HostTypeWithLabels);
+        labelHost.AddLabel(labelA);
+        labelHost.AddLabel(labelB);
+
+        var labelHostRepository = new LabelHostRepository(dbContext);
+        labelHostRepository.Add(labelHost);
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
+    }
 
     public static void SeedPlantData(this CompletionContext dbContext, IServiceProvider serviceProvider, KnownTestData knownTestData)
     {
