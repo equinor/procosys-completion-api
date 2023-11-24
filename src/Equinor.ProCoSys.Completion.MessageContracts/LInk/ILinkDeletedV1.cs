@@ -6,6 +6,6 @@ public interface ILinkDeletedV1 : IIntegrationEvent
 {
     // Guid of the entity owning the Link
     Guid ParentGuid { get; }
-    IUser DeletedBy { get; }
+    User DeletedBy { get; }
     DateTime DeletedAtUtc { get; }
 }

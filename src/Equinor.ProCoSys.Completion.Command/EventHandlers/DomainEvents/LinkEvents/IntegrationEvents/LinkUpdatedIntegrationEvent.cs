@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
@@ -15,7 +14,7 @@ public record LinkUpdatedIntegrationEvent
     string ParentType,
     string Title,
     string Url,
-    IUser ModifiedBy,
+    User ModifiedBy,
     DateTime ModifiedAtUtc,
     List<IProperty> Changes
 ) : ILinkUpdatedV1

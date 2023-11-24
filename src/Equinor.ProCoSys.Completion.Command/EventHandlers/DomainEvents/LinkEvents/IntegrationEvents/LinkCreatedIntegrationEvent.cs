@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
@@ -14,7 +13,7 @@ public record LinkCreatedIntegrationEvent
     string ParentType,
     string Title,
     string Url,
-    IUser CreatedBy,
+    User CreatedBy,
     DateTime CreatedAtUtc
 ) : ILinkCreatedV1
 {
