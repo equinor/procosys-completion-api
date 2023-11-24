@@ -147,6 +147,7 @@ public class PunchItemsController : ControllerBase
     /// <summary>
     /// Patch a PunchItem
     /// </summary>
+    /// <description>test</description>
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid on PunchItem</param>
@@ -156,6 +157,7 @@ public class PunchItemsController : ControllerBase
     /// <response code="404">Not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPatch("{guid}")]
+    [SwaggerPatchDocumentation(typeof(PatchPunchItemDto))]
     [SwaggerRequestExample(typeof(PatchPunchItemDto), typeof(PatchPunchItemDtoExample))]
     public async Task<ActionResult<string>> UpdatePunchItem(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]

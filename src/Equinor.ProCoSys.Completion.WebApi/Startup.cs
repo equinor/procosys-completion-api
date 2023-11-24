@@ -147,6 +147,7 @@ public class Startup
 
             c.ExampleFilters();
             c.OperationFilter<AddRoleDocumentation>();
+            c.OperationFilter<SwaggerPatchDocumentation>();
             var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
             c.IncludeXmlComments(filePath);
         });
