@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
@@ -11,7 +10,7 @@ public record LinkDeletedIntegrationEvent
     string DisplayName,
     Guid Guid,
     Guid ParentGuid,
-    IUser DeletedBy,
+    User DeletedBy,
     DateTime DeletedAtUtc
 ) : ILinkDeletedV1
 {

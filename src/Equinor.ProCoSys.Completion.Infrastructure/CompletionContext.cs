@@ -21,7 +21,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using ConcurrencyException = Equinor.ProCoSys.Common.Misc.ConcurrencyException;
 using IDomainMarker = Equinor.ProCoSys.Completion.Domain.IDomainMarker;
 
@@ -130,12 +129,14 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         }
     }
             
-    public async Task<IDbContextTransaction> BeginTransaction(CancellationToken cancellationToken = default) 
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default) 
         => await base.Database.BeginTransactionAsync(cancellationToken);
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         => await base.Database.CommitTransactionAsync(cancellationToken);
 
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+        => await base.Database.RollbackTransactionAsync(cancellationToken);
 
     /// <summary>
     /// The UpdateConcurrencyToken method is used to manage concurrency conflicts in Entity Framework. 

@@ -39,14 +39,14 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
             { "OriginalWorkOrderNo", typeof(string) },
             { "DocumentNo", typeof(string) },
             { "SWCRNo", typeof(int?) },
-            { "ActionBy", typeof(IUser) },
-            { "ClearedBy", typeof(IUser) },
+            { "ActionBy", typeof(User) },
+            { "ClearedBy", typeof(User) },
             { "ClearedAtUtc", typeof(DateTime?) },
-            { "RejectedBy", typeof(IUser) },
+            { "RejectedBy", typeof(User) },
             { "RejectedAtUtc", typeof(DateTime?) },
-            { "VerifiedBy", typeof(IUser) },
+            { "VerifiedBy", typeof(User) },
             { "VerifiedAtUtc", typeof(DateTime?) },
-            { "CreatedBy", typeof(IUser) },
+            { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 
