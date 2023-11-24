@@ -14,13 +14,13 @@ public class SwaggerPatchDocumentation : IOperationFilter
     private readonly string _generalPatchInfo =
         "Patching can be done on zero properties, one property only, all properties in once, or any combination of properties.<br>" +
         "If a required property is patched, a (new) value must be given.<br>" +
-        "If a optional property is patched, both a (new) value or null can be given. Empty string can also be used for string properties.<br>" + 
+        "If an optional property is patched, both a (new) value or null can be given. Empty string can also be used for string properties.<br>" + 
         "<br>" +
         "Only replace operation are supported (\"op\": \"replace\").<br>";
         
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var patchDocumentationAttribute = GetPatchDocumentationAttribute(context.ApiDescription);
+        var patchDocumentationAttribute = GetSwaggerPatchDocumentationAttribute(context.ApiDescription);
         if (patchDocumentationAttribute is null)
         {
             return;
@@ -52,7 +52,7 @@ public class SwaggerPatchDocumentation : IOperationFilter
         return requiredProperties.Select(a => a.Name);
     }
 
-    private SwaggerPatchDocumentationAttribute? GetPatchDocumentationAttribute(ApiDescription apiDescription)
+    private SwaggerPatchDocumentationAttribute? GetSwaggerPatchDocumentationAttribute(ApiDescription apiDescription)
     {
         var attribute = apiDescription.ActionDescriptor.EndpointMetadata
             .SingleOrDefault(i => i.GetType() == typeof(SwaggerPatchDocumentationAttribute));
