@@ -45,10 +45,12 @@ Ask a colleague for a copy if you dont have one.
 ### 2. Environment Variables
 
 Create a `.env` file in the src directory (next to docker-compose) with the following content:
-.env is and should be ignored by git.
->Note: Make sure to double check that this file is not added to source control. 
+>FEED_TOKEN= YourAccessTokenHere
 
-FEED_TOKEN= `ACCESSTOKEN`
+![img_1.png](img_1.png)
+
+.env is and should be ignored by git.
+>Note: Make sure to double check that this file is not added to source control.
 
 ![img.png](img.png)
 
@@ -78,7 +80,7 @@ to `Server=db;Database=pcs-co...`
 run the following command to add a self trusted certificate for the project in a folder where docker can reach it (the folder we mount)
 
 ```
-dotnet dev-certs https -ep $env:APPDATA\ASP.NET\Https\Equinor.ProCoSys.Completion.WebApiiiiii.pfx -p <superSecretPassword>
+dotnet dev-certs https -ep $env:APPDATA\ASP.NET\Https\Equinor.ProCoSys.Completion.WebApi.pfx -p <superSecretPassword>
 ```
 
 and then
