@@ -14,7 +14,7 @@ public class SwaggerPatchDocumentation : IOperationFilter
     private readonly string _generalPatchInfo =
         "Patching can be done on zero properties, one property only, all properties in once, or any combination of properties.<br>" +
         "If a required property is patched, a (new) value must be given.<br>" +
-        "If a optional property is patched, both a (new) value or null can be given.<br>" + 
+        "If a optional property is patched, both a (new) value or null can be given. Empty string can also be used for string properties.<br>" + 
         "<br>" +
         "Only replace operation are supported (\"op\": \"replace\").<br>";
         
