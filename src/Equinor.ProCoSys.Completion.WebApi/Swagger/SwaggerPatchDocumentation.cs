@@ -47,7 +47,7 @@ public class SwaggerPatchDocumentation : IOperationFilter
     private IEnumerable<string> FindRequiredProperties(Type type)
     {
         var reqAttrType = typeof(RequiredAttribute);
-        var requiredProperties = type.CollectPropertiesWithAttribute(reqAttrType);
+        var requiredProperties = type.GetPropertiesWithAttribute(reqAttrType);
 
         return requiredProperties.Select(a => a.Name);
     }

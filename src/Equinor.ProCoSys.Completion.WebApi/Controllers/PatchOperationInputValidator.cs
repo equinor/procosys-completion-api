@@ -209,7 +209,7 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
             .Where(op => op.Value is null)
             .Select(op => op.Key).ToList();
         var type = typeof(T);
-        requiredProperties = type.CollectPropertiesWithAttribute(typeof(RequiredAttribute))
+        requiredProperties = type.GetPropertiesWithAttribute(typeof(RequiredAttribute))
             .Select(prop => prop.Name).ToList();
 
         return requiredProperties.Intersect(replaceOperationsToSetNull).ToList();
@@ -219,7 +219,7 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
     {
         var illegalOperations = new List<string>();
         var type = typeof(T);
-        var propertiesWithLengthLimiting = type.CollectPropertiesWithStringLengthAttribute().ToList();
+        var propertiesWithLengthLimiting = type.GetWritablePropertiesWithStringLengthAttribute().ToList();
 
         if (!propertiesWithLengthLimiting.Any())
         {

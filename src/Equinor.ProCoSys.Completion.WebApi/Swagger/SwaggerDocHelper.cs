@@ -13,8 +13,6 @@ public class SwaggerDocHelper
         var type = typeof(T);
         var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Where(p => p.CanWrite);
-        //var requiredProps = props.Where(prop => prop.IsDefined(typeof(RequiredAttribute), false))
-        //    .Select(prop => prop.Name).ToList();
 
         foreach (var prop in props)
         {
