@@ -3,6 +3,6 @@
     public class ColumnUpdate
     {
         public required string TargetColumnName { get; set; }
-        public required string? TargetValue { get; set; }
+        public required string? TargetColumnValue { get; set; }
     }
 }

@@ -198,12 +198,6 @@ public class Startup
             services.AddSingleton<IPcsBusSender>(new DisabledServiceBusSender());
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
-
-        // var oracleConn = Configuration.GetValue<string>("OracleDBConnectionPOC");
-        // if (oracleConn != null)
-        // {
-        //    OracleDBExecutor.SetOracleConnection(oracleConn);
-        // }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

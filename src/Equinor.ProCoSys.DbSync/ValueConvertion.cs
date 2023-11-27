@@ -4,7 +4,6 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public static class ValueConvertion
     {
-
         /**
          * Returns a string representing the target sql parameter value to be included in the sql statement. 
          * If the column config includes a convertion method, this will be used. If not, standard convertion will be used. 
@@ -173,6 +172,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             throw new Exception($"Not able to find document in pcs4 with guid = {guid}");
         }
 
+        /**
+         * Converts a datetime to a date (time is not included)
+         */
         public static string DateTimeToDate(DateTime date)
         {
             return $"to_date('{date.Day}/{date.Month}/{date.Year}', 'DD/MM/YYYY')";

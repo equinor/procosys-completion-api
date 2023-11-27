@@ -4,12 +4,12 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public class ColumnSyncConfig
     {
-        public required string SourceTable { get; set; }
+        public required string SourceObjectName { get; set; }
         public required string TargetTable { get; set; }
-        public required string SourceColumn { get; set; }
+        public required string SourceProperty { get; set; }
         public required string TargetColumn { get; set; }
         public required bool IsPrimaryKey { get; set; } = false;
-        public required DataColumnType SourceType { get; set; }
+        public required DataColumnType SourceType { get; set; } 
         public string? ValueConvertionMethod { get; set; }
     }
 }

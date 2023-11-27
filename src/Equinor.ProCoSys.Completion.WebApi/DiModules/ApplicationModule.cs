@@ -135,11 +135,10 @@ public static class ApplicationModule
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
-        services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<IOracleDBExecutor, OracleDBExecutor>();
-
+        services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
     }
 }

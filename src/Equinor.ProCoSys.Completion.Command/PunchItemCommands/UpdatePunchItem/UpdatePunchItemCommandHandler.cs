@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -71,10 +72,9 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
             var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
 
-
             if (changes.Any())
             {
-                // punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));   // HAR KOMMENTERT UT MIDLERTIDIG PGA AV BUG SOM JAN INGE FIKSER
+                punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
             }
             punchItem.SetRowVersion(request.RowVersion);
 
@@ -82,7 +82,12 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
             // To be removed when sync to PCS 4 is no longer needed
             //---
-            await _syncToPCS4Service.SyncUpdates(punchItem, cancellationToken);
+
+            if (changes.Any())
+            {
+                await _syncToPCS4Service.SyncUpdates("punchitem", new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes)));
+            }
+
             //---
 
             transaction.Commit();

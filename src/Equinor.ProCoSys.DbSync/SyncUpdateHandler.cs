@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Data.Common;
+using System.Text;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
@@ -8,22 +9,22 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
         public SyncUpdateHandler(IOracleDBExecutor oracleDBExecutor) => _oracleDBExecutor = oracleDBExecutor;
 
-        public async Task HandleAsync(object entity, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
+        public async Task HandleAsync(object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
         {
-            var entityType = entity.GetType();
-            var sourceTableName = entityType.Name.ToLower();
+            var sourceObjectType = sourceObject.GetType();
+            var sourceObjectName = sourceObjectType.Name.ToLower();
 
-            var syncMappingList = syncMappingConfig.GetSyncMappingListForTableName(sourceTableName);
+            var syncMappings = syncMappingConfig.GetSyncMappingsForSourceObject(sourceObjectName);
 
-            var primaryKeyConfig = syncMappingList.Where(config => config.IsPrimaryKey == true).Single();
-            var primaryKeyValue = GetPrimaryKeyValue(entity, primaryKeyConfig);
-
+            var primaryKeyConfig = syncMappings.Where(config => config.IsPrimaryKey == true).Single();
+            var primaryKeyValue = GetPrimaryKeyValue(sourceObject, primaryKeyConfig);
             var primaryKeySqlParameterValue = await ValueConvertion.GetSqlParameterValue(primaryKeyValue, primaryKeyConfig, _oracleDBExecutor);
 
             await VerifyExistanceOfTargetRow(primaryKeyConfig, primaryKeySqlParameterValue);
 
-            var columnsForUpdate = await GetListWithColumnsForUpdate(entity, syncMappingList);
+            var columnsForUpdate = await GetTargetUpdates(sourceObject, syncMappings);
             var sqlUpdateStatement = BuildUpdateStatement(primaryKeyConfig, primaryKeySqlParameterValue, columnsForUpdate);
+
             await _oracleDBExecutor.ExecuteDBWrite(sqlUpdateStatement);
         }
 
@@ -47,61 +48,77 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             return primaryKeyValue;
         }
 
-        private async Task<List<ColumnUpdate>> GetListWithColumnsForUpdate(object entity, List<ColumnSyncConfig> syncMappingList)
+        /**
+         * Creates a list with updates the be executed on the target database. 
+         */
+        private async Task<List<ColumnUpdate>> GetTargetUpdates(object sourceObject, List<ColumnSyncConfig> syncMappingList)
         {
             var columns = new List<ColumnUpdate>();
 
             foreach (var col in syncMappingList)
             {
-                if ( col.IsPrimaryKey)
+                if (col.IsPrimaryKey)
                 {
                     continue;
                 }
 
-                // Find source value object
-                var sourceColumnNameParts = col.SourceColumn.Split('.');
-                if (sourceColumnNameParts.Length > 2)
+                // Find value for source property 
+                var sourcePropertyValue = GetSourcePropertyValue(col, sourceObject);
+
+                if (sourcePropertyValue == null)
                 {
-                    throw new Exception($"Only one nested level is supported for entities, so {col.SourceType}.{col.SourceColumn} is not supported.");
+                    continue; //property is not found in the source object, so we just skip this (todo: or throw exception?)
                 }
 
-                var sourcePropertyName = sourceColumnNameParts[0];
-                var sourceProperty = entity.GetType().GetProperty(sourcePropertyName);
-
-                if (sourceProperty == null)
-                {
-                    continue;
-                }
-
-                var sourceValueObject = sourceProperty.GetValue(entity);
-
-                if (sourceValueObject != null)
-                {
-
-                    if (sourceColumnNameParts.Length > 1)
-                    {
-                        //Find nested value object
-                        var nestedProperty = sourceValueObject?.GetType().GetProperty(sourceColumnNameParts[1]);
-
-                        if (nestedProperty == null)
-                        {
-                            throw new Exception($"Nested property was not found on entity for property {col.SourceColumn}");
-                        }
-                        sourceValueObject = nestedProperty?.GetValue(sourceValueObject);
-                    }
-                }
-
-                var targetValue = await ValueConvertion.GetSqlParameterValue(sourceValueObject, col, _oracleDBExecutor);
+                var targetColumnValue = await ValueConvertion.GetSqlParameterValue(sourcePropertyValue, col, _oracleDBExecutor);
 
                 var columnUpdate = new ColumnUpdate()
                 {
                     TargetColumnName = col.TargetColumn,
-                    TargetValue = targetValue
+                    TargetColumnValue = targetColumnValue
                 };
 
                 columns.Add(columnUpdate);
             }
             return columns;
+        }
+
+        /**
+         * Will find the value on the property in the source object. 
+         * This value might be in a nested property (e.g ActionBy.Oid)
+         */
+        private static object? GetSourcePropertyValue(ColumnSyncConfig column, object sourceObject)
+        {
+            var sourcePropertyNameParts = column.SourceProperty.Split('.');
+            if (sourcePropertyNameParts.Length > 2)
+            {
+                throw new Exception($"Only one nested level is supported for entities, so {column.SourceObjectName}.{column.SourceProperty} is not supported.");
+            }
+
+            var sourcePropertyName = sourcePropertyNameParts[0];
+            var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
+
+            if (sourceProperty == null)
+            {
+                throw new Exception($"A property in configuration is missing in source object: {column.SourceObjectName}.{column.SourceProperty}");
+            }
+
+            var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
+
+            if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
+            {
+                //We must find the nested property
+                sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
+
+                if (sourceProperty == null)
+                {
+                    throw new Exception($"A nested property in configuration is missing in source object: {column.SourceObjectName}.{column.SourceProperty}");
+                }
+
+                sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
+            }
+
+            return sourcePropertyValue;
         }
 
 
@@ -111,7 +128,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
             foreach (var column in updateColumns)
             {
-                updateStatement.Append($"{column.TargetColumnName} = {column.TargetValue}");
+                updateStatement.Append($"{column.TargetColumnName} = {column.TargetColumnValue}");
 
                 if (column != updateColumns.Last())
                 {
