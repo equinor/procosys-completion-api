@@ -1,4 +1,6 @@
-﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+﻿using System.Threading;
+
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     /**
      * This class provide an interface to the operations for synchronizing data to ProCoSys 4. 
@@ -21,10 +23,13 @@
          * Updates the PCS 4 database with changes provided in the sourceObject, 
          * given the mapping configuration. 
          */
-        public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken token = default)
+        public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken cancellationToken = default)
         {
             var syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutor);
-            await syncUpdateHandler.HandleAsync(sourceObjectName, sourceObject, _syncMappingConfig, token);
+
+            var sqlUpdateStatement = await syncUpdateHandler.BuildSqlUpdateStatementAsync(sourceObjectName, sourceObject, _syncMappingConfig, cancellationToken);
+            await _oracleDBExecutor.ExecuteDBWriteAsync(sqlUpdateStatement, cancellationToken);
+
         }
     }
 }

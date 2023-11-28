@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
@@ -78,6 +82,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
+
+        _personCacheMock = Substitute.For<IPersonCache>();
     }
 
     #region test update when patchDocument contains operations
@@ -326,6 +332,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldRaisedByCode = _existingPunchItem.RaisedByOrg.Code;
         var oldClearingByOrg = _existingPunchItem.ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem.MaterialRequired;
+
+        //_syncToPCS4ServiceMock.When(x => x.SyncUpdatesAsync("punchitem", _existingPunchItem, default).IsCompletedSuccessfully);
 
         // Act
         await _dut.Handle(_command, default);

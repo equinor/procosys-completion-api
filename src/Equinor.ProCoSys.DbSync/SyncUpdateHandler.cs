@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Handle the syncronization
          */
-        public async Task HandleAsync(string sourceObjectName, object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
+        public async Task<string> BuildSqlUpdateStatementAsync(string sourceObjectName, object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
         {
             var syncMappings = syncMappingConfig.GetSyncMappingsForSourceObject(sourceObjectName);
 
@@ -29,10 +29,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             var primaryKeySqlParameterValue = await ValueConversion.GetSqlParameterValueAsync(primaryKeyValue, primaryKeyConfig, _oracleDBExecutor, cancellationToken);
 
             var columnsForUpdate = await GetTargetUpdatesAsync(sourceObject, syncMappings, cancellationToken);
-            var sqlUpdateStatement = BuildUpdateStatement(primaryKeyConfig, primaryKeySqlParameterValue, columnsForUpdate);
-
-            await _oracleDBExecutor.ExecuteDBWriteAsync(sqlUpdateStatement, cancellationToken);
+            return GetUpdateStatement(primaryKeyConfig, primaryKeySqlParameterValue, columnsForUpdate);
         }
+
 
         /**
          * Creates a list with updates the be executed on the target database. 
@@ -106,7 +105,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Build a string that gives the update statement
          */
-        private static string BuildUpdateStatement(ColumnSyncConfig primaryKeyConfig, string primaryKeySqlParamValue, List<ColumnUpdate> updateColumns)
+        private static string GetUpdateStatement(ColumnSyncConfig primaryKeyConfig, string primaryKeySqlParamValue, List<ColumnUpdate> updateColumns)
         {
             var updateStatement = new StringBuilder($"update {primaryKeyConfig.TargetTable} set ");
 

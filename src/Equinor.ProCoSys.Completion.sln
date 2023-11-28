@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{946E8B4F-9EA5-4301-AFAD-14299C816709}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\.gitignore = ..\.gitignore
 		..\doc\adr\0001-record-architecture-decisions.md = ..\doc\adr\0001-record-architecture-decisions.md
 		..\doc\adr\0002-use-net-core-with-ef.md = ..\doc\adr\0002-use-net-core-with-ef.md
 		..\doc\adr\0003-use-masstransit.md = ..\doc\adr\0003-use-masstransit.md
@@ -24,7 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\radixconfig.yaml = ..\radixconfig.yaml
 		..\README.md = ..\README.md
 		usersecrets_minimum.json = usersecrets_minimum.json
-		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DFB50BC5-5201-42FD-A049-CF0259AA7AE8}"
@@ -54,6 +54,8 @@ EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{680A3102-2853-4C03-88BC-44142512352D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.DbSync\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests", "..\DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests.csproj", "{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,14 +127,18 @@ Global
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
