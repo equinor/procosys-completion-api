@@ -2,7 +2,13 @@
 {
     public class ColumnUpdate
     {
-        public required string TargetColumnName { get; set; }
-        public required string? TargetColumnValue { get; set; }
+        public ColumnUpdate(string targetColumnName, string? targetColumnValue)
+        {
+            TargetColumnName = targetColumnName;
+            TargetColumnValue = targetColumnValue;
+        }
+
+        public string TargetColumnName { get; }
+        public string? TargetColumnValue { get; }
     }
 }

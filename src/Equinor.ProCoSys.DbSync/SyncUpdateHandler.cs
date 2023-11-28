@@ -1,57 +1,43 @@
-﻿using System.Data.Common;
-using System.Text;
+﻿using System.Text;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
+    /**
+     * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+     */
     public class SyncUpdateHandler
     {
         private readonly IOracleDBExecutor _oracleDBExecutor;
-
         public SyncUpdateHandler(IOracleDBExecutor oracleDBExecutor) => _oracleDBExecutor = oracleDBExecutor;
 
-        public async Task HandleAsync(object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
+        /**
+         * Handle the syncronization
+         */
+        public async Task HandleAsync(string sourceObjectName, object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
         {
-            var sourceObjectType = sourceObject.GetType();
-            var sourceObjectName = sourceObjectType.Name.ToLower();
-
             var syncMappings = syncMappingConfig.GetSyncMappingsForSourceObject(sourceObjectName);
 
-            var primaryKeyConfig = syncMappings.Where(config => config.IsPrimaryKey == true).Single();
-            var primaryKeyValue = GetPrimaryKeyValue(sourceObject, primaryKeyConfig);
-            var primaryKeySqlParameterValue = await ValueConvertion.GetSqlParameterValue(primaryKeyValue, primaryKeyConfig, _oracleDBExecutor);
+            //Finds the primary key
+            var primaryKeyConfig = syncMappings.Where(config => config.IsPrimaryKey == true).SingleOrDefault();
 
-            await VerifyExistanceOfTargetRow(primaryKeyConfig, primaryKeySqlParameterValue);
+            if (primaryKeyConfig == null)
+            {
+                throw new Exception($"The configuration should have a primary key property defined. Source object name: {sourceObjectName}");
+            }
 
-            var columnsForUpdate = await GetTargetUpdates(sourceObject, syncMappings);
+            var primaryKeyValue = GetSourcePropertyValue(primaryKeyConfig, sourceObject);
+            var primaryKeySqlParameterValue = await ValueConversion.GetSqlParameterValueAsync(primaryKeyValue, primaryKeyConfig, _oracleDBExecutor, cancellationToken);
+
+            var columnsForUpdate = await GetTargetUpdatesAsync(sourceObject, syncMappings, cancellationToken);
             var sqlUpdateStatement = BuildUpdateStatement(primaryKeyConfig, primaryKeySqlParameterValue, columnsForUpdate);
 
-            await _oracleDBExecutor.ExecuteDBWrite(sqlUpdateStatement);
-        }
-
-        private static object GetPrimaryKeyValue(object entity, ColumnSyncConfig primaryKeyConfig)
-        {
-            var entityType = entity.GetType();
-            var primaryKeyInfo = entityType.GetProperty(primaryKeyConfig.SourceType.ToString());
-
-            if (primaryKeyInfo == null)
-            {
-                throw new Exception("Primary key not configured for ????");
-            }
-
-            var primaryKeyValue = primaryKeyInfo.GetValue(entity);
-
-            if (primaryKeyValue == null)
-            {
-                throw new Exception("Value for primary key is missing for ????");
-            }
-
-            return primaryKeyValue;
+            await _oracleDBExecutor.ExecuteDBWriteAsync(sqlUpdateStatement, cancellationToken);
         }
 
         /**
          * Creates a list with updates the be executed on the target database. 
          */
-        private async Task<List<ColumnUpdate>> GetTargetUpdates(object sourceObject, List<ColumnSyncConfig> syncMappingList)
+        private async Task<List<ColumnUpdate>> GetTargetUpdatesAsync(object sourceObject, List<ColumnSyncConfig> syncMappingList, CancellationToken cancellationToken)
         {
             var columns = new List<ColumnUpdate>();
 
@@ -70,13 +56,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                     continue; //property is not found in the source object, so we just skip this (todo: or throw exception?)
                 }
 
-                var targetColumnValue = await ValueConvertion.GetSqlParameterValue(sourcePropertyValue, col, _oracleDBExecutor);
+                var targetColumnValue = await ValueConversion.GetSqlParameterValueAsync(sourcePropertyValue, col, _oracleDBExecutor, cancellationToken);
 
-                var columnUpdate = new ColumnUpdate()
-                {
-                    TargetColumnName = col.TargetColumn,
-                    TargetColumnValue = targetColumnValue
-                };
+                var columnUpdate = new ColumnUpdate(col.TargetColumn, targetColumnValue);
 
                 columns.Add(columnUpdate);
             }
@@ -121,7 +103,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             return sourcePropertyValue;
         }
 
-
+        /**
+         * Build a string that gives the update statement
+         */
         private static string BuildUpdateStatement(ColumnSyncConfig primaryKeyConfig, string primaryKeySqlParamValue, List<ColumnUpdate> updateColumns)
         {
             var updateStatement = new StringBuilder($"update {primaryKeyConfig.TargetTable} set ");
@@ -136,21 +120,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                 }
             }
 
+            //Todo: Vi vil her lage en dictionary med parameterverdier, som senere brukes når vi lager en oracle command.
+
             updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {primaryKeySqlParamValue}");
 
             return updateStatement.ToString();
-        }
-
-        private async Task VerifyExistanceOfTargetRow(ColumnSyncConfig primaryKeyConfig, string primaryKeySqlParameterValue)
-        {
-            var noOfRowsInTargetQuery = $"select count(*) from {primaryKeyConfig.TargetTable} where {primaryKeyConfig.TargetColumn} = {primaryKeySqlParameterValue}";
-
-            var noOfRowsInTarget = await _oracleDBExecutor.ExecuteDBQueryCountingRows(noOfRowsInTargetQuery);
-
-            if (noOfRowsInTarget != 1)
-            {
-                throw new Exception($"Number of rows should be 1, but was {noOfRowsInTarget}");
-            }
         }
     }
 }

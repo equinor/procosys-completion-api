@@ -1,9 +1,11 @@
-﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+﻿using Oracle.ManagedDataAccess.Client;
+
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
     public interface IOracleDBExecutor
     {
-        Task<int> ExecuteDBQueryCountingRows(string sqlQuery);
-        Task<string?> ExecuteDBQueryForValueLookup(string sqlQuery);
-        Task ExecuteDBWrite(string sqlStatement);
+        Task<string?> ExecuteDBQueryForValueLookupAsync(string sqlQuery, CancellationToken cancellationToken);
+        Task ExecuteDBWriteAsync(string sqlStatement, CancellationToken cancellationToken);
+
     }
 }

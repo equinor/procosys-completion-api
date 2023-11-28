@@ -18,15 +18,6 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             LoadMappingConfiguration();
         }
 
-        public enum DataColumnType
-        {
-            String,
-            Int,
-            DateTime,
-            Bool,
-            Guid
-        }
-
         public List<ColumnSyncConfig> GetSyncMappingsForSourceObject(string sourceObjectName)
         {
             var list = _syncMappings.Where(config =>
@@ -65,6 +56,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                         throw new Exception($"The row contains the wrong number of columns, {rows[i]}.");
                     }
 
+                    var sourceObjectName = columns[0];
+                    var sourceProperty = columns[1];
+                    var targetTable = columns[2];
+                    var targetColumn = columns[3];
+
                     if (!bool.TryParse(columns[4], out var isPrimaryKey))
                     {
                         throw new Exception($"The isPrimaryKey is wrong on row {rows[i]}.");
@@ -75,23 +71,23 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                         throw new Exception($"The isPrimaryKey is wrong on row {rows[i]}.");
                     }
 
-                    var config = new ColumnSyncConfig()
-                    {
-                        SourceObjectName = columns[0],
-                        SourceProperty = columns[1],
-                        TargetTable = columns[2],
-                        TargetColumn = columns[3],
-                        IsPrimaryKey = isPrimaryKey,
-                        SourceType = sourceType,
-                        ValueConvertionMethod = columns[6] == null || columns[6].Length == 0 ? null : columns[6]
-                    };
+                    var valueConversionMethod = columns[6] == null || columns[6].Length == 0 ? null : columns[6];
+
+                    var config = new ColumnSyncConfig(
+                        sourceObjectName,
+                        sourceProperty,
+                        targetTable,
+                        targetColumn,
+                        isPrimaryKey,
+                        sourceType,
+                        valueConversionMethod);
 
                     _syncMappings.Add(config);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Error occured when reading sync mapping configuration.", ex);
+                throw new Exception("Error occurred when reading sync mapping configuration.", ex);
             }
         }
     }

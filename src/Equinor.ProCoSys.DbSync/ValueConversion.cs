@@ -2,17 +2,17 @@
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 {
-    public static class ValueConvertion
+    public static class ValueConversion
     {
         /**
          * Returns a string representing the target sql parameter value to be included in the sql statement. 
-         * If the column config includes a convertion method, this will be used. If not, standard convertion will be used. 
+         * If the column config includes a conversion method, this will be used. If not, standard conversion will be used. 
          */
-        public static async Task<string> GetSqlParameterValue(object? sourceValue, ColumnSyncConfig columnConfig, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> GetSqlParameterValueAsync(object? sourceValue, ColumnSyncConfig columnConfig, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
-            if (columnConfig.ValueConvertionMethod != null)
+            if (columnConfig.ValueConversionMethod != null)
             {
-                return await ConvertToSqlParameterValue(sourceValue, columnConfig.ValueConvertionMethod, oracleDBExecutor);
+                return await ConvertToSqlParameterValueAsync(sourceValue, columnConfig.ValueConversionMethod, oracleDBExecutor, cancellationToken);
             }
 
             switch (columnConfig.SourceType)
@@ -45,34 +45,30 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         }
 
         /**
-         * Converts a source value to a target sql parameter value based on a convertion method given i mapping configuraiton.
+         * Converts a source value to a target sql parameter value based on a conversion method given i mapping configuraiton.
          */
-        public static async Task<string> ConvertToSqlParameterValue(object? sourceValue, string convertionMethod, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> ConvertToSqlParameterValueAsync(object? sourceValue, string conversionMethod, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
             if (sourceValue == null)
             {
                 return "null";
             }
 
-            switch (convertionMethod)
+            return conversionMethod switch
             {
-                case "GuidToLibId":
-                    return await GuidToLibId((Guid)sourceValue, oracleDBExecutor);
-                case "GuidToPersonId":
-                    return await ValueConvertion.GuidToPersonId((Guid)sourceValue, oracleDBExecutor);
-                case "GuidToWorkOrderId":
-                    return await ValueConvertion.GuidToWorkOrderId((Guid)sourceValue, oracleDBExecutor);
-                case "GuidToSWCRId":
-                    return await ValueConvertion.GuidToSWCRId((Guid)sourceValue, oracleDBExecutor);
-                case "GuidToDocumentId":
-                    return await ValueConvertion.GuidToDocumentId((Guid)sourceValue, oracleDBExecutor);
-                case "DateTimeToDate":
-                    return ValueConvertion.DateTimeToDate((DateTime)sourceValue);
-                default:
-                    throw new NotImplementedException($"Convertion method {convertionMethod}is not implemented.");
-            }
+                "GuidToLibId" => await GuidToLibIdAsync((Guid)sourceValue, oracleDBExecutor, cancellationToken),
+                "OidToPersonId" => await ValueConversion.OidToPersonIdAsync((Guid)sourceValue, oracleDBExecutor, cancellationToken),
+                "GuidToWorkOrderId" => await ValueConversion.GuidToWorkOrderIdAsync((Guid)sourceValue, oracleDBExecutor, cancellationToken),
+                "GuidToSWCRId" => await ValueConversion.GuidToSWCRIdAsync((Guid)sourceValue, oracleDBExecutor, cancellationToken),
+                "GuidToDocumentId" => await ValueConversion.GuidToDocumentIdAsync((Guid)sourceValue, oracleDBExecutor, cancellationToken),
+                "DateTimeToDate" => ValueConversion.DateTimeToDate((DateTime)sourceValue),
+                _ => throw new NotImplementedException($"Conversion method {conversionMethod}is not implemented."),
+            };
         }
 
+        /**
+         * Convert a guid to a string that can be used in oracle
+         */
         public static string GuidToPCS4Guid(Guid? guid)
         {
             if (guid == null || !guid.HasValue)
@@ -85,6 +81,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             }
         }
 
+        /**
+         * Converts a oid (guid) to a string that can be used in Oracle
+         */
         public static string GuidToPCS4Oid(Guid? guid)
         {
             if (guid == null || !guid.HasValue)
@@ -100,11 +99,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Will find the library id for given guid in the pcs4 database
          */
-        public static async Task<string> GuidToLibId(Guid guid, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> GuidToLibIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
             var sqlQuery = $"select library_id from library where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-            var libraryId = await oracleDBExecutor.ExecuteDBQueryForValueLookup(sqlQuery);
+            var libraryId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
             if (libraryId != null)
             {
                 return libraryId;
@@ -113,28 +112,28 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         }
 
         /**
-         * Will find the person_id with given guid in the pcs4 database
+         * Will find the person_id with given oid in the pcs4 database
          */
-        public static async Task<string> GuidToPersonId(Guid guid, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> OidToPersonIdAsync(Guid oid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
-            var sqlQuery = $"select person_id from person where azure_oid = {GuidToPCS4Oid(guid)}";
+            var sqlQuery = $"select person_id from person where azure_oid = {GuidToPCS4Oid(oid)}";
 
-            var personId = await oracleDBExecutor.ExecuteDBQueryForValueLookup(sqlQuery);
+            var personId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
             if (personId != null)
             {
                 return personId;
             }
-            throw new Exception($"Not able to find a person in pcs4 with azure_oid = {guid}");
+            throw new Exception($"Not able to find a person in pcs4 with azure_oid = {oid}");
         }
 
         /**
          * Will find the work order with given guid in the pcs4 database
          */
-        public static async Task<string> GuidToWorkOrderId(Guid guid, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> GuidToWorkOrderIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
             var sqlQuery = $"select wo_id from wo where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-            var woId = await oracleDBExecutor.ExecuteDBQueryForValueLookup(sqlQuery);
+            var woId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
             if (woId != null)
             {
                 return woId;
@@ -145,11 +144,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Will find the SWCR with given guid in the pcs4 database
          */
-        public static async Task<string> GuidToSWCRId(Guid guid, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> GuidToSWCRIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
             var sqlQuery = $"select swcr_id from swcr where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-            var swcrId = await oracleDBExecutor.ExecuteDBQueryForValueLookup(sqlQuery);
+            var swcrId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
             if (swcrId != null)
             {
                 return swcrId;
@@ -160,11 +159,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Will find the document with given guid in the pcs4 database
          */
-        public static async Task<string> GuidToDocumentId(Guid guid, IOracleDBExecutor oracleDBExecutor)
+        public static async Task<string> GuidToDocumentIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
         {
             var sqlQuery = $"select document_id from document where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-            var documentId = await oracleDBExecutor.ExecuteDBQueryForValueLookup(sqlQuery);
+            var documentId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
             if (documentId != null)
             {
                 return documentId;

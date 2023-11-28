@@ -64,7 +64,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
     public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var transaction = await _unitOfWork.BeginTransaction(cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -82,15 +82,13 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
             // To be removed when sync to PCS 4 is no longer needed
             //---
-
             if (changes.Any())
             {
-                await _syncToPCS4Service.SyncUpdates("punchitem", new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes)));
+                await _syncToPCS4Service.SyncUpdatesAsync("punchitem", new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes)));
             }
-
             //---
 
-            transaction.Commit();
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
 
@@ -98,8 +96,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error occured on update of punch item with guid {request.PunchItemGuid}.", ex);
-            transaction.Rollback();
+            _logger.LogError($"Error occurred on update of punch item with guid {request.PunchItemGuid}.", ex);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }

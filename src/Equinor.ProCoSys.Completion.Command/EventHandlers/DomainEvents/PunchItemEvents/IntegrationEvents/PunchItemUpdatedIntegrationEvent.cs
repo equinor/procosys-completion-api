@@ -41,6 +41,7 @@ public record PunchItemUpdatedIntegrationEvent
     string? DocumentNo,
     Guid? DocumentGuid,
     int? SWCRNo,
+    Guid? SWCRGuid,
     User? ActionBy,
     User? ClearedBy,
     DateTime? ClearedAtUtc,

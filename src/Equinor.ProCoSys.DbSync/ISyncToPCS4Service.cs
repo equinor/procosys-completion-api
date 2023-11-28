@@ -2,6 +2,6 @@
 {
     public interface ISyncToPCS4Service
     {
-        Task SyncUpdates(string sourceObjectName, object sourceObject, CancellationToken token = default);
+        Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken token = default);
     }
 }

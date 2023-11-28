@@ -1,18 +1,18 @@
-Source object name; Source property;            Target table;       Target column;          Is primary key;     Source Type;    Convertion method; 
+Source object name; Source property;            Target table;       Target column;          Is primary key;     Source Type;    Conversion method; 
 punchitem;          Guid;                       punchlistitem;      Procosys_guid;          true;               Guid;
 punchitem;          Description;                punchlistitem;      Description;            false;              String;
-punchitem;          RaisedByOrgGuid;           punchlistitem;      RaisedByOrg_id;         false;              Guid;           GuidToLibId 
-punchitem;          ClearingByOrgGuid;         punchlistitem;      ClearedByOrg_id;        false;              Guid;           GuidToLibId   
-punchitem;          ActionByOid;               punchlistitem;      ActionByPerson_id;      false;              Guid;           GuidToPersonId
+punchitem;          RaisedByOrgGuid;            punchlistitem;      RaisedByOrg_id;         false;              Guid;           GuidToLibId 
+punchitem;          ClearingByOrgGuid;          punchlistitem;      ClearedByOrg_id;        false;              Guid;           GuidToLibId   
+punchitem;          ActionBy.Oid;               punchlistitem;      ActionByPerson_id;      false;              Guid;           OidToPersonId
 punchitem;          DueTimeUtc;                 punchlistitem;      DueDate;                false;              DateTime;       DateTimeToDate   
 punchitem;          Estimate;                   punchlistitem;      Estimate;               false;              Int;
-punchitem;          PriorityGuid;              punchlistitem;      Priority_id;            false;              Guid;           GuidToLibId
-punchitem;          SortingGuid;               punchlistitem;      PunchListSorting_id;    false;              Guid;           GuidToLibId
-punchitem;          TypeGuid;                  punchlistitem;      PunchListType_id;       false;              Guid;           GuidToLibId
-punchitem;          OriginalWorkOrderGuid;     punchlistitem;      OriginalWO_id;          false;              Guid;           GuidToWorkOrderId
-punchitem;          WorkOrderGuid;             punchlistitem;      WO_id;                  false;              Guid;           GuidToWorkOrderId
-punchitem;          SWCRGuid;                  punchlistitem;      SWCR_id;                false;              Guid;           GuidToSWCRId
-punchitem;          DocumentGuid;              punchlistitem;      Drawing_id;             false;              Guid;           GuidToDocumentId
+punchitem;          PriorityGuid;               punchlistitem;      Priority_id;            false;              Guid;           GuidToLibId
+punchitem;          SortingGuid;                punchlistitem;      PunchListSorting_id;    false;              Guid;           GuidToLibId
+punchitem;          TypeGuid;                   punchlistitem;      PunchListType_id;       false;              Guid;           GuidToLibId
+punchitem;          OriginalWorkOrderGuid;      punchlistitem;      OriginalWO_id;          false;              Guid;           GuidToWorkOrderId
+punchitem;          WorkOrderGuid;              punchlistitem;      WO_id;                  false;              Guid;           GuidToWorkOrderId
+punchitem;          SWCRGuid;                   punchlistitem;      SWCR_id;                false;              Guid;           GuidToSWCRId
+punchitem;          DocumentGuid;               punchlistitem;      Drawing_id;             false;              Guid;           GuidToDocumentId
 punchitem;          ExternalItemNo;             punchlistitem;      External_ItemNo;        false;              String;
 punchitem;          MaterialRequired;           punchlistitem;      IsMaterialRequired;     false;              Bool;
 punchitem;          MaterialETAUtc;             punchlistitem;      Material_ETA;           false;              DateTime;       DateTimeToDate

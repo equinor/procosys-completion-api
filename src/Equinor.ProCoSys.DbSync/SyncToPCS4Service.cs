@@ -21,10 +21,10 @@
          * Updates the PCS 4 database with changes provided in the sourceObject, 
          * given the mapping configuration. 
          */
-        public async Task SyncUpdates(string sourceObjectName, object sourceObject, CancellationToken token = default)
+        public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken token = default)
         {
             var syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutor);
-            await syncUpdateHandler.HandleAsync(sourceObject, _syncMappingConfig, token);
+            await syncUpdateHandler.HandleAsync(sourceObjectName, sourceObject, _syncMappingConfig, token);
         }
     }
 }
