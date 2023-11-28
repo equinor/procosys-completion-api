@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
@@ -14,7 +13,7 @@ public record AttachmentUpdatedIntegrationEvent
     string ParentType,
     string FileName,
     string BlobPath,
-    IUser ModifiedBy,
+    User ModifiedBy,
     DateTime ModifiedAtUtc
 ) : IAttachmentUpdatedV1
 {

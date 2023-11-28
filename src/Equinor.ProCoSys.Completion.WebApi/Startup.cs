@@ -25,8 +25,11 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
+using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
+using Swashbuckle.AspNetCore.Filters;
+using System.IO;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
@@ -111,6 +114,8 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+        
+        services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
@@ -141,8 +146,11 @@ public class Startup
                 }
             });
 
+            c.ExampleFilters();
             c.OperationFilter<AddRoleDocumentation>();
-
+            c.OperationFilter<SwaggerPatchDocumentation>();
+            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+            c.IncludeXmlComments(filePath);
         });
 
         services.ConfigureSwaggerGen(options =>

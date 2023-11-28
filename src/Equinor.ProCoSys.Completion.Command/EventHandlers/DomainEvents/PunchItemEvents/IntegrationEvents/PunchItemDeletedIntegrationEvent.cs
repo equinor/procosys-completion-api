@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
@@ -11,7 +10,7 @@ public record PunchItemDeletedIntegrationEvent
     string DisplayName,
     Guid Guid,
     Guid ParentGuid,
-    IUser DeletedBy,
+    User DeletedBy,
     DateTime DeletedAtUtc
 ) : IPunchItemDeletedV1
 {

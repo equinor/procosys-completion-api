@@ -6,6 +6,6 @@ public interface IAttachmentDeletedV1 : IIntegrationEvent
 {
     // Guid of the entity owning the Attachment
     Guid ParentGuid { get; }
-    IUser DeletedBy { get; }
+    User DeletedBy { get; }
     DateTime DeletedAtUtc { get; }
 }

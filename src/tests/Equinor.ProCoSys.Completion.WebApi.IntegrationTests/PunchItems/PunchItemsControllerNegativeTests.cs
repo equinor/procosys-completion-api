@@ -206,6 +206,20 @@ public class PunchItemsControllerNegativeTests : TestBase
             expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
+    public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            "PunchItem1",
+            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "Project with this guid does not exist");
+
+    [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,

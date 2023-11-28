@@ -193,21 +193,8 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
         return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
-    private IEnumerable<PropertyInfo> CollectPropertiesWithAttribute(Type type, Type attributeType)
-    {
-        var props = GetWritableProperties(type);
-        return CollectPropertiesWithAttribute(props, attributeType);
-    }
-
-    private static IEnumerable<PropertyInfo> CollectPropertiesWithAttribute(IEnumerable<PropertyInfo> props, Type attributeType)
-        => props.Where(prop => prop.IsDefined(attributeType, false));
-
     private Dictionary<string, Type> CollectWritableProperties(Type type)
-        => GetWritableProperties(type).ToDictionary(p => p.Name, p => p.PropertyType);
-
-    private static IEnumerable<PropertyInfo> GetWritableProperties(Type type)
-        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(p => p.CanWrite);
+        => type.GetWritableProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
     private Dictionary<string, object?> CollectReplaceOperations<T>(List<Operation<T>> operations) where T : class
         => operations
@@ -221,7 +208,8 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
         var replaceOperationsToSetNull = CollectReplaceOperations(operations)
             .Where(op => op.Value is null)
             .Select(op => op.Key).ToList();
-        requiredProperties = CollectPropertiesWithAttribute(typeof(T), typeof(RequiredAttribute))
+        var type = typeof(T);
+        requiredProperties = type.GetPropertiesWithAttribute(typeof(RequiredAttribute))
             .Select(prop => prop.Name).ToList();
 
         return requiredProperties.Intersect(replaceOperationsToSetNull).ToList();
@@ -230,12 +218,10 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
     private List<string> GetInvalidStringOperations<T>(string typeName, List<Operation<T>> operations) where T : class
     {
         var illegalOperations = new List<string>();
-        var writableStringProperties = GetWritableProperties(typeof(T))
-            .Where(p => p.PropertyType == typeof(string));
-        var propertiesWithLengthLimiting =
-            CollectPropertiesWithAttribute(writableStringProperties, typeof(StringLengthAttribute)).ToList();
+        var type = typeof(T);
+        var propertiesWithLengthLimiting = type.GetWritablePropertiesWithStringLengthAttribute().ToList();
 
-        if (propertiesWithLengthLimiting.Count == 0)
+        if (!propertiesWithLengthLimiting.Any())
         {
             return illegalOperations;
         }
