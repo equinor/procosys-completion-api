@@ -49,6 +49,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
                 for (var i = 1; i < rows.Length; i++)
                 {
+                    if (rows[i].StartsWith("-"))
+                    {
+                        continue; //Skip rows that starts with '-'. 
+                    }
+
                     var columns = rows[i].Split(';', StringSplitOptions.TrimEntries);
 
                     if (columns.Length < 6 || columns.Length > 8)
@@ -68,7 +73,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
                     if (!Enum.TryParse(columns[5], out DataColumnType sourceType))
                     {
-                        throw new Exception($"The isPrimaryKey is wrong on row {rows[i]}.");
+                        throw new Exception($"The source type '{columns[5]}' is not supported on row {rows[i]}.");
                     }
 
                     var valueConversionMethod = columns[6] == null || columns[6].Length == 0 ? null : columns[6];
