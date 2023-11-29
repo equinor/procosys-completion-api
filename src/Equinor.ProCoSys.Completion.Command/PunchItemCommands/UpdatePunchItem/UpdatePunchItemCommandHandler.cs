@@ -86,7 +86,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             {
                 var domainEvent = new PunchItemUpdatedDomainEvent(punchItem, changes);
                 var integrationEvent = new PunchItemUpdatedIntegrationEvent(domainEvent);
-                await _syncToPCS4Service.SyncUpdatesAsync("PunchItem", integrationEvent);
+                await _syncToPCS4Service.SyncUpdatesAsync("PunchItem", integrationEvent, cancellationToken);
             }
             //---
 
