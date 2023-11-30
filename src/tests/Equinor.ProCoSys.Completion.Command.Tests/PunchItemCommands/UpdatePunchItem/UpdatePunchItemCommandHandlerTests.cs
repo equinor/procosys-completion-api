@@ -77,8 +77,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
-
-        _personCacheMock = Substitute.For<IPersonCache>();
     }
 
     #region test update when patchDocument contains operations
@@ -327,8 +325,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldRaisedByCode = _existingPunchItem.RaisedByOrg.Code;
         var oldClearingByOrg = _existingPunchItem.ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem.MaterialRequired;
-
-        //_syncToPCS4ServiceMock.When(x => x.SyncUpdatesAsync("punchitem", _existingPunchItem, default).IsCompletedSuccessfully);
 
         // Act
         await _dut.Handle(_command, default);
@@ -858,7 +854,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
     {
         // Arrange
-        var nonExistingPersonOid = Guid.NewGuid();
+        var nonExistingPersonOid = new Guid("{aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}");
         _command.PatchDocument.Operations.Clear();
         _command.PatchDocument.Replace(p => p.ActionByPersonOid, nonExistingPersonOid);
         var proCoSysPerson = new ProCoSysPerson
