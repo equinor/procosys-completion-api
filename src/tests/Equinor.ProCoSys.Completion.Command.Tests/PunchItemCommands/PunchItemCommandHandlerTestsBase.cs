@@ -99,6 +99,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
             _existingDocument1 = SetupDocument(++id);
             _existingDocument2 = SetupDocument(++id);
+
+            _existingPunchItem.SetCreated(_currentPerson);
+            _existingPunchItem.SetModified(_currentPerson);
         }
 
         private Document SetupDocument(int id)
