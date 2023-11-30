@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
@@ -37,6 +38,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
+    private readonly ISyncToPCS4Service _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
 
     public static string PlantWithAccess => KnownPlantData.PlantA;
     public static string PlantWithoutAccess => KnownPlantData.PlantB;
@@ -152,6 +154,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _checkListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _publishEndpointMock);
+            services.AddScoped(_ => _syncToPCS4ServiceMock);
         });
 
         builder.ConfigureServices(services =>
