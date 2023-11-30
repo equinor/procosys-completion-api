@@ -6,7 +6,7 @@ TestObject;         TestGuid;                   TestTargetTable;    TestGuid;   
 TestObject;         TestString;                 TestTargetTable;    TestString;             false;              String; 
 TestObject;         TestDate;                   TestTargetTable;    TestDateWithTime;       false;              DateTime;       
 TestObject;         TestDate2;                  TestTargetTable;    TestDate;               false;              DateTime;       DateTimeToDate
-testObject;         TestBool;                   TestTargetTable;    TestBool;               false;              Bool; 
+TestObject;         TestBool;                   TestTargetTable;    TestBool;               false;              Bool; 
 TestObject;         TestInt;                    TestTargetTable;    TestInt;                false;              Int;
 TestObject;         NestedObject.Guid;          TestTargetTable;    TestLibId;              false;              Guid;           GuidToLibId
 TestObject;         WoGuid;                     TestTargetTable;    WoGuidLibId;            false;              Guid;           GuidToWorkOrderId 

@@ -22,7 +22,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                 case DataColumnType.Int:
                     return sourceValue != null ? $"{sourceValue}" : "null";
                 case DataColumnType.Bool:
-                    if (sourceValue == null || sourceValue.ToString() == "0")
+                    if (sourceValue == null || ((bool)sourceValue) == false)
                     {
                         return "'N'";
                     }

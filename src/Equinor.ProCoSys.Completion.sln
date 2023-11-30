@@ -55,7 +55,7 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.DbSync\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{1E1580D4-14F4-480A-A09C-E1A01BD2E8D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests", "..\DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests.csproj", "{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests", "..\DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests.csproj", "{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +153,7 @@ Global
 		{75BF00C3-7FC9-49AD-9EF5-51DB36CEDE60} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{C318C627-9419-42FC-B652-660795962C7F} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
+		{B6C8D5C9-9AD3-44F0-9D80-977741A10AB9} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C79730D0-E4C2-474A-9D04-1C07256B6DF3}

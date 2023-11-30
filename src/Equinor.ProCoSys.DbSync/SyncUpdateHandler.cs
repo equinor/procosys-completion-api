@@ -50,11 +50,6 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
                 // Find value for source property 
                 var sourcePropertyValue = GetSourcePropertyValue(col, sourceObject);
 
-                if (sourcePropertyValue == null)
-                {
-                    continue; //property is not found in the source object, so we just skip this (todo: or throw exception?)
-                }
-
                 var targetColumnValue = await ValueConversion.GetSqlParameterValueAsync(sourcePropertyValue, col, _oracleDBExecutor, cancellationToken);
 
                 var columnUpdate = new ColumnUpdate(col.TargetColumn, targetColumnValue);

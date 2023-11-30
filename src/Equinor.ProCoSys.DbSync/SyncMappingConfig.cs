@@ -23,7 +23,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
             var list = _syncMappings.Where(config =>
                 config.SourceObjectName.Equals(sourceObjectName)).ToList();
 
-            if (list.Count < 0)
+            if (list.Count < 1)
             {
                 throw new Exception($"Synchronization mapping is missing for source object {sourceObjectName}");
             }

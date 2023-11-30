@@ -23,13 +23,13 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
         public async Task ExecuteDBWriteAsync(string sqlStatement, CancellationToken cancellationToken)
         {
-            using var connection = new OracleConnection(_dbConnStr);
+            await using var connection = new OracleConnection(_dbConnStr);
             await connection.OpenAsync(cancellationToken);
-            using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+            await using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
             try
             {
-                using var command = connection.CreateCommand();
+                await using var command = connection.CreateCommand();
                 command.Transaction = transaction;
                 command.CommandText = sqlStatement;
                 //todo: Bør bruke Parameters.Add, for unngå sql injection
@@ -50,10 +50,10 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
 
         public async Task<string?> ExecuteDBQueryForValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
         {
-            using var connection = new OracleConnection(_dbConnStr);
+            await using var connection = new OracleConnection(_dbConnStr);
             await connection.OpenAsync(cancellationToken);
-            using var command = new OracleCommand(sqlQuery, connection);
-            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            await using var command = new OracleCommand(sqlQuery, connection);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
             while (reader.Read())
             {
