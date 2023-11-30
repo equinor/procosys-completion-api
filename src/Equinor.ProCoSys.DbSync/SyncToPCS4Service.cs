@@ -10,12 +10,13 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
      */
     public class SyncToPCS4Service : ISyncToPCS4Service
     {
-        readonly SyncMappingConfig _syncMappingConfig;
         readonly IOracleDBExecutor _oracleDBExecutor;
+        readonly ISyncMappingConfig _syncMappingConfig;
 
-        public SyncToPCS4Service(IOracleDBExecutor oracleDBExecutor)
+
+        public SyncToPCS4Service(IOracleDBExecutor oracleDBExecutor, ISyncMappingConfig syncMappingConfig)
         {
-            _syncMappingConfig = new SyncMappingConfig();
+            _syncMappingConfig = syncMappingConfig;
             _oracleDBExecutor = oracleDBExecutor;
         }
 

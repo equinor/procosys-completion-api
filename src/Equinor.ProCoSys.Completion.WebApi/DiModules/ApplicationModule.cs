@@ -140,5 +140,6 @@ public static class ApplicationModule
         services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<IOracleDBExecutor, OracleDBExecutor>();
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
+        services.AddSingleton<ISyncMappingConfig, SyncMappingConfig>();
     }
 }

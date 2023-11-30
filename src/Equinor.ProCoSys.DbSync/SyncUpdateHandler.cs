@@ -13,11 +13,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
         /**
          * Handle the syncronization
          */
-        public async Task<string> BuildSqlUpdateStatementAsync(string sourceObjectName, object sourceObject, SyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
+        public async Task<string> BuildSqlUpdateStatementAsync(string sourceObjectName, object sourceObject, ISyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
         {
             var syncMappings = syncMappingConfig.GetSyncMappingsForSourceObject(sourceObjectName);
 
-            //Finds the primary key
+            //Find the primary key
             var primaryKeyConfig = syncMappings.Where(config => config.IsPrimaryKey == true).SingleOrDefault();
 
             if (primaryKeyConfig == null)

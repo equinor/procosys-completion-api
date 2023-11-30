@@ -8,7 +8,7 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
      * The will be a source object comming from PCS 5, that maps to a target table in PCS 4. 
      * Each source object must have 'one' property configured, that is to be used as primary key against the PCS 4 database. 
      */
-    public class SyncMappingConfig
+    public class SyncMappingConfig : ISyncMappingConfig
     {
         public List<ColumnSyncConfig> _syncMappings;
 

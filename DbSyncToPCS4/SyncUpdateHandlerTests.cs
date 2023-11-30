@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using System.Configuration;
+
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
@@ -145,13 +145,23 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenConfigIsMissingPrimaryKey()
     {
-        await Assert.ThrowsExceptionAsync<Exception>(async () => await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingPrimary, _testObject, _syncMappingConfig, default));
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingPrimary, _testObject, _syncMappingConfig, default);
+        });
+
+        Assert.AreEqual($"The configuration should have a primary key property defined. Source object name: {_sourceObjectNameMissingPrimary}", exception.Message);
     }
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingProperty()
     {
-        await Assert.ThrowsExceptionAsync<Exception>(async () => await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingProperty, _testObject, _syncMappingConfig, default));
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingProperty, _testObject, _syncMappingConfig, default);
+        });
+
+        Assert.AreEqual($"A property in configuration is missing in source object: {_sourceObjectNameMissingProperty}.PropMissing", exception.Message);
     }
 
     [TestMethod]
