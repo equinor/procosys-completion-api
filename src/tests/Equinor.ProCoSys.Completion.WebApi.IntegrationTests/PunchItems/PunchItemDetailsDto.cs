@@ -1,5 +1,5 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿#nullable enable
+using System;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
@@ -7,33 +7,37 @@ public record PunchItemDetailsDto(
     Guid Guid,
     string ProjectName,
     int ItemNo,
+    string Category,
     string Description,
     PersonDto CreatedBy,
     DateTime CreatedAtUtc,
-    // todo 104514 Enable Nullable in test projects?
-    [CanBeNull]
-    PersonDto ModifiedBy,
+    PersonDto? ModifiedBy,
     DateTime? ModifiedAtUtc,
     bool IsReadyToBeCleared,
     bool IsReadyToBeUncleared,
-    [CanBeNull]
-    PersonDto ClearedBy,
+    PersonDto? ClearedBy,
     DateTime? ClearedAtUtc,
+    bool IsReadyToBeRejected,
+    PersonDto? RejectedBy,
+    DateTime? RejectedAtUtc,
     bool IsReadyToBeVerified,
     bool IsReadyToBeUnverified,
-    bool IsReadyToBeRejected,
-    [CanBeNull]
-    PersonDto RejectedBy,
-    DateTime? RejectedAtUtc,
-    [CanBeNull]
-    PersonDto VerifiedBy,
+    PersonDto? VerifiedBy,
     DateTime? VerifiedAtUtc,
     LibraryItemDto RaisedByOrg,
     LibraryItemDto ClearingByOrg,
-    [CanBeNull]
-    LibraryItemDto Priority,
-    [CanBeNull]
-    LibraryItemDto Sorting,
-    [CanBeNull]
-    LibraryItemDto Type,
+    LibraryItemDto? Priority,
+    LibraryItemDto? Sorting,
+    LibraryItemDto? Type,
+    PersonDto? ActionBy,
+    DateTime? DueTimeUtc,
+    int? Estimate,
+    string? ExternalItemNo,
+    bool MaterialRequired,
+    DateTime? MaterialETAUtc,
+    string? MaterialExternalNo,
+    WorkOrderDto? WorkOrder,
+    WorkOrderDto? OriginalWorkOrder,
+    DocumentDto? Document,
+    SWCRDto? SWCR,
     string RowVersion);

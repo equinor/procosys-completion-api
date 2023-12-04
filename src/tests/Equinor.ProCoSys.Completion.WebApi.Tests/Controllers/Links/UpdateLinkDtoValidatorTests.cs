@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
+using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -11,13 +11,13 @@ public class UpdateLinkDtoValidatorTests
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
-    private UpdateLinkDtoValidator _dut;
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private UpdateLinkDtoValidator _dut = null!;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
         _dut = new UpdateLinkDtoValidator(_rowVersionValidatorMock);

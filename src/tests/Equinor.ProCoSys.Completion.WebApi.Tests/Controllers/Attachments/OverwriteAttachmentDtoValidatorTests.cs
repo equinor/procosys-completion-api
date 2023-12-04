@@ -10,11 +10,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Controllers.Attachments;
 public class OverwriteAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<OverwriteAttachmentDto>
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
 
     protected override void SetupDut()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion)
             .Returns(true);
         _dut = new OverwriteAttachmentDtoValidator(
@@ -33,7 +33,7 @@ public class OverwriteAttachmentDtoValidatorTests : UploadBaseDtoValidatorTests<
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new OverwriteAttachmentDto()
+        var dto = new OverwriteAttachmentDto
         {
             File = new TestableFormFile("picture.gif", 1000)
         };

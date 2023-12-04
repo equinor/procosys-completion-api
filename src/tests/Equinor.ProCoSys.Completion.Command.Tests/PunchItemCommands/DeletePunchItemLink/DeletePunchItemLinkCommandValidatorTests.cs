@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
  using NSubstitute;
 
@@ -25,7 +25,7 @@ public class DeletePunchItemLinkCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _linkServiceMock = Substitute.For<ILinkService>();
-        _linkServiceMock.ExistsAsync(_command.LinkGuid).Returns(true);
+        _linkServiceMock.ExistsAsync(_command.LinkGuid, default).Returns(true);
 
         _dut = new DeletePunchItemLinkCommandValidator(
             _punchItemValidatorMock,
@@ -62,7 +62,7 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_LinkNotExists()
     {
         // Arrange
-        _linkServiceMock.ExistsAsync(_command.LinkGuid)
+        _linkServiceMock.ExistsAsync(_command.LinkGuid, default)
             .Returns(false);
 
         // Act

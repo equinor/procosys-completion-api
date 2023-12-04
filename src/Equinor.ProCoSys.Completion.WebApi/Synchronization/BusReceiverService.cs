@@ -37,14 +37,14 @@ public class BusReceiverService : IBusReceiverService
         switch (pcsTopic.ToLower())
         {
             case ProjectTopic.TopicName:
-                await ProcessProjectEvent(messageJson);
+                await ProcessProjectEvent(messageJson, cancellationToken);
                 break;
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task ProcessProjectEvent(string messageJson)
+    private async Task ProcessProjectEvent(string messageJson, CancellationToken cancellationToken)
     {
         var projectEvent = JsonSerializer.Deserialize<ProjectTopic>(messageJson);
         if (projectEvent is null || projectEvent.Plant.IsEmpty())
@@ -56,9 +56,11 @@ public class BusReceiverService : IBusReceiverService
 
         _plantSetter.SetPlant(projectEvent.Plant);
 
-        var project = await _projectRepository.GetByGuidAsync(projectEvent.ProCoSysGuid);
-        if (project is not null)
+        Project project;
+        var projectExists = await _projectRepository.ExistsAsync(projectEvent.ProCoSysGuid, cancellationToken);
+        if (projectExists)
         {
+            project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid, cancellationToken);
             if (projectEvent.Behavior == "delete")
             {
                 project.IsDeletedInSource = true;

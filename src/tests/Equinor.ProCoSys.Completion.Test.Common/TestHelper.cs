@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -54,15 +55,12 @@ public static class TestHelper
 
     public static List<Type> GetTestsWhichInheritsBaseClass(Assembly assembly, Type baseClass)
     {
-        var baseClassFullName = baseClass.FullName;
-        Assert.IsNotNull(baseClassFullName);
-
         var accessValidatorForIPunchItemQueryTestClasses =
             assembly.GetTypes()
                 .Where(t =>
                     IsAEquinorType(t) &&
                     IsATestClass(t) &&
-                    HasBaseClassOfType(t, baseClassFullName))
+                    t.HasBaseClassOfType(baseClass))
                 .ToList();
         return accessValidatorForIPunchItemQueryTestClasses;
     }
@@ -75,16 +73,6 @@ public static class TestHelper
         return isAEquinorClass;
     }
 
-    public static bool HasBaseClassOfType(Type type, string baseClassFullName)
-    {
-        var hasBaseClassOfType =
-            type.BaseType is not null &&
-            type.BaseType.FullName is not null &&
-            type.BaseType.FullName.StartsWith(baseClassFullName);
-
-        return hasBaseClassOfType;
-    }
-
     public static bool IsATestClass(Type type)
     {
         var customAttributes = type.CustomAttributes;
@@ -93,5 +81,21 @@ public static class TestHelper
             type.IsClass &&
             !type.IsAbstract;
         return isATestClass;
+    }
+
+    public static void AssertPropertiesNotChanged(
+        Dictionary<string, Type> expectedProperties,
+        Dictionary<string, Type> actualProperties)
+    {
+        CollectionAssert.AreEquivalent(expectedProperties.Keys, actualProperties.Keys,
+            "The number expected properties does not match number of interface properties, " +
+            "test needs to be updated if the change is non breaking(non required property added)");
+
+        foreach (var expectedProperty in expectedProperties)
+        {
+            Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key],
+                $"Property type mismatch for {expectedProperty.Key}. " +
+                "Consider creating a new version instead of modifying the existing one.");
+        }
     }
 }

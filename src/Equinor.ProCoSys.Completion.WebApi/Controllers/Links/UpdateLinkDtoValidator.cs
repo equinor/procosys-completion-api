@@ -4,7 +4,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 
 public class UpdateLinkDtoValidator : AbstractValidator<UpdateLinkDto>
 {
-    public UpdateLinkDtoValidator(IRowVersionValidator rowVersionValidator)
+    public UpdateLinkDtoValidator(IRowVersionInputValidator rowVersionValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;

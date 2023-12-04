@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.MassTransit;
 [TestClass]
 public class ProCoSysKebabCaseEntityNameFormatterTests
 {
-    private ProCoSysKebabCaseEntityNameFormatter _formatter;
+    private ProCoSysKebabCaseEntityNameFormatter _formatter = null!;
 
     [TestInitialize]
     public void TestInitialize() => _formatter = new ProCoSysKebabCaseEntityNameFormatter();

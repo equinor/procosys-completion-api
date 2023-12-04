@@ -4,7 +4,7 @@ public enum UserType
 {
     Anonymous,
     Writer,
-    // todo setup RestrictedWriter which have restriction role for a Responsible
+    // todo 104207 setup RestrictedWriter which have restriction role for a Responsible
     Reader,
     NoPermissionUser
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -9,21 +9,18 @@
   <ItemGroup>
     <Compile Remove="MeetingCommands\**" />
     <Compile Remove="ResponsibleCommands\**" />
-    <Compile Remove="Validators\PersonValidators\**" />
     <EmbeddedResource Remove="MeetingCommands\**" />
     <EmbeddedResource Remove="ResponsibleCommands\**" />
-    <EmbeddedResource Remove="Validators\PersonValidators\**" />
     <None Remove="MeetingCommands\**" />
     <None Remove="ResponsibleCommands\**" />
-    <None Remove="Validators\PersonValidators\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.3" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.2" />
-    <PackageReference Include="FluentValidation" Version="11.5.1" />
-    <PackageReference Include="MassTransit" Version="8.0.16" />
-    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.0.16" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.4" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.3" />
+    <PackageReference Include="FluentValidation" Version="11.8.0" />
+    <PackageReference Include="MassTransit" Version="8.1.2" />
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.1.2" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
     <PackageReference Include="ServiceResult" Version="1.0.1" />
   </ItemGroup>

@@ -20,7 +20,7 @@ public class VerifyOidInDbMiddleware
         IMediator mediator,
         ILogger<VerifyOidInDbMiddleware> logger)
     {
-        logger.LogInformation($"----- {GetType().Name} start");
+        logger.LogDebug("----- {MiddlewareName} start", GetType().Name);
         if (httpContextAccessor.HttpContext is not null)
         {
             var httpContextUser = httpContextAccessor.HttpContext.User;
@@ -42,7 +42,7 @@ public class VerifyOidInDbMiddleware
             }
         }
 
-        logger.LogInformation($"----- {GetType().Name} complete");
+        logger.LogDebug("----- {MiddlewareName} complete", GetType().Name);
         // Call the next delegate/middleware in the pipeline
         await _next(context);
     }

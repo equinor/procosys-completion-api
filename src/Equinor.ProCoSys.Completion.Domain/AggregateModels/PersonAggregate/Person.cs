@@ -29,7 +29,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public string Email { get; set; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
-    public Guid? ModifiedByOid { get; private set; }
+    public Person? ModifiedBy { get; private set; }
 
     public void SetModified(Person modifiedBy)
     {
@@ -39,6 +39,8 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
             throw new ArgumentNullException(nameof(modifiedBy));
         }
         ModifiedById = modifiedBy.Id;
-        ModifiedByOid = modifiedBy.Guid;
+        ModifiedBy = modifiedBy;
     }
+
+    public string GetFullName() => $"{FirstName} {LastName}";
 }

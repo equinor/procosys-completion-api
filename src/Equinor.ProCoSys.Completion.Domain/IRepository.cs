@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 
@@ -8,13 +9,13 @@ public interface IRepository<TEntity> where TEntity : EntityBase, IAggregateRoot
 {
     void Add(TEntity item);
 
-    Task<bool> Exists(int id);
+    Task<bool> Exists(int id, CancellationToken cancellationToken);
 
-    Task<TEntity?> GetByIdAsync(int id);
+    Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
-    Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> id);
+    Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> id, CancellationToken cancellationToken);
 
     void Remove(TEntity entity);
 
-    Task<List<TEntity>> GetAllAsync();
+    Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken);
 }

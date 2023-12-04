@@ -36,6 +36,6 @@ public abstract class ICreationAuditableTests
         // Arrange
         Assert.AreEqual(_now, dut.CreatedAtUtc);
         Assert.AreEqual(_person.Id, dut.CreatedById);
-        Assert.AreEqual(_person.Guid, dut.CreatedByOid);
+        Assert.AreEqual(_person, dut.CreatedBy);
     }
 }

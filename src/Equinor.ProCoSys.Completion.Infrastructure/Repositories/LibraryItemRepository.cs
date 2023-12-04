@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +14,16 @@ public class LibraryItemRepository : EntityWithGuidRepository<LibraryItem>, ILib
     {
     }
 
-    public Task<LibraryItem?> GetByGuidAndTypeAsync(Guid libraryGuid, LibraryType type)
-        => DefaultQuery.SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type);
-
+    public async Task<LibraryItem> GetByGuidAndTypeAsync(Guid libraryGuid, LibraryType type, CancellationToken cancellationToken)
+    {
+        var libraryItem = await DefaultQuery.SingleOrDefaultAsync(
+            x => x.Guid == libraryGuid && x.Type == type,
+            cancellationToken);
+        if (libraryItem is null)
+        {
+            throw new EntityNotFoundException(
+                $"Could not find {nameof(LibraryItem)} of type {type} with Guid {libraryGuid}");
+        }
+        return libraryItem;
+    }
 }

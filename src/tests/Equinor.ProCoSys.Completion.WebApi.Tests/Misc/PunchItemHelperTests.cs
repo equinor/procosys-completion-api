@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -13,15 +15,21 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Misc;
 public class PunchItemHelperTests : ReadOnlyTestsBase
 {
     private Guid _punchItemGuid;
+    private readonly Guid _checkListGuid = Guid.NewGuid();
+    private Project _projectA = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-                
+
+        _projectA = context.Projects.Single(p => p.Id == _projectAId);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+
         // Save to get real id on project
         context.SaveChangesAsync().Wait();
 
-        var punchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), "Title", _raisedByOrg, _clearingByOrg);
+        var punchItem = new PunchItem(TestPlantA, _projectA, _checkListGuid, Category.PB, "Desc", raisedByOrg, clearingByOrg);
         context.PunchItems.Add(punchItem);
         context.SaveChangesAsync().Wait();
         _punchItemGuid = punchItem.Guid;
@@ -53,5 +61,33 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNull(projectGuid);
+    }
+
+    [TestMethod]
+    public async Task GetCheckListGuidForPunchItem_ShouldReturnCheckListGuid_WhenKnownPunchItemId()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemHelper(context);
+
+        // Act
+        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(_punchItemGuid);
+
+        // Assert
+        Assert.AreEqual(_checkListGuid, checkListGuid);
+    }
+
+    [TestMethod]
+    public async Task GetCheckListGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        var dut = new PunchItemHelper(context);
+
+        // Act
+        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(Guid.Empty);
+
+        // Assert
+        Assert.IsNull(checkListGuid);
     }
 }

@@ -13,16 +13,14 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.EventHandlers.DomainEvents.P
 public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
 {
     private PunchItemCreatedEventHandler _dut;
-    private PunchItemCreatedDomainEvent _punchItemCreatedEvent;
+    private PunchItemCreatedDomainEvent _domainEvent;
     private IPublishEndpoint _publishEndpointMock;
     private PunchItemCreatedIntegrationEvent _publishedIntegrationEvent;
 
     [TestInitialize]
     public void Setup()
     {
-        _punchItem.SetCreated(_person);
-
-        _punchItemCreatedEvent = new PunchItemCreatedDomainEvent(_punchItem, _project.Guid);
+        _domainEvent = new PunchItemCreatedDomainEvent(_punchItem);
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemCreatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<PunchItemCreatedEventHandler>>());
         _publishEndpointMock
@@ -39,26 +37,49 @@ public class PunchItemCreatedEventHandlerTests : EventHandlerTestBase
     public async Task Handle_ShouldPublish_PunchItemCreatedIntegrationEvent()
     {
         // Act
-        await _dut.Handle(_punchItemCreatedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
-        await _publishEndpointMock.Received().Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
-            Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
+        await _publishEndpointMock.Received(1)
+            .Publish(Arg.Any<PunchItemCreatedIntegrationEvent>(),
+                Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
     }
 
     [TestMethod]
-    public async Task Handle_ShouldPublish_CorrectIntegrationEvent()
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithRequiredPropertiesSet()
     {
         // Act
-        await _dut.Handle(_punchItemCreatedEvent, default);
+        await _dut.Handle(_domainEvent, default);
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item created", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_punchItemCreatedEvent.ProjectGuid, _publishedIntegrationEvent.ProjectGuid);
-        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedAtUtc, _publishedIntegrationEvent.CreatedAtUtc);
-        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.CreatedByOid, _publishedIntegrationEvent.CreatedByOid);
-        Assert.AreEqual(_punchItemCreatedEvent.PunchItem.ItemNo, _publishedIntegrationEvent.ItemNo);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
+        AssertNotCleared(_publishedIntegrationEvent);
+        AssertNotRejected(_publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
+    }
+
+    [TestMethod]
+    public async Task Handle_ShouldPublish_CorrectIntegrationEvent_WithAllPropertiesSet()
+    {
+        // Arrange
+        FillOptionalProperties(_domainEvent.PunchItem);
+
+        // Act
+        await _dut.Handle(_domainEvent, default);
+
+        // Assert
+        Assert.IsNotNull(_publishedIntegrationEvent);
+        Assert.AreEqual("Punch item created", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.PunchItem.CheckListGuid, _publishedIntegrationEvent.ParentGuid);
+        AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
+        AssertNotCleared(_publishedIntegrationEvent);
+        AssertNotRejected(_publishedIntegrationEvent);
+        AssertNotVerified(_publishedIntegrationEvent);
     }
 }

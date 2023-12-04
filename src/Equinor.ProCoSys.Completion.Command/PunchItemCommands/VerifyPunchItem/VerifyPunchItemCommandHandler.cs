@@ -33,16 +33,16 @@ public class VerifyPunchItemCommandHandler : IRequestHandler<VerifyPunchItemComm
 
     public async Task<Result<string>> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
         if (punchItem == null)
         {
             throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
         }
 
-        var currentPerson = await _personRepository.GetCurrentPersonAsync();
+        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Verify(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
-        punchItem.AddDomainEvent(new PunchItemVerifiedDomainEvent(punchItem, currentPerson.Guid));
+        punchItem.AddDomainEvent(new PunchItemVerifiedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -26,9 +26,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(true);
         _dut = new OverwriteExistingPunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
@@ -95,9 +96,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_AttachmentWithFileNameNotExists()
     {
         // Arrange
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid,
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(false);
 
         // Act

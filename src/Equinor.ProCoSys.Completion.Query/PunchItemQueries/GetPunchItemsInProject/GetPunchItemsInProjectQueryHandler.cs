@@ -29,6 +29,7 @@ public class GetPunchItemsInProjectQueryHandler : IRequestHandler<GetPunchItemsI
                        punchItem.Guid,
                        project.Name,
                        punchItem.ItemNo,
+                       punchItem.Category,
                        punchItem.Description,
                        punchItem.RowVersion.ConvertToString())
                 )

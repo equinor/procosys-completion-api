@@ -1,7 +1,6 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+﻿using System;
+using System.Linq;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,106 +17,110 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
-        builder.HasOne<Project>()
+        builder.HasOne(x => x.Project)
             .WithMany()
-            .HasForeignKey(x => x.ProjectId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.RaisedByOrg)
             .WithMany()
-            .HasForeignKey(x => x.RaisedByOrgId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.ClearingByOrg)
             .WithMany()
-            .HasForeignKey(x => x.ClearingByOrgId)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Sorting)
             .WithMany()
-            .HasForeignKey(x => x.SortingId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Type)
             .WithMany()
-            .HasForeignKey(x => x.TypeId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne<LibraryItem>()
+        builder.HasOne(x => x.Priority)
             .WithMany()
-            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(x => x.WorkOrder)
+            .WithMany()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(x => x.OriginalWorkOrder)
+            .WithMany()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(x => x.Document)
+            .WithMany()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(x => x.SWCR)
+            .WithMany()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(x => x.ActionBy)
+            .WithMany()
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(x => x.Id)
             // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
             .UseIdentityColumn(PunchItem.IdentitySeed);
 
+        builder.Property(f => f.Category)
+            .HasDefaultValue(Category.PA)
+            .IsRequired();
+
         builder.Property(x => x.Description)
             .IsRequired()
             .HasMaxLength(PunchItem.DescriptionLengthMax);
+
+        builder.Property(f => f.MaterialRequired)
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(x => x.ExternalItemNo)
+            .HasMaxLength(PunchItem.ExternalItemNoLengthMax);
+
+        builder.Property(x => x.MaterialExternalNo)
+            .HasMaxLength(PunchItem.MaterialExternalNoLengthMax);
 
         builder
             .Property(x => x.ClearedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.ClearedBy)
             .WithMany()
-            .HasForeignKey(x => x.ClearedById)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
             .Property(x => x.RejectedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.RejectedBy)
             .WithMany()
-            .HasForeignKey(x => x.RejectedById)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
             .Property(x => x.VerifiedAtUtc)
             .HasConversion(CompletionContext.DateTimeKindConverter);
 
-        builder
-            .HasOne<Person>()
+        builder.HasOne(x => x.VerifiedBy)
             .WithMany()
-            .HasForeignKey(x => x.VerifiedById)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.RaisedByOrgId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .Property(x => x.DueTimeUtc)
+            .HasConversion(CompletionContext.DateTimeKindConverter);
 
         builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.ClearingByOrgId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .Property(x => x.MaterialETAUtc)
+            .HasConversion(CompletionContext.DateTimeKindConverter);
 
         builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.SortingId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.TypeId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder
-            .HasOne<LibraryItem>()
-            .WithMany()
-            .HasForeignKey(x => x.PriorityId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .ToTable(x => x.HasCheckConstraint("punch_item_valid_category",
+                $"{nameof(PunchItem.Category)} in ({GetValidCategoryEnums()})"));
 
         // both ClearedAtUtc and ClearedById fields must either be set or not set
         builder
@@ -154,6 +157,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             .IncludeProperties(x => new
             {
                 x.Id,
+                x.Category,
                 x.Description,
                 x.ProjectId,
                 x.CreatedById,
@@ -171,6 +175,17 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.SortingId,
                 x.TypeId,
                 x.PriorityId,
+                x.Estimate,
+                x.DueTimeUtc,
+                x.ExternalItemNo,
+                x.MaterialRequired,
+                x.MaterialExternalNo,
+                x.MaterialETAUtc,
+                x.WorkOrderId,
+                x.OriginalWorkOrderId,
+                x.DocumentId,
+                x.SWCRId,
+                x.ActionById,
                 x.RowVersion
             });
 
@@ -182,5 +197,11 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.Id,
                 x.RowVersion
             });
+    }
+
+    private string GetValidCategoryEnums()
+    {
+        var values = Enum.GetValues(typeof(Category)).Cast<int>();
+        return string.Join(',', values);
     }
 }

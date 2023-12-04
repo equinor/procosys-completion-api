@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.8.0" />
     <PackageReference Include="ServiceResult" Version="1.0.1" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.2" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

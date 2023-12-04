@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.CommentDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Comments;
 [TestClass]
 public class CommentServiceTests : TestsBase
 {
-    private readonly Guid _sourceGuid = Guid.NewGuid();
+    private readonly Guid _parentGuid = Guid.NewGuid();
     private ICommentRepository _commentRepository;
     private CommentService _dut;
     private Comment _commentAddedToRepository;
@@ -38,16 +37,16 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldAddCommentToRepository()
     {
         // Arrange 
-        var sourceType = "Whatever";
+        var parentType = "Whatever";
         var text = "T";
 
         // Act
-        await _dut.AddAsync(sourceType, _sourceGuid, text, default);
+        await _dut.AddAsync(parentType, _parentGuid, text, default);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
-        Assert.AreEqual(_sourceGuid, _commentAddedToRepository.SourceGuid);
-        Assert.AreEqual(sourceType, _commentAddedToRepository.SourceType);
+        Assert.AreEqual(_parentGuid, _commentAddedToRepository.ParentGuid);
+        Assert.AreEqual(parentType, _commentAddedToRepository.ParentType);
         Assert.AreEqual(text, _commentAddedToRepository.Text);
     }
 
@@ -55,20 +54,20 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldSaveOnce()
     {
         // Act
-        await _dut.AddAsync("Whatever", _sourceGuid, "T", default);
+        await _dut.AddAsync("Whatever", _parentGuid, "T", default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
     }
 
     [TestMethod]
-    public async Task AddAsync_ShouldAddCommentCreatedEvent()
+    public async Task AddAsync_ShouldNotAddAnyDomainEvent()
     {
         // Act
-        await _dut.AddAsync("Whatever", _sourceGuid, "T", default);
+        await _dut.AddAsync("Whatever", _parentGuid, "T", default);
 
         // Assert
-        Assert.IsInstanceOfType(_commentAddedToRepository.DomainEvents.First(), typeof(CommentCreatedDomainEvent));
+        Assert.AreEqual(0, _commentAddedToRepository.DomainEvents.Count);
     }
     #endregion
 }

@@ -7,16 +7,20 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using ConcurrencyException = Equinor.ProCoSys.Common.Misc.ConcurrencyException;
 using IDomainMarker = Equinor.ProCoSys.Completion.Domain.IDomainMarker;
 
@@ -62,6 +66,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
     public static LibraryTypeConverter LibraryTypeConverter { get; } = new();
 
+    public virtual DbSet<Label> Labels => Set<Label>();
+    public virtual DbSet<LabelHost> LabelHosts => Set<LabelHost>();
     public virtual DbSet<Person> Persons => Set<Person>();
     public virtual DbSet<PunchItem> PunchItems => Set<PunchItem>();
     public virtual DbSet<Project> Projects => Set<Project>();
@@ -69,6 +75,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Comment> Comments => Set<Comment>();
     public virtual DbSet<Attachment> Attachments => Set<Attachment>();
     public virtual DbSet<LibraryItem> Library => Set<LibraryItem>();
+    public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public virtual DbSet<Document> Documents => Set<Document>();
+    public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
     private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
     {
@@ -120,12 +129,14 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         }
     }
             
-    public async Task<IDbContextTransaction> BeginTransaction(CancellationToken cancellationToken = default) 
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default) 
         => await base.Database.BeginTransactionAsync(cancellationToken);
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         => await base.Database.CommitTransactionAsync(cancellationToken);
 
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+        => await base.Database.RollbackTransactionAsync(cancellationToken);
 
     /// <summary>
     /// The UpdateConcurrencyToken method is used to manage concurrency conflicts in Entity Framework. 
@@ -187,7 +198,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .ToList();
         var modifiedEntries = ChangeTracker
             .Entries<IModificationAuditable>()
-            // Also update modifiedBy / modifiedAt when deleting. This to be able to log who performed the deletion
+            // Also update modifiedBy / modifiedAt when deleting ...
+            // ... This to be able to create integration events with info about who performed the deletion and when
             .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted)
             .ToList();
 

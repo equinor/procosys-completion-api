@@ -29,7 +29,7 @@ public class GetPunchItemLinksQueryHandlerTests : TestsBase
             _linkDto
         };
         _linkServiceMock = Substitute.For<ILinkService>();
-        _linkServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+        _linkServiceMock.GetAllForParentAsync(_query.PunchItemGuid, default)
             .Returns(linkDtos);
 
         _dut = new GetPunchItemLinksQueryHandler(_linkServiceMock);
@@ -44,7 +44,7 @@ public class GetPunchItemLinksQueryHandlerTests : TestsBase
         // Assert
         Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<LinkDto>));
         var link = result.Data.Single();
-        Assert.AreEqual(_linkDto.SourceGuid, link.SourceGuid);
+        Assert.AreEqual(_linkDto.ParentGuid, link.ParentGuid);
         Assert.AreEqual(_linkDto.Guid, link.Guid);
         Assert.AreEqual(_linkDto.Title, link.Title);
         Assert.AreEqual(_linkDto.Url, link.Url);
@@ -52,13 +52,13 @@ public class GetPunchItemLinksQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_Should_CallGetAllForSource_OnLinkService()
+    public async Task HandlingQuery_Should_CallGetAllForParent_OnLinkService()
     {
         // Act
         await _dut.Handle(_query, default);
 
         // Assert
-        await _linkServiceMock.Received(1).GetAllForSourceAsync(
+        await _linkServiceMock.Received(1).GetAllForParentAsync(
             _query.PunchItemGuid,
             default);
     }

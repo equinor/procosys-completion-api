@@ -1,12 +1,11 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 
@@ -28,11 +27,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetByGuidAsync(request.PunchItemGuid);
-        if (punchItem is null)
-        {
-            throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
-        }
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

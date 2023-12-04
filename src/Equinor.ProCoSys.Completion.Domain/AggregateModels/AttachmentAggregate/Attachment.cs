@@ -7,9 +7,9 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 
-public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IBelongToSource, IHaveGuid
+public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IBelongToParent, IHaveGuid
 {
-    public const int SourceTypeLengthMax = 256;
+    public const int ParentTypeLengthMax = 256;
     public const int FileNameLengthMax = 255;
     public const int BlobPathLengthMax = 1024;
 
@@ -19,31 +19,31 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     {
     }
 
-    public Attachment(string sourceType, Guid sourceGuid, string plant, string fileName)
+    public Attachment(string parentType, Guid parentGuid, string plant, string fileName)
     {
-        SourceType = sourceType;
-        SourceGuid = sourceGuid;
+        ParentType = parentType;
+        ParentGuid = parentGuid;
         FileName = fileName;
-        Guid = Guid.NewGuid();
+        Guid = MassTransit.NewId.NextGuid();
         if (plant.Length < 5)
         {
             throw new ArgumentException($"{nameof(plant)} must have minimum length 5");
         }
-        BlobPath = Path.Combine(plant.Substring(4), SourceType, Guid.ToString()).Replace("\\", "/");
+        BlobPath = Path.Combine(plant.Substring(4), ParentType, Guid.ToString()).Replace("\\", "/");
         RevisionNumber = 1;
     }
 
     // private setters needed for Entity Framework
-    public string SourceType { get; private set; }
-    public Guid SourceGuid { get; private set; }
+    public string ParentType { get; private set; }
+    public Guid ParentGuid { get; private set; }
     public string FileName { get; private set; }
     public string BlobPath { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
-    public Guid CreatedByOid { get; private set; }
+    public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
-    public Guid? ModifiedByOid { get; private set; }
+    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public int RevisionNumber { get; private set; }
 
@@ -56,13 +56,13 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     {
         CreatedAtUtc = TimeService.UtcNow;
         CreatedById = createdBy.Id;
-        CreatedByOid = createdBy.Guid;
+        CreatedBy = createdBy;
     }
 
     public void SetModified(Person modifiedBy)
     {
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
-        ModifiedByOid = modifiedBy.Guid;
+        ModifiedBy = modifiedBy;
     }
 }

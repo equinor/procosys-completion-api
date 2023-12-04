@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.JsonPatch;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
@@ -82,11 +83,13 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
+        string category,
         string description,
         Guid projectGuid,
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
+        DateTime? dueTimeUtc = null,
         Guid? priorityGuid = null,
         Guid? sortingGuid = null,
         Guid? typeGuid = null,
@@ -95,11 +98,13 @@ public static class PunchItemsControllerTestsHelper
     {
         var bodyPayload = new
         {
+            category,
             description,
             projectGuid = projectGuid.ToString(),
             checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
             clearingByOrgGuid = clearingByOrgGuid.ToString(),
+            dueTimeUtc = dueTimeUtc?.ToString("O"),
             priorityGuid = priorityGuid?.ToString(),
             sortingGuid = sortingGuid?.ToString(),
             typeGuid = typeGuid?.ToString()
@@ -276,20 +281,49 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid guid,
-        string description,
+        JsonPatchDocument patchDocument,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            description,
+            patchDocument,
             rowVersion
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}", content);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}", content);
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    public static async Task<string> UpdatePunchItemCategoryAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        string category,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            category,
+            rowVersion
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}/UpdateCategory", content);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -535,6 +569,7 @@ public static class PunchItemsControllerTestsHelper
         var guidAndRowVersion = await CreatePunchItemAsync(
             userType,
             plant,
+            "PA",
             Guid.NewGuid().ToString(),
             projectGuid,
             checkListGuid,

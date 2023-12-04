@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
@@ -21,7 +21,7 @@ public class DeletePunchItemLinkCommandValidator : AbstractValidator<DeletePunch
             .WithMessage("Project is closed!")
             .MustAsync((command, cancellationToken) => BeAnExistingPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
-            .MustAsync((command, _) => BeAnExistingLink(command.LinkGuid))
+            .MustAsync((command, cancellationToken) => BeAnExistingLink(command.LinkGuid, cancellationToken))
             .WithMessage(command => $"Link with this guid does not exist! Guid={command.LinkGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Tag owning punch item is voided!");
@@ -35,7 +35,7 @@ public class DeletePunchItemLinkCommandValidator : AbstractValidator<DeletePunch
         async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
 
-        async Task<bool> BeAnExistingLink(Guid linkGuid)
-            => await linkService.ExistsAsync(linkGuid);
+        async Task<bool> BeAnExistingLink(Guid linkGuid, CancellationToken cancellationToken)
+            => await linkService.ExistsAsync(linkGuid, cancellationToken);
     }
 }

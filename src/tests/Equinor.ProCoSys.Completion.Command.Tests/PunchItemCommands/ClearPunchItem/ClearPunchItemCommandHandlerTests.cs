@@ -35,7 +35,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
 
             // Assert
             Assert.AreEqual(_utcNow, _existingPunchItem.ClearedAtUtc);
-            Assert.AreEqual(CurrentPersonId, _existingPunchItem.ClearedById);
+            Assert.AreEqual(_currentPerson.Id, _existingPunchItem.ClearedById);
         }
 
         [TestMethod]
@@ -57,8 +57,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
             // Assert
             // In real life EF Core will create a new RowVersion when save.
             // Since UnitOfWorkMock is a Substitute this will not happen here, so we assert that RowVersion is set from command
-            Assert.AreEqual(RowVersion, result.Data);
-            Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+            Assert.AreEqual(_command.RowVersion, result.Data);
+            Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
         }
 
         [TestMethod]

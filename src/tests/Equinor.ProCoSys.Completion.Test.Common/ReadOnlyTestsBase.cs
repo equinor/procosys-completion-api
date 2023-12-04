@@ -6,23 +6,28 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
 public abstract class ReadOnlyTestsBase : TestsBase
 {
-    protected Project _projectA;
-    protected Project _projectB;
-    protected Project _closedProjectC;
-    protected Person _currentPerson;
-    protected LibraryItem _raisedByOrg;
-    protected LibraryItem _clearingByOrg;
-    protected LibraryItem _priority;
-    protected LibraryItem _sorting;
-    protected LibraryItem _type;
+    protected int _projectAId;
+    protected int _projectBId;
+    protected int _closedProjectCId;
+    protected int _raisedByOrgId;
+    protected int _clearingByOrgId;
+    protected int _priorityId;
+    protected int _sortingId;
+    protected int _typeId;
+    protected int _documentId;
+    protected int _swcrId;
+    protected int _workOrderId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
@@ -50,54 +55,62 @@ public abstract class ReadOnlyTestsBase : TestsBase
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
         {
-            _currentPerson = new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs");
-            AddPerson(context, _currentPerson);
+            AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs"));
         }
 
-        _projectA = new(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
-        _projectB = new(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
-        _closedProjectC = new(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
+        var projectA = new Project(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
+        var projectB = new Project(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
+        var closedProjectC = new Project(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
 
-        AddProject(context, _projectA);
-        AddProject(context, _projectB);
-        AddProject(context, _closedProjectC);
+        _projectAId = AddProject(context, projectA);
+        _projectBId = AddProject(context, projectB);
+        _closedProjectCId = AddProject(context, closedProjectC);
 
-        _raisedByOrg = new LibraryItem(
+        var raisedByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(), 
             "COM",
             "COM desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _clearingByOrg = new LibraryItem(
+        var clearingByOrg = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "ENG",
             "ENG desc",
             LibraryType.COMPLETION_ORGANIZATION);
-        _priority = new LibraryItem(
+        var priority = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "P1",
             "P1 desc",
             LibraryType.PUNCHLIST_PRIORITY);
-        _sorting = new LibraryItem(
+        var sorting = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "A",
             "A desc",
             LibraryType.PUNCHLIST_SORTING);
-        _type = new LibraryItem(
+        var type = new LibraryItem(
             TestPlantA,
             Guid.NewGuid(),
             "Paint",
             "Paint desc",
             LibraryType.PUNCHLIST_TYPE);
 
-        AddLibraryItem(context, _raisedByOrg);
-        AddLibraryItem(context, _clearingByOrg);
-        AddLibraryItem(context, _priority);
-        AddLibraryItem(context, _sorting);
-        AddLibraryItem(context, _type);
+        _raisedByOrgId = AddLibraryItem(context, raisedByOrg);
+        _clearingByOrgId = AddLibraryItem(context, clearingByOrg);
+        _priorityId = AddLibraryItem(context, priority);
+        _sortingId = AddLibraryItem(context, sorting);
+        _typeId = AddLibraryItem(context, type);
+
+        var document = new Document(TestPlantA, Guid.NewGuid(), "1A");
+        _documentId = AddDocument(context, document);
+
+        var swcr = new SWCR(TestPlantA, Guid.NewGuid(), 1);
+        _swcrId = AddSWCR(context, swcr);
+
+        var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "004");
+        _workOrderId = AddWorkOrder(context, workOrder);
 
         SetupNewDatabase(_dbContextOptions);
     }
@@ -117,17 +130,38 @@ public abstract class ReadOnlyTestsBase : TestsBase
         return person;
     }
 
-    protected Project AddProject(CompletionContext context, Project project)
+    protected int AddProject(CompletionContext context, Project project)
     {
         context.Projects.Add(project);
         context.SaveChangesAsync().Wait();
-        return project;
+        return project.Id;
     }
 
-    protected LibraryItem AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
+    protected int AddLibraryItem(CompletionContext context, LibraryItem libraryItem)
     {
         context.Library.Add(libraryItem);
         context.SaveChangesAsync().Wait();
-        return libraryItem;
+        return libraryItem.Id;
+    }
+
+    private int AddWorkOrder(CompletionContext context, WorkOrder workOrder)
+    {
+        context.WorkOrders.Add(workOrder);
+        context.SaveChangesAsync().Wait();
+        return workOrder.Id;
+    }
+
+    private int AddSWCR(CompletionContext context, SWCR swcr)
+    {
+        context.SWCRs.Add(swcr);
+        context.SaveChangesAsync().Wait();
+        return swcr.Id;
+    }
+
+    private int AddDocument(CompletionContext context, Document document)
+    {
+        context.Documents.Add(document);
+        context.SaveChangesAsync().Wait();
+        return document.Id;
     }
 }

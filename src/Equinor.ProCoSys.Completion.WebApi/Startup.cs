@@ -25,9 +25,12 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
+using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Equinor.ProCoSys.Completion.WebApi.DiModules;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
+using Swashbuckle.AspNetCore.Filters;
+using System.IO;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -65,12 +68,13 @@ public class Startup
             }
         }
 
+        services.AddControllers().AddNewtonsoftJson();
+
         //TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 Configuration.Bind("API", options); //TODO #104226 "Used standardized config section names for Azure Ad config"
-
             });
 
         services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
@@ -110,6 +114,8 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+        
+        services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
@@ -140,8 +146,11 @@ public class Startup
                 }
             });
 
+            c.ExampleFilters();
             c.OperationFilter<AddRoleDocumentation>();
-
+            c.OperationFilter<SwaggerPatchDocumentation>();
+            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+            c.IncludeXmlComments(filePath);
         });
 
         services.ConfigureSwaggerGen(options =>
@@ -240,7 +249,7 @@ public class Startup
 
         app.UseRouting();
 
-        // order of adding middelwares are crucial. Some depend that other has been run in advance
+        // order of adding middleware are crucial. Some depend that other has been run in advance
         app.UseCurrentPlant();
         app.UseCurrentBearerToken();
         app.UseAuthentication();

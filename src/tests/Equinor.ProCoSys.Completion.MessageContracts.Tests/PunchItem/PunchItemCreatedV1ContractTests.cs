@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.PunchItem;
@@ -15,9 +16,37 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
         {
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
+            { "CheckListGuid", typeof(Guid) },
+            { "ProjectName", typeof(string) },
+            { "ProjectDescription", typeof(string) },
+            { "Category", typeof(string) },
             { "ItemNo", typeof(int) },
-            { "CreatedByOid", typeof(Guid) },
+            { "Description", typeof(string) },
+            { "RaisedByOrgCode", typeof(string) },
+            { "ClearingByOrgCode", typeof(string) },
+            { "SortingCode", typeof(string) },
+            { "TypeCode", typeof(string) },
+            { "PriorityCode", typeof(string) },
+            { "DueTimeUtc", typeof(DateTime?) },
+            { "Estimate", typeof(int?) },
+            { "ExternalItemNo", typeof(string) },
+            { "MaterialRequired", typeof(bool) },
+            { "MaterialETAUtc", typeof(DateTime?) },
+            { "MaterialExternalNo", typeof(string) },
+            { "WorkOrderNo", typeof(string) },
+            { "OriginalWorkOrderNo", typeof(string) },
+            { "DocumentNo", typeof(string) },
+            { "SWCRNo", typeof(int?) },
+            { "ActionBy", typeof(User) },
+            { "ClearedBy", typeof(User) },
+            { "ClearedAtUtc", typeof(DateTime?) },
+            { "RejectedBy", typeof(User) },
+            { "RejectedAtUtc", typeof(DateTime?) },
+            { "VerifiedBy", typeof(User) },
+            { "VerifiedAtUtc", typeof(DateTime?) },
+            { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 
@@ -26,5 +55,6 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
     }
 
     [TestMethod]
-    public override void Contract_Namespace_DoNotChange() => AssertNamespaceNotChanged();
+    public override void Contract_Namespace_DoNotChange()
+        => AssertNamespaceNotChanged("Equinor.ProCoSys.Completion.MessageContracts.PunchItem");
 }
