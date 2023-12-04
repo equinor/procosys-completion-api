@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -29,10 +28,13 @@ public class LabelHostTests : IModificationAuditableTests
     [TestMethod]
     public void AddLabel_ShouldAddLabelToLabelsList()
     {
+        // Arrange
         var label = new Label("FYI");
 
+        // Act
         _dut.AddLabel(label);
 
+        // Assert
         Assert.AreEqual(1, _dut.Labels.Count);
         Assert.IsTrue(_dut.Labels.Contains(label));
     }

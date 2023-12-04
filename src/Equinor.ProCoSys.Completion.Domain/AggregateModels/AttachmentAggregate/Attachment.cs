@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 
@@ -12,6 +15,8 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public const int ParentTypeLengthMax = 256;
     public const int FileNameLengthMax = 255;
     public const int BlobPathLengthMax = 1024;
+
+    private readonly List<Label> _labels = new();
 
 #pragma warning disable CS8618
     public Attachment()
@@ -32,6 +37,9 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
         BlobPath = Path.Combine(plant.Substring(4), ParentType, Guid.ToString()).Replace("\\", "/");
         RevisionNumber = 1;
     }
+
+    public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
+    public IOrderedEnumerable<Label> OrderedLabels() => _labels.OrderBy(l => l.Text);
 
     // private setters needed for Entity Framework
     public string ParentType { get; private set; }
@@ -64,5 +72,34 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
         ModifiedBy = modifiedBy;
+    }
+
+    public void UpdateLabels(IList<Label> labels)
+    {
+        RemoveRemovedLabels(labels);
+        AddNewLabels(labels);
+    }
+
+    private void AddNewLabels(IList<Label> labels)
+    {
+        foreach (var label in labels)
+        {
+            if (!_labels.Contains(label))
+            {
+                _labels.Add(label);
+            }
+        }
+    }
+
+    private void RemoveRemovedLabels(IList<Label> labels)
+    {
+        for (var i = _labels.Count - 1; i >= 0; i--)
+        {
+            var label = _labels[i];
+            if (!labels.Contains(label))
+            {
+                _labels.RemoveAt(i);
+            }
+        }
     }
 }
