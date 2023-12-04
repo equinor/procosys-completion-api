@@ -145,7 +145,7 @@ public class PunchItemsController : ControllerBase
     }
 
     /// <summary>
-    /// Patch a PunchItem
+    /// Update (patch) a PunchItem
     /// </summary>
     /// <description>test</description>
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
