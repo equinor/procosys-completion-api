@@ -29,6 +29,10 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .HasMaxLength(Attachment.FileNameLengthMax)
             .IsRequired();
 
+        builder.Property(x => x.Description)
+            .HasMaxLength(Attachment.DescriptionLengthMax)
+            .IsRequired();
+
         builder.Property(x => x.BlobPath)
             .HasMaxLength(Attachment.BlobPathLengthMax)
             .IsRequired();

@@ -14,6 +14,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
 {
     public const int ParentTypeLengthMax = 256;
     public const int FileNameLengthMax = 255;
+    public const int DescriptionLengthMax = 255;
     public const int BlobPathLengthMax = 1024;
 
     private readonly List<Label> _labels = new();
@@ -29,6 +30,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
         ParentType = parentType;
         ParentGuid = parentGuid;
         FileName = fileName;
+        Description = fileName;
         Guid = MassTransit.NewId.NextGuid();
         if (plant.Length < 5)
         {
@@ -45,6 +47,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public string ParentType { get; private set; }
     public Guid ParentGuid { get; private set; }
     public string FileName { get; private set; }
+    public string Description { get; set; }
     public string BlobPath { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
