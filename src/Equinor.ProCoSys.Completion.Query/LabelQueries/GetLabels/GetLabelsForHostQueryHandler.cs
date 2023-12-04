@@ -20,8 +20,8 @@ public class GetLabelsForHostQueryHandler : IRequestHandler<GetLabelsForHostQuer
     {
         var labelHost =
             await (from lh in _context.QuerySet<LabelHost>()
-                        .Include(lh => lh.Labels)
-                    where lh.Type ==  request.HostType
+                        .Include(lh => lh.Labels.Where(l => !l.IsVoided))
+                    where lh.Type == request.HostType
                    select lh)
                 .TagWith($"{nameof(GetLabelsForHostQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
