@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 
 namespace Equinor.ProCoSys.Completion.Command.Attachments;
 
@@ -33,4 +35,11 @@ public interface IAttachmentService
         CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken);
+    
+    Task<string> UpdateAsync(
+        Guid guid,
+        string description,
+        IEnumerable<Label> labels,
+        string rowVersion,
+        CancellationToken cancellationToken);
 }
