@@ -10,11 +10,13 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
 {
     private readonly ILogger<Tie1MessageHandler> _logger;
     private readonly IImportSchemaMapper _commonLibMapper;
+    private readonly IImportHandler _importHandler;
 
-    public Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImportSchemaMapper commonLibMapper)
+    public Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImportSchemaMapper commonLibMapper, IImportHandler importHandler)
     {
         _logger = logger;
         _commonLibMapper = commonLibMapper;
+        _importHandler = importHandler;
     }
 
     public Task<MessageHandleResult<Tie1Receipt>> HandleSinglePerPartition(
@@ -38,9 +40,8 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
         //_telemetryHelper.TrackMessageReceivedEvent(message.Message);
         _logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid, message.Message.Site);
 
-        //TODO: Route message to handling code and obtain a result from the handling
-        var result = _commonLibMapper.Map(message.Message);
-
+        _importHandler.Handle(message.Message);
+        
         //TODO: 105593 Add custom application insights tracking 
         //_telemetryHelper.TrackMessageProcessedEvent(
         //    message.Message,
