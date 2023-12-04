@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Converters;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
@@ -171,7 +172,8 @@ public class ImportHandler : IImportHandler
             throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
         }
 
-        var createPunchCommand = new CreatePunchItemCommand(punchItemIn.Description, new Guid(), new Guid(), new Guid(), new Guid());
+        var createPunchCommand = new CreatePunchItemCommand(Category.PA, punchItemIn.Description, new Guid(), new Guid(), new Guid(), 
+            new Guid(), new Guid(), null, null, null, null, null, null, null, null, null, null, false, null, null);
         return createPunchCommand;
     }
 

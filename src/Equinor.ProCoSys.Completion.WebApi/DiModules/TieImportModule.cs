@@ -23,18 +23,18 @@ public static class TieImportModule
     public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
     {
         var configOptions = new TieImportOptions();
-        
+
         services.AddOptions<TieImportOptions>()
             .BindConfiguration("TieImport")
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
+            //.ValidateOnStart(); //TODO: JSOI
         configuration.Bind("TieImport", configOptions);
         //services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
+            //.ValidateOnStart(); //TODO: JSOI
 
         //TODO: Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
