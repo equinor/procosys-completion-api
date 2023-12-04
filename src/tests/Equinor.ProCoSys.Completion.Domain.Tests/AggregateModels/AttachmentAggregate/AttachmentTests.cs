@@ -28,6 +28,7 @@ public class AttachmentTests : IModificationAuditableTests
     public void Constructor_ShouldSetProperties()
     {
         Assert.AreEqual(_fileName, _dut.FileName);
+        Assert.AreEqual(_fileName, _dut.Description);
         Assert.AreEqual($"Plant/X/{_dut.Guid}", _dut.BlobPath);
         Assert.AreEqual(_parentType, _dut.ParentType);
         Assert.AreEqual(_parentGuid, _dut.ParentGuid);
