@@ -18,7 +18,6 @@ public class UpdatePunchItemAttachmentCommandHandler : IRequestHandler<UpdatePun
         _labelRepository = labelRepository;
     }
 
-    // todo unit tests
     public async Task<Result<string>> Handle(UpdatePunchItemAttachmentCommand request, CancellationToken cancellationToken)
     {
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);

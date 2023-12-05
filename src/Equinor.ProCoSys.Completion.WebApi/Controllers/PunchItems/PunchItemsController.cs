@@ -18,6 +18,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
@@ -596,7 +597,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="guid">Guid on PunchItem</param>
     /// <param name="attachmentGuid">Guid on attachment/picture</param>
     /// <param name="dto"></param>
-    [AuthorizeAny(Permissions.PUNCHITEM_DELETE, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_DETACH, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult> DeleteAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -645,6 +646,34 @@ public class PunchItemsController : ControllerBase
         }
 
         return Ok(result.Data.ToString());
+    }
+
+    /// <summary>
+    /// Update description and labels on an attachment/picture on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <param name="attachmentGuid">Guid on attachment/picture</param>
+    /// <param name="dto"></param>
+    /// <returns>New RowVersion of attachment/picture</returns>
+    /// <response code="404">PunchItem or attachment/picture not found</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
+    [HttpPut("{guid}/Attachments/{attachmentGuid}")]
+    public async Task<ActionResult<string>> UpdatePunchItemAttachment(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [FromRoute] Guid guid,
+        [FromRoute] Guid attachmentGuid,
+        [FromBody] UpdateAttachmentDto dto)
+    {
+        var result = await _mediator.Send(
+            new UpdatePunchItemAttachmentCommand(guid, attachmentGuid, dto.Description, dto.Labels, dto.RowVersion),
+            cancellationToken);
+        return this.FromResult(result);
     }
     #endregion
 }
