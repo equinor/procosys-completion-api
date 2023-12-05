@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
