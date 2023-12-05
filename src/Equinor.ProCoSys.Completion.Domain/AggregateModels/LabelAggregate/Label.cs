@@ -10,7 +10,7 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 
 public class Label : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IVoidable
 {
-    private readonly List<LabelHost> _hosts = new List<LabelHost>();
+    private readonly List<LabelHost> _hosts = new();
     public const int TextLengthMax = 60;
 
     public Label(string text) => Text = text;

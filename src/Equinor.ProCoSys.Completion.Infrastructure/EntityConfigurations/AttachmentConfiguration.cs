@@ -34,6 +34,10 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .IsRequired();
 
         builder
+            .HasMany(x => x.Labels)
+            .WithMany();
+
+        builder
             .HasIndex(x => x.ParentGuid)
             .HasDatabaseName("IX_Attachments_ParentGuid")
             .IncludeProperties(x => new
