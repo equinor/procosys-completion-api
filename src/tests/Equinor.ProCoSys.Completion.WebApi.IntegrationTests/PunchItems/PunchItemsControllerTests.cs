@@ -530,8 +530,7 @@ public class PunchItemsControllerTests : TestBase
             punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid,
             description,
-            // todo labels
-            new List<string>(),
+            new List<string>{ KnownPlantData.LabelA, KnownPlantData.LabelB },
             attachmentGuidAndRowVersion.RowVersion);
 
         // Assert
