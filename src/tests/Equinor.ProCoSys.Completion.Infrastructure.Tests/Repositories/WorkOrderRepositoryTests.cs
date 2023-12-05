@@ -21,9 +21,9 @@ public class WorkOrderRepositoryTests : EntityWithGuidRepositoryTestBase<WorkOrd
         _knownGuid = workOrder.Guid;
         workOrder.SetProtectedIdForTesting(_knownId);
 
-        var projects = new List<WorkOrder> { workOrder };
+        var workOrders = new List<WorkOrder> { workOrder };
 
-        _dbSetMock = projects.AsQueryable().BuildMockDbSet();
+        _dbSetMock = workOrders.AsQueryable().BuildMockDbSet();
 
         _contextHelper
             .ContextMock

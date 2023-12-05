@@ -21,9 +21,9 @@ public class DocumentRepositoryTests : EntityWithGuidRepositoryTestBase<Document
         _knownGuid = document.Guid;
         document.SetProtectedIdForTesting(_knownId);
 
-        var projects = new List<Document> { document };
+        var documents = new List<Document> { document };
 
-        _dbSetMock = projects.AsQueryable().BuildMockDbSet();
+        _dbSetMock = documents.AsQueryable().BuildMockDbSet();
 
         _contextHelper
             .ContextMock
