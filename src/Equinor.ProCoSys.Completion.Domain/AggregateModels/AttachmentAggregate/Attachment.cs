@@ -41,7 +41,8 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     }
 
     public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
-    public IOrderedEnumerable<Label> OrderedLabels() => _labels.OrderBy(l => l.Text);
+    public IOrderedEnumerable<Label> GetOrderedNonVoidedLabels()
+        => _labels.Where(l => !l.IsVoided).OrderBy(l => l.Text);
 
     // private setters needed for Entity Framework
     public string ParentType { get; private set; }
