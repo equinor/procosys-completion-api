@@ -14,14 +14,14 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class LabelRepositoryTests : RepositoryTestBase<Label>
 {
-    private readonly string _labelText = "A";
+    private readonly string _labelTextWithBothCasing = "Abc";
 
     protected override EntityRepository<Label> GetDut()
         => new LabelRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var label = new Label(_labelText);
+        var label = new Label(_labelTextWithBothCasing);
         label.SetProtectedIdForTesting(_knownId);
 
         var labels = new List<Label> { label };
@@ -43,12 +43,27 @@ public class LabelRepositoryTests : RepositoryTestBase<Label>
         var dut = new LabelRepository(_contextHelper.ContextMock);
 
         // Act
-        var result = await dut.GetManyAsync(new List<string>{_labelText}, default);
+        var result = await dut.GetManyAsync(new List<string>{_labelTextWithBothCasing}, default);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Count);
-        Assert.IsTrue(result.Any(l => l.Text == _labelText));
+        Assert.IsTrue(result.Any(l => l.Text == _labelTextWithBothCasing));
+    }
+
+    [TestMethod]
+    public async Task GetManyAsync_KnownLabels_ShouldReturnLabels_CaseInsensitive()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.GetManyAsync(new List<string> { _labelTextWithBothCasing.ToLower() }, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.IsTrue(result.Any(l => l.Text == _labelTextWithBothCasing));
     }
 
     [TestMethod]
