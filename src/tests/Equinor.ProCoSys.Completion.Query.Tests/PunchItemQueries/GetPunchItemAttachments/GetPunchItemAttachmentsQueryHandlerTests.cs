@@ -28,6 +28,8 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             Guid.NewGuid(),
             "full/path",
             "F.txt",
+            "Desc",
+            new List<string>{"A"},
             new PersonDto(Guid.NewGuid(), "First1", "Last1", "UN1", "Email1"),
             new DateTime(2023, 6, 11, 1, 2, 3),
             new PersonDto(Guid.NewGuid(), "First2", "Last2", "UN2", "Email2"),
@@ -56,6 +58,12 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         Assert.AreEqual(_attachmentDto.ParentGuid, attachment.ParentGuid);
         Assert.AreEqual(_attachmentDto.Guid, attachment.Guid);
         Assert.AreEqual(_attachmentDto.FileName, attachment.FileName);
+        Assert.AreEqual(_attachmentDto.Description, attachment.Description);
+        Assert.AreEqual(_attachmentDto.Labels.Count, attachment.Labels.Count);
+        foreach (var labelText in _attachmentDto.Labels)
+        {
+            Assert.IsTrue(attachment.Labels.Any(l => l == labelText));
+        }
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
         Assert.AreEqual(_attachmentDto.RowVersion, attachment.RowVersion);
 

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -29,6 +30,10 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected int _swcrId;
     protected int _workOrderId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
+    protected readonly string LabelTextA = "A";
+    protected readonly string LabelTextB = "B";
+    protected readonly string LabelTextC = "C";
+    protected readonly string VoidedLabelText = "V";
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
     protected ICurrentUserProvider _currentUserProviderMockObject;
@@ -112,6 +117,11 @@ public abstract class ReadOnlyTestsBase : TestsBase
         var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "004");
         _workOrderId = AddWorkOrder(context, workOrder);
 
+        AddLabel(context, new Label(LabelTextA));
+        AddLabel(context, new Label(LabelTextB));
+        AddLabel(context, new Label(LabelTextC));
+        AddLabel(context, new Label(VoidedLabelText){IsVoided = true});
+
         SetupNewDatabase(_dbContextOptions);
     }
 
@@ -163,5 +173,11 @@ public abstract class ReadOnlyTestsBase : TestsBase
         context.Documents.Add(document);
         context.SaveChangesAsync().Wait();
         return document.Id;
+    }
+
+    private void AddLabel(CompletionContext context, Label label)
+    {
+        context.Labels.Add(label);
+        context.SaveChangesAsync().Wait();
     }
 }
