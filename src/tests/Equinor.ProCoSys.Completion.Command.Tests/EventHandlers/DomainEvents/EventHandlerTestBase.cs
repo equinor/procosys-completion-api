@@ -167,7 +167,7 @@ public class EventHandlerTestBase
         Assert.AreEqual(punchItem.ModifiedBy!.GetFullName(), integrationEvent.CreatedBy.FullName);
     }
 
-    protected void AssertSameLabels(IReadOnlyCollection<Label> labelList1, List<string> labelList2)
+    protected void AssertSameLabels(List<Label> labelList1, List<string> labelList2)
     {
         Assert.AreEqual(labelList1.Count, labelList2.Count);
         for (var i = 0; i < labelList1.Count; i++)

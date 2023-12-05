@@ -42,7 +42,7 @@ public record AttachmentUpdatedIntegrationEvent
         attachment.Description,
         attachment.BlobPath,
         attachment.RevisionNumber,
-        attachment.Labels.Select(l => l.Text).ToList(),
+        attachment.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
         new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
         attachment.ModifiedAtUtc!.Value)
     { }
