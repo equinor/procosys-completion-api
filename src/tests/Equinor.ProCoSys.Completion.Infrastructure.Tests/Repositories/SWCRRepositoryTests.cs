@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class SWCRRepositoryTests : EntityWithGuidRepositoryTestBase<SWCR>
 {
-    private new SWCRRepository _dut;
+    protected override EntityWithGuidRepository<SWCR> GetDut() => new SWCRRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
@@ -29,9 +29,6 @@ public class SWCRRepositoryTests : EntityWithGuidRepositoryTestBase<SWCR>
             .ContextMock
             .SWCRs
             .Returns(_dbSetMock);
-
-        _dut = new SWCRRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
     protected override SWCR GetNewEntity() => new(TestPlant, Guid.NewGuid(), 2);

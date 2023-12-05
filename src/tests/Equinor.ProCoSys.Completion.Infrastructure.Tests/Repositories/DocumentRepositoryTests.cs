@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class DocumentRepositoryTests : EntityWithGuidRepositoryTestBase<Document>
 {
-    private new DocumentRepository _dut;
+    protected override EntityWithGuidRepository<Document> GetDut() => new DocumentRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
@@ -29,9 +29,6 @@ public class DocumentRepositoryTests : EntityWithGuidRepositoryTestBase<Document
             .ContextMock
             .Documents
             .Returns(_dbSetMock);
-
-        _dut = new DocumentRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
     protected override Document GetNewEntity() => new(TestPlant, Guid.NewGuid(), "0002");
