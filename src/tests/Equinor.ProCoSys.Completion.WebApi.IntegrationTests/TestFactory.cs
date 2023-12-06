@@ -38,21 +38,21 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
-    public static string PlantWithAccess => KnownPlantData.PlantA;
-    public static string PlantWithoutAccess => KnownPlantData.PlantB;
+    public static string PlantWithAccess => KnownData.PlantA;
+    public static string PlantWithoutAccess => KnownData.PlantB;
     public static string Unknown => "UNKNOWN";
-    public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
-    public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
-    public static Guid CheckListGuid => KnownPlantData.CheckListGuid[KnownPlantData.PlantA];
-    public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
-    public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
-    public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
-    public static Guid SortingGuid => KnownPlantData.SortingGuid[KnownPlantData.PlantA];
-    public static Guid TypeGuid => KnownPlantData.TypeGuid[KnownPlantData.PlantA];
-    public static Guid OriginalWorkOrderGuid => KnownPlantData.OriginalWorkOrderGuid[KnownPlantData.PlantA];
-    public static Guid WorkOrderGuid => KnownPlantData.WorkOrderGuid[KnownPlantData.PlantA];
-    public static Guid SWCRGuid => KnownPlantData.SWCRGuid[KnownPlantData.PlantA];
-    public static Guid DocumentGuid => KnownPlantData.DocumentGuid[KnownPlantData.PlantA];
+    public static Guid ProjectGuidWithAccess => KnownData.ProjectGuidA[KnownData.PlantA];
+    public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
+    public static Guid CheckListGuid => KnownData.CheckListGuid[KnownData.PlantA];
+    public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
+    public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
+    public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
+    public static Guid SortingGuid => KnownData.SortingGuid[KnownData.PlantA];
+    public static Guid TypeGuid => KnownData.TypeGuid[KnownData.PlantA];
+    public static Guid OriginalWorkOrderGuid => KnownData.OriginalWorkOrderGuid[KnownData.PlantA];
+    public static Guid WorkOrderGuid => KnownData.WorkOrderGuid[KnownData.PlantA];
+    public static Guid SWCRGuid => KnownData.SWCRGuid[KnownData.PlantA];
+    public static Guid DocumentGuid => KnownData.DocumentGuid[KnownData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
     public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
@@ -195,8 +195,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         dbContext.SeedCurrentUser();
 
-        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantA);
-        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
+        SeedDataForPlant(dbContext, scopeServiceProvider, KnownData.PlantA);
+        SeedDataForPlant(dbContext, scopeServiceProvider, KnownData.PlantB);
 
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
@@ -258,8 +258,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     {
         var accessablePlants = new List<AccessablePlant>
         {
-            new() {Id = KnownPlantData.PlantA, Title = KnownPlantData.PlantATitle, HasAccess = true},
-            new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
+            new() {Id = KnownData.PlantA, Title = KnownData.PlantATitle, HasAccess = true},
+            new() {Id = KnownData.PlantB, Title = KnownData.PlantBTitle}
         };
 
         var accessableProjects = new List<AccessableProject>
@@ -369,8 +369,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     },
                 AccessablePlants = new List<AccessablePlant>
                 {
-                    new() {Id = KnownPlantData.PlantA, Title = KnownPlantData.PlantATitle},
-                    new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
+                    new() {Id = KnownData.PlantA, Title = KnownData.PlantATitle},
+                    new() {Id = KnownData.PlantB, Title = KnownData.PlantBTitle}
                 },
                 Permissions = new List<string>(),
                 AccessableProjects = new List<AccessableProject>(),

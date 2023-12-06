@@ -11,7 +11,7 @@ public class LabelsControllerTests : TestBase
     {
         // Act
         var punchItems = await LabelsControllerTestsHelper
-            .GetLabelsForHostAsync(UserType.Reader, KnownPlantData.HostTypeWithLabels.ToString());
+            .GetLabelsForHostAsync(UserType.Reader, KnownData.HostTypeWithLabels.ToString());
 
         Assert.IsTrue(punchItems.Count > 0);
     }

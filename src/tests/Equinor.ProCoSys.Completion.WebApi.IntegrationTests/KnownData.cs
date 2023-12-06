@@ -4,10 +4,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public static class KnownPlantData
+public static class KnownData
 {
-    // TODO since we now introduce static Known data here, which is NOT plant specific, 
-    // this static class KnownPlantData will be renamed to class KnownData
     public static HostType HostTypeWithLabels => HostType.GeneralComment;
 
     public static string PlantA => "PCS$PLANT_A";
