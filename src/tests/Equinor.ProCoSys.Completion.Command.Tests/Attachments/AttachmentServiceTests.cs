@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
@@ -268,6 +270,68 @@ public class AttachmentServiceTests : TestsBase
         await _azureBlobServiceMock.Received(1).DeleteAsync(
                 _blobContainer,
                 p);
+    }
+    #endregion
+
+    #region Update
+    [TestMethod]
+    public async Task UpdateAsync_ShouldUpdateDescription()
+    {
+        // Arrange 
+        var description = "abc";
+
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, description, new List<Label>(), _rowVersion, default);
+
+        // Assert
+        Assert.AreEqual(description, _existingAttachment.Description);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldUpdateLabels()
+    {
+        // Arrange 
+        var labelA = new Label("a");
+        var labelB = new Label("b");
+
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "", new List<Label>{labelA, labelB}, _rowVersion, default);
+
+        // Assert
+        Assert.AreEqual(2, _existingAttachment.Labels.Count);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldSaveOnce()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldAddAttachmentUpdatedDomainEvent()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        Assert.IsInstanceOfType(_existingAttachment.DomainEvents.First(), typeof(AttachmentUpdatedDomainEvent));
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldSetAndReturnRowVersion()
+    {
+        // Act
+        var result = await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        // In real life EF Core will create a new RowVersion when save.
+        // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
+        Assert.AreEqual(_rowVersion, result);
+        Assert.AreEqual(_rowVersion, _existingAttachment.RowVersion.ConvertToString());
     }
     #endregion
 }

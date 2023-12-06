@@ -22,7 +22,7 @@ public class UnclearPunchItemCommandValidator : AbstractValidator<UnclearPunchIt
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => BeClearedAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item can not be uncleared. The punch item is not cleared! Guid={command.PunchItemGuid}")
-            .MustAsync((command, cancellationToken) => NotAlreadyBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
+            .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item can not be uncleared. The punch item is verified! Guid={command.PunchItemGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ public class UnclearPunchItemCommandValidator : AbstractValidator<UnclearPunchIt
         async Task<bool> BeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
 
-        async Task<bool> NotAlreadyBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+        async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
     }
 

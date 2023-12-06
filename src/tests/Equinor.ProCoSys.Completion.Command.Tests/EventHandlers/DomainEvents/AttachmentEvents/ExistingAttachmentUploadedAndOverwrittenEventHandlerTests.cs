@@ -60,8 +60,11 @@ public class ExistingAttachmentUploadedAndOverwrittenEventHandlerTests : EventHa
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ParentType, _publishedIntegrationEvent.ParentType);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.RevisionNumber, _publishedIntegrationEvent.RevisionNumber);
+        Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.Description, _publishedIntegrationEvent.Description);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedBy.Oid);
         Assert.AreEqual(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.ModifiedBy!.GetFullName(), _publishedIntegrationEvent.ModifiedBy.FullName);
+        AssertSameLabels(_existingAttachmentUploadedAndOverwrittenDomainEvent.Attachment.Labels, _publishedIntegrationEvent.Labels);
     }
 }

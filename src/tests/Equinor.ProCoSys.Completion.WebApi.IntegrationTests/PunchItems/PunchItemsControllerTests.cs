@@ -503,7 +503,6 @@ public class PunchItemsControllerTests : TestBase
                 Arg.Any<DateTimeOffset>())
             .Returns(uri);
 
-
         // Act
         var attachmentUrl = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Reader,
@@ -513,6 +512,37 @@ public class PunchItemsControllerTests : TestBase
 
         // Assert
         Assert.AreEqual(uri.AbsoluteUri, attachmentUrl);
+    }
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsWriter_ShouldUpdateAttachment()
+    {
+        // Arrange
+        var fileName = Guid.NewGuid().ToString();
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
+
+        var description = Guid.NewGuid().ToString();
+
+        // Act
+        var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItemGuidAndRowVersion.Guid,
+            attachmentGuidAndRowVersion.Guid,
+            description,
+            // todo labels
+            new List<string>(),
+            attachmentGuidAndRowVersion.RowVersion);
+
+        // Assert
+        AssertRowVersionChange(attachmentGuidAndRowVersion.RowVersion, newAttachmentRowVersion);
+
+        var _ = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItemGuidAndRowVersion.Guid);
+
+        // todo Assert description and labels
     }
 
     [TestMethod]

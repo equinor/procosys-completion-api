@@ -13,7 +13,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class WorkOrderRepositoryTests : EntityWithGuidRepositoryTestBase<WorkOrder>
 {
-    private new WorkOrderRepository _dut;
+    protected override EntityWithGuidRepository<WorkOrder> GetDut()
+        => new WorkOrderRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
@@ -21,17 +22,14 @@ public class WorkOrderRepositoryTests : EntityWithGuidRepositoryTestBase<WorkOrd
         _knownGuid = workOrder.Guid;
         workOrder.SetProtectedIdForTesting(_knownId);
 
-        var projects = new List<WorkOrder> { workOrder };
+        var workOrders = new List<WorkOrder> { workOrder };
 
-        _dbSetMock = projects.AsQueryable().BuildMockDbSet();
+        _dbSetMock = workOrders.AsQueryable().BuildMockDbSet();
 
         _contextHelper
             .ContextMock
             .WorkOrders
             .Returns(_dbSetMock);
-
-        _dut = new WorkOrderRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
     protected override WorkOrder GetNewEntity() => new(TestPlant, Guid.NewGuid(), "0002");
