@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Collections.Generic;
+using System.Linq;
+using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
@@ -21,6 +23,10 @@ public class UpdateAttachmentDtoValidator : AbstractValidator<UpdateAttachmentDt
         RuleForEach(dto => dto.Labels)
             .NotNull();
 
+        RuleFor(dto => dto.Labels)
+            .Must(BeUniqueLabels)
+            .WithMessage("Labels must be unique!");
+
         RuleFor(dto => dto.RowVersion)
             .NotNull()
             .Must(HaveValidRowVersion)
@@ -28,5 +34,7 @@ public class UpdateAttachmentDtoValidator : AbstractValidator<UpdateAttachmentDt
 
         bool HaveValidRowVersion(string rowVersion)
             => rowVersionValidator.IsValid(rowVersion);
+
+        bool BeUniqueLabels(IList<string> labels) => labels.Distinct().Count() == labels.Count;
     }
 }

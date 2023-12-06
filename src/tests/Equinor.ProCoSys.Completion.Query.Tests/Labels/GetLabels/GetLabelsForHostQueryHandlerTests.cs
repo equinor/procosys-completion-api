@@ -110,7 +110,7 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectOrderedLabels()
+    public async Task Handler_ShouldReturnCorrectOrderedNonVoidedLabels()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);

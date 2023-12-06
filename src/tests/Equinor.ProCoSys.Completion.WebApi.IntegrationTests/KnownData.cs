@@ -6,6 +6,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public static class KnownData
 {
+    public static string LabelA => "A";
+    public static string LabelB => "B";
     public static HostType HostTypeWithLabels => HostType.GeneralComment;
 
     public static string PlantA => "PCS$PLANT_A";

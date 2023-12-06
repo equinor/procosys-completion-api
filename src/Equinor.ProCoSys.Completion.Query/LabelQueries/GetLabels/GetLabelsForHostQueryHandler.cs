@@ -18,7 +18,7 @@ public class GetLabelsForHostQueryHandler : IRequestHandler<GetLabelsForHostQuer
 
     public async Task<Result<IEnumerable<string>>> Handle(GetLabelsForHostQuery request, CancellationToken cancellationToken)
     {
-        var labelHost =
+        var labelHostWithNonVoidedLabels =
             await (from lh in _context.QuerySet<LabelHost>()
                         .Include(lh => lh.Labels.Where(l => !l.IsVoided))
                     where lh.Type == request.HostType
@@ -26,13 +26,13 @@ public class GetLabelsForHostQueryHandler : IRequestHandler<GetLabelsForHostQuer
                 .TagWith($"{nameof(GetLabelsForHostQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
-        if (labelHost is null)
+        if (labelHostWithNonVoidedLabels is null)
         {
             return new SuccessResult<IEnumerable<string>>(new List<string>());
         }
 
-        var orderedLabels = labelHost.Labels.Select(l => l.Text).Order();
+        var orderedNonVoidedLabels = labelHostWithNonVoidedLabels.Labels.Select(l => l.Text).Order();
 
-        return new SuccessResult<IEnumerable<string>>(orderedLabels);
+        return new SuccessResult<IEnumerable<string>>(orderedNonVoidedLabels);
     }
 }

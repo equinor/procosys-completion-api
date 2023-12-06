@@ -104,6 +104,24 @@ public class UpdateAttachmentDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenALabelNotUnique()
+    {
+        // Arrange
+        var dto = new UpdateAttachmentDto(
+            "New description",
+            new List<string> { "a", "a" },
+            _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Labels must be unique!"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange

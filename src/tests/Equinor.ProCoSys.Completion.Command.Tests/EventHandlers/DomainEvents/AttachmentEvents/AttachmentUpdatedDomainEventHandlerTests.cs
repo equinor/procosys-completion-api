@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
@@ -55,16 +56,17 @@ public class AttachmentUpdatedDomainEventHandlerTests : EventHandlerTestBase
 
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
-        Assert.AreEqual($"Attachment {_attachmentUpdatedDomainEvent.Attachment.FileName} updated", _publishedIntegrationEvent.DisplayName);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.Guid, _publishedIntegrationEvent.Guid);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.ParentType, _publishedIntegrationEvent.ParentType);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.FileName, _publishedIntegrationEvent.FileName);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.RevisionNumber, _publishedIntegrationEvent.RevisionNumber);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.Description, _publishedIntegrationEvent.Description);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedBy.Oid);
-        Assert.AreEqual(_attachmentUpdatedDomainEvent.Attachment.ModifiedBy!.GetFullName(), _publishedIntegrationEvent.ModifiedBy.FullName);
-        AssertSameLabels(_attachmentUpdatedDomainEvent.Attachment.Labels, _publishedIntegrationEvent.Labels);
+        var attachment = _attachmentUpdatedDomainEvent.Attachment;
+        Assert.AreEqual($"Attachment {attachment.FileName} updated", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(attachment.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
+        Assert.AreEqual(attachment.ParentType, _publishedIntegrationEvent.ParentType);
+        Assert.AreEqual(attachment.FileName, _publishedIntegrationEvent.FileName);
+        Assert.AreEqual(attachment.RevisionNumber, _publishedIntegrationEvent.RevisionNumber);
+        Assert.AreEqual(attachment.Description, _publishedIntegrationEvent.Description);
+        Assert.AreEqual(attachment.ModifiedAtUtc, _publishedIntegrationEvent.ModifiedAtUtc);
+        Assert.AreEqual(attachment.ModifiedBy!.Guid, _publishedIntegrationEvent.ModifiedBy.Oid);
+        Assert.AreEqual(attachment.ModifiedBy!.GetFullName(), _publishedIntegrationEvent.ModifiedBy.FullName);
+        AssertSameLabels(attachment.GetOrderedNonVoidedLabels().ToList(), _publishedIntegrationEvent.Labels);
     }
 }

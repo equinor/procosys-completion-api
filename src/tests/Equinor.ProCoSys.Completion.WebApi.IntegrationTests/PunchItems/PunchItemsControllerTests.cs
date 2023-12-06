@@ -522,6 +522,8 @@ public class PunchItemsControllerTests : TestBase
         var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
 
         var description = Guid.NewGuid().ToString();
+        var labelA = KnownData.LabelA;
+        var labelB = KnownData.LabelB;
 
         // Act
         var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
@@ -530,19 +532,21 @@ public class PunchItemsControllerTests : TestBase
             punchItemGuidAndRowVersion.Guid,
             attachmentGuidAndRowVersion.Guid,
             description,
-            // todo labels
-            new List<string>(),
+            new List<string>{ labelA, labelB },
             attachmentGuidAndRowVersion.RowVersion);
 
         // Assert
         AssertRowVersionChange(attachmentGuidAndRowVersion.RowVersion, newAttachmentRowVersion);
 
-        var _ = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+        var attachmentDtos = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             punchItemGuidAndRowVersion.Guid);
-
-        // todo Assert description and labels
+        var attachmentDto = attachmentDtos.Single(dto => dto.Guid == attachmentGuidAndRowVersion.Guid);
+        Assert.AreEqual(description, attachmentDto.Description);
+        Assert.AreEqual(2, attachmentDto.Labels.Count);
+        Assert.AreEqual(labelA, attachmentDto.Labels.ElementAt(0));
+        Assert.AreEqual(labelB, attachmentDto.Labels.ElementAt(1));
     }
 
     [TestMethod]

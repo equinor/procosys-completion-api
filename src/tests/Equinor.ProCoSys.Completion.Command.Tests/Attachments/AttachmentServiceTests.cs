@@ -299,6 +299,7 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         Assert.AreEqual(2, _existingAttachment.Labels.Count);
+        Assert.AreEqual(2, _existingAttachment.GetOrderedNonVoidedLabels().Count());
     }
 
     [TestMethod]
