@@ -24,7 +24,7 @@ public class UpdateAttachmentDtoValidator : AbstractValidator<UpdateAttachmentDt
             .NotNull();
 
         RuleFor(dto => dto.Labels)
-            .Must(BeUniqueLabel)
+            .Must(BeUniqueLabels)
             .WithMessage("Labels must be unique!");
 
         RuleFor(dto => dto.RowVersion)
@@ -35,6 +35,6 @@ public class UpdateAttachmentDtoValidator : AbstractValidator<UpdateAttachmentDt
         bool HaveValidRowVersion(string rowVersion)
             => rowVersionValidator.IsValid(rowVersion);
 
-        bool BeUniqueLabel(IList<string> labels) => labels.Distinct().Count() == labels.Count;
+        bool BeUniqueLabels(IList<string> labels) => labels.Distinct().Count() == labels.Count;
     }
 }
