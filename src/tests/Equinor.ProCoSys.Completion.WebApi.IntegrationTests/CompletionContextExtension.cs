@@ -45,8 +45,8 @@ public static class CompletionContextExtension
 
     public static void SeedLabels(this CompletionContext dbContext)
     {
-        var labelA = new Label(KnownPlantData.LabelA);
-        var labelB = new Label(KnownPlantData.LabelB);
+        var labelA = new Label(KnownData.LabelA);
+        var labelB = new Label(KnownData.LabelB);
         var labelRepository = new LabelRepository(dbContext);
         labelRepository.Add(labelA);
         labelRepository.Add(labelB);

@@ -522,8 +522,8 @@ public class PunchItemsControllerTests : TestBase
         var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
 
         var description = Guid.NewGuid().ToString();
-        var labelA = KnownPlantData.LabelA;
-        var labelB = KnownPlantData.LabelB;
+        var labelA = KnownData.LabelA;
+        var labelB = KnownData.LabelB;
 
         // Act
         var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
