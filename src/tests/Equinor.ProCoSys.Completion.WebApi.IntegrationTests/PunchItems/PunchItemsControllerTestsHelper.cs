@@ -158,12 +158,14 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         Guid guid,
         string text,
+        List<string> labels,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            text
+            text,
+            labels
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);

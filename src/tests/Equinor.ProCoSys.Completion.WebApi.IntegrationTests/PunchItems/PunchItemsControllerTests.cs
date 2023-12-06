@@ -422,7 +422,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var (_, commentGuidAndRowVersion)
-            = await CreatePunchItemCommentAsync(Guid.NewGuid().ToString());
+            = await CreatePunchItemCommentAsync(Guid.NewGuid().ToString(), new List<string>{"A"});
 
         // Assert
         AssertValidGuidAndRowVersion(commentGuidAndRowVersion);
@@ -433,7 +433,8 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var text = Guid.NewGuid().ToString();
-        var (punchItemGuidAndRowVersion, commentGuidAndRowVersion) = await CreatePunchItemCommentAsync(text);
+        var labels = new List<string> { "A", "B" };
+        var (punchItemGuidAndRowVersion, commentGuidAndRowVersion) = await CreatePunchItemCommentAsync(text, labels);
 
         // Act
         var comments = await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
@@ -443,10 +444,11 @@ public class PunchItemsControllerTests : TestBase
 
         // Assert
         AssertFirstAndOnlyComment(
+            comments,
             punchItemGuidAndRowVersion.Guid,
             commentGuidAndRowVersion.Guid,
             text,
-            comments);
+            labels);
     }
 
     [TestMethod]
@@ -774,7 +776,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion commentGuidAndRowVersion)>
-        CreatePunchItemCommentAsync(string text)
+        CreatePunchItemCommentAsync(string text, List<string> labels)
     {
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
@@ -790,7 +792,8 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             punchItemGuidAndRowVersion.Guid,
-            text);
+            text,
+            labels);
 
         return (punchItemGuidAndRowVersion, commentGuidAndRowVersion);
     }
@@ -836,19 +839,25 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private static void AssertFirstAndOnlyComment(
-        Guid punchItemGuid,
-        Guid commentGuid,
-        string text,
-        List<CommentDto> comments)
+        List<CommentDto> commentDtos,
+        Guid expectedParentGuid,
+        Guid expectedCommentGuid,
+        string expectedText,
+        List<string> expectedLabels)
     {
-        Assert.IsNotNull(comments);
-        Assert.AreEqual(1, comments.Count);
-        var comment = comments[0];
-        Assert.AreEqual(punchItemGuid, comment.ParentGuid);
-        Assert.AreEqual(commentGuid, comment.Guid);
-        Assert.AreEqual(text, comment.Text);
-        Assert.IsNotNull(comment.CreatedBy);
-        Assert.IsNotNull(comment.CreatedAtUtc);
+        Assert.IsNotNull(commentDtos);
+        Assert.AreEqual(1, commentDtos.Count);
+        var commentDto = commentDtos[0];
+        Assert.AreEqual(expectedParentGuid, commentDto.ParentGuid);
+        Assert.AreEqual(expectedCommentGuid, commentDto.Guid);
+        Assert.AreEqual(expectedText, commentDto.Text);
+        Assert.IsNotNull(commentDto.CreatedBy);
+        Assert.IsNotNull(commentDto.CreatedAtUtc);
+        Assert.AreEqual(expectedLabels.Count, commentDto.Labels.Count);
+        for (var i = 0; i < expectedLabels.Count; i++)
+        {
+            Assert.AreEqual(expectedLabels.ElementAt(i), commentDto.Labels.ElementAt(i));
+        }
     }
 
     private static void AssertFirstAndOnlyAttachment(
