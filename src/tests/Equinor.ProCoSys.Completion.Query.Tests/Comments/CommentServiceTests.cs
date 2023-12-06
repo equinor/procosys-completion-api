@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Completion.Query.Comments;
+using System.Collections.Generic;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Comments;
 
@@ -20,8 +22,15 @@ public class CommentServiceTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
+        var labelA = context.Labels.Single(l => l.Text == LabelTextA);
+        var labelB = context.Labels.Single(l => l.Text == LabelTextB);
+        var labelC = context.Labels.Single(l => l.Text == LabelTextC);
+        var voidedLabel = context.Labels.Single(l => l.Text == VoidedLabelText);
+
         _parentGuid = Guid.NewGuid();
         _createdComment = new Comment("X", _parentGuid, "T");
+        // insert labels non-ordered to test ordering
+        _createdComment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
 
         context.Comments.Add(_createdComment);
         context.SaveChangesAsync().Wait();
@@ -48,5 +57,18 @@ public class CommentServiceTests : ReadOnlyTestsBase
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
         Assert.AreEqual(_createdComment.CreatedAtUtc, commentDto.CreatedAtUtc);
+
+        AssertOrderedNonVoidedLabels(_createdComment, commentDto);
+    }
+
+    private static void AssertOrderedNonVoidedLabels(Comment comment, CommentDto commentDto)
+    {
+        Assert.IsNotNull(commentDto.Labels);
+        var expectedLabels = comment.Labels.Where(l => !l.IsVoided).ToList();
+        Assert.AreEqual(expectedLabels.Count, commentDto.Labels.Count);
+        foreach (var label in expectedLabels)
+        {
+            Assert.IsTrue(commentDto.Labels.Any(l => l == label.Text));
+        }
     }
 }
