@@ -476,7 +476,8 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] CreateCommentDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchItemCommentCommand(guid, dto.Text), cancellationToken);
+        var result = await _mediator.Send(
+            new CreatePunchItemCommentCommand(guid, dto.Text, dto.Labels), cancellationToken);
         return this.FromResult(result);
     }
 
