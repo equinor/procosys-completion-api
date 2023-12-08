@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -111,6 +112,7 @@ public static class ApplicationModule
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ISWCRRepository, SWCRRepository>();
         services.AddScoped<ILabelRepository, LabelRepository>();
+        services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
