@@ -33,7 +33,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected readonly string LabelTextA = "A";
     protected readonly string LabelTextB = "B";
     protected readonly string LabelTextC = "C";
-    protected readonly string VoidedLabelText = "V";
+    protected readonly string LabelTextVoided = "V";
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected IPlantProvider _plantProviderMockObject;
     protected ICurrentUserProvider _currentUserProviderMockObject;
@@ -117,11 +117,6 @@ public abstract class ReadOnlyTestsBase : TestsBase
         var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "004");
         _workOrderId = AddWorkOrder(context, workOrder);
 
-        AddLabel(context, new Label(LabelTextA));
-        AddLabel(context, new Label(LabelTextB));
-        AddLabel(context, new Label(LabelTextC));
-        AddLabel(context, new Label(VoidedLabelText){IsVoided = true});
-
         SetupNewDatabase(_dbContextOptions);
     }
 
@@ -179,5 +174,13 @@ public abstract class ReadOnlyTestsBase : TestsBase
     {
         context.Labels.Add(label);
         context.SaveChangesAsync().Wait();
+    }
+
+    public void Add4UnorderedLabelsInclusiveAVoidedLabel(CompletionContext context)
+    {
+        AddLabel(context, new Label(LabelTextA));
+        AddLabel(context, new Label(LabelTextC));
+        AddLabel(context, new Label(LabelTextVoided) { IsVoided = true });
+        AddLabel(context, new Label(LabelTextB));
     }
 }

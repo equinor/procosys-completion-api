@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntity;
@@ -14,41 +13,29 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LabelEntityQueries.GetLabelsFo
 [TestClass]
 public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
 {
-    private readonly string _voidedText = "VoidedText";
-    private Label _labelA;
-    private Label _labelB;
-    private Label _labelC;
-    private Label _labelD;
-    private Label _labelVoided;
-    private LabelEntity _labelEntityWith3Labels;
+    private LabelEntity _labelEntityWith3NonVoidedLabels;
     private LabelEntity _labelEntityWithoutLabels;
-    private readonly EntityWithLabelType _entityWithLabelsWith3Labels = EntityWithLabelType.PunchComment;
+    private readonly EntityWithLabelType _entityWithLabelsWith3NonVoidedLabels = EntityWithLabelType.PunchComment;
     private readonly EntityWithLabelType _entityWithLabelsWithoutLabels = EntityWithLabelType.PunchPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        _labelA = new Label("A");
-        _labelB = new Label("B");
-        _labelC = new Label("C");
-        _labelD = new Label("D");
-        
-        _labelVoided = new Label(_voidedText) { IsVoided = true };
+        Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        var labelA = context.Labels.Single(l => l.Text == LabelTextA);
+        var labelB = context.Labels.Single(l => l.Text == LabelTextB);
+        var labelC = context.Labels.Single(l => l.Text == LabelTextC);
+        var labelVoided = context.Labels.Single(l => l.Text == LabelTextVoided);
 
-        _labelEntityWith3Labels = new LabelEntity(_entityWithLabelsWith3Labels);
+        _labelEntityWith3NonVoidedLabels = new LabelEntity(_entityWithLabelsWith3NonVoidedLabels);
         _labelEntityWithoutLabels = new LabelEntity(_entityWithLabelsWithoutLabels);
-        _labelEntityWith3Labels.AddLabel(_labelC);
-        _labelEntityWith3Labels.AddLabel(_labelA);
-        _labelEntityWith3Labels.AddLabel(_labelB);
-        _labelEntityWith3Labels.AddLabel(_labelVoided);
+        _labelEntityWith3NonVoidedLabels.AddLabel(labelC);
+        _labelEntityWith3NonVoidedLabels.AddLabel(labelA);
+        _labelEntityWith3NonVoidedLabels.AddLabel(labelVoided);
+        _labelEntityWith3NonVoidedLabels.AddLabel(labelB);
 
-        context.Labels.Add(_labelA);
-        context.Labels.Add(_labelB);
-        context.Labels.Add(_labelC);
-        context.Labels.Add(_labelD);
-        context.Labels.Add(_labelVoided);
-        context.LabelEntities.Add(_labelEntityWith3Labels);
+        context.LabelEntities.Add(_labelEntityWith3NonVoidedLabels);
         context.LabelEntities.Add(_labelEntityWithoutLabels);
 
         context.SaveChangesAsync().Wait();
@@ -78,7 +65,7 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
@@ -96,7 +83,7 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
@@ -106,9 +93,9 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        Assert.AreEqual(result.Data.ElementAt(0), _labelA.Text);
-        Assert.AreEqual(result.Data.ElementAt(1), _labelB.Text);
-        Assert.AreEqual(result.Data.ElementAt(2), _labelC.Text);
+        Assert.AreEqual(LabelTextA, result.Data.ElementAt(0));
+        Assert.AreEqual(LabelTextB, result.Data.ElementAt(1));
+        Assert.AreEqual(LabelTextC, result.Data.ElementAt(2));
     }
 
     [TestMethod]
@@ -117,7 +104,7 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
@@ -127,6 +114,6 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        Assert.IsFalse(result.Data.Any(t => t == _voidedText));
+        Assert.IsFalse(result.Data.Any(t => t == LabelTextVoided));
     }
 }

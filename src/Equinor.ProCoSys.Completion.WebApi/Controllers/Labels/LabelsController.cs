@@ -11,6 +11,7 @@ using ServiceResult.ApiExtensions;
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Labels;
 
 // Todo 108512 Secure with superuser permission
+// todo 108269 Create integration tests
 [Authorize]
 [ApiController]
 [Route("Labels")]
@@ -23,16 +24,16 @@ public class LabelsController : ControllerBase
     /// <summary>
     /// Add a new Label. Need to be unique
     /// </summary>
-    /// <param name="label"></param>
+    /// <param name="dto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>RowVersion of created Label</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
     [HttpPost]
     public async Task<ActionResult<IEnumerable<string>>> CreateLabel(
         CancellationToken cancellationToken,
-        [FromBody] string label)
+        [FromBody] CreateLabelDto dto)
     {
-        var result = await _mediator.Send(new CreateLabelCommand(label), cancellationToken);
+        var result = await _mediator.Send(new CreateLabelCommand(dto.Text), cancellationToken);
         return this.FromResult(result);
     }
 
