@@ -30,7 +30,7 @@ using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

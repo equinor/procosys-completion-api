@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LabelEntities;
 
 public static class LabelEntitiesControllerTestsHelper
 {
-    private const string Route = "LabelEntities";
+    private const string Route = "Labels";
 
     public static async Task<List<string>> GetLabelsForEntityAsync(
         UserType userType,

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
-using Equinor.ProCoSys.Completion.Query.LabelQueries.GetLabels;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
+using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntity;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,10 +21,10 @@ public class LabelsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<string>>> GetLabelsForHost(
-        HostType hostType,
+        EntityWithLabelType entityWithLabelsType,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new GetLabelsForHostQuery(hostType), cancellationToken);
+        var result = await _mediator.Send(new GetLabelsForEntityQuery(entityWithLabelsType), cancellationToken);
         return this.FromResult(result);
     }
 }
