@@ -6,16 +6,16 @@ using Equinor.ProCoSys.Common;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 
-namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 
-public class LabelHost : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable
+public class LabelEntity : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable
 {
     private readonly List<Label> _labels = new();
 
-    public LabelHost(HostType type) => Type = type;
+    public LabelEntity(EntityWithLabelType entityWithLabel) => EntityWithLabel = entityWithLabel;
 
     // private setters needed for Entity Framework
-    public HostType Type { get; private set; }
+    public EntityWithLabelType EntityWithLabel { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;
