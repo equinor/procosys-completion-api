@@ -57,6 +57,7 @@ public class Startup
                 services.AddHostedService<DatabaseMigrator>();
             }
         }
+        
         if (_environment.IsDevelopment())
         {
             DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
@@ -205,6 +206,8 @@ public class Startup
             services.AddSingleton<IPcsBusSender>(new DisabledServiceBusSender());
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
+        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
+        services.AddHostedService<VerifyLabelEntitiesExists>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
