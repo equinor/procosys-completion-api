@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20231206081348_CommentLabels")]
+    partial class CommentLabels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -397,7 +400,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
-            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", b =>
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -410,12 +413,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
-
-                    b.Property<string>("EntityWithLabel")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("PunchPicture");
 
                     b.Property<DateTime?>("ModifiedAtUtc")
                         .HasColumnType("datetime2");
@@ -438,23 +435,29 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValue("GeneralPicture");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("EntityWithLabel")
-                        .IsUnique();
-
                     b.HasIndex("ModifiedById");
 
-                    b.ToTable("LabelEntities", t =>
+                    b.HasIndex("Type")
+                        .IsUnique();
+
+                    b.ToTable("LabelHosts", t =>
                         {
-                            t.HasCheckConstraint("valid_entity_type", "EntityWithLabel in ('PunchPicture','PunchComment')");
+                            t.HasCheckConstraint("host_type_valid_type", "Type in ('GeneralPicture','GeneralComment','PunchPicture','PunchComment')");
                         });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("LabelEntitiesHistory");
+                                ttb.UseHistoryTable("LabelHostsHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -1133,9 +1136,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
-            modelBuilder.Entity("LabelLabelEntity", b =>
+            modelBuilder.Entity("LabelLabelHost", b =>
                 {
-                    b.Property<int>("EntitiesWithLabelId")
+                    b.Property<int>("HostsId")
                         .HasColumnType("int");
 
                     b.Property<int>("LabelsId")
@@ -1151,15 +1154,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("PeriodStart");
 
-                    b.HasKey("EntitiesWithLabelId", "LabelsId");
+                    b.HasKey("HostsId", "LabelsId");
 
                     b.HasIndex("LabelsId");
 
-                    b.ToTable("LabelLabelEntity");
+                    b.ToTable("LabelLabelHost");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("LabelLabelEntityHistory");
+                                ttb.UseHistoryTable("LabelLabelHostHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -1431,7 +1434,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
-            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", b =>
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
                         .WithMany()
@@ -1661,11 +1664,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
-            modelBuilder.Entity("LabelLabelEntity", b =>
+            modelBuilder.Entity("LabelLabelHost", b =>
                 {
-                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", null)
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", null)
                         .WithMany()
-                        .HasForeignKey("EntitiesWithLabelId")
+                        .HasForeignKey("HostsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

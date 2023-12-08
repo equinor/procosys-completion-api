@@ -27,6 +27,7 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
             _query.PunchItemGuid,
             Guid.NewGuid(),
             "T",
+            new List<string> { "A" },
             new PersonDto(Guid.NewGuid(), "First", "Last", "UN", "Email"),
             new DateTime(2023, 6, 11, 1, 2, 3));
         var commentDtos = new List<CommentDto>
@@ -51,6 +52,12 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         var comment = result.Data.Single();
         Assert.AreEqual(_commentDto.ParentGuid, comment.ParentGuid);
         Assert.AreEqual(_commentDto.Guid, comment.Guid);
+        Assert.AreEqual(_commentDto.Text, comment.Text);
+        Assert.AreEqual(_commentDto.Labels.Count, comment.Labels.Count);
+        foreach (var labelText in _commentDto.Labels)
+        {
+            Assert.IsTrue(comment.Labels.Any(l => l == labelText));
+        }
         Assert.AreEqual(_commentDto.CreatedAtUtc, comment.CreatedAtUtc);
         var createdBy = comment.CreatedBy;
         Assert.IsNotNull(createdBy);

@@ -10,7 +10,7 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 
-public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IBelongToParent, IHaveGuid
+public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IBelongToParent, IHaveGuid, IHaveLabels
 {
     public const int ParentTypeLengthMax = 256;
     public const int FileNameLengthMax = 255;
