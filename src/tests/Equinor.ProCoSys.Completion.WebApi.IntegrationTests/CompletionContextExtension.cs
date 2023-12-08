@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -51,12 +51,12 @@ public static class CompletionContextExtension
         labelRepository.Add(labelA);
         labelRepository.Add(labelB);
 
-        var labelHost = new LabelHost(KnownData.HostTypeWithLabels);
-        labelHost.AddLabel(labelA);
-        labelHost.AddLabel(labelB);
+        var labelEntity = new LabelEntity(KnownData.EntityWithLabelsWithLabels);
+        labelEntity.AddLabel(labelA);
+        labelEntity.AddLabel(labelB);
 
-        var labelHostRepository = new LabelHostRepository(dbContext);
-        labelHostRepository.Add(labelHost);
+        var labelEntityRepository = new LabelEntityRepository(dbContext);
+        labelEntityRepository.Add(labelEntity);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 

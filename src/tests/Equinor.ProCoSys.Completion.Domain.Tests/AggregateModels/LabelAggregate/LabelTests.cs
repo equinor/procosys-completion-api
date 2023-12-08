@@ -20,7 +20,7 @@ public class LabelTests : IModificationAuditableTests
     public void Constructor_ShouldSetProperties()
     {
         Assert.AreEqual(_text, _dut.Text);
-        Assert.IsNotNull(_dut.Hosts);
-        Assert.AreEqual(0, _dut.Hosts.Count);
+        Assert.IsNotNull(_dut.EntitiesWithLabel);
+        Assert.AreEqual(0, _dut.EntitiesWithLabel.Count);
     }
 }

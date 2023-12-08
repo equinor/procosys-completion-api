@@ -112,7 +112,7 @@ public static class ApplicationModule
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ISWCRRepository, SWCRRepository>();
         services.AddScoped<ILabelRepository, LabelRepository>();
-        services.AddScoped<ILabelHostRepository, LabelHostRepository>();
+        services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();

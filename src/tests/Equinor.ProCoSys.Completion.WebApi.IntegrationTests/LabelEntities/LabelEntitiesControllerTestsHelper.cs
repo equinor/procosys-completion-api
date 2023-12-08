@@ -3,21 +3,21 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Labels;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LabelEntities;
 
-public static class LabelsControllerTestsHelper
+public static class LabelEntitiesControllerTestsHelper
 {
-    private const string Route = "Labels";
+    private const string Route = "LabelEntities";
 
-    public static async Task<List<string>> GetLabelsForHostAsync(
+    public static async Task<List<string>> GetLabelsForEntityAsync(
         UserType userType,
-        string hostType,
+        string entityWithLabelsType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var parameters = new ParameterCollection
         {
-            { "hostType", hostType }
+            { "entityWithLabelsType", entityWithLabelsType }
         };
         var url = $"{Route}{parameters}";
 
