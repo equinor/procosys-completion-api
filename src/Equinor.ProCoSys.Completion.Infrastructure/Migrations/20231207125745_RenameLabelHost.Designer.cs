@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20231207125745_RenameLabelHost")]
+    partial class RenameLabelHost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,42 +52,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
                                 ttb.UseHistoryTable("AttachmentLabelHistory");
-                                ttb
-                                    .HasPeriodStart("PeriodStart")
-                                    .HasColumnName("PeriodStart");
-                                ttb
-                                    .HasPeriodEnd("PeriodEnd")
-                                    .HasColumnName("PeriodEnd");
-                            }));
-                });
-
-            modelBuilder.Entity("CommentLabel", b =>
-                {
-                    b.Property<int>("CommentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LabelsId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PeriodEnd")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("PeriodEnd");
-
-                    b.Property<DateTime>("PeriodStart")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("PeriodStart");
-
-                    b.HasKey("CommentId", "LabelsId");
-
-                    b.HasIndex("LabelsId");
-
-                    b.ToTable("CommentLabel");
-
-                    b.ToTable(tb => tb.IsTemporal(ttb =>
-                            {
-                                ttb.UseHistoryTable("CommentLabelHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -1346,21 +1313,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate.Attachment", null)
                         .WithMany()
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label", null)
-                        .WithMany()
-                        .HasForeignKey("LabelsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("CommentLabel", b =>
-                {
-                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate.Comment", null)
-                        .WithMany()
-                        .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

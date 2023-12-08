@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -8,7 +8,7 @@ public static class KnownData
 {
     public static string LabelA => "A";
     public static string LabelB => "B";
-    public static HostType HostTypeWithLabels => HostType.GeneralComment;
+    public static EntityWithLabelType EntityWithLabelsWithLabels => EntityWithLabelType.PunchComment;
 
     public static string PlantA => "PCS$PLANT_A";
     public static string PlantB => "PCS$PLANT_B";

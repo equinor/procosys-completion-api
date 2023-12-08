@@ -1,18 +1,18 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.Query.LabelQueries.GetLabels;
+using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntity;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.Labels.GetLabels;
+namespace Equinor.ProCoSys.Completion.Query.Tests.LabelEntityQueries.GetLabelsForEntity;
 
 [TestClass]
-public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
+public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
 {
     private readonly string _voidedText = "VoidedText";
     private Label _labelA;
@@ -20,11 +20,10 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
     private Label _labelC;
     private Label _labelD;
     private Label _labelVoided;
-    private LabelHost _labelHostWith3Labels;
-    private LabelHost _labelHostWithoutLabels;
-    private readonly HostType _hostTypeWith3Labels = HostType.PunchComment;
-    private readonly HostType _hostTypeWithoutLabels = HostType.GeneralComment;
-    private readonly HostType _nonExistingHostType = HostType.GeneralPicture;
+    private LabelEntity _labelEntityWith3Labels;
+    private LabelEntity _labelEntityWithoutLabels;
+    private readonly EntityWithLabelType _entityWithLabelsWith3Labels = EntityWithLabelType.PunchComment;
+    private readonly EntityWithLabelType _entityWithLabelsWithoutLabels = EntityWithLabelType.PunchPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -37,50 +36,32 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
         
         _labelVoided = new Label(_voidedText) { IsVoided = true };
 
-        _labelHostWith3Labels = new LabelHost(_hostTypeWith3Labels);
-        _labelHostWithoutLabels = new LabelHost(_hostTypeWithoutLabels);
-        _labelHostWith3Labels.AddLabel(_labelC);
-        _labelHostWith3Labels.AddLabel(_labelA);
-        _labelHostWith3Labels.AddLabel(_labelB);
-        _labelHostWith3Labels.AddLabel(_labelVoided);
+        _labelEntityWith3Labels = new LabelEntity(_entityWithLabelsWith3Labels);
+        _labelEntityWithoutLabels = new LabelEntity(_entityWithLabelsWithoutLabels);
+        _labelEntityWith3Labels.AddLabel(_labelC);
+        _labelEntityWith3Labels.AddLabel(_labelA);
+        _labelEntityWith3Labels.AddLabel(_labelB);
+        _labelEntityWith3Labels.AddLabel(_labelVoided);
 
         context.Labels.Add(_labelA);
         context.Labels.Add(_labelB);
         context.Labels.Add(_labelC);
         context.Labels.Add(_labelD);
         context.Labels.Add(_labelVoided);
-        context.LabelHosts.Add(_labelHostWith3Labels);
-        context.LabelHosts.Add(_labelHostWithoutLabels);
+        context.LabelEntities.Add(_labelEntityWith3Labels);
+        context.LabelEntities.Add(_labelEntityWithoutLabels);
 
         context.SaveChangesAsync().Wait();
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnEmptyList_WhenHostDontExists()
+    public async Task Handler_ShouldReturnEmptyList_WhenEntityHasNoLabels()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForHostQuery(_nonExistingHostType);
-        var dut = new GetLabelsForHostQueryHandler(context);
-
-        // Act
-        var result = await dut.Handle(query, default);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
-    }
-
-    [TestMethod]
-    public async Task Handler_ShouldReturnEmptyList_WhenHostHasNoLabels()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
-
-        var query = new GetLabelsForHostQuery(_hostTypeWithoutLabels);
-        var dut = new GetLabelsForHostQueryHandler(context);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWithoutLabels);
+        var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -97,8 +78,8 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForHostQuery(_hostTypeWith3Labels);
-        var dut = new GetLabelsForHostQueryHandler(context);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -115,8 +96,8 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForHostQuery(_hostTypeWith3Labels);
-        var dut = new GetLabelsForHostQueryHandler(context);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -136,8 +117,8 @@ public class GetLabelsForHostQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForHostQuery(_hostTypeWith3Labels);
-        var dut = new GetLabelsForHostQueryHandler(context);
+        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3Labels);
+        var dut = new GetLabelsForEntityQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);

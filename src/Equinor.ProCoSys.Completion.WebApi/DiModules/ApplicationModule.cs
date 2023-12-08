@@ -30,7 +30,7 @@ using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -112,7 +112,7 @@ public static class ApplicationModule
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ISWCRRepository, SWCRRepository>();
         services.AddScoped<ILabelRepository, LabelRepository>();
-        services.AddScoped<ILabelHostRepository, LabelHostRepository>();
+        services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
