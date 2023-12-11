@@ -128,6 +128,7 @@ public static class ApplicationModule
         services.AddScoped<IWorkOrderValidator, WorkOrderValidator>();
         services.AddScoped<ISWCRValidator, SWCRValidator>();
         services.AddScoped<ILabelValidator, LabelValidator>();
+        services.AddScoped<ILabelEntityValidator, LabelEntityValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();

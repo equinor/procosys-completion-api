@@ -11,13 +11,13 @@ public static class LabelEntitiesControllerTestsHelper
 
     public static async Task<List<string>> GetLabelsForEntityAsync(
         UserType userType,
-        string entityWithLabelsType,
+        string entityType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var parameters = new ParameterCollection
         {
-            { "entityWithLabelsType", entityWithLabelsType }
+            { "entityType", entityType }
         };
         var url = $"{Route}{parameters}";
 
