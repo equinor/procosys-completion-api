@@ -2,21 +2,21 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntity;
+using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntityType;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.LabelEntityQueries.GetLabelsForEntity;
+namespace Equinor.ProCoSys.Completion.Query.Tests.LabelEntityQueries.GetLabelsForEntityType;
 
 [TestClass]
-public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
+public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 {
     private LabelEntity _labelEntityWith3NonVoidedLabels;
     private LabelEntity _labelEntityWithoutLabels;
-    private readonly EntityWithLabelType _entityWithLabelsWith3NonVoidedLabels = EntityWithLabelType.PunchComment;
-    private readonly EntityWithLabelType _entityWithLabelsWithoutLabels = EntityWithLabelType.PunchPicture;
+    private readonly EntityTypeWithLabels _entityTypeWith3NonVoidedLabels = EntityTypeWithLabels.PunchComment;
+    private readonly EntityTypeWithLabels _entityTypeWithoutLabels = EntityTypeWithLabels.PunchPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -28,12 +28,12 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         var labelC = context.Labels.Single(l => l.Text == LabelTextC);
         var labelVoided = context.Labels.Single(l => l.Text == LabelTextVoided);
 
-        _labelEntityWith3NonVoidedLabels = new LabelEntity(_entityWithLabelsWith3NonVoidedLabels);
-        _labelEntityWithoutLabels = new LabelEntity(_entityWithLabelsWithoutLabels);
-        _labelEntityWith3NonVoidedLabels.AddLabel(labelC);
-        _labelEntityWith3NonVoidedLabels.AddLabel(labelA);
-        _labelEntityWith3NonVoidedLabels.AddLabel(labelVoided);
-        _labelEntityWith3NonVoidedLabels.AddLabel(labelB);
+        _labelEntityWith3NonVoidedLabels = new LabelEntity(_entityTypeWith3NonVoidedLabels);
+        _labelEntityWithoutLabels = new LabelEntity(_entityTypeWithoutLabels);
+        labelC.MakeLabelAvailableFor(_labelEntityWith3NonVoidedLabels);
+        labelA.MakeLabelAvailableFor(_labelEntityWith3NonVoidedLabels);
+        labelVoided.MakeLabelAvailableFor(_labelEntityWith3NonVoidedLabels);
+        labelB.MakeLabelAvailableFor(_labelEntityWith3NonVoidedLabels);
 
         context.LabelEntities.Add(_labelEntityWith3NonVoidedLabels);
         context.LabelEntities.Add(_labelEntityWithoutLabels);
@@ -47,8 +47,8 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWithoutLabels);
-        var dut = new GetLabelsForEntityQueryHandler(context);
+        var query = new GetLabelsForEntityTypeQuery(_entityTypeWithoutLabels);
+        var dut = new GetLabelsForEntityTypeQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -65,8 +65,8 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
-        var dut = new GetLabelsForEntityQueryHandler(context);
+        var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
+        var dut = new GetLabelsForEntityTypeQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -83,8 +83,8 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
-        var dut = new GetLabelsForEntityQueryHandler(context);
+        var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
+        var dut = new GetLabelsForEntityTypeQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -104,8 +104,8 @@ public class GetLabelsForEntityQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
-        var query = new GetLabelsForEntityQuery(_entityWithLabelsWith3NonVoidedLabels);
-        var dut = new GetLabelsForEntityQueryHandler(context);
+        var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
+        var dut = new GetLabelsForEntityTypeQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);

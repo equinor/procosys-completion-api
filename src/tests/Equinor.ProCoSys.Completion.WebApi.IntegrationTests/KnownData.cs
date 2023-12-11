@@ -8,7 +8,7 @@ public static class KnownData
 {
     public static string LabelA => "A";
     public static string LabelB => "B";
-    public static EntityWithLabelType EntityWithLabelsWithLabels => EntityWithLabelType.PunchComment;
+    public static EntityTypeWithLabels EntityTypeWithLabels => EntityTypeWithLabels.PunchComment;
 
     public static string PlantA => "PCS$PLANT_A";
     public static string PlantB => "PCS$PLANT_B";

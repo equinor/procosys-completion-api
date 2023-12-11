@@ -6,5 +6,6 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 
 public interface ILabelRepository : IRepository<Label>
 {
-    Task<List<Label>> GetManyAsync(IEnumerable<string> labels, CancellationToken cancellationToken);
+    Task<List<Label>> GetManyAsync(IEnumerable<string> texts, CancellationToken cancellationToken);
+    Task<Label> GetByTextAsync(string text, CancellationToken cancellationToken);
 }

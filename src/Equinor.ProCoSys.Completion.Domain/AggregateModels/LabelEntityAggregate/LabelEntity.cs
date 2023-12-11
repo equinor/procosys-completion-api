@@ -12,10 +12,10 @@ public class LabelEntity : EntityBase, IAggregateRoot, ICreationAuditable, IModi
 {
     private readonly List<Label> _labels = new();
 
-    public LabelEntity(EntityWithLabelType entityWithLabel) => EntityWithLabel = entityWithLabel;
+    public LabelEntity(EntityTypeWithLabels entityType) => EntityType = entityType;
 
     // private setters needed for Entity Framework
-    public EntityWithLabelType EntityWithLabel { get; private set; }
+    public EntityTypeWithLabels EntityType { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;
@@ -23,10 +23,6 @@ public class LabelEntity : EntityBase, IAggregateRoot, ICreationAuditable, IModi
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
     public ICollection<Label> Labels => _labels;
-
-    public void AddLabel(Label label) => _labels.Add(label);
-
-    public void RemoveLabel(Label label) => _labels.Remove(label);
 
     public void SetCreated(Person createdBy)
     {

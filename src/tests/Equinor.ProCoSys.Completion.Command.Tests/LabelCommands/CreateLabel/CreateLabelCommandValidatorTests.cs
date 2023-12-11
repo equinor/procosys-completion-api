@@ -36,7 +36,7 @@ public class CreateLabelCommandValidatorTests
     public async Task Validate_ShouldFail_When_LabelAlreadyExists()
     {
         // Arrange
-        _labelValidatorMock.ExistsAsync(_command.Label, default).Returns(true);
+        _labelValidatorMock.ExistsAsync(_command.Text, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

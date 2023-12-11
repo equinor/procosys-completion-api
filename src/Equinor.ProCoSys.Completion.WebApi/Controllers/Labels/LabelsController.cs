@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
+using Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailableFor;
 using Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +35,22 @@ public class LabelsController : ControllerBase
         [FromBody] CreateLabelDto dto)
     {
         var result = await _mediator.Send(new CreateLabelCommand(dto.Text), cancellationToken);
+        return this.FromResult(result);
+    }
+
+    /// <summary>
+    /// Update which Label entities a Label is available for
+    /// </summary>
+    /// <param name="availableForDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    [HttpPut]
+    public async Task<ActionResult> UpdateLabelAvailableFor(
+        CancellationToken cancellationToken,
+        [FromBody] UpdateLabelAvailableForDto availableForDto)
+    {
+        var result = await _mediator.Send(
+            new UpdateLabelAvailableForCommand(availableForDto.Text, availableForDto.AvailableForLabels), cancellationToken);
         return this.FromResult(result);
     }
 

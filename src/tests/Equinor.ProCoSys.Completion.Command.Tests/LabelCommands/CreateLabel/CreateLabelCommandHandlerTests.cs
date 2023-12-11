@@ -60,7 +60,7 @@ public class CreateLabelCommandHandlerTests
 
         // Assert
         Assert.IsNotNull(_labelAddedToRepository);
-        Assert.AreEqual(_command.Label, _labelAddedToRepository.Text);
+        Assert.AreEqual(_command.Text, _labelAddedToRepository.Text);
     }
 
     [TestMethod]

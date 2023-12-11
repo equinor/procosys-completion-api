@@ -20,14 +20,14 @@ public class GetAllLabelsQueryHandler : IRequestHandler<GetAllLabelsQuery, Resul
     {
         var orderedLabels =
             await (from l in _context.QuerySet<Label>()
-                        .Include(l => l.EntitiesWithLabel)
+                        .Include(l => l.AvailableFor)
                     orderby l.Text
                    select l)
                 .TagWith($"{nameof(GetAllLabelsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
 
         var orderedLabelDtos = orderedLabels
-            .Select(l => new LabelDto(l.Text, l.IsVoided, l.EntitiesWithLabel.Select(h => h.EntityWithLabel.ToString()).Order().ToList()));
+            .Select(l => new LabelDto(l.Text, l.IsVoided, l.AvailableFor.Select(h => h.EntityType.ToString()).Order().ToList()));
 
         return new SuccessResult<IEnumerable<LabelDto>>(orderedLabelDtos);
     }

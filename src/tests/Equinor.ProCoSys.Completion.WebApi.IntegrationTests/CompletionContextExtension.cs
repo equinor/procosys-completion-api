@@ -51,9 +51,9 @@ public static class CompletionContextExtension
         labelRepository.Add(labelA);
         labelRepository.Add(labelB);
 
-        var labelEntity = new LabelEntity(KnownData.EntityWithLabelsWithLabels);
-        labelEntity.AddLabel(labelA);
-        labelEntity.AddLabel(labelB);
+        var labelEntity = new LabelEntity(KnownData.EntityTypeWithLabels);
+        labelA.MakeLabelAvailableFor(labelEntity);
+        labelB.MakeLabelAvailableFor(labelEntity);
 
         var labelEntityRepository = new LabelEntityRepository(dbContext);
         labelEntityRepository.Add(labelEntity);

@@ -24,12 +24,12 @@ public class CreateLabelCommandHandler : IRequestHandler<CreateLabelCommand, Res
 
     public async Task<Result<string>> Handle(CreateLabelCommand request, CancellationToken cancellationToken)
     {
-        var label = new Label(request.Label);
+        var label = new Label(request.Text);
         _labelRepository.Add(label);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Label {Label} created", request.Label);
+        _logger.LogInformation("Label {Label} created", request.Text);
 
         return new SuccessResult<string>(label.RowVersion.ConvertToString());
     }
