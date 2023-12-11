@@ -13,6 +13,7 @@ public class CreateCommentDtoValidator : AbstractValidator<CreateCommentDto>
 
         RuleFor(dto => dto.Text)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax);
     }
 }

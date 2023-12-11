@@ -38,6 +38,21 @@ public class CreateLinkDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTitleIsEmpty()
+    {
+        // Arrange
+        var dto = new CreateLinkDto(string.Empty, "U");
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
     {
         // Arrange

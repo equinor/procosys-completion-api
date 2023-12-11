@@ -13,10 +13,12 @@ public class UpdateLinkDtoValidator : AbstractValidator<UpdateLinkDto>
 
         RuleFor(dto => dto.Title)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax);
 
         RuleFor(dto => dto.Url)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax);
 
         RuleFor(dto => dto.RowVersion)
