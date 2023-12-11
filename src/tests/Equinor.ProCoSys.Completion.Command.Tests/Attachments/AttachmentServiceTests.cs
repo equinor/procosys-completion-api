@@ -112,6 +112,17 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
+    public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WithoutLabels()
+    {
+        // Act
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+
+        // Assert
+        Assert.IsNotNull(_attachmentAddedToRepository);
+        Assert.AreEqual(0, _attachmentAddedToRepository.Labels.Count);
+    }
+
+    [TestMethod]
     public async Task UploadNewAsync_ShouldSaveOnce_WhenFileNameNotExist()
     {
         // Act

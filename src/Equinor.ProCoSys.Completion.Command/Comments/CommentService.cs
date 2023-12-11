@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -28,9 +31,12 @@ public class CommentService : ICommentService
         string parentType,
         Guid parentGuid,
         string text,
+        IEnumerable<Label> labels,
         CancellationToken cancellationToken)
     {
         var comment = new Comment(parentType, parentGuid, text);
+        comment.UpdateLabels(labels.ToList());
+
         _commentRepository.Add(comment);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
