@@ -38,18 +38,18 @@ public class VerifyLabelEntitiesExists : IHostedService
             scope.ServiceProvider
                 .GetRequiredService<ILabelEntityRepository>();
 
-        var nonExitingLabelEntities = await GetNonExitingLabelEntitiesAsync(labelEntityRepository, cancellationToken);
-        if (!nonExitingLabelEntities.Any())
+        var nonExistingLabelEntities = await GetNonExistingLabelEntitiesAsync(labelEntityRepository, cancellationToken);
+        if (!nonExistingLabelEntities.Any())
         {
             return;
         }
 
-        await CreateNonExitingLabelEntitiesAsync(scope, nonExitingLabelEntities, labelEntityRepository, cancellationToken);
+        await CreateNonExistingLabelEntitiesAsync(scope, nonExistingLabelEntities, labelEntityRepository, cancellationToken);
     }
 
-    private async Task CreateNonExitingLabelEntitiesAsync(
+    private async Task CreateNonExistingLabelEntitiesAsync(
         IServiceScope scope,
-        List<EntityWithLabelType> nonExitingLabelEntities,
+        List<EntityWithLabelType> nonExistingLabelEntities,
         ILabelEntityRepository labelEntityRepository,
         CancellationToken cancellationToken)
     {
@@ -62,7 +62,7 @@ public class VerifyLabelEntitiesExists : IHostedService
                 .GetRequiredService<ICurrentUserSetter>();
         currentUserSetter.SetCurrentUserOid(_completionApiObjectId);
 
-        foreach (var entityWithLabelType in nonExitingLabelEntities)
+        foreach (var entityWithLabelType in nonExistingLabelEntities)
         {
             labelEntityRepository.Add(new LabelEntity(entityWithLabelType));
             _logger.LogInformation("Label entity {LabelEntity} added", entityWithLabelType.ToString());
@@ -71,20 +71,20 @@ public class VerifyLabelEntitiesExists : IHostedService
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<List<EntityWithLabelType>> GetNonExitingLabelEntitiesAsync(
+    private async Task<List<EntityWithLabelType>> GetNonExistingLabelEntitiesAsync(
         ILabelEntityRepository labelEntityRepository,
         CancellationToken cancellationToken)
     {
-        var nonExitingLabelEntities = new List<EntityWithLabelType>();
+        var nonExistingLabelEntities = new List<EntityWithLabelType>();
         foreach (EntityWithLabelType entityWithLabelType in Enum.GetValues(typeof(EntityWithLabelType)))
         {
             if (!await labelEntityRepository.ExistsAsync(entityWithLabelType, cancellationToken))
             {
-                nonExitingLabelEntities.Add(entityWithLabelType);
+                nonExistingLabelEntities.Add(entityWithLabelType);
             }
         }
 
-        return nonExitingLabelEntities;
+        return nonExistingLabelEntities;
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
