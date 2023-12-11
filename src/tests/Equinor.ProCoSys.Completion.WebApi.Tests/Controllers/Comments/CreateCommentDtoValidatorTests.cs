@@ -38,6 +38,21 @@ public class CreateCommentDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTextIsEmpty()
+    {
+        // Arrange
+        var dto = new CreateCommentDto(string.Empty);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Text' must not be empty."));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTextIsTooLongAsync()
     {
         // Arrange

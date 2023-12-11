@@ -13,6 +13,7 @@ public class CreateLabelDtoValidator : AbstractValidator<CreateLabelDto>
 
         RuleFor(dto => dto.Text)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.LabelAggregate.Label.TextLengthMax);
     }
 }

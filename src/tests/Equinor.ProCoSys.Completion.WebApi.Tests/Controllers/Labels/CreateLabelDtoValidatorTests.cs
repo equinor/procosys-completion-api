@@ -38,6 +38,21 @@ public class CreateLabelDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTextIsEmpty()
+    {
+        // Arrange
+        var dto = new CreateLabelDto(string.Empty);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Text' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTextIsTooLongAsync()
     {
         // Arrange

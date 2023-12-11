@@ -80,6 +80,41 @@ public class CreatePunchItemDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenDescriptionIsEmpty()
+    {
+        // Arrange
+        var dto = new CreatePunchItemDto(
+            Category.PA,
+            string.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            DateTime.UtcNow,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            null,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            null,
+            false,
+            DateTime.UtcNow,
+            null);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Description' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenDescriptionIsTooLong()
     {
         // Arrange

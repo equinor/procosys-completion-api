@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
@@ -50,6 +51,21 @@ public class UpdateAttachmentDtoValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Description' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenDescriptionIsEmpty()
+    {
+        // Arrange
+        var dto = new UpdateAttachmentDto(string.Empty, new List<string>(), _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Description' must be at least"));
     }
 
     [TestMethod]

@@ -15,6 +15,7 @@ public class UpdateAttachmentDtoValidator : AbstractValidator<UpdateAttachmentDt
 
         RuleFor(dto => dto.Description)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.AttachmentAggregate.Attachment.DescriptionLengthMax);
 
         RuleFor(dto => dto.Labels)
