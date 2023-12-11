@@ -41,16 +41,16 @@ public class LabelsController : ControllerBase
     /// <summary>
     /// Update which Label entities a Label is available for
     /// </summary>
-    /// <param name="availableForDto"></param>
+    /// <param name="dto"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="400">Input validation error (error returned in body)</response>
     [HttpPut]
     public async Task<ActionResult> UpdateLabelAvailableFor(
         CancellationToken cancellationToken,
-        [FromBody] UpdateLabelAvailableForDto availableForDto)
+        [FromBody] UpdateLabelAvailableForDto dto)
     {
         var result = await _mediator.Send(
-            new UpdateLabelAvailableForCommand(availableForDto.Text, availableForDto.AvailableForLabels), cancellationToken);
+            new UpdateLabelAvailableForCommand(dto.Text, dto.AvailableForLabels), cancellationToken);
         return this.FromResult(result);
     }
 
