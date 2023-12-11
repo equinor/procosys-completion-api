@@ -49,7 +49,7 @@ public class CreateCommentDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Text' must not be empty."));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Text' must be at least"));
     }
 
     [TestMethod]
