@@ -98,7 +98,7 @@ public class UpdateLabelAvailableForCommandHandlerTests
         await _dut.Handle(commandToMakeAvailableForNone, default);
 
         // Assert
-        Assert.AreEqual(0, _labelNotAvailableToAnyEntityType.AvailableFor.Count);
+        Assert.AreEqual(0, _labelAvailableForPunchPicture.AvailableFor.Count);
     }
 
     [TestMethod]
