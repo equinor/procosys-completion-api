@@ -94,13 +94,13 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         foreach (var type in TypeProvider.GetEntityTypes(typeof(IDomainMarker).GetTypeInfo().Assembly, typeof(PlantEntityBase)))
         {
             typeof(CompletionContext)
-                .GetMethod(nameof(CompletionContext.SetGlobalQueryFilter))
+                .GetMethod(nameof(SetGlobalQueryFilter))
                 ?.MakeGenericMethod(type)
                 .Invoke(this, new object[] { modelBuilder });
         }
     }
 
-    public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
+    private void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
             .Entity<T>()
             .HasQueryFilter(e => e.Plant == _plantProvider.Plant);
