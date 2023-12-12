@@ -55,6 +55,21 @@ public class UpdateLabelAvailableForCommandValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_When_LabelIsVoided()
+    {
+        // Arrange
+        _labelValidatorMock.IsVoidedAsync(_command.Text, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Label is voided!"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_When_LabelEntityNotExists()
     {
         // Arrange

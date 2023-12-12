@@ -17,7 +17,9 @@ public class UpdateLabelAvailableForCommandValidator : AbstractValidator<UpdateL
 
         RuleFor(command => command)
             .MustAsync((command, cancellationToken) => BeAnExistingLabelAsync(command.Text, cancellationToken))
-            .WithMessage(command => $"Label does not exist! Guid={command.Text}");
+            .WithMessage(command => $"Label does not exist! Guid={command.Text}")
+            .MustAsync((command, cancellationToken) => NotBeInAVoidedLabelAsync(command.Text, cancellationToken))
+            .WithMessage(command => $"Label is voided! Guid={command.Text}");
 
         RuleForEach(command => command.AvailableFor)
             .MustAsync((_, entityType, _, cancellationToken)
@@ -26,6 +28,9 @@ public class UpdateLabelAvailableForCommandValidator : AbstractValidator<UpdateL
 
         async Task<bool> BeAnExistingLabelAsync(string labelGuid, CancellationToken cancellationToken)
             => await labelValidator.ExistsAsync(labelGuid, cancellationToken);
+
+        async Task<bool> NotBeInAVoidedLabelAsync(string labelGuid, CancellationToken cancellationToken)
+            => !await labelValidator.IsVoidedAsync(labelGuid, cancellationToken);
 
         async Task<bool> BeAnExistingLabelEntityAsync(
             EntityTypeWithLabel entityType,
