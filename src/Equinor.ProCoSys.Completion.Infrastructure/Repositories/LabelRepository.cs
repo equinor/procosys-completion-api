@@ -27,7 +27,7 @@ public class LabelRepository : EntityRepository<Label>, ILabelRepository
         var textLowerCase = text.ToLower();
         var label = await Set.Include(l => l.AvailableFor)
             .Where(l => l.Text.ToLower() == textLowerCase).SingleOrDefaultAsync(cancellationToken);
-        if (label == null)
+        if (label is null)
         {
             throw new Exception($"Label {text} not found");
         }

@@ -51,6 +51,6 @@ public class UpdateLabelAvailableForDtoValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'AvailableForLabels' must not be empty."));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Available For Labels' must not be empty."));
     }
 }

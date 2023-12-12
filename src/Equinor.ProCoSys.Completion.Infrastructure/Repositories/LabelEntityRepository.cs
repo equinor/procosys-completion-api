@@ -18,7 +18,7 @@ public class LabelEntityRepository : EntityRepository<LabelEntity>, ILabelEntity
     {
         var labelEntity = await DefaultQuery.Where(e => e.EntityType == entityType)
             .SingleOrDefaultAsync(cancellationToken);
-        if (labelEntity == null)
+        if (labelEntity is null)
         {
             throw new Exception($"Label entity {entityType} not found");
         }
