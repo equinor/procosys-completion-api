@@ -18,23 +18,23 @@ namespace Equinor.ProCoSys.Completion.WebApi.Middleware;
 /// </summary>
 public class VerifyApplicationExistsAsPerson : IHostedService
 {
-    private readonly IServiceScopeFactory _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
     private readonly ILogger<VerifyApplicationExistsAsPerson> _logger;
 
     public VerifyApplicationExistsAsPerson(
-        IServiceScopeFactory serviceProvider,
+        IServiceScopeFactory serviceScopeFactory,
         IOptionsMonitor<CompletionAuthenticatorOptions> options, 
         ILogger<VerifyApplicationExistsAsPerson> logger)
     {
-        _serviceProvider = serviceProvider;
+        _serviceScopeFactory = serviceScopeFactory;
         _options = options;
         _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = _serviceScopeFactory.CreateScope();
 
         var mediator =
             scope.ServiceProvider
