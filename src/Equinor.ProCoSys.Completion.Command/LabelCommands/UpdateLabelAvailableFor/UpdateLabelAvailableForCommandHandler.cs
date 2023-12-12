@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
@@ -31,25 +32,11 @@ public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabel
 
     public async Task<Result<Unit>> Handle(UpdateLabelAvailableForCommand request, CancellationToken cancellationToken)
     {
-        var label = await _labelRepository.GetByTextAsync(request.Text, cancellationToken);
+        var existingLabel = await _labelRepository.GetByTextAsync(request.Text, cancellationToken);
 
-        foreach (var entityType in request.AvailableFor)
-        {
-            if (label.AvailableFor.All(e => e.EntityType != entityType))
-            {
-                var labelEntity = await _labelEntityRepository.GetByTypeAsync(entityType, cancellationToken);
-                label.MakeLabelAvailableFor(labelEntity);
-            }
-        }
+        await MakeLabelAvailableFor(existingLabel, request.AvailableFor, cancellationToken);
 
-        for (var i = label.AvailableFor.Count - 1; i >= 0; i--)
-        {
-            var labelEntity = label.AvailableFor.ElementAt(i);
-            if (!request.AvailableFor.Contains(labelEntity.EntityType))
-            {
-                label.RemoveLabelAvailableFor(labelEntity);
-            }
-        }
+        RemoveLabelAvailableFor(existingLabel, request.AvailableFor);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -57,4 +44,34 @@ public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabel
 
         return new SuccessResult<Unit>(Unit.Value);
     }
+
+    private static void RemoveLabelAvailableFor(Label label, List<EntityTypeWithLabel> availableFor)
+    {
+        for (var i = label.AvailableFor.Count - 1; i >= 0; i--)
+        {
+            var labelEntity = label.AvailableFor.ElementAt(i);
+            if (!availableFor.Contains(labelEntity.EntityType))
+            {
+                label.RemoveLabelAvailableFor(labelEntity);
+            }
+        }
+    }
+
+    private async Task MakeLabelAvailableFor(
+        Label label,
+        List<EntityTypeWithLabel> availableFor,
+        CancellationToken cancellationToken)
+    {
+        foreach (var entityType in availableFor)
+        {
+            if (EntityTypeNotAvailableFor(label, entityType))
+            {
+                var labelEntity = await _labelEntityRepository.GetByTypeAsync(entityType, cancellationToken);
+                label.MakeLabelAvailableFor(labelEntity);
+            }
+        }
+    }
+
+    private static bool EntityTypeNotAvailableFor(Label label, EntityTypeWithLabel entityType)
+        => label.AvailableFor.All(e => e.EntityType != entityType);
 }
