@@ -19,33 +19,33 @@ public class UpdateLabelAvailableForCommandHandlerTests
     private ILabelEntityRepository _labelEntityRepositoryMock;
 
     private UpdateLabelAvailableForCommandHandler _dut;
-    private UpdateLabelAvailableForCommand _command;
+    private UpdateLabelAvailableForCommand _commandToMakeAvailableForPunchComment;
 
-    private Label _labelWithoutUsage;
-    private Label _labelForPunchPicture;
-    private readonly string _text = "A";
-    private readonly EntityTypeWithLabel _oldEntityTypeWithLabel = EntityTypeWithLabel.PunchPicture;
-    private readonly EntityTypeWithLabel _newEntityTypeWithLabel = EntityTypeWithLabel.PunchComment;
+    private Label _labelNotAvailableToAnyEntityType;
+    private Label _labelAvailableForPunchPicture;
+    private readonly string _labelText = "A";
+    private readonly EntityTypeWithLabel _punchPictureEntityType = EntityTypeWithLabel.PunchPicture;
+    private readonly EntityTypeWithLabel _punchCommentEntityType = EntityTypeWithLabel.PunchComment;
 
     [TestInitialize]
     public void Setup()
     {
-        var newLabelEntity = new LabelEntity(_newEntityTypeWithLabel);
-        var oldLabelEntity = new LabelEntity(_oldEntityTypeWithLabel);
+        var punchCommentLabelEntity = new LabelEntity(_punchCommentEntityType);
+        var punchPictureLabelEntity = new LabelEntity(_punchPictureEntityType);
 
-        _labelWithoutUsage = new Label(_text);
-        _labelForPunchPicture = new Label(_text);
-        _labelForPunchPicture.MakeLabelAvailableFor(oldLabelEntity);
+        _labelNotAvailableToAnyEntityType = new Label(_labelText);
+        _labelAvailableForPunchPicture = new Label(_labelText);
+        _labelAvailableForPunchPicture.MakeLabelAvailableFor(punchPictureLabelEntity);
 
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
-        _labelRepositoryMock.GetByTextAsync(_text, default).Returns(_labelWithoutUsage);
 
         _labelEntityRepositoryMock = Substitute.For<ILabelEntityRepository>();
 
-        _labelEntityRepositoryMock.GetByTypeAsync(_newEntityTypeWithLabel, default).Returns(newLabelEntity);
-        
-        _command = new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabel> { _newEntityTypeWithLabel });
+        _labelEntityRepositoryMock.GetByTypeAsync(_punchCommentEntityType, default).Returns(punchCommentLabelEntity);
+
+        _commandToMakeAvailableForPunchComment =
+            new UpdateLabelAvailableForCommand(_labelText, new List<EntityTypeWithLabel> { _punchCommentEntityType });
 
         _dut = new UpdateLabelAvailableForCommandHandler(
             _labelRepositoryMock,
@@ -55,52 +55,60 @@ public class UpdateLabelAvailableForCommandHandlerTests
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldMakeLabelAvailableForEntity_WhenNoAvailableBefore()
+    public async Task HandlingCommand_ShouldMakeLabelAvailableForEntity_WhenNotAvailableToAny()
     {
+        // Arrange
+        _labelRepositoryMock.GetByTextAsync(_labelText, default).Returns(_labelNotAvailableToAnyEntityType);
+        Assert.AreEqual(0, _labelNotAvailableToAnyEntityType.AvailableFor.Count);
+
         // Act
-        await _dut.Handle(_command, default);
+        await _dut.Handle(_commandToMakeAvailableForPunchComment, default);
 
         // Assert
-        Assert.AreEqual(1, _labelWithoutUsage.AvailableFor.Count);
-        Assert.AreEqual(_newEntityTypeWithLabel, _labelWithoutUsage.AvailableFor.ElementAt(0).EntityType);
+        Assert.AreEqual(1, _labelNotAvailableToAnyEntityType.AvailableFor.Count);
+        Assert.AreEqual(_punchCommentEntityType, _labelNotAvailableToAnyEntityType.AvailableFor.ElementAt(0).EntityType);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldReplaceLabelAvailableForEntity_WhenSomeAvailableBefore()
+    public async Task HandlingCommand_ShouldReplaceLabelAvailableForEntity_WhenAvailableToSome()
     {
         // Arrange
-        _labelRepositoryMock.GetByTextAsync(_text, default).Returns(_labelForPunchPicture);
-        Assert.AreEqual(1, _labelForPunchPicture.AvailableFor.Count);
-        Assert.AreEqual(_oldEntityTypeWithLabel, _labelForPunchPicture.AvailableFor.ElementAt(0).EntityType);
+        _labelRepositoryMock.GetByTextAsync(_labelText, default).Returns(_labelAvailableForPunchPicture);
+        Assert.AreEqual(1, _labelAvailableForPunchPicture.AvailableFor.Count);
+        Assert.AreEqual(_punchPictureEntityType, _labelAvailableForPunchPicture.AvailableFor.ElementAt(0).EntityType);
 
         // Act
-        await _dut.Handle(_command, default);
+        await _dut.Handle(_commandToMakeAvailableForPunchComment, default);
 
         // Assert
-        Assert.AreEqual(0, _labelWithoutUsage.AvailableFor.Count);
-        Assert.AreEqual(_newEntityTypeWithLabel, _labelForPunchPicture.AvailableFor.ElementAt(0).EntityType);
+        Assert.AreEqual(0, _labelNotAvailableToAnyEntityType.AvailableFor.Count);
+        Assert.AreEqual(_punchCommentEntityType, _labelAvailableForPunchPicture.AvailableFor.ElementAt(0).EntityType);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldRemoveLabelAvailableForEntity_WhenSomeAvailableBefore()
+    public async Task HandlingCommand_ShouldRemoveLabelAvailableForEntity_WhenAvailableToSome()
     {
         // Arrange
-        _labelRepositoryMock.GetByTextAsync(_text, default).Returns(_labelForPunchPicture);
-        Assert.AreEqual(1, _labelForPunchPicture.AvailableFor.Count);
-        Assert.AreEqual(_oldEntityTypeWithLabel, _labelForPunchPicture.AvailableFor.ElementAt(0).EntityType);
+        _labelRepositoryMock.GetByTextAsync(_labelText, default).Returns(_labelAvailableForPunchPicture);
+        Assert.AreEqual(1, _labelAvailableForPunchPicture.AvailableFor.Count);
+        Assert.AreEqual(_punchPictureEntityType, _labelAvailableForPunchPicture.AvailableFor.ElementAt(0).EntityType);
+        var commandToMakeAvailableForNone = new UpdateLabelAvailableForCommand(_labelText, new List<EntityTypeWithLabel>());
 
         // Act
-        await _dut.Handle(new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabel>()), default);
+        await _dut.Handle(commandToMakeAvailableForNone, default);
 
         // Assert
-        Assert.AreEqual(0, _labelWithoutUsage.AvailableFor.Count);
+        Assert.AreEqual(0, _labelNotAvailableToAnyEntityType.AvailableFor.Count);
     }
 
     [TestMethod]
     public async Task HandlingCommand_ShouldSave()
     {
+        // Arrange
+        _labelRepositoryMock.GetByTextAsync(_labelText, default).Returns(_labelNotAvailableToAnyEntityType);
+        
         // Act
-        await _dut.Handle(_command, default);
+        await _dut.Handle(_commandToMakeAvailableForPunchComment, default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
