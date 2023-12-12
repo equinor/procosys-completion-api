@@ -1,6 +1,6 @@
 ﻿namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 
-public enum EntityTypeWithLabels
+public enum EntityTypeWithLabel
 {
     PunchPicture = 0,
     PunchComment

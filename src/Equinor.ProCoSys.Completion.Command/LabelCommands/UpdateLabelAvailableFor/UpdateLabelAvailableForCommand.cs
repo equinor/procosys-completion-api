@@ -7,12 +7,12 @@ namespace Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailable
 
 public class UpdateLabelAvailableForCommand : IRequest<Result<Unit>>
 {
-    public UpdateLabelAvailableForCommand(string text, List<EntityTypeWithLabels> availableFor)
+    public UpdateLabelAvailableForCommand(string text, List<EntityTypeWithLabel> availableFor)
     {
         Text = text;
         AvailableFor = availableFor;
     }
 
     public string Text { get; }
-    public List<EntityTypeWithLabels> AvailableFor { get; }
+    public List<EntityTypeWithLabel> AvailableFor { get; }
 }

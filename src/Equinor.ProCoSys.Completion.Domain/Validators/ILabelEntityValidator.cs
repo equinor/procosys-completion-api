@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.Domain.Validators;
 
 public interface ILabelEntityValidator
 {
-    Task<bool> ExistsAsync(EntityTypeWithLabels entityType, CancellationToken cancellationToken);
+    Task<bool> ExistsAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken);
 }

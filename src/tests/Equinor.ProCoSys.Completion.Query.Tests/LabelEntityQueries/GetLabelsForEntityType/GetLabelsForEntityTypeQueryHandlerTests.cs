@@ -15,8 +15,8 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 {
     private LabelEntity _labelEntityWith3NonVoidedLabels;
     private LabelEntity _labelEntityWithoutLabels;
-    private readonly EntityTypeWithLabels _entityTypeWith3NonVoidedLabels = EntityTypeWithLabels.PunchComment;
-    private readonly EntityTypeWithLabels _entityTypeWithoutLabels = EntityTypeWithLabels.PunchPicture;
+    private readonly EntityTypeWithLabel _entityTypeWith3NonVoidedLabels = EntityTypeWithLabel.PunchComment;
+    private readonly EntityTypeWithLabel _entityTypeWithoutLabels = EntityTypeWithLabel.PunchPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {

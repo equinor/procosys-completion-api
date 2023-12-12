@@ -12,8 +12,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 public class LabelEntityValidatorTests : ReadOnlyTestsBase
 {
     private LabelEntity _labelEntity = null!;
-    private readonly EntityTypeWithLabels _existingEntityTypeWithLabels = EntityTypeWithLabels.PunchComment;
-    private readonly EntityTypeWithLabels _nonExistingEntityTypeWithLabels = EntityTypeWithLabels.PunchPicture;
+    private readonly EntityTypeWithLabel _existingEntityTypeWithLabels = EntityTypeWithLabel.PunchComment;
+    private readonly EntityTypeWithLabel _nonExistingEntityTypeWithLabels = EntityTypeWithLabel.PunchPicture;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {

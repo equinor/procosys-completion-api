@@ -28,7 +28,7 @@ public class UpdateLabelAvailableForCommandValidator : AbstractValidator<UpdateL
             => await labelValidator.ExistsAsync(labelGuid, cancellationToken);
 
         async Task<bool> BeAnExistingLabelEntityAsync(
-            EntityTypeWithLabels entityType,
+            EntityTypeWithLabel entityType,
             CancellationToken cancellationToken)
             => await labelEntityValidator.ExistsAsync(entityType, cancellationToken);
     }

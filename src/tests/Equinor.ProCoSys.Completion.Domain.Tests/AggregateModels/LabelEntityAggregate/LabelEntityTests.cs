@@ -8,7 +8,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.LabelEntityAg
 public class LabelEntityTests : IModificationAuditableTests
 {
     private LabelEntity _dut;
-    private readonly EntityTypeWithLabels _entityType = EntityTypeWithLabels.PunchComment;
+    private readonly EntityTypeWithLabel _entityType = EntityTypeWithLabel.PunchComment;
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;

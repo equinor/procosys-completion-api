@@ -12,10 +12,10 @@ public class LabelEntity : EntityBase, IAggregateRoot, ICreationAuditable, IModi
 {
     private readonly List<Label> _labels = new();
 
-    public LabelEntity(EntityTypeWithLabels entityType) => EntityType = entityType;
+    public LabelEntity(EntityTypeWithLabel entityType) => EntityType = entityType;
 
     // private setters needed for Entity Framework
-    public EntityTypeWithLabels EntityType { get; private set; }
+    public EntityTypeWithLabel EntityType { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;

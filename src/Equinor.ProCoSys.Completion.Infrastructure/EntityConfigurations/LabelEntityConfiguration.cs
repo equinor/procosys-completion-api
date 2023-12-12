@@ -22,7 +22,7 @@ internal class LabelEntityConfiguration : IEntityTypeConfiguration<LabelEntity>
 
         builder.Property(f => f.EntityType)
             .HasConversion<string>()
-            .HasDefaultValue(EntityTypeWithLabels.PunchPicture)
+            .HasDefaultValue(EntityTypeWithLabel.PunchPicture)
             .IsRequired();
 
         builder
@@ -36,7 +36,7 @@ internal class LabelEntityConfiguration : IEntityTypeConfiguration<LabelEntity>
 
     private string GetValidEntityTypeWithLabelEnums()
     {
-        var names = Enum.GetNames(typeof(EntityTypeWithLabels)).Select(t => $"'{t}'");
+        var names = Enum.GetNames(typeof(EntityTypeWithLabel)).Select(t => $"'{t}'");
         return string.Join(',', names);
     }
 }

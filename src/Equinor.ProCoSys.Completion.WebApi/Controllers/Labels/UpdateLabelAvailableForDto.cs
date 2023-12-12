@@ -8,4 +8,4 @@ public record UpdateLabelAvailableForDto(
     [Required]
     string Text,
     [Required]
-    List<EntityTypeWithLabels> AvailableForLabels);
+    List<EntityTypeWithLabel> AvailableForLabels);

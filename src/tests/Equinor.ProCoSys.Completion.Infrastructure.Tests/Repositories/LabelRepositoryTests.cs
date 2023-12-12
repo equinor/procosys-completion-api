@@ -24,7 +24,7 @@ public class LabelRepositoryTests : RepositoryTestBase<Label>
     {
         var label = new Label(_labelTextWithBothCasing);
         label.SetProtectedIdForTesting(_knownId);
-        label.MakeLabelAvailableFor(new LabelEntity(EntityTypeWithLabels.PunchComment));
+        label.MakeLabelAvailableFor(new LabelEntity(EntityTypeWithLabel.PunchComment));
 
         var labels = new List<Label> { label };
 

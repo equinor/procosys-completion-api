@@ -29,7 +29,7 @@ public class LabelTests : IModificationAuditableTests
     public void MakeLabelAvailableFor_ShouldAddLabelEntityToLabelAvailableFor()
     {
         // Arrange
-        var labelEntity = new LabelEntity(EntityTypeWithLabels.PunchComment);
+        var labelEntity = new LabelEntity(EntityTypeWithLabel.PunchComment);
 
         // Act
         _dut.MakeLabelAvailableFor(labelEntity);
@@ -43,7 +43,7 @@ public class LabelTests : IModificationAuditableTests
     public void RemoveLabelAvailableFor_ShouldRemoveLabelEntityFromLabelAvailableFor()
     {
         // Arrange
-        var labelEntity = new LabelEntity(EntityTypeWithLabels.PunchComment);
+        var labelEntity = new LabelEntity(EntityTypeWithLabel.PunchComment);
         _dut.MakeLabelAvailableFor(labelEntity);
         Assert.AreEqual(1, _dut.AvailableFor.Count);
 

@@ -15,12 +15,12 @@ public class UpdateLabelAvailableForCommandValidatorTests
     private UpdateLabelAvailableForCommand _command;
     private ILabelValidator _labelValidatorMock;
     private ILabelEntityValidator _labelEntityValidatorMock;
-    private readonly EntityTypeWithLabels _existingEntityTypeWithLabel = EntityTypeWithLabels.PunchComment;
+    private readonly EntityTypeWithLabel _existingEntityTypeWithLabel = EntityTypeWithLabel.PunchComment;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdateLabelAvailableForCommand("A", new List<EntityTypeWithLabels> { _existingEntityTypeWithLabel });
+        _command = new UpdateLabelAvailableForCommand("A", new List<EntityTypeWithLabel> { _existingEntityTypeWithLabel });
         _labelValidatorMock = Substitute.For<ILabelValidator>();
         _labelValidatorMock.ExistsAsync(_command.Text, default).Returns(true);
         _labelEntityValidatorMock = Substitute.For<ILabelEntityValidator>();

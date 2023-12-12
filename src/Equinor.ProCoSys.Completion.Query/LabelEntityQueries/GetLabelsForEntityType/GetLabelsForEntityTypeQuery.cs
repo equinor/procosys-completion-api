@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntit
 
 public class GetLabelsForEntityTypeQuery : IRequest<Result<IEnumerable<string>>>
 {
-    public GetLabelsForEntityTypeQuery(EntityTypeWithLabels entityType) => EntityType = entityType;
+    public GetLabelsForEntityTypeQuery(EntityTypeWithLabel entityType) => EntityType = entityType;
 
-    public EntityTypeWithLabels EntityType { get; }
+    public EntityTypeWithLabel EntityType { get; }
 }

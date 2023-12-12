@@ -27,7 +27,7 @@ public class LabelEntitiesController : ControllerBase
     /// <returns></returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<string>>> GetLabelsForEntityType(
-        EntityTypeWithLabels entityType,
+        EntityTypeWithLabel entityType,
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetLabelsForEntityTypeQuery(entityType), cancellationToken);

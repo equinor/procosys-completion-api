@@ -14,7 +14,7 @@ public class LabelEntityValidator : ILabelEntityValidator
 
     public LabelEntityValidator(IReadOnlyContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(EntityTypeWithLabels entityType, CancellationToken cancellationToken)
+    public async Task<bool> ExistsAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken)
     {
         var label = await GetLabelEntityAsync(entityType, cancellationToken);
 
@@ -22,7 +22,7 @@ public class LabelEntityValidator : ILabelEntityValidator
     }
 
     private async Task<LabelEntity?> GetLabelEntityAsync(
-        EntityTypeWithLabels entityType,
+        EntityTypeWithLabel entityType,
         CancellationToken cancellationToken)
         => await (from labelEntity in _context.QuerySet<LabelEntity>()
             where labelEntity.EntityType == entityType

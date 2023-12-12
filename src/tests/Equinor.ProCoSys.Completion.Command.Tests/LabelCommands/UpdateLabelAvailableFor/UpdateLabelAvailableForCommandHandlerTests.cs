@@ -24,8 +24,8 @@ public class UpdateLabelAvailableForCommandHandlerTests
     private Label _labelWithoutUsage;
     private Label _labelForPunchPicture;
     private readonly string _text = "A";
-    private readonly EntityTypeWithLabels _oldEntityTypeWithLabel = EntityTypeWithLabels.PunchPicture;
-    private readonly EntityTypeWithLabels _newEntityTypeWithLabel = EntityTypeWithLabels.PunchComment;
+    private readonly EntityTypeWithLabel _oldEntityTypeWithLabel = EntityTypeWithLabel.PunchPicture;
+    private readonly EntityTypeWithLabel _newEntityTypeWithLabel = EntityTypeWithLabel.PunchComment;
 
     [TestInitialize]
     public void Setup()
@@ -45,7 +45,7 @@ public class UpdateLabelAvailableForCommandHandlerTests
 
         _labelEntityRepositoryMock.GetByTypeAsync(_newEntityTypeWithLabel, default).Returns(newLabelEntity);
         
-        _command = new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabels> { _newEntityTypeWithLabel });
+        _command = new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabel> { _newEntityTypeWithLabel });
 
         _dut = new UpdateLabelAvailableForCommandHandler(
             _labelRepositoryMock,
@@ -90,7 +90,7 @@ public class UpdateLabelAvailableForCommandHandlerTests
         Assert.AreEqual(_oldEntityTypeWithLabel, _labelForPunchPicture.AvailableFor.ElementAt(0).EntityType);
 
         // Act
-        await _dut.Handle(new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabels>()), default);
+        await _dut.Handle(new UpdateLabelAvailableForCommand(_text, new List<EntityTypeWithLabel>()), default);
 
         // Assert
         Assert.AreEqual(0, _labelWithoutUsage.AvailableFor.Count);

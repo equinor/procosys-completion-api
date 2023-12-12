@@ -13,6 +13,9 @@ public class LabelEntityRepository : EntityRepository<LabelEntity>, ILabelEntity
     {
     }
 
-    public Task<LabelEntity> GetByTypeAsync(EntityTypeWithLabels entityType, CancellationToken cancellationToken)
+    public Task<LabelEntity> GetByTypeAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken)
         => DefaultQuery.Where(e => e.EntityType == entityType).SingleAsync(cancellationToken);
+
+    public async Task<bool> ExistsAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken)
+        => await DefaultQuery.AnyAsync(e => e.EntityType == entityType, cancellationToken);
 }

@@ -5,5 +5,6 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregat
 
 public interface ILabelEntityRepository : IRepository<LabelEntity>
 {
-    Task<LabelEntity> GetByTypeAsync(EntityTypeWithLabels entityType, CancellationToken cancellationToken);
+    Task<LabelEntity> GetByTypeAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken);
+    Task<bool> ExistsAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken);
 }
