@@ -40,7 +40,7 @@ public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabel
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Usage for Label {Label} updated", request.Text);
+        _logger.LogInformation("Label {Label} updated regarding entity types it is available for ", request.Text);
 
         return new SuccessResult<Unit>(Unit.Value);
     }
