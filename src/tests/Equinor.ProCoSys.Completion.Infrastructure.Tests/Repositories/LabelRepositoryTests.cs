@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,6 +24,7 @@ public class LabelRepositoryTests : RepositoryTestBase<Label>
     {
         var label = new Label(_labelTextWithBothCasing);
         label.SetProtectedIdForTesting(_knownId);
+        label.MakeLabelAvailableFor(new LabelEntity(EntityTypeWithLabel.PunchComment));
 
         var labels = new List<Label> { label };
 
@@ -78,5 +80,46 @@ public class LabelRepositoryTests : RepositoryTestBase<Label>
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public async Task GetByTextAsync_KnownLabel_ShouldReturnLabelWithLabelEntities()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.GetByTextAsync(_labelTextWithBothCasing, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(_labelTextWithBothCasing, result.Text);
+        Assert.AreEqual(1, result.AvailableFor.Count);
+    }
+
+    [TestMethod]
+    public async Task GetByTextAsync_KnownLabel_ShouldReturnLabel_CaseInsensitive()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.GetByTextAsync(_labelTextWithBothCasing.ToLower(), default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(_labelTextWithBothCasing, result.Text);
+        Assert.AreEqual(1, result.AvailableFor.Count);
+    }
+
+    [TestMethod]
+    public async Task GetByTextAsync_UnknownLabel_ShouldThrowException()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(()
+            => dut.GetByTextAsync(Guid.NewGuid().ToString(), default));
     }
 }

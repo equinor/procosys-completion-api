@@ -42,7 +42,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTextIsEmpty()
     {
         // Arrange
-        var dto = new CreateCommentDto(string.Empty);
+        var dto = new CreateCommentDto(string.Empty, new List<string>());
 
         // Act
         var result = await _dut.ValidateAsync(dto);

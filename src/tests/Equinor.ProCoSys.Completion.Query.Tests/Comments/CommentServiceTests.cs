@@ -22,10 +22,12 @@ public class CommentServiceTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
 
+        Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+
         var labelA = context.Labels.Single(l => l.Text == LabelTextA);
         var labelB = context.Labels.Single(l => l.Text == LabelTextB);
         var labelC = context.Labels.Single(l => l.Text == LabelTextC);
-        var voidedLabel = context.Labels.Single(l => l.Text == VoidedLabelText);
+        var voidedLabel = context.Labels.Single(l => l.Text == LabelTextVoided);
 
         _parentGuid = Guid.NewGuid();
         _createdComment = new Comment("X", _parentGuid, "T");

@@ -8,22 +8,22 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntity;
+namespace Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntityType;
 
-public class GetLabelsForEntityQueryHandler : IRequestHandler<GetLabelsForEntityQuery, Result<IEnumerable<string>>>
+public class GetLabelsForEntityTypeQueryHandler : IRequestHandler<GetLabelsForEntityTypeQuery, Result<IEnumerable<string>>>
 {
     private readonly IReadOnlyContext _context;
 
-    public GetLabelsForEntityQueryHandler(IReadOnlyContext context) => _context = context;
+    public GetLabelsForEntityTypeQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<string>>> Handle(GetLabelsForEntityQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<string>>> Handle(GetLabelsForEntityTypeQuery request, CancellationToken cancellationToken)
     {
         var labelEntityWithNonVoidedLabels =
             await (from lh in _context.QuerySet<LabelEntity>()
                         .Include(lh => lh.Labels.Where(l => !l.IsVoided))
-                    where lh.EntityWithLabel == request.EntityWithLabelsType
+                    where lh.EntityType == request.EntityType
                    select lh)
-                .TagWith($"{nameof(GetLabelsForEntityQueryHandler)}.{nameof(Handle)}")
+                .TagWith($"{nameof(GetLabelsForEntityTypeQueryHandler)}.{nameof(Handle)}")
                 .SingleOrDefaultAsync(cancellationToken);
 
         if (labelEntityWithNonVoidedLabels is null)

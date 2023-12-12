@@ -13,8 +13,8 @@ public class CreateLabelCommandValidator : AbstractValidator<CreateLabelCommand>
         ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(command => command)
-            .MustAsync((command, cancellationToken) => NotBeAnExistingLabelAsync(command.Label, cancellationToken))
-            .WithMessage(command => $"Label already exist! Label={command.Label}");
+            .MustAsync((command, cancellationToken) => NotBeAnExistingLabelAsync(command.Text, cancellationToken))
+            .WithMessage(command => $"Label already exist! Label={command.Text}");
 
         async Task<bool> NotBeAnExistingLabelAsync(string labelGuid, CancellationToken cancellationToken)
             => !await labelValidator.ExistsAsync(labelGuid, cancellationToken);

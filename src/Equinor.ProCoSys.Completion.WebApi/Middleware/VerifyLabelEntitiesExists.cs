@@ -38,18 +38,18 @@ public class VerifyLabelEntitiesExists : IHostedService
             scope.ServiceProvider
                 .GetRequiredService<ILabelEntityRepository>();
 
-        var nonExistingLabelEntities = await GetNonExistingLabelEntitiesAsync(labelEntityRepository, cancellationToken);
-        if (!nonExistingLabelEntities.Any())
+        var nonExistingEntityTypes = await GetNonExistingEntityTypesAsync(labelEntityRepository, cancellationToken);
+        if (!nonExistingEntityTypes.Any())
         {
             return;
         }
 
-        await CreateNonExistingLabelEntitiesAsync(scope, nonExistingLabelEntities, labelEntityRepository, cancellationToken);
+        await CreateNonExistingEntityTypesAsync(scope, nonExistingEntityTypes, labelEntityRepository, cancellationToken);
     }
 
-    private async Task CreateNonExistingLabelEntitiesAsync(
+    private async Task CreateNonExistingEntityTypesAsync(
         IServiceScope scope,
-        List<EntityWithLabelType> nonExistingLabelEntities,
+        List<EntityTypeWithLabel> nonExistingEntityTypes,
         ILabelEntityRepository labelEntityRepository,
         CancellationToken cancellationToken)
     {
@@ -62,25 +62,25 @@ public class VerifyLabelEntitiesExists : IHostedService
                 .GetRequiredService<ICurrentUserSetter>();
         currentUserSetter.SetCurrentUserOid(_completionApiObjectId);
 
-        foreach (var entityWithLabelType in nonExistingLabelEntities)
+        foreach (var entityType in nonExistingEntityTypes)
         {
-            labelEntityRepository.Add(new LabelEntity(entityWithLabelType));
-            _logger.LogInformation("Label entity {LabelEntity} added", entityWithLabelType.ToString());
+            labelEntityRepository.Add(new LabelEntity(entityType));
+            _logger.LogInformation("Label entity {LabelEntity} added", entityType.ToString());
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<List<EntityWithLabelType>> GetNonExistingLabelEntitiesAsync(
+    private async Task<List<EntityTypeWithLabel>> GetNonExistingEntityTypesAsync(
         ILabelEntityRepository labelEntityRepository,
         CancellationToken cancellationToken)
     {
-        var nonExistingLabelEntities = new List<EntityWithLabelType>();
-        foreach (EntityWithLabelType entityWithLabelType in Enum.GetValues(typeof(EntityWithLabelType)))
+        var nonExistingLabelEntities = new List<EntityTypeWithLabel>();
+        foreach (EntityTypeWithLabel entityType in Enum.GetValues(typeof(EntityTypeWithLabel)))
         {
-            if (!await labelEntityRepository.ExistsAsync(entityWithLabelType, cancellationToken))
+            if (!await labelEntityRepository.ExistsAsync(entityType, cancellationToken))
             {
-                nonExistingLabelEntities.Add(entityWithLabelType);
+                nonExistingLabelEntities.Add(entityType);
             }
         }
 

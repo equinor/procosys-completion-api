@@ -11,7 +11,7 @@ public class LabelEntitiesControllerTests : TestBase
     {
         // Act
         var punchItems = await LabelEntitiesControllerTestsHelper
-            .GetLabelsForEntityAsync(UserType.Reader, KnownData.EntityWithLabelsWithLabels.ToString());
+            .GetLabelsForEntityAsync(UserType.Reader, KnownData.EntityTypeWithLabels.ToString());
 
         Assert.IsTrue(punchItems.Count > 0);
     }

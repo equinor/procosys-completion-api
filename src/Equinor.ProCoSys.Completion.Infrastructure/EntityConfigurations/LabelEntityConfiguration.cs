@@ -17,26 +17,22 @@ internal class LabelEntityConfiguration : IEntityTypeConfiguration<LabelEntity>
         builder.ConfigureConcurrencyToken();
 
         builder
-            .HasIndex(x => x.EntityWithLabel)
+            .HasIndex(x => x.EntityType)
             .IsUnique();
 
-        builder.Property(f => f.EntityWithLabel)
+        builder.Property(f => f.EntityType)
             .HasConversion<string>()
-            .HasDefaultValue(EntityWithLabelType.PunchPicture)
+            .HasDefaultValue(EntityTypeWithLabel.PunchPicture)
             .IsRequired();
 
         builder
             .ToTable(x => x.HasCheckConstraint("valid_entity_type",
-                $"{nameof(LabelEntity.EntityWithLabel)} in ({GetValidEntityWithLabelTypeEnums()})"));
-
-        builder
-            .HasMany(x => x.Labels)
-            .WithMany(x => x.EntitiesWithLabel);
+                $"{nameof(LabelEntity.EntityType)} in ({GetValidEntityTypeWithLabelEnums()})"));
     }
 
-    private string GetValidEntityWithLabelTypeEnums()
+    private string GetValidEntityTypeWithLabelEnums()
     {
-        var names = Enum.GetNames(typeof(EntityWithLabelType)).Select(t => $"'{t}'");
+        var names = Enum.GetNames(typeof(EntityTypeWithLabel)).Select(t => $"'{t}'");
         return string.Join(',', names);
     }
 }

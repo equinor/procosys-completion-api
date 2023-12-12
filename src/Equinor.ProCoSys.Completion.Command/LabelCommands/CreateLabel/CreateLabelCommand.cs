@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
 
 public class CreateLabelCommand : IRequest<Result<string>>
 {
-    public CreateLabelCommand(string label) => Label = label;
+    public CreateLabelCommand(string text) => Text = text;
 
-    public string Label { get; }
+    public string Text { get; }
 }
