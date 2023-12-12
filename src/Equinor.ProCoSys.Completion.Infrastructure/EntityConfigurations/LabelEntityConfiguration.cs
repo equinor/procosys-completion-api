@@ -28,10 +28,6 @@ internal class LabelEntityConfiguration : IEntityTypeConfiguration<LabelEntity>
         builder
             .ToTable(x => x.HasCheckConstraint("valid_entity_type",
                 $"{nameof(LabelEntity.EntityType)} in ({GetValidEntityTypeWithLabelEnums()})"));
-
-        builder
-            .HasMany(x => x.Labels)
-            .WithMany(x => x.AvailableFor);
     }
 
     private string GetValidEntityTypeWithLabelEnums()
