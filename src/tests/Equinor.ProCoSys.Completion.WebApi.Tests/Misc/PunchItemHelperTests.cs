@@ -20,7 +20,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _projectA = context.Projects.Single(p => p.Id == _projectAId);
         var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
@@ -39,7 +39,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     public async Task GetProjectGuidForPunchItem_ShouldReturnProjectGuid_WhenKnownPunchItemId()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new PunchItemHelper(context);
 
         // Act
@@ -53,7 +53,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     public async Task GetProjectGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new PunchItemHelper(context);
 
         // Act
@@ -67,7 +67,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     public async Task GetCheckListGuidForPunchItem_ShouldReturnCheckListGuid_WhenKnownPunchItemId()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new PunchItemHelper(context);
 
         // Act
@@ -81,7 +81,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     public async Task GetCheckListGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new PunchItemHelper(context);
 
         // Act

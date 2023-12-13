@@ -17,7 +17,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _nonVoidedDocument = new Document(TestPlantA, Guid.NewGuid(), "D1");
         _voidedDocument = new Document(TestPlantA, Guid.NewGuid(), "D2") { IsVoided = true };
@@ -32,7 +32,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenDocumentExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new DocumentValidator(context);
 
         // Act
@@ -46,7 +46,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnFalse_WhenDocumentNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new DocumentValidator(context);
 
         // Act
@@ -62,7 +62,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnTrue_WhenDocumentIsVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new DocumentValidator(context);
 
         // Act
@@ -76,7 +76,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenDocumentIsNotVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new DocumentValidator(context);
 
         // Act
@@ -90,7 +90,7 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenDocumentNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new DocumentValidator(context);
 
         // Act

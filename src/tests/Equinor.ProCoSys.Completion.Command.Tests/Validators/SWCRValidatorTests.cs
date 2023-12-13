@@ -17,7 +17,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _nonVoidedSWCR = new SWCR(TestPlantA, Guid.NewGuid(), 1);
         _voidedSWCR = new SWCR(TestPlantA, Guid.NewGuid(), 2) { IsVoided = true };
@@ -32,7 +32,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenSWCRExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new SWCRValidator(context);
 
         // Act
@@ -46,7 +46,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnFalse_WhenSWCRNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new SWCRValidator(context);
 
         // Act
@@ -62,7 +62,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnTrue_WhenSWCRIsVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new SWCRValidator(context);
 
         // Act
@@ -76,7 +76,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenSWCRIsNotVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new SWCRValidator(context);
 
         // Act
@@ -90,7 +90,7 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenSWCRNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new SWCRValidator(context);
 
         // Act
