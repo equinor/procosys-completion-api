@@ -687,12 +687,48 @@ public class PunchItemsControllerTests : TestBase
         var newRowVersion = await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
             guid,
+            Guid.NewGuid().ToString(),
             rowVersionAfterClear);
 
         // Assert
         AssertRowVersionChange(rowVersionAfterClear, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeRejected);
+    }
+
+    [TestMethod]
+    public async Task RejectPunchItem_AsWriter_ShouldAddRejectedCommentToComments()
+    {
+        // Arrange
+        var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuid,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
+
+        var text = Guid.NewGuid().ToString();
+
+        // Act
+        await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            guid,
+            Guid.NewGuid().ToString(),
+            rowVersionAfterClear);
+
+        // Assert
+        var labels = new List<string> { "Rejected" };
+        var comments = await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            guid);
+
+        // Assert
+        Assert.IsNotNull(comments);
+        Assert.AreEqual(1, comments.Count);
+        AssertComment(comments[0], guid, text, labels);
     }
 
     [TestMethod]
@@ -848,8 +884,14 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(commentDtos);
         Assert.AreEqual(1, commentDtos.Count);
         var commentDto = commentDtos[0];
-        Assert.AreEqual(expectedParentGuid, commentDto.ParentGuid);
         Assert.AreEqual(expectedCommentGuid, commentDto.Guid);
+        AssertComment(commentDto, expectedParentGuid, expectedText, expectedLabels);
+    }
+
+    private static void AssertComment(CommentDto commentDto, Guid expectedParentGuid, string expectedText,
+        List<string> expectedLabels)
+    {
+        Assert.AreEqual(expectedParentGuid, commentDto.ParentGuid);
         Assert.AreEqual(expectedText, commentDto.Text);
         Assert.IsNotNull(commentDto.CreatedBy);
         Assert.IsNotNull(commentDto.CreatedAtUtc);
