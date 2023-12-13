@@ -100,6 +100,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         }
     }
 
+    // NB! This method need to be Public, if made private it will not apply
     private void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
             .Entity<T>()
