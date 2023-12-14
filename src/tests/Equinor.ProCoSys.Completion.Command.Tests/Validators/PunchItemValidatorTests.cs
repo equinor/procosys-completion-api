@@ -17,6 +17,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class PunchItemValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private PunchItem _punchItemPb = null!;
     private PunchItem _punchItemInOpenProject = null!;
     private PunchItem _punchItemInClosedProject = null!;
@@ -35,19 +36,19 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
-        _projectA = context.Projects.Single(p => p.Id == _projectAId);
-        _closedProjectC = context.Projects.Single(p => p.Id == _closedProjectCId);
+        _projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
+        _closedProjectC = context.Projects.Single(p => p.Id == _closedProjectCId[_testPlant]);
 
-        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
-        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId[_testPlant]);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId[_testPlant]);
 
-        _punchItemInOpenProject = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x1", raisedByOrg, clearingByOrg);
+        _punchItemInOpenProject = new PunchItem(_testPlant, _projectA, Guid.NewGuid(), Category.PB, "x1", raisedByOrg, clearingByOrg);
         _punchItemPb = _punchItemInOpenProject;
-        _punchItemInClosedProject = new PunchItem(TestPlantA, _closedProjectC, Guid.NewGuid(), Category.PB, "x2", raisedByOrg, clearingByOrg);
+        _punchItemInClosedProject = new PunchItem(_testPlant, _closedProjectC, Guid.NewGuid(), Category.PB, "x2", raisedByOrg, clearingByOrg);
         _notClearedPunchItem = _punchItemInOpenProject;
-        _clearedButNotVerifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x3", raisedByOrg, clearingByOrg);
+        _clearedButNotVerifiedPunchItem = new PunchItem(_testPlant, _projectA, Guid.NewGuid(), Category.PB, "x3", raisedByOrg, clearingByOrg);
         _clearedButNotVerifiedPunchItem.Clear(_currentPerson);
-        _verifiedPunchItem = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PB, "x4", raisedByOrg, clearingByOrg);
+        _verifiedPunchItem = new PunchItem(_testPlant, _projectA, Guid.NewGuid(), Category.PB, "x4", raisedByOrg, clearingByOrg);
         _verifiedPunchItem.Clear(_currentPerson);
         _verifiedPunchItem.Verify(_currentPerson);
 

@@ -12,16 +12,17 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnverifyPu
 [TestClass]
 public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private UnverifyPunchItemCommand _command;
     private UnverifyPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem.Clear(_currentPerson);
-        _existingPunchItem.Verify(_currentPerson);
+        _existingPunchItem[_testPlant].Clear(_currentPerson);
+        _existingPunchItem[_testPlant].Verify(_currentPerson);
 
-        _command = new UnverifyPunchItemCommand(_existingPunchItem.Guid, RowVersion);
+        _command = new UnverifyPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
         _dut = new UnverifyPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -33,15 +34,15 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     public async Task HandlingCommand_ShouldUnverifyPunchItem()
     {
         // Assert
-        Assert.IsTrue(_existingPunchItem.VerifiedAtUtc.HasValue);
-        Assert.IsTrue(_existingPunchItem.VerifiedById.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].VerifiedAtUtc.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].VerifiedById.HasValue);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsFalse(_existingPunchItem.VerifiedAtUtc.HasValue);
-        Assert.IsFalse(_existingPunchItem.VerifiedById.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].VerifiedAtUtc.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].VerifiedById.HasValue);
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -74,6 +75,6 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUnverifiedDomainEvent));
+        Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemUnverifiedDomainEvent));
     }
 }

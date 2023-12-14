@@ -14,6 +14,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Misc;
 [TestClass]
 public class PunchItemHelperTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private Guid _punchItemGuid;
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private Project _projectA = null!;
@@ -22,14 +23,14 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _projectA = context.Projects.Single(p => p.Id == _projectAId);
-        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
-        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+        _projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId[_testPlant]);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId[_testPlant]);
 
         // Save to get real id on project
         context.SaveChangesAsync().Wait();
 
-        var punchItem = new PunchItem(TestPlantA, _projectA, _checkListGuid, Category.PB, "Desc", raisedByOrg, clearingByOrg);
+        var punchItem = new PunchItem(_testPlant, _projectA, _checkListGuid, Category.PB, "Desc", raisedByOrg, clearingByOrg);
         context.PunchItems.Add(punchItem);
         context.SaveChangesAsync().Wait();
         _punchItemGuid = punchItem.Guid;

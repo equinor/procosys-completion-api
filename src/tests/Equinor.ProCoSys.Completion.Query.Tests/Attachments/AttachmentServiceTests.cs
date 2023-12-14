@@ -18,6 +18,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
 [TestClass]
 public class AttachmentServiceTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private readonly string _blobContainer = "bc";
     private Attachment _createdAttachment;
     private Guid _createdAttachmentGuid;
@@ -39,10 +40,10 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         var voidedLabel = context.Labels.Single(l => l.Text == LabelTextVoided);
 
         _parentGuid = Guid.NewGuid();
-        _createdAttachment = new Attachment("X", _parentGuid, TestPlantA, "t1.txt");
+        _createdAttachment = new Attachment("X", _parentGuid, _testPlant, "t1.txt");
         // insert labels non-ordered to test ordering
         _createdAttachment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
-        _modifiedAttachment = new Attachment("X", _parentGuid, TestPlantA, "t2.txt");
+        _modifiedAttachment = new Attachment("X", _parentGuid, _testPlant, "t2.txt");
 
         context.Attachments.Add(_createdAttachment);
         context.Attachments.Add(_modifiedAttachment);

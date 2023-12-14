@@ -12,15 +12,16 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnclearPun
 [TestClass]
 public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private UnclearPunchItemCommand _command;
     private UnclearPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem.Clear(_currentPerson);
+        _existingPunchItem[_testPlant].Clear(_currentPerson);
 
-        _command = new UnclearPunchItemCommand(_existingPunchItem.Guid, RowVersion);
+        _command = new UnclearPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
         _dut = new UnclearPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -32,15 +33,15 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
     public async Task HandlingCommand_ShouldUnclearPunchItem()
     {
         // Assert
-        Assert.IsTrue(_existingPunchItem.ClearedAtUtc.HasValue);
-        Assert.IsTrue(_existingPunchItem.ClearedById.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].ClearedAtUtc.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].ClearedById.HasValue);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsFalse(_existingPunchItem.ClearedAtUtc.HasValue);
-        Assert.IsFalse(_existingPunchItem.ClearedById.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].ClearedAtUtc.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].ClearedById.HasValue);
     }
 
     [TestMethod]
@@ -63,7 +64,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -73,6 +74,6 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemUnclearedDomainEvent));
+        Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemUnclearedDomainEvent));
     }
 }

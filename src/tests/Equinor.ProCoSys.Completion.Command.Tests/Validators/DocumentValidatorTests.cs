@@ -12,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class DocumentValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private Document _nonVoidedDocument = null!;
     private Document _voidedDocument = null!;
 
@@ -19,8 +20,8 @@ public class DocumentValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _nonVoidedDocument = new Document(TestPlantA, Guid.NewGuid(), "D1");
-        _voidedDocument = new Document(TestPlantA, Guid.NewGuid(), "D2") { IsVoided = true };
+        _nonVoidedDocument = new Document(_testPlant, Guid.NewGuid(), "D1");
+        _voidedDocument = new Document(_testPlant, Guid.NewGuid(), "D2") { IsVoided = true };
         context.Documents.Add(_nonVoidedDocument);
         context.Documents.Add(_voidedDocument);
 

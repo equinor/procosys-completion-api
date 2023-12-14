@@ -12,15 +12,16 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.VerifyPunc
 [TestClass]
 public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private VerifyPunchItemCommand _command;
     private VerifyPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem.Clear(_currentPerson);
+        _existingPunchItem[_testPlant].Clear(_currentPerson);
         
-        _command = new VerifyPunchItemCommand(_existingPunchItem.Guid, RowVersion);
+        _command = new VerifyPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
         _dut = new VerifyPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -36,8 +37,8 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem.VerifiedAtUtc);
-        Assert.AreEqual(_currentPerson.Id, _existingPunchItem.VerifiedById);
+        Assert.AreEqual(_utcNow, _existingPunchItem[_testPlant].VerifiedAtUtc);
+        Assert.AreEqual(_currentPerson.Id, _existingPunchItem[_testPlant].VerifiedById);
     }
 
     [TestMethod]
@@ -60,7 +61,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -70,6 +71,6 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemVerifiedDomainEvent));
+        Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemVerifiedDomainEvent));
     }
 }
