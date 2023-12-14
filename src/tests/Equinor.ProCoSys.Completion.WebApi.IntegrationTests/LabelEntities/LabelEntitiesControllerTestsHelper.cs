@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LabelEntities;
@@ -11,13 +12,13 @@ public static class LabelEntitiesControllerTestsHelper
 
     public static async Task<List<string>> GetLabelsForEntityAsync(
         UserType userType,
-        string entityType,
+        EntityTypeWithLabel entityType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var parameters = new ParameterCollection
         {
-            { "entityType", entityType }
+            { "entityType", entityType.ToString() }
         };
         var url = $"{Route}{parameters}";
 
