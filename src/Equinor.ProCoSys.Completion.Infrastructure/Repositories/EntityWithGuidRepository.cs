@@ -30,7 +30,7 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
         }
         return entity;
     }
-
+    
     public virtual async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
         => await Set.AnyAsync(e => e.Guid == guid, cancellationToken);
 }

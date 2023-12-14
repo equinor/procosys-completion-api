@@ -19,8 +19,8 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
             
-        _openProject = new Project(TestPlantA, Guid.NewGuid(), "Project 1", "D1");
-        _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2") { IsClosed = true };
+        _openProject = new Project(TestPlantA, Guid.NewGuid(), "Project 1", "D1", DateTime.Now);
+        _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2", DateTime.Now) { IsClosed = true };
         context.Projects.Add(_openProject);
         context.Projects.Add(_closedProject);
 

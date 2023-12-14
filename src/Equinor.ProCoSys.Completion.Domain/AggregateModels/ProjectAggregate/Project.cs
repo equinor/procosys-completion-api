@@ -20,18 +20,20 @@ public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMod
     {
     }
 
-    public Project(string plant, Guid guid, string name, string description)
+    public Project(string plant, Guid guid, string name, string description, DateTime lastUpdated)
         : base(plant)
     {
         Guid = guid;
         Name = name;
         Description = description;
+        Pcs4LastUpdated = lastUpdated;
     }
 
     // private setters needed for Entity Framework
     public string Name { get; set; }
     public string Description { get; set; }
     public bool IsClosed { get; set; }
+    public DateTime Pcs4LastUpdated { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;

@@ -60,7 +60,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
         
-        ConfigureMassTransitOutBox(modelBuilder);
+        ConfigureOutBoxPattern(modelBuilder);
     }
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
@@ -79,13 +79,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
-    private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
-    {
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
-    }
-
+    private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder) 
+        => modelBuilder.AddTransactionalOutboxEntities();
+    
     private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
     {
         // todo 104163 Discuss if we need plant or not

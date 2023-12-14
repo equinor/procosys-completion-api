@@ -38,7 +38,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 _punchItemAddedToRepository = callInfo.Arg<PunchItem>();
             });
-        _existingProject = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
+        _existingProject = new Project(TestPlantA, Guid.NewGuid(), null!, null!, DateTime.Now);
         _existingProject.SetProtectedIdForTesting(10);
         _projectRepositoryMock = Substitute.For<IProjectRepository>();
         _projectRepositoryMock

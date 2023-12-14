@@ -25,7 +25,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
+        _project = new Project(TestPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), Category.PB, null!, _raisedByOrg, _clearingByOrg);

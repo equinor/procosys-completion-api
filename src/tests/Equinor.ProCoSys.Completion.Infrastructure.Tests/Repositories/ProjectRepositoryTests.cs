@@ -17,7 +17,7 @@ public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var project = new Project(TestPlant, Guid.NewGuid(), "P", "Description of project");
+        var project = new Project(TestPlant, Guid.NewGuid(), "P", "Description of project", DateTime.Now);
         _knownGuid = project.Guid;
         project.SetProtectedIdForTesting(_knownId);
 
@@ -34,5 +34,5 @@ public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
         base._dut = _dut;
     }
 
-    protected override Project GetNewEntity() => new(TestPlant, Guid.NewGuid(), "New Project", "D");
+    protected override Project GetNewEntity() => new(TestPlant, Guid.NewGuid(), "New Project", "D", DateTime.Now);
 }

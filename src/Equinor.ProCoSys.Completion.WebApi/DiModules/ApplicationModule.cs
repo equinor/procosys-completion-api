@@ -31,6 +31,7 @@ using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -64,15 +65,40 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
+
+            x.AddConsumer<ProjectEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_project";
+                    e.Temporary = false;
+                });
+                    
             
-            x.UsingAzureServiceBus((_,cfg) =>
+            x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
                 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
+                cfg.ConfigureJsonSerializerOptions(opts =>
+                {
+                    opts.Converters.Add(new OracleGuidConverter());
+                    return opts;
+                });
+                //cfg.ConfigureEndpoints(context);
+                cfg.SubscriptionEndpoint("completion_project","project", e =>
+                {
+                   // e.ConfigureMessageTopology<>();
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ProjectEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
                 
+                });
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
