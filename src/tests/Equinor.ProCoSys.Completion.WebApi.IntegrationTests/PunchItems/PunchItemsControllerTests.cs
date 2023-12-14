@@ -708,18 +708,17 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
 
-        var text = Guid.NewGuid().ToString();
+        var comment = $"Must approve {Guid.NewGuid()}";
 
         // Act
         await PunchItemsControllerTestsHelper.RejectPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             guid,
-            Guid.NewGuid().ToString(),
+            comment,
             rowVersionAfterClear);
 
         // Assert
-        var labels = new List<string> { "Rejected" };
         var comments = await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
             UserType.Reader,
             TestFactory.PlantWithAccess,
@@ -728,7 +727,7 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         Assert.IsNotNull(comments);
         Assert.AreEqual(1, comments.Count);
-        AssertComment(comments[0], guid, text, labels);
+        AssertComment(comments[0], guid, comment, new List<string> { KnownData.LabelReject });
     }
 
     [TestMethod]

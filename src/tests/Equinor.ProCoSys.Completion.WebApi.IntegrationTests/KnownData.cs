@@ -8,6 +8,11 @@ public static class KnownData
 {
     public static string LabelA => "A";
     public static string LabelB => "B";
+
+    // A label with this text must be seeded and correspond to the label configured via
+    // appsettings.json, key Application.RejectLabel
+    public static string LabelReject => "Reject";
+
     public static EntityTypeWithLabel EntityTypeWithLabels => EntityTypeWithLabel.PunchComment;
 
     public static string PlantA => "PCS$PLANT_A";
