@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
 public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItemCommand>
 {
-    public RejectPunchItemCommandValidator(IPunchItemValidator punchItemValidator)
+    public RejectPunchItemCommandValidator(
+        IPunchItemValidator punchItemValidator,
+        ILabelValidator labelValidator,
+        IOptionsMonitor<ApplicationOptions> options)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
+
+        var rejectLabelText = options.CurrentValue.RejectLabel;
 
         RuleFor(command => command)
             .MustAsync((command, cancellationToken) => NotBeInAClosedProjectForPunchItemAsync(command.PunchItemGuid, cancellationToken))
@@ -23,7 +30,9 @@ public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItem
             .MustAsync((command, cancellationToken) => BeClearedAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item can not be rejected. The punch item is not cleared! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotAlreadyBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage(command => $"Punch item can not be rejected. The punch item is verified! Guid={command.PunchItemGuid}");
+            .WithMessage(command => $"Punch item can not be rejected. The punch item is verified! Guid={command.PunchItemGuid}")
+            .MustAsync((_, cancellationToken) => RejectLabelMustExistsAsync(cancellationToken))
+            .WithMessage($"The required Label '{rejectLabelText}' is not available");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -39,6 +48,8 @@ public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItem
 
         async Task<bool> NotAlreadyBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
-    }
 
+        async Task<bool> RejectLabelMustExistsAsync(CancellationToken cancellationToken)
+            => await labelValidator.ExistsAsync(rejectLabelText, cancellationToken);
+    }
 }

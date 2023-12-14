@@ -48,4 +48,12 @@ public class CommentService : ICommentService
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
+
+    public async Task<CommentDto> AddAsync(
+        string parentType,
+        Guid parentGuid,
+        string text,
+        Label label,
+        CancellationToken cancellationToken)
+        => await AddAsync(parentType, parentGuid, text, new List<Label> { label }, cancellationToken);
 }

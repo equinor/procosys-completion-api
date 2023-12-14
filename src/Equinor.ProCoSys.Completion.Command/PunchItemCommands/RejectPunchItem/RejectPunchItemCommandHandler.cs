@@ -1,12 +1,15 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
@@ -14,29 +17,47 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemCommand, Result<string>>
 {
     private readonly IPunchItemRepository _punchItemRepository;
+    private readonly ILabelRepository _labelRepository;
+    private readonly ICommentService _commentService;
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RejectPunchItemCommandHandler> _logger;
+    private readonly string _rejectLabelText;
 
     public RejectPunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
+        ILabelRepository labelRepository,
+        ICommentService commentService,
         IPersonRepository personRepository,
         IUnitOfWork unitOfWork,
-        ILogger<RejectPunchItemCommandHandler> logger)
+        ILogger<RejectPunchItemCommandHandler> logger,
+        IOptionsMonitor<ApplicationOptions> options)
     {
         _punchItemRepository = punchItemRepository;
+        _labelRepository = labelRepository;
+        _commentService = commentService;
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _rejectLabelText = options.CurrentValue.RejectLabel;
     }
 
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var rejectLabel = await _labelRepository.GetByTextAsync(_rejectLabelText, cancellationToken);
         var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Reject(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
+
+        await _commentService.AddAsync(
+            nameof(PunchItem),
+            request.PunchItemGuid,
+            request.Comment,
+            rejectLabel,
+            cancellationToken);
+
         punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(punchItem));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

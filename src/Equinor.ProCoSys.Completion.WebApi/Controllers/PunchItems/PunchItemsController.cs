@@ -271,10 +271,10 @@ public class PunchItemsController : ControllerBase
         string plant,
         CancellationToken cancellationToken,
         [FromRoute] Guid guid,
-        [FromBody] RowVersionDto dto)
+        [FromBody] RejectPunchItemDto dto)
     {
         var result = await _mediator.Send(
-            new RejectPunchItemCommand(guid, dto.RowVersion), cancellationToken);
+            new RejectPunchItemCommand(guid, dto.Comment, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
