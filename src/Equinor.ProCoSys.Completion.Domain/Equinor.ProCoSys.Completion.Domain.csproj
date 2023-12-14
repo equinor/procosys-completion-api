@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Common" Version="2.0.0" />
     <PackageReference Include="MassTransit.Abstractions" Version="8.1.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
