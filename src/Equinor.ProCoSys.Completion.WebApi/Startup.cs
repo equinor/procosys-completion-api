@@ -30,6 +30,7 @@ using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
+using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -207,7 +208,7 @@ public class Startup
         }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
         // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
-        services.AddHostedService<VerifyLabelEntitiesExists>();
+        services.AddHostedService<ConfigureRequiredLabels>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

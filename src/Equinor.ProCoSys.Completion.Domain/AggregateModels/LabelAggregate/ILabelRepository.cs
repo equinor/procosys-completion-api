@@ -8,4 +8,5 @@ public interface ILabelRepository : IRepository<Label>
 {
     Task<List<Label>> GetManyAsync(IEnumerable<string> texts, CancellationToken cancellationToken);
     Task<Label> GetByTextAsync(string text, CancellationToken cancellationToken);
+    Task<bool> ExistsAsync(string text, CancellationToken cancellationToken);
 }

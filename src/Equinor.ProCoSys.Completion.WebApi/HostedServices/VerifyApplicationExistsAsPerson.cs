@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Middleware;
+namespace Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 /// <summary>
 /// Ensure that CompletionApiObjectId (i.e the application) exists as Person.

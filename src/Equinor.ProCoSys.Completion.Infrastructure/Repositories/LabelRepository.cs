@@ -24,13 +24,22 @@ public class LabelRepository : EntityRepository<Label>, ILabelRepository
 
     public async Task<Label> GetByTextAsync(string text, CancellationToken cancellationToken)
     {
-        var textLowerCase = text.ToLower();
-        var label = await Set.Include(l => l.AvailableFor)
-            .Where(l => l.Text.ToLower() == textLowerCase).SingleOrDefaultAsync(cancellationToken);
+        var label = await GetLabelAsync(text, cancellationToken);
         if (label is null)
         {
             throw new Exception($"Label {text} not found");
         }
+        return label;
+    }
+
+    public async Task<bool> ExistsAsync(string text, CancellationToken cancellationToken)
+        => await GetLabelAsync(text, cancellationToken) is not null;
+
+    private async Task<Label?> GetLabelAsync(string text, CancellationToken cancellationToken)
+    {
+        var textLowerCase = text.ToLower();
+        var label = await Set.Include(l => l.AvailableFor)
+            .Where(l => l.Text.ToLower() == textLowerCase).SingleOrDefaultAsync(cancellationToken);
         return label;
     }
 }
