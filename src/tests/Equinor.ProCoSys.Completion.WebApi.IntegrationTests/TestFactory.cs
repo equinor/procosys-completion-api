@@ -397,7 +397,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
                 {
-                    Permissions.PUNCHITEM_READ
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
                 Restrictions = restrictions
@@ -431,7 +432,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_ATTACH,
                     Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
-                    Permissions.PUNCHITEM_READ
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
                 Restrictions = restrictions

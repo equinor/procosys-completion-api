@@ -31,9 +31,9 @@ public class LibraryItemsController : ControllerBase
         string plant,
         CancellationToken cancellationToken,
         [Required]
-        [FromQuery] LibraryType type)
+        [FromQuery] LibraryType libraryType)
     {
-        var result = await _mediator.Send(new GetLibraryItemsQuery(type), cancellationToken);
+        var result = await _mediator.Send(new GetLibraryItemsQuery(libraryType), cancellationToken);
         return this.FromResult(result);
     }
 }

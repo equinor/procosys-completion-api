@@ -100,6 +100,7 @@ public static class CompletionContextExtension
             KnownData.SortingGuid[plant],
             "A",
             LibraryType.PUNCHLIST_SORTING);
+        knownTestData.PunchSortingLibraryGuids.Add(sorting.Guid);
 
         var type = SeedLibrary(
             dbContext,
