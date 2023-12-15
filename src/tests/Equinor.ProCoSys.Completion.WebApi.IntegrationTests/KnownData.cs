@@ -57,12 +57,6 @@ public static class KnownData
         { PlantB, new("aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbb22") }
     };
 
-    public static Dictionary<string, Guid> CheckListGuid = new()
-    {
-        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb11") },
-        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb22") }
-    };
-
     public static Dictionary<string, Guid> OriginalWorkOrderGuid = new()
     {
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb33") },
@@ -85,5 +79,17 @@ public static class KnownData
     {
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb99") },
         { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb00") }
+    };
+
+    public static Dictionary<string, Guid> CheckListGuidA = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbAA") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbBB") }
+    };
+
+    public static Dictionary<string, Guid> CheckListGuidB = new()
+    {
+        { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbCC") },
+        { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbDD") }
     };
 }

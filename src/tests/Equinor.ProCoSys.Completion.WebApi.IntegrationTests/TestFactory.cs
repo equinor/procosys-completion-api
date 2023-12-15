@@ -35,15 +35,18 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+    public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
+    public static string ResponsibleCodeWithAccess = "RespA";
+    public static string ResponsibleCodeWithoutAccess = "RespB";
     public static string PlantWithAccess => KnownData.PlantA;
     public static string PlantWithoutAccess => KnownData.PlantB;
     public static string Unknown => "UNKNOWN";
     public static Guid ProjectGuidWithAccess => KnownData.ProjectGuidA[KnownData.PlantA];
     public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
-    public static Guid CheckListGuid => KnownData.CheckListGuid[KnownData.PlantA];
+    public static Guid CheckListGuidNotRestricted => KnownData.CheckListGuidA[KnownData.PlantA];
+    public static Guid CheckListGuidRestricted => KnownData.CheckListGuidB[KnownData.PlantA];
     public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
     public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
     public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
@@ -56,7 +59,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
     public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
-    public Guid ReaderOid => new(_testUsers[UserType.Reader].Profile.Oid);
 
     public Dictionary<string, KnownTestData> SeededData { get; }
 
@@ -149,7 +151,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
             services.AddScoped(_ => _personApiServiceMock);
             services.AddScoped(_ => _permissionApiServiceMock);
-            services.AddScoped(_ => _checkListApiServiceMock);
+            services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _publishEndpointMock);
         });
@@ -199,6 +201,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
         SeedDataForPlant(dbContext, scopeServiceProvider, KnownData.PlantB);
 
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
+        dbContext.SeedPersonData(_testUsers[UserType.RestrictedWriter].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
 
         dbContext.SeedLabels();
@@ -275,16 +278,13 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             }
         };
 
-        var restrictions = new List<string>
-        {
-            ClaimsTransformation.NoRestrictions
-        };
-
         SetupAnonymousUser();
 
-        SetupWriterUser(accessablePlants, accessableProjects, restrictions);
+        SetupWriterUser(accessablePlants, accessableProjects);
+        
+        SetupRestrictedWriterUser(accessablePlants, accessableProjects);
 
-        SetupReaderUser(accessablePlants, accessableProjects, restrictions);
+        SetupReaderUser(accessablePlants, accessableProjects);
     
         SetupNoPermissionUser();
             
@@ -349,8 +349,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Email = "noreply@pcs.com",
                 ServicePrincipal = true
             }));
-        _checkListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuid)
-            .Returns(new ProCoSys4CheckList("RC", false, ProjectGuidWithAccess));
+        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidNotRestricted)
+            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
+        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidRestricted)
+            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
     }
 
     // Authenticated client without any roles
@@ -380,8 +382,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     // Authenticated client with necessary roles to read PunchItems
     private void SetupReaderUser(
         List<AccessablePlant> commonAccessablePlants,
-        List<AccessableProject> accessableProjects,
-        List<string> restrictions)
+        List<AccessableProject> accessableProjects)
         => _testUsers.Add(UserType.Reader,
             new TestUser
             {
@@ -401,15 +402,17 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
-                Restrictions = restrictions
-
+                Restrictions = new List<string>
+                {
+                    ClaimsTransformation.NoRestrictions
+                }
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
+    // Not restricted to content
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
-        List<AccessableProject> accessableProjects,
-        List<string> restrictions)
+        List<AccessableProject> accessableProjects)
         => _testUsers.Add(UserType.Writer,
             new TestUser
             {
@@ -436,7 +439,47 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
-                Restrictions = restrictions
+                Restrictions = new List<string>
+                {
+                    ClaimsTransformation.NoRestrictions
+                }
+            });
+
+    // Authenticated client with necessary roles to Create and Update a PunchItem
+    // Restricted to content with responsible code = ResponsibleCodeAvailableForRestrictedWriter
+    private void SetupRestrictedWriterUser(
+        List<AccessablePlant> accessablePlants,
+        List<AccessableProject> accessableProjects)
+        => _testUsers.Add(UserType.RestrictedWriter,
+            new TestUser
+            {
+                Profile =
+                    new TestProfile
+                    {
+                        FirstName = "Reidar",
+                        LastName = "Resttricted",
+                        UserName = "RR",
+                        Email = "rr@pcs.com",
+                        Oid = "00000000-0000-0000-0000-000000000009"
+                    },
+                AccessablePlants = accessablePlants,
+                Permissions = new List<string>
+                {
+                    Permissions.PUNCHITEM_CREATE,
+                    Permissions.PUNCHITEM_CLEAR,
+                    Permissions.PUNCHITEM_VERIFY,
+                    Permissions.PUNCHITEM_WRITE,
+                    Permissions.PUNCHITEM_ATTACH,
+                    Permissions.PUNCHITEM_DETACH,
+                    Permissions.PUNCHITEM_DELETE,
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
+                },
+                AccessableProjects = accessableProjects,
+                Restrictions = new List<string>
+                {
+                    ResponsibleCodeWithAccess
+                }
             });
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());

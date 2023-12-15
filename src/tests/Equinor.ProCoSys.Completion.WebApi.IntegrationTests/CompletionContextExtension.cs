@@ -113,7 +113,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
-            KnownData.CheckListGuid[plant],
+            KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemA",
             raisedByOrg,
@@ -121,7 +121,7 @@ public static class CompletionContextExtension
             priority,
             sorting,
             type);
-        knownTestData.PunchItemGuid = punchItem.Guid;
+        knownTestData.PunchItem = punchItem;
 
         project = SeedProject(
             dbContext, 
@@ -133,7 +133,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
-            KnownData.CheckListGuid[plant],
+            KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemB",
             raisedByOrg,

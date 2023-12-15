@@ -18,7 +18,7 @@ public class PunchItemsControllerNegativeTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
         _linkGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].LinkInPunchItemAGuid;
         _attachmentGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].AttachmentInPunchItemAGuid;
 
@@ -421,7 +421,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -513,7 +513,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess, 
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -1609,7 +1609,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1700,7 +1700,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1791,7 +1791,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1882,7 +1882,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterVerify, TestFactory.WrongButValidRowVersion);

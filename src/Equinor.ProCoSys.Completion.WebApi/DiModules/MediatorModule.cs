@@ -16,7 +16,12 @@ public static class MediatorModule
             typeof(ICommandMarker).GetTypeInfo().Assembly,
             typeof(IQueryMarker).GetTypeInfo().Assembly
         ));
+
+        // ordering is important
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        // HACK validation of request need to become before checking access
+        // if checking access before validation, access check will fail with Exception when
+        // checking access on items which don't exists
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CheckAccessBehavior<,>));
     }
