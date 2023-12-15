@@ -69,11 +69,10 @@ public static class ApplicationModule
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
                 {
-                    e.ConfigureConsumeTopology = false;
+                    e.ConfigureConsumeTopology = false; //MT should not create the endpoint for us, as it already exists.
                     e.Name = "completion_project";
                     e.Temporary = false;
                 });
-                    
             
             x.UsingAzureServiceBus((context,cfg) =>
             {
@@ -87,16 +86,14 @@ public static class ApplicationModule
                     opts.Converters.Add(new OracleGuidConverter());
                     return opts;
                 });
-                //cfg.ConfigureEndpoints(context);
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {
-                   // e.ConfigureMessageTopology<>();
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<ProjectEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
+                    e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
                 
                 });
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
