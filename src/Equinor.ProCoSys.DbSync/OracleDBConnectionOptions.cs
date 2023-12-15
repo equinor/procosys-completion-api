@@ -1,7 +1,6 @@
-﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+
+public class OracleDBConnectionOptions
 {
-    public class OracleDBConnectionOptions
-    {
-        public required string ConnectionString { get; set; }
-    }
+    public required string ConnectionString { get; set; }
 }

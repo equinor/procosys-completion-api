@@ -2,69 +2,68 @@
 using Microsoft.Extensions.Options;
 using Oracle.ManagedDataAccess.Client;
 
-namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+
+/**
+ * Contains methods to execute queries and updates on the Oracle database for PCS 4. 
+ */
+public class OracleDBExecutor : IOracleDBExecutor
 {
-    /**
-     * Contains methods to execute queries and updates on the Oracle database for PCS 4. 
-     */
-    public class OracleDBExecutor : IOracleDBExecutor
+    private readonly string _dbConnStr;
+
+    public OracleDBExecutor(IOptionsMonitor<OracleDBConnectionOptions> options)
     {
-        private readonly string _dbConnStr;
+        _dbConnStr = options.CurrentValue.ConnectionString;
 
-        public OracleDBExecutor(IOptionsMonitor<OracleDBConnectionOptions> options)
+        if (_dbConnStr == null)
         {
-            _dbConnStr = options.CurrentValue.ConnectionString;
+            throw new Exception("DB connection string for Oracle is not set.");
+        }
+    }
 
-            if (_dbConnStr == null)
+    public async Task ExecuteDBWriteAsync(string sqlStatement, CancellationToken cancellationToken)
+    {
+        await using var connection = new OracleConnection(_dbConnStr);
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = sqlStatement;
+            //todo: Bør bruke Parameters.Add, for unngå sql injection
+            var rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
+            if (rowsAffected != 1)
             {
-                throw new Exception("DB connection string for Oracle is not set.");
+                throw new Exception($"Sql statement affected {rowsAffected} rows. Should only affect one row.");
+            }
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            //todo: bør vi logge noe her? 
+            throw;
+        }
+    }
+
+    public async Task<string?> ExecuteDBQueryForValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
+    {
+        await using var connection = new OracleConnection(_dbConnStr);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new OracleCommand(sqlQuery, connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (reader.Read())
+        {
+            //todo: Bør kanskje sjekke at vi bare for returnert én rad
+            var value = Convert.ToString(await command.ExecuteScalarAsync(cancellationToken));
+            if (value != null)
+            {
+                return value;
             }
         }
-
-        public async Task ExecuteDBWriteAsync(string sqlStatement, CancellationToken cancellationToken)
-        {
-            await using var connection = new OracleConnection(_dbConnStr);
-            await connection.OpenAsync(cancellationToken);
-            await using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
-
-            try
-            {
-                await using var command = connection.CreateCommand();
-                command.Transaction = transaction;
-                command.CommandText = sqlStatement;
-                //todo: Bør bruke Parameters.Add, for unngå sql injection
-                var rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
-                if (rowsAffected != 1)
-                {
-                    throw new Exception($"Sql statement affected {rowsAffected} rows. Should only affect one row.");
-                }
-                await transaction.CommitAsync(cancellationToken);
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                //todo: bør vi logge noe her? 
-                throw;
-            }
-        }
-
-        public async Task<string?> ExecuteDBQueryForValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
-        {
-            await using var connection = new OracleConnection(_dbConnStr);
-            await connection.OpenAsync(cancellationToken);
-            await using var command = new OracleCommand(sqlQuery, connection);
-            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-
-            while (reader.Read())
-            {
-                //todo: Bør kanskje sjekke at vi bare for returnert én rad
-                var value = Convert.ToString(await command.ExecuteScalarAsync(cancellationToken));
-                if (value != null)
-                {
-                    return value;
-                }
-            }
-            return null;
-        }
+        return null;
     }
 }

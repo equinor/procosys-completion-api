@@ -1,12 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
-public class TestObject
+public class SourceTestObject
 {
-    public TestObject(
+    public SourceTestObject(
         Guid testGuid,
         string? testString,
         DateTime? testDate,
@@ -65,8 +64,6 @@ public class SyncUpdateHandlerTests
     private readonly string _sourceObjectNameMissingConfig = "NotInConfiguration";
     private readonly string _sourceObjectNameWrongConversion = "TestObjWrongConv";
 
-    private SyncMappingConfig _syncMappingConfig;
-
     private readonly Guid _testGuid = new Guid("805519D7-0DB6-44B7-BF99-A0818CEA778E");
     private readonly Guid _testGuid2 = new Guid("11111111-2222-3333-4444-555555555555");
 
@@ -82,7 +79,7 @@ public class SyncUpdateHandlerTests
     private readonly Guid _documentGuid = new Guid("11111111-2222-3333-4444-555555555555");
 
     private SyncUpdateHandler _syncUpdateHandler;
-    private TestObject _testObject;
+    private SourceTestObject _sourceTestObject;
 
     private string _expectedSqlUpdateStatement =
         "update TestTargetTable set " +
@@ -116,17 +113,17 @@ public class SyncUpdateHandlerTests
     public void Setup()
     {
         _oracleDBExecutorMock = Substitute.For<IOracleDBExecutor>();
-        _syncMappingConfig = new SyncMappingConfig();
         _syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutorMock);
         _nestedObject = new NestedObject(_testGuid2);
-        _testObject = new TestObject(_testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
+        _sourceTestObject = new SourceTestObject(_testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
     }
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
     {
         _oracleDBExecutorMock.ExecuteDBQueryForValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
-        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectName, _testObject, _syncMappingConfig, default);
+        var testObjectMappingConfig = new TestObjectMappingConfig();
+        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
     }
 
@@ -135,51 +132,37 @@ public class SyncUpdateHandlerTests
     {
         _oracleDBExecutorMock.ExecuteDBQueryForValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
 
-        _testObject = new TestObject(_testGuid, null, null, null, false, null, null, null, null, null, null);
+        _sourceTestObject = new SourceTestObject(_testGuid, null, null, null, false, null, null, null, null, null, null);
 
-        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectName, _testObject, _syncMappingConfig, default);
+        var testObjectMappingConfig = new TestObjectMappingConfig();
+        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatementNullValues, actualSqlUpdateStatement);
     }
 
 
     [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenConfigIsMissingPrimaryKey()
-    {
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
-        {
-            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingPrimary, _testObject, _syncMappingConfig, default);
-        });
-
-        Assert.AreEqual($"The configuration should have a primary key property defined. Source object name: {_sourceObjectNameMissingPrimary}", exception.Message);
-    }
-
-    [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingProperty()
     {
+        var testObjectMissingPropMappingConfig = new TestObjectMissingPropMappingConfig();
+
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingProperty, _testObject, _syncMappingConfig, default);
+            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
         });
 
-        Assert.AreEqual($"A property in configuration is missing in source object: {_sourceObjectNameMissingProperty}.PropMissing", exception.Message);
+        Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);
     }
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
-        {
-            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameMissingConfig, _testObject, _syncMappingConfig, default);
+        var syncService = new SyncToPCS4Service(_oracleDBExecutorMock);
 
+        var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
+        {
+            await syncService.SyncUpdatesAsync(_sourceObjectNameMissingConfig, _sourceTestObject, default);
         });
 
-        Assert.AreEqual($"Synchronization mapping is missing for source object {_sourceObjectNameMissingConfig}", exception.Message);
-    }
-
-    [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenConfiguredConversionMethodDoesNotExists()
-    {
-        _oracleDBExecutorMock.ExecuteDBQueryForValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
-        await Assert.ThrowsExceptionAsync<NotImplementedException>(async () => await _syncUpdateHandler.BuildSqlUpdateStatementAsync(_sourceObjectNameWrongConversion, _testObject, _syncMappingConfig, default));
+        Assert.AreEqual($"Mapping is not implemented for source object with name '{_sourceObjectNameMissingConfig}'.", exception.Message);
     }
 }

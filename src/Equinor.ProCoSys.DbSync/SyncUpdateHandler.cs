@@ -1,124 +1,112 @@
 ﻿using System.Text;
 
-namespace Equinor.ProCoSys.Completion.DbSyncToPCS4
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+
+/**
+ * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+ */
+public class SyncUpdateHandler
 {
-    /**
-     * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
-     */
-    public class SyncUpdateHandler
+    private readonly IOracleDBExecutor _oracleDBExecutor;
+
+    public SyncUpdateHandler(IOracleDBExecutor oracleDBExecutor)
     {
-        private readonly IOracleDBExecutor _oracleDBExecutor;
-        public SyncUpdateHandler(IOracleDBExecutor oracleDBExecutor) => _oracleDBExecutor = oracleDBExecutor;
+        _oracleDBExecutor = oracleDBExecutor;
+    }
 
-        /**
-         * Handle the syncronization
-         */
-        public async Task<string> BuildSqlUpdateStatementAsync(string sourceObjectName, object sourceObject, ISyncMappingConfig syncMappingConfig, CancellationToken cancellationToken = default)
+    /**
+     * Handle the syncronization
+     */
+    public async Task<string> BuildSqlUpdateStatementAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, CancellationToken cancellationToken = default)
+    {
+        var primaryKeyValue = GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey, sourceObject);
+        var primaryKeySqlParameterValue = await SqlParameterConversionHelper.GetSqlParameterValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, _oracleDBExecutor, cancellationToken);
+
+        var updatesForTargetColumns = await GetTargetColumnUpdatesAsync(sourceObject, sourceObjectMappingConfig.PropertyMappings, cancellationToken);
+
+        return BuildUpdateStatement(sourceObjectMappingConfig, primaryKeySqlParameterValue, updatesForTargetColumns);
+    }
+
+
+    /**
+     * Creates a list with updates the be executed on the target database. 
+     */
+    private async Task<List<TargetColumnUpdate>> GetTargetColumnUpdatesAsync(object sourceObject, List<PropertyMapping> propertyMappings, CancellationToken cancellationToken)
+    {
+        var targetColumnUpdates = new List<TargetColumnUpdate>();
+
+        foreach (var propertyMapping in propertyMappings)
         {
-            var syncMappings = syncMappingConfig.GetSyncMappingsForSourceObject(sourceObjectName);
+            var sourcePropertyValue = GetSourcePropertyValue(propertyMapping, sourceObject);
 
-            //Find the primary key
-            var primaryKeyConfig = syncMappings.Where(config => config.IsPrimaryKey == true).SingleOrDefault();
+            var targetColumnValue = await SqlParameterConversionHelper.GetSqlParameterValueAsync(sourcePropertyValue, propertyMapping, _oracleDBExecutor, cancellationToken);
 
-            if (primaryKeyConfig == null)
-            {
-                throw new Exception($"The configuration should have a primary key property defined. Source object name: {sourceObjectName}");
-            }
+            var columnUpdate = new TargetColumnUpdate(propertyMapping.TargetColumnName, targetColumnValue);
 
-            var primaryKeyValue = GetSourcePropertyValue(primaryKeyConfig, sourceObject);
-            var primaryKeySqlParameterValue = await ValueConversion.GetSqlParameterValueAsync(primaryKeyValue, primaryKeyConfig, _oracleDBExecutor, cancellationToken);
+            targetColumnUpdates.Add(columnUpdate);
+        }
+        return targetColumnUpdates;
+    }
 
-            var columnsForUpdate = await GetTargetUpdatesAsync(sourceObject, syncMappings, cancellationToken);
-            return GetUpdateStatement(primaryKeyConfig, primaryKeySqlParameterValue, columnsForUpdate);
+    /**
+     * Will find the value of the property in given source object. 
+     * This value might be in a nested property (e.g ActionBy.Oid)
+     */
+    private static object? GetSourcePropertyValue(PropertyMapping propertyMapping, object sourceObject)
+    {
+        var sourcePropertyNameParts = propertyMapping.SourcePropertyName.Split('.');
+        if (sourcePropertyNameParts.Length > 2)
+        {
+            throw new Exception($"Only one nested level is supported for entities, so {propertyMapping.SourcePropertyName} is not supported.");
         }
 
+        var sourcePropertyName = sourcePropertyNameParts[0];
+        var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
 
-        /**
-         * Creates a list with updates the be executed on the target database. 
-         */
-        private async Task<List<ColumnUpdate>> GetTargetUpdatesAsync(object sourceObject, List<ColumnSyncConfig> syncMappingList, CancellationToken cancellationToken)
+        if (sourceProperty == null)
         {
-            var columns = new List<ColumnUpdate>();
-
-            foreach (var col in syncMappingList)
-            {
-                if (col.IsPrimaryKey)
-                {
-                    continue;
-                }
-
-                // Find value for source property 
-                var sourcePropertyValue = GetSourcePropertyValue(col, sourceObject);
-
-                var targetColumnValue = await ValueConversion.GetSqlParameterValueAsync(sourcePropertyValue, col, _oracleDBExecutor, cancellationToken);
-
-                var columnUpdate = new ColumnUpdate(col.TargetColumn, targetColumnValue);
-
-                columns.Add(columnUpdate);
-            }
-            return columns;
+            throw new Exception($"A property in configuration is missing in source object: {propertyMapping.SourcePropertyName}");
         }
 
-        /**
-         * Will find the value on the property in the source object. 
-         * This value might be in a nested property (e.g ActionBy.Oid)
-         */
-        private static object? GetSourcePropertyValue(ColumnSyncConfig column, object sourceObject)
-        {
-            var sourcePropertyNameParts = column.SourceProperty.Split('.');
-            if (sourcePropertyNameParts.Length > 2)
-            {
-                throw new Exception($"Only one nested level is supported for entities, so {column.SourceObjectName}.{column.SourceProperty} is not supported.");
-            }
+        var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
 
-            var sourcePropertyName = sourcePropertyNameParts[0];
-            var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
+        if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
+        {
+            //We must find the nested property
+            sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
 
             if (sourceProperty == null)
             {
-                throw new Exception($"A property in configuration is missing in source object: {column.SourceObjectName}.{column.SourceProperty}");
+                throw new Exception($"A nested property in configuration is missing in source object: {propertyMapping.SourcePropertyName}");
             }
 
-            var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
-
-            if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
-            {
-                //We must find the nested property
-                sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
-
-                if (sourceProperty == null)
-                {
-                    throw new Exception($"A nested property in configuration is missing in source object: {column.SourceObjectName}.{column.SourceProperty}");
-                }
-
-                sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
-            }
-
-            return sourcePropertyValue;
+            sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
         }
 
-        /**
-         * Build a string that gives the update statement
-         */
-        private static string GetUpdateStatement(ColumnSyncConfig primaryKeyConfig, string primaryKeySqlParamValue, List<ColumnUpdate> updateColumns)
+        return sourcePropertyValue;
+    }
+
+    /**
+     * Build a string that gives the update statement
+     */
+    private static string BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, string primaryKeySqlParamValue, List<TargetColumnUpdate> updatesForTargetColumns)
+    {
+        var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");
+
+        foreach (var columnUpdate in updatesForTargetColumns)
         {
-            var updateStatement = new StringBuilder($"update {primaryKeyConfig.TargetTable} set ");
+            updateStatement.Append($"{columnUpdate.ColumnName} = {columnUpdate.ColumnValue}");
 
-            foreach (var column in updateColumns)
+            if (columnUpdate != updatesForTargetColumns.Last())
             {
-                updateStatement.Append($"{column.TargetColumnName} = {column.TargetColumnValue}");
-
-                if (column != updateColumns.Last())
-                {
-                    updateStatement.Append(", ");
-                }
+                updateStatement.Append(", ");
             }
-
-            //Todo: Vi vil her lage en dictionary med parameterverdier, som senere brukes når vi lager en oracle command.
-
-            updateStatement.Append($" where {primaryKeyConfig.TargetColumn} = {primaryKeySqlParamValue}");
-
-            return updateStatement.ToString();
         }
+
+        //Todo: Vi vil her lage en dictionary med parameterverdier, som senere brukes når vi lager en oracle command.
+
+        updateStatement.Append($" where {sourceObjectMappingConfig.PrimaryKey.TargetColumnName} = {primaryKeySqlParamValue}");
+
+        return updateStatement.ToString();
     }
 }
