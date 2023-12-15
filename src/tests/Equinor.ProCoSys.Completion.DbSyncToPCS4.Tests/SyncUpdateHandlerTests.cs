@@ -1,5 +1,6 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
