@@ -35,6 +35,11 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     {
         var projectEvent = context.Message;
 
+        if (projectEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
         if (projectEvent.Behavior == "delete")
         {
             var project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
@@ -69,7 +74,6 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
 
     private static void MapFromEventToProject(IProjectEventV1 projectEvent, Project project)
     {
-        //project.Plant = projectEvent.Plant;
         project.IsClosed = projectEvent.IsClosed;
         project.Name = projectEvent.ProjectName;
         project.Pcs4LastUpdated = projectEvent.LastUpdated;
@@ -84,14 +88,6 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
      private static Project CreateProjectEntity(IProjectEventV1 projectEvent) 
          => new(projectEvent.Plant, projectEvent.ProCoSysGuid, projectEvent.ProjectName,projectEvent.Description?? projectEvent.ProjectName, projectEvent.LastUpdated);
 }
-
-// class ProjectEventConsumerDefinition : ConsumerDefinition<ProjectEventConsumer>
-// {
-//     public ProjectEventConsumerDefinition()
-//     {
-//         EndpointName = "completion_project";
-//     }
-// }
 
 public record ProjectEvent(string EventType, string? Description, 
     bool IsClosed,
