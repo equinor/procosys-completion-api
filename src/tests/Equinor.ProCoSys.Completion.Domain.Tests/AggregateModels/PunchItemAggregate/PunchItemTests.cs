@@ -37,7 +37,7 @@ public class PunchItemTests : IModificationAuditableTests
     [TestInitialize]
     public void Setup()
     {
-        _project = new Project(_testPlant, Guid.NewGuid(), "P", "D");
+        _project = new Project(_testPlant, Guid.NewGuid(), "P", "D", DateTime.Now);
         _project.SetProtectedIdForTesting(123);
 
         _raisedByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
@@ -102,7 +102,7 @@ public class PunchItemTests : IModificationAuditableTests
         => Assert.ThrowsException<ArgumentException>(() =>
             new PunchItem(
                 _testPlant,
-                new Project("OtherPlant", Guid.NewGuid(), "P", "D"),
+                new Project("OtherPlant", Guid.NewGuid(), "P", "D", DateTime.Now),
                 Guid.Empty,
                 Category.PA,
                 _itemDescription,

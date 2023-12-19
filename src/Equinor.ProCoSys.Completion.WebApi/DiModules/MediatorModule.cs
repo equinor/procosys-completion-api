@@ -9,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class MediatorModule
 {
-    public static void AddMediatrModules(this IServiceCollection services)
+    public static IServiceCollection AddMediatrModules(this IServiceCollection services)
     {
         services.AddMediatR(c => c.RegisterServicesFromAssemblies(
             typeof(MediatorModule).GetTypeInfo().Assembly,
@@ -24,5 +24,6 @@ public static class MediatorModule
         // checking access on items which don't exists
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CheckAccessBehavior<,>));
+        return services;
     }
 }

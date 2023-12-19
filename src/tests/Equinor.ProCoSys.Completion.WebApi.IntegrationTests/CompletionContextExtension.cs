@@ -210,7 +210,7 @@ public static class CompletionContextExtension
         string desc)
     {
         var projectRepository = new ProjectRepository(dbContext);
-        var project = new Project(plant, guid, name, desc);
+        var project = new Project(plant, guid, name, desc, DateTime.Now);
         projectRepository.Add(project);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return project;
