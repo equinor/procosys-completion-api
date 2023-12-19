@@ -57,13 +57,9 @@ public class NestedObject
 [TestClass]
 public class SyncUpdateHandlerTests
 {
-    private IOracleDBExecutor _oracleDBExecutorMock;
+    private IPcs4Repository _oracleDBExecutorMock;
 
-    private readonly string _sourceObjectName = "TestObject";
-    private readonly string _sourceObjectNameMissingPrimary = "TestObjNoPrimary";
-    private readonly string _sourceObjectNameMissingProperty = "TestObjMissingProp";
     private readonly string _sourceObjectNameMissingConfig = "NotInConfiguration";
-    private readonly string _sourceObjectNameWrongConversion = "TestObjWrongConv";
 
     private readonly Guid _testGuid = new Guid("805519D7-0DB6-44B7-BF99-A0818CEA778E");
     private readonly Guid _testGuid2 = new Guid("11111111-2222-3333-4444-555555555555");
@@ -84,36 +80,53 @@ public class SyncUpdateHandlerTests
 
     private string _expectedSqlUpdateStatement =
         "update TestTargetTable set " +
-        "TestString = 'test', " +
-        "TestDateWithTime = to_date('29/11/2023 10:20:30', 'DD/MM/YYYY HH24:MI:SS'), " +
-        "TestDate = to_date('30/11/2023', 'DD/MM/YYYY'), " +
-        "TestBool = 'Y', " +
-        "TestInt = 1234, " +
-        "TestLibId = 123456789, " +
-        "WoGuidLibId = 123456789, " +
-        "SwcrLibId = 123456789, " +
-        "PersonOid = 123456789, " +
-        "DocumentId = 123456789 " +
-        "where TestGuid = '805519D70DB644B7BF99A0818CEA778E'";
+        "TestString = @TestString, " +
+        "TestDateWithTime = @TestDateWithTime, " +
+        "TestDate = @TestDate, " +
+        "TestBool = @TestBool, " +
+        "TestInt = @TestInt, " +
+        "TestLibId = @TestLibId, " +
+        "WoGuidLibId = @WoGuidLibId, " +
+        "SwcrLibId = @SwcrLibId, " +
+        "PersonOid = @PersonOid, " +
+        "DocumentId = @DocumentId " +
+        "where TestGuid = @TestGuid";
 
-    private string _expectedSqlUpdateStatementNullValues =
-        "update TestTargetTable set " +
-        "TestString = null, " +
-        "TestDateWithTime = null, " +
-        "TestDate = null, " +
-        "TestBool = 'N', " +
-        "TestInt = null, " +
-        "TestLibId = null, " +
-        "WoGuidLibId = null, " +
-        "SwcrLibId = null, " +
-        "PersonOid = null, " +
-        "DocumentId = null " +
-        "where TestGuid = '805519D70DB644B7BF99A0818CEA778E'";
+
+    private readonly Dictionary<string, string> _expectedSqlParameters = new()
+    {
+        { "TestString", "'test'" },
+        { "TestDateWithTime", "to_date('29/11/2023 10:20:30', 'DD/MM/YYYY HH24:MI:SS')"},
+        { "TestDate", "to_date('30/11/2023', 'DD/MM/YYYY')" },
+        { "TestBool", "'Y'" },
+        { "TestInt" , "1234" },
+        { "TestLibId", "123456789" } ,
+        { "WoGuidLibId" , "123456789" },
+        { "SwcrLibId" , "123456789" } ,
+        { "PersonOid" , "123456789" },
+        { "DocumentId" , "123456789" },
+        { "TestGuid" , "'805519D70DB644B7BF99A0818CEA778E'" }
+    };
+
+    private readonly Dictionary<string, string> _expectedSqlParametersNullValues = new()
+    {
+        { "TestString", "null" },
+        { "TestDateWithTime", "null"},
+        { "TestDate", "null" },
+        { "TestBool", "'N'" },
+        { "TestInt" , "null" },
+        { "TestLibId", "null" } ,
+        { "WoGuidLibId" , "null" },
+        { "SwcrLibId" , "null" } ,
+        { "PersonOid" , "null" },
+        { "DocumentId" , "null" },
+        { "TestGuid" , "'805519D70DB644B7BF99A0818CEA778E'" }
+    };
 
     [TestInitialize]
     public void Setup()
     {
-        _oracleDBExecutorMock = Substitute.For<IOracleDBExecutor>();
+        _oracleDBExecutorMock = Substitute.For<IPcs4Repository>();
         _syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutorMock);
         _nestedObject = new NestedObject(_testGuid2);
         _sourceTestObject = new SourceTestObject(_testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
@@ -122,22 +135,34 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
     {
-        _oracleDBExecutorMock.ExecuteDBQueryForValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
+        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
+
+        foreach (var expectedParam in _expectedSqlParameters)
+        {
+            var actualParamValue = actualSqlParams.Get<string>(expectedParam.Key);
+            Assert.AreEqual(expectedParam.Value, actualParamValue);
+        }
     }
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenSourceObjectHasNullValues()
     {
-        _oracleDBExecutorMock.ExecuteDBQueryForValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
+        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
 
         _sourceTestObject = new SourceTestObject(_testGuid, null, null, null, false, null, null, null, null, null, null);
 
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var actualSqlUpdateStatement = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
-        Assert.AreEqual(_expectedSqlUpdateStatementNullValues, actualSqlUpdateStatement);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
+        Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
+
+        foreach (var expectedParam in _expectedSqlParametersNullValues)
+        {
+            var actualParamValue = actualSqlParams.Get<string>(expectedParam.Key);
+            Assert.AreEqual(expectedParam.Value, actualParamValue);
+        }
     }
 
 

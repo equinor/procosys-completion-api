@@ -138,7 +138,7 @@ public static class ApplicationModule
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IEmailService, EmailService>();
-        services.AddSingleton<IOracleDBExecutor, OracleDBExecutor>();
+        services.AddSingleton<IPcs4Repository, Pcs4Repository>();
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
     }
 }

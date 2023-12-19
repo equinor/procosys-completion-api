@@ -10,9 +10,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
  */
 public class SyncToPCS4Service : ISyncToPCS4Service
 {
-    readonly IOracleDBExecutor _oracleDBExecutor;
+    readonly IPcs4Repository _pcs4Repository;
 
-    public SyncToPCS4Service(IOracleDBExecutor oracleDBExecutor) => _oracleDBExecutor = oracleDBExecutor;
+    public SyncToPCS4Service(IPcs4Repository oracleDBExecutor) => _pcs4Repository = oracleDBExecutor;
 
     /**
      * Updates the PCS 4 database with changes provided in the sourceObject, 
@@ -20,22 +20,25 @@ public class SyncToPCS4Service : ISyncToPCS4Service
      */
     public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken cancellationToken = default)
     {
-        var sourceObjectMappingConfig = FindMappingConfigurationForSourceObject(sourceObjectName);
+        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutor);
-        var sqlUpdateStatement = await syncUpdateHandler.BuildSqlUpdateStatementAsync(sourceObjectMappingConfig, sourceObject, cancellationToken);
+        var syncUpdateHandler = new SyncUpdateHandler(_pcs4Repository);
+        var (sqlUpdateStatement, sqlParameters) = await syncUpdateHandler.BuildSqlUpdateStatementAsync(sourceObjectMappingConfig, sourceObject, cancellationToken);
 
-        await _oracleDBExecutor.ExecuteDBWriteAsync(sqlUpdateStatement, cancellationToken);
+        await _pcs4Repository.UpdateSingleRowAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
     }
 
-    private static ISourceObjectMappingConfig FindMappingConfigurationForSourceObject(string sourceObjectName) => sourceObjectName switch
+    /**
+     * Will return the mapping configuration for the given source object
+     */
+    private static ISourceObjectMappingConfig GetMappingConfigurationForSourceObject(string sourceObjectName)
     {
-        "PunchItem" => new PunchItemMappingConfig(),
-        _ => throw new NotImplementedException($"Mapping is not implemented for source object with name '{sourceObjectName}'."),
-    };
-
-
-
+        return sourceObjectName switch
+        {
+            "PunchItem" => new PunchItemMappingConfig(),
+            _ => throw new NotImplementedException($"Mapping is not implemented for source object with name '{sourceObjectName}'."),
+        };
+    }
 }
 
 

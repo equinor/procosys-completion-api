@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Dapper;
 using Microsoft.Extensions.Options;
 using Oracle.ManagedDataAccess.Client;
 
@@ -7,11 +8,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 /**
  * Contains methods to execute queries and updates on the Oracle database for PCS 4. 
  */
-public class OracleDBExecutor : IOracleDBExecutor
+public class Pcs4Repository : IPcs4Repository
 {
     private readonly string _dbConnStr;
 
-    public OracleDBExecutor(IOptionsMonitor<OracleDBConnectionOptions> options)
+    public Pcs4Repository(IOptionsMonitor<OracleDBConnectionOptions> options)
     {
         _dbConnStr = options.CurrentValue.ConnectionString;
 
@@ -21,7 +22,11 @@ public class OracleDBExecutor : IOracleDBExecutor
         }
     }
 
-    public async Task ExecuteDBWriteAsync(string sqlStatement, CancellationToken cancellationToken)
+    /**
+     * This method will perform a update on the Pcs4 database, using the given sqlStatment.
+     * If more than one row is affected by the sql statment, an exception will be thrown, and the udpate will not be commited. 
+     */
+    public async Task UpdateSingleRowAsync(string sqlStatement, DynamicParameters sqlParameters, CancellationToken cancellationToken)
     {
         await using var connection = new OracleConnection(_dbConnStr);
         await connection.OpenAsync(cancellationToken);
@@ -29,29 +34,31 @@ public class OracleDBExecutor : IOracleDBExecutor
 
         try
         {
-            await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = sqlStatement;
-            //todo: Bør bruke Parameters.Add, for unngå sql injection
-            var rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
+            var rowsAffected = await connection.ExecuteAsync(sqlStatement, sqlParameters, transaction);
+
             if (rowsAffected != 1)
             {
-                throw new Exception($"Sql statement affected {rowsAffected} rows. Should only affect one row.");
+                throw new Exception($"Expected one and only one row update for the sql statement: '{sqlStatement}', " +
+                    $"but got {rowsAffected}. Update is not commited.");
             }
             await transaction.CommitAsync(cancellationToken);
         }
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
-            //todo: bør vi logge noe her? 
-            throw;
+            throw new Exception($"Error occured when trying to execute the following sql statement: {sqlStatement}. A rollback on the transaction is performed.");
         }
     }
 
-    public async Task<string?> ExecuteDBQueryForValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
+    /**
+     * This method will be used to fetch a value from Pcs4 datbase, by 
+     */
+    public async Task<string?> ValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
     {
         await using var connection = new OracleConnection(_dbConnStr);
         await connection.OpenAsync(cancellationToken);
+
+        //DAPPER
         await using var command = new OracleCommand(sqlQuery, connection);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 

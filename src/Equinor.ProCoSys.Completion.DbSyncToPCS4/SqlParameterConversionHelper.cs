@@ -9,7 +9,7 @@ public static class SqlParameterConversionHelper
     public static async Task<string> GetSqlParameterValueAsync(
         object? sourcePropertyValue,
         PropertyMapping propertyMapping,
-        IOracleDBExecutor oracleDBExecutor,
+        IPcs4Repository oracleDBExecutor,
         CancellationToken cancellationToken)
     {
         if (propertyMapping.ValueConversion != null)
@@ -60,7 +60,7 @@ public static class SqlParameterConversionHelper
     public static async Task<string> GetSqlParameterValueUsingConversionMethodAsync(
         object? sourcePropertyValue,
         ValueConversion? valueConversion,
-        IOracleDBExecutor oracleDBExecutor,
+        IPcs4Repository oracleDBExecutor,
         CancellationToken cancellationToken)
     {
         if (sourcePropertyValue == null)
@@ -113,11 +113,11 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the library id for given guid in the pcs4 database
      */
-    public static async Task<string> GuidToLibIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<string> GuidToLibIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlQuery = $"select library_id from library where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-        var libraryId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
+        var libraryId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
         if (libraryId != null)
         {
             return libraryId;
@@ -128,11 +128,11 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the person_id with given oid in the pcs4 database
      */
-    public static async Task<string> OidToPersonIdAsync(Guid oid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<string> OidToPersonIdAsync(Guid oid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlQuery = $"select person_id from person where azure_oid = {GuidToPCS4Oid(oid)}";
 
-        var personId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
+        var personId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
         if (personId != null)
         {
             return personId;
@@ -143,11 +143,11 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the work order with given guid in the pcs4 database
      */
-    public static async Task<string> GuidToWorkOrderIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<string> GuidToWorkOrderIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlQuery = $"select wo_id from wo where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-        var woId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
+        var woId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
         if (woId != null)
         {
             return woId;
@@ -158,11 +158,11 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the SWCR with given guid in the pcs4 database
      */
-    public static async Task<string> GuidToSWCRIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<string> GuidToSWCRIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlQuery = $"select swcr_id from swcr where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-        var swcrId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
+        var swcrId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
         if (swcrId != null)
         {
             return swcrId;
@@ -173,11 +173,11 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the document with given guid in the pcs4 database
      */
-    public static async Task<string> GuidToDocumentIdAsync(Guid guid, IOracleDBExecutor oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<string> GuidToDocumentIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlQuery = $"select document_id from document where procosys_guid = {GuidToPCS4Guid(guid)}";
 
-        var documentId = await oracleDBExecutor.ExecuteDBQueryForValueLookupAsync(sqlQuery, cancellationToken);
+        var documentId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
         if (documentId != null)
         {
             return documentId;
@@ -188,7 +188,7 @@ public static class SqlParameterConversionHelper
     /**
      * Converts a datetime to a date (time is not included)
      */
-    public static string DateTimeToDate(DateTime date)
+    private static string DateTimeToDate(DateTime date)
     {
         return $"to_date('{date.Day}/{date.Month}/{date.Year}', 'DD/MM/YYYY')";
     }

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Data.Common;
+using System.Text;
+using Dapper;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -7,9 +9,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
  */
 public class SyncUpdateHandler
 {
-    private readonly IOracleDBExecutor _oracleDBExecutor;
+    private readonly IPcs4Repository _oracleDBExecutor;
 
-    public SyncUpdateHandler(IOracleDBExecutor oracleDBExecutor)
+    public SyncUpdateHandler(IPcs4Repository oracleDBExecutor)
     {
         _oracleDBExecutor = oracleDBExecutor;
     }
@@ -17,7 +19,7 @@ public class SyncUpdateHandler
     /**
      * Handle the syncronization
      */
-    public async Task<string> BuildSqlUpdateStatementAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, CancellationToken cancellationToken = default)
+    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildSqlUpdateStatementAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, CancellationToken cancellationToken = default)
     {
         var primaryKeyValue = GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey, sourceObject);
         var primaryKeySqlParameterValue = await SqlParameterConversionHelper.GetSqlParameterValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, _oracleDBExecutor, cancellationToken);
@@ -89,13 +91,15 @@ public class SyncUpdateHandler
     /**
      * Build a string that gives the update statement
      */
-    private static string BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, string primaryKeySqlParamValue, List<TargetColumnUpdate> updatesForTargetColumns)
+    private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, string primaryKeySqlParamValue, List<TargetColumnUpdate> updatesForTargetColumns)
     {
         var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");
+        var sqlParameters = new DynamicParameters();
 
         foreach (var columnUpdate in updatesForTargetColumns)
         {
-            updateStatement.Append($"{columnUpdate.ColumnName} = {columnUpdate.ColumnValue}");
+            sqlParameters.Add($"@{columnUpdate.ColumnName}", columnUpdate.ColumnValue);
+            updateStatement.Append($"{columnUpdate.ColumnName} = @{columnUpdate.ColumnName}");
 
             if (columnUpdate != updatesForTargetColumns.Last())
             {
@@ -103,10 +107,10 @@ public class SyncUpdateHandler
             }
         }
 
-        //Todo: Vi vil her lage en dictionary med parameterverdier, som senere brukes når vi lager en oracle command.
+        var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
+        sqlParameters.Add($"@{primaryKeyName}", primaryKeySqlParamValue);
+        updateStatement.Append($" where {primaryKeyName} = @{primaryKeyName}");
 
-        updateStatement.Append($" where {sourceObjectMappingConfig.PrimaryKey.TargetColumnName} = {primaryKeySqlParamValue}");
-
-        return updateStatement.ToString();
+        return (updateStatement.ToString(), sqlParameters);
     }
 }
