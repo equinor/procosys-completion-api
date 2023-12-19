@@ -863,7 +863,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             FirstName = "YO",
             LastName = "DA",
             Email = "@",
-            AzureOid = nonExistingPersonOid.ToString()
+            AzureOid = nonExistingPersonOid.ToString(),
+            Super = true
         };
         _personCacheMock.GetAsync(nonExistingPersonOid)
             .Returns(proCoSysPerson);
@@ -891,6 +892,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.AreEqual(proCoSysPerson.FirstName, _personAddedToRepository.FirstName);
         Assert.AreEqual(proCoSysPerson.LastName, _personAddedToRepository.LastName);
         Assert.AreEqual(proCoSysPerson.Email, _personAddedToRepository.Email);
+        Assert.AreEqual(proCoSysPerson.Super, _personAddedToRepository.Superuser);
     }
 
     #endregion

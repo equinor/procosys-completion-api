@@ -409,6 +409,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
+    // Is also Superuser
     // Not restricted to content
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
@@ -423,7 +424,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Write",
                         UserName = "WW",
                         Email = "ww@pcs.com",
-                        Oid = "00000000-0000-0000-0000-000000000001"
+                        Oid = "00000000-0000-0000-0000-000000000001",
+                        Superuser = true
                     },
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>

@@ -34,7 +34,7 @@ public class EventHandlerTestBase
     public void SetupBase()
     {
         TimeService.SetProvider(new ManualTimeProvider(_now));
-        _person = new Person(Guid.NewGuid(), "Yo", "Da", "YD", "@");
+        _person = new Person(Guid.NewGuid(), "Yo", "Da", "YD", "@", false);
         _person.SetProtectedIdForTesting(3);
 
         _project = new Project(_testPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
@@ -76,7 +76,7 @@ public class EventHandlerTestBase
         punchItem.SetOriginalWorkOrder(new WorkOrder(_testPlant, Guid.NewGuid(), "WO2"));
         punchItem.SetDocument(new Document(_testPlant, Guid.NewGuid(), "Doc"));
         punchItem.SetSWCR(new SWCR(_testPlant, Guid.NewGuid(), 7));
-        punchItem.SetActionBy(new Person(Guid.NewGuid(), null!, null!, null!, null!));
+        punchItem.SetActionBy(new Person(Guid.NewGuid(), null!, null!, null!, null!, false));
     }
 
     protected void AssertIsVerified(PunchItem punchItem, Person person, PunchItemUpdatedIntegrationEvent integrationEvent)

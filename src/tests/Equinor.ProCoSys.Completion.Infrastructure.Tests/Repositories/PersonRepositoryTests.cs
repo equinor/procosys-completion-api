@@ -25,7 +25,8 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
             "FirstName",
             "LastName",
             "UNAME",
-            "email@test.com");
+            "email@test.com", 
+            false);
         _knownGuid = person.Guid;
         person.SetProtectedIdForTesting(_knownId);
 
@@ -39,5 +40,5 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
             .Returns(_dbSetMock);
     }
 
-    protected override Person GetNewEntity() => new (Guid.NewGuid(), "New", "Person", "NP", "@");
+    protected override Person GetNewEntity() => new (Guid.NewGuid(), "New", "Person", "NP", "@", false);
 }
