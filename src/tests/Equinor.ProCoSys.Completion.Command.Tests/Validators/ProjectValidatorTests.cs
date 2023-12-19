@@ -17,7 +17,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
             
         _openProject = new Project(TestPlantA, Guid.NewGuid(), "Project 1", "D1", DateTime.Now);
         _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2", DateTime.Now) { IsClosed = true };
@@ -32,7 +32,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenProjectIsClosed()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);            
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);            
         var dut = new ProjectValidator(context);
 
         // Act
@@ -46,7 +46,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenProjectIsOpen()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new ProjectValidator(context);
 
         // Act
@@ -60,7 +60,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnFalse_WhenProjectNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);    
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);    
         var dut = new ProjectValidator(context);
 
         // Act
@@ -76,7 +76,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnTrue_WhenProjectIsClosed()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new ProjectValidator(context);
 
         // Act
@@ -90,7 +90,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnFalse_WhenProjectIsOpen()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new ProjectValidator(context);
 
         // Act
@@ -104,7 +104,7 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnFalse_WhenProjectNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new ProjectValidator(context);
 
         // Act

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -52,6 +52,21 @@ public class UpdateLinkDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTitleIsEmpty()
+    {
+        // Arrange
+        var dto = new UpdateLinkDto(string.Empty, "U", _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
     {
         // Arrange
@@ -82,6 +97,21 @@ public class UpdateLinkDtoValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Url' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenUrlIsEmpty()
+    {
+        // Arrange
+        var dto = new UpdateLinkDto("New title", string.Empty, _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Url' must be at least"));
     }
 
     [TestMethod]

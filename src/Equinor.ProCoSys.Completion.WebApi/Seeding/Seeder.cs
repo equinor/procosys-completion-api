@@ -18,7 +18,7 @@ public class Seeder : IHostedService
 {
     private readonly string _testPlant = "PCS$OSEBERG_C";
     private readonly string _testProject = "959256";
-    private Guid _testProjectGuid = new ("eb3821c2-b20f-8683-e053-2910000a2633");
+    private readonly Guid _testProjectGuid = new ("eb38367c-37de-dd39-e053-2810000a174a");
 
     private static readonly Person s_seederUser = new (new Guid("12345678-1234-1234-1234-123456789123"), "Angus", "MacGyver", "am", "am@pcs.pcs");
     private readonly IServiceScopeFactory _serviceProvider;

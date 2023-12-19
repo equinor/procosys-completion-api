@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;

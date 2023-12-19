@@ -24,7 +24,9 @@ public class DeletePunchItemAttachmentCommandValidator : AbstractValidator<Delet
             .MustAsync((command, cancellationToken) => BeAnExistingAttachment(command.AttachmentGuid, cancellationToken))
             .WithMessage(command => $"Attachment with this guid does not exist! Guid={command.AttachmentGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage("Tag owning punch item is voided!");
+            .WithMessage("Tag owning punch item is voided!")
+            .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -37,5 +39,8 @@ public class DeletePunchItemAttachmentCommandValidator : AbstractValidator<Delet
 
         async Task<bool> BeAnExistingAttachment(Guid attachmentGuid, CancellationToken cancellationToken)
             => await attachmentService.ExistsAsync(attachmentGuid, cancellationToken);
+
+        async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
     }
 }

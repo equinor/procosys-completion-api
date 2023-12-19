@@ -14,6 +14,7 @@ public class CreatePunchItemDtoValidator : AbstractValidator<CreatePunchItemDto>
 
         RuleFor(dto => dto.Description)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax);
 
         RuleFor(dto => dto.DueTimeUtc)

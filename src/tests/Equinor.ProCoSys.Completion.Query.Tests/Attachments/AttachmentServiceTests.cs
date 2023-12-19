@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
@@ -8,6 +9,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.BlobStorage;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using NSubstitute;
 using Microsoft.Extensions.Options;
 
@@ -27,10 +29,19 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+
+        Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+
+        var labelA = context.Labels.Single(l => l.Text == LabelTextA);
+        var labelB = context.Labels.Single(l => l.Text == LabelTextB);
+        var labelC = context.Labels.Single(l => l.Text == LabelTextC);
+        var voidedLabel = context.Labels.Single(l => l.Text == LabelTextVoided);
 
         _parentGuid = Guid.NewGuid();
         _createdAttachment = new Attachment("X", _parentGuid, TestPlantA, "t1.txt");
+        // insert labels non-ordered to test ordering
+        _createdAttachment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
         _modifiedAttachment = new Attachment("X", _parentGuid, TestPlantA, "t2.txt");
 
         context.Attachments.Add(_createdAttachment);
@@ -57,7 +68,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetAllForParentAsync_ShouldReturnCorrect_CreatedDtos()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -88,7 +99,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         var uri = new Uri("http://blah.blah.com");
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
         var p = _createdAttachment.GetFullBlobPath();
         _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, p, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>()).Returns(uri);
@@ -105,7 +116,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetDownloadUriAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -124,7 +135,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -138,7 +149,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -153,9 +164,23 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         Assert.AreEqual(attachment.Guid, attachmentDto.Guid);
         Assert.AreEqual(attachment.GetFullBlobPath(), attachmentDto.FullBlobPath);
         Assert.AreEqual(attachment.FileName, attachmentDto.FileName);
+        Assert.AreEqual(attachment.Description, attachmentDto.Description);
         var createdBy = attachmentDto.CreatedBy;
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
         Assert.AreEqual(attachment.CreatedAtUtc, attachmentDto.CreatedAtUtc);
+
+        AssertOrderedNonVoidedLabels(attachment, attachmentDto);
+    }
+
+    private static void AssertOrderedNonVoidedLabels(Attachment attachment, AttachmentDto attachmentDto)
+    {
+        Assert.IsNotNull(attachmentDto.Labels);
+        var expectedLabels = attachment.Labels.Where(l => !l.IsVoided).ToList();
+        Assert.AreEqual(expectedLabels.Count, attachmentDto.Labels.Count);
+        foreach (var label in expectedLabels)
+        {
+            Assert.IsTrue(attachmentDto.Labels.Any(l => l == label.Text));
+        }
     }
 }

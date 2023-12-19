@@ -15,8 +15,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<LibraryItem>
 {
-    private new LibraryItemRepository _dut;
     private LibraryType _knownLibraryType;
+
+    protected override EntityWithGuidRepository<LibraryItem> GetDut()
+        => new LibraryItemRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
@@ -32,9 +34,6 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
             .ContextMock
             .Library
             .Returns(_dbSetMock);
-
-        _dut = new LibraryItemRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
     protected override LibraryItem GetNewEntity() => new(TestPlant, Guid.NewGuid(), "B", "B Desc", LibraryType.COMPLETION_ORGANIZATION);
@@ -42,22 +41,37 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
     [TestMethod]
     public async Task GetByGuidAndTypeAsync_ShouldReturnItem_WhenKnownGuidAndType()
     {
-        var result = await _dut.GetByGuidAndTypeAsync(_knownGuid, _knownLibraryType, default);
+        // Arrange
+        var dut = new LibraryItemRepository(_contextHelper.ContextMock);
+        
+        // Act
+        var result = await dut.GetByGuidAndTypeAsync(_knownGuid, _knownLibraryType, default);
 
+        // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(_knownGuid, result.Guid);
         Assert.AreEqual(_knownLibraryType, result.Type);
     }
 
     [TestMethod]
-    public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownGuid() =>
+    public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownGuid()
+    {
+        // Arrange
+        var dut = new LibraryItemRepository(_contextHelper.ContextMock);
+
         // Act and Assert
         await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
-            => _dut.GetByGuidAndTypeAsync(Guid.NewGuid(), _knownLibraryType, default));
+            => dut.GetByGuidAndTypeAsync(Guid.NewGuid(), _knownLibraryType, default));
+    }
 
     [TestMethod]
-    public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownType() =>
+    public async Task GetByGuidAndTypeAsync_ShouldThrowEntityNotFoundException_WhenUnknownType()
+    {
+        // Arrange
+        var dut = new LibraryItemRepository(_contextHelper.ContextMock);
+
         // Act and Assert
         await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
-            => _dut.GetByGuidAndTypeAsync(_knownGuid, LibraryType.PUNCHLIST_SORTING, default));
+            => dut.GetByGuidAndTypeAsync(_knownGuid, LibraryType.PUNCHLIST_SORTING, default));
+    }
 }

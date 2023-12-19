@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -29,28 +30,27 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected int _swcrId;
     protected int _workOrderId;
     protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
+    protected readonly string LabelTextA = "A";
+    protected readonly string LabelTextB = "B";
+    protected readonly string LabelTextC = "C";
+    protected readonly string LabelTextVoided = "V";
     protected DbContextOptions<CompletionContext> _dbContextOptions;
-    protected IPlantProvider _plantProviderMockObject;
-    protected ICurrentUserProvider _currentUserProviderMockObject;
-    protected IEventDispatcher _eventDispatcherMockObject;
+    protected ICurrentUserProvider _currentUserProviderMock;
+    protected IEventDispatcher _eventDispatcherMock;
 
     [TestInitialize]
     public void SetupBase()
     {
-        _plantProviderMockObject = _plantProviderMock;
+        _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        _currentUserProviderMock.GetCurrentUserOid().Returns(CurrentUserOid);
 
-        var currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
-        currentUserProviderMock.GetCurrentUserOid().Returns(CurrentUserOid);
-        _currentUserProviderMockObject = currentUserProviderMock;
-
-        var eventDispatcherMock = Substitute.For<IEventDispatcher>();
-        _eventDispatcherMockObject = eventDispatcherMock;
+        _eventDispatcherMock = Substitute.For<IEventDispatcher>();
 
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
             
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
@@ -119,7 +119,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
     protected Project GetProjectById(int projectId)
     {
-        using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         return context.Projects.Single(x => x.Id == projectId);
     }
 
@@ -163,5 +163,19 @@ public abstract class ReadOnlyTestsBase : TestsBase
         context.Documents.Add(document);
         context.SaveChangesAsync().Wait();
         return document.Id;
+    }
+
+    private void AddLabel(CompletionContext context, Label label)
+    {
+        context.Labels.Add(label);
+        context.SaveChangesAsync().Wait();
+    }
+
+    public void Add4UnorderedLabelsInclusiveAVoidedLabel(CompletionContext context)
+    {
+        AddLabel(context, new Label(LabelTextA));
+        AddLabel(context, new Label(LabelTextC));
+        AddLabel(context, new Label(LabelTextVoided) { IsVoided = true });
+        AddLabel(context, new Label(LabelTextB));
     }
 }

@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -45,18 +45,18 @@ public static class CompletionContextExtension
 
     public static void SeedLabels(this CompletionContext dbContext)
     {
-        var labelA = new Label("A");
-        var labelB = new Label("B");
+        var labelA = new Label(KnownData.LabelA);
+        var labelB = new Label(KnownData.LabelB);
         var labelRepository = new LabelRepository(dbContext);
         labelRepository.Add(labelA);
         labelRepository.Add(labelB);
 
-        var labelHost = new LabelHost(KnownPlantData.HostTypeWithLabels);
-        labelHost.AddLabel(labelA);
-        labelHost.AddLabel(labelB);
+        var labelEntity = new LabelEntity(KnownData.EntityTypeWithLabels);
+        labelA.MakeLabelAvailableFor(labelEntity);
+        labelB.MakeLabelAvailableFor(labelEntity);
 
-        var labelHostRepository = new LabelHostRepository(dbContext);
-        labelHostRepository.Add(labelHost);
+        var labelEntityRepository = new LabelEntityRepository(dbContext);
+        labelEntityRepository.Add(labelEntity);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
@@ -69,42 +69,42 @@ public static class CompletionContextExtension
         var project = SeedProject(
             dbContext,
             plant,
-            KnownPlantData.ProjectGuidA[plant],
+            KnownData.ProjectGuidA[plant],
             "ProjectNameA",
             "ProjectDescriptionA");
 
         var raisedByOrg = SeedLibrary(
             dbContext,
             plant,
-            KnownPlantData.RaisedByOrgGuid[plant],
+            KnownData.RaisedByOrgGuid[plant],
             "COM",
             LibraryType.COMPLETION_ORGANIZATION);
 
         var clearingByOrg = SeedLibrary(
             dbContext,
             plant,
-            KnownPlantData.ClearingByOrgGuid[plant],
+            KnownData.ClearingByOrgGuid[plant],
             "ENG",
             LibraryType.COMPLETION_ORGANIZATION);
 
         var priority = SeedLibrary(
             dbContext,
             plant,
-            KnownPlantData.PriorityGuid[plant],
+            KnownData.PriorityGuid[plant],
             "P1",
             LibraryType.PUNCHLIST_PRIORITY);
 
         var sorting = SeedLibrary(
             dbContext,
             plant,
-            KnownPlantData.SortingGuid[plant],
+            KnownData.SortingGuid[plant],
             "A",
             LibraryType.PUNCHLIST_SORTING);
 
         var type = SeedLibrary(
             dbContext,
             plant,
-            KnownPlantData.TypeGuid[plant],
+            KnownData.TypeGuid[plant],
             "Painting",
             LibraryType.PUNCHLIST_TYPE);
 
@@ -112,7 +112,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
-            KnownPlantData.CheckListGuid[plant],
+            KnownData.CheckListGuid[plant],
             Category.PA,
             "PunchItemA",
             raisedByOrg,
@@ -125,14 +125,14 @@ public static class CompletionContextExtension
         project = SeedProject(
             dbContext, 
             plant,
-            KnownPlantData.ProjectGuidB[plant],
+            KnownData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
         SeedPunchItem(
             dbContext,
             plant,
             project,
-            KnownPlantData.CheckListGuid[plant],
+            KnownData.CheckListGuid[plant],
             Category.PA,
             "PunchItemB",
             raisedByOrg,
@@ -150,23 +150,23 @@ public static class CompletionContextExtension
         SeedWorkOrder(
             dbContext,
             plant,
-            KnownPlantData.OriginalWorkOrderGuid[plant]);
+            KnownData.OriginalWorkOrderGuid[plant]);
         SeedWorkOrder(
             dbContext,
             plant,
-            KnownPlantData.WorkOrderGuid[plant]);
+            KnownData.WorkOrderGuid[plant]);
 
         var swcrNo = 10;
         SeedSWCR(
             dbContext,
             plant,
-            KnownPlantData.SWCRGuid[plant],
+            KnownData.SWCRGuid[plant],
             ++swcrNo);
 
         SeedDocument(
             dbContext,
             plant,
-            KnownPlantData.DocumentGuid[plant]);
+            KnownData.DocumentGuid[plant]);
     }
 
     private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid)

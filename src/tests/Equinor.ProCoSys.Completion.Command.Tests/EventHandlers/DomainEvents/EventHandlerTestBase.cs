@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -41,6 +44,7 @@ public class EventHandlerTestBase
         _punchItem.SetCreated(_person);
         _link = new Link(nameof(PunchItem), _punchItem.Guid, "A", "u");
         _attachment = new Attachment(nameof(PunchItem), Guid.NewGuid(), "PCS$PLANT", "file.txt");
+        _attachment.UpdateLabels(new List<Label>{new("A"), new("B")});
     }
 
     protected void AssertRequiredProperties(PunchItem punchItem, IPunchItem integrationEvent)
@@ -161,5 +165,14 @@ public class EventHandlerTestBase
         Assert.AreEqual(punchItem.ModifiedAtUtc, integrationEvent.ModifiedAtUtc);
         Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.CreatedBy.Oid);
         Assert.AreEqual(punchItem.ModifiedBy!.GetFullName(), integrationEvent.CreatedBy.FullName);
+    }
+
+    protected void AssertSameLabels(List<Label> labelList1, List<string> labelList2)
+    {
+        Assert.AreEqual(labelList1.Count, labelList2.Count);
+        for (var i = 0; i < labelList1.Count; i++)
+        {
+            Assert.AreEqual(labelList1.ElementAt(i).Text, labelList2.ElementAt(i));
+        }
     }
 }

@@ -23,7 +23,7 @@ public class CreatePunchItemLinkCommandHandlerTests : TestsBase
     {
         _command = new CreatePunchItemLinkCommand(Guid.NewGuid(), "T", "U");
 
-        _linkServiceMock =Substitute.For<ILinkService>();
+        _linkServiceMock = Substitute.For<ILinkService>();
         _linkServiceMock.AddAsync(
             nameof(PunchItem),
             _command.PunchItemGuid,

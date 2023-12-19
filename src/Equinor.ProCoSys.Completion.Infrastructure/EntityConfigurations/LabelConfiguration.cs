@@ -22,5 +22,9 @@ internal class LabelConfiguration : IEntityTypeConfiguration<Label>
         builder.Property(x => x.Text)
             .HasMaxLength(Label.TextLengthMax)
             .IsRequired();
+
+        builder
+            .HasMany(x => x.AvailableFor)
+            .WithMany(x => x.Labels);
     }
 }

@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;

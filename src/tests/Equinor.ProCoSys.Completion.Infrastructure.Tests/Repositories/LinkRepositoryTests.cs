@@ -13,6 +13,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class LinkRepositoryTests : EntityWithGuidRepositoryTestBase<Link>
 {
+    protected override EntityWithGuidRepository<Link> GetDut() => new LinkRepository(_contextHelper.ContextMock);
+
     protected override void SetupRepositoryWithOneKnownItem()
     {
         var link = new Link("Whatever", Guid.NewGuid(), "T", "www");
@@ -26,8 +28,6 @@ public class LinkRepositoryTests : EntityWithGuidRepositoryTestBase<Link>
             .ContextMock
             .Links
             .Returns(_dbSetMock);
-
-        _dut = new LinkRepository(_contextHelper.ContextMock);
     }
 
     protected override Link GetNewEntity() => new("Whatever", Guid.NewGuid(), "New link", "U");
