@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Dapper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 
@@ -135,7 +136,7 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
     {
-        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
+        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns("123456789");
         var testObjectMappingConfig = new TestObjectMappingConfig();
         var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
@@ -150,7 +151,7 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenSourceObjectHasNullValues()
     {
-        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), default).Returns("123456789");
+        _oracleDBExecutorMock.ValueLookupAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns("123456789");
 
         _sourceTestObject = new SourceTestObject(_testGuid, null, null, null, false, null, null, null, null, null, null);
 

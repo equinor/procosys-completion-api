@@ -1,4 +1,7 @@
-﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+﻿using System;
+using Dapper;
+
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 public static class SqlParameterConversionHelper
 {
@@ -28,7 +31,7 @@ public static class SqlParameterConversionHelper
         switch (sourcePropertyType)
         {
             case PropertyType.String:
-                return sourcePropertyValue != null ? $"'{sourcePropertyValue}'" : "null";
+                return sourcePropertyValue != null ? $"{sourcePropertyValue}" : "null";
             case PropertyType.Int:
                 return sourcePropertyValue != null ? $"{sourcePropertyValue}" : "null";
             case PropertyType.Bool:
@@ -91,7 +94,7 @@ public static class SqlParameterConversionHelper
         }
         else
         {
-            return $"'{guid.Value.ToString().Replace("-", string.Empty).ToUpper()}'";
+            return $"{guid.Value.ToString().Replace("-", string.Empty).ToUpper()}";
         }
     }
 
@@ -115,14 +118,12 @@ public static class SqlParameterConversionHelper
      */
     private static async Task<string> GuidToLibIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
-        var sqlQuery = $"select library_id from library where procosys_guid = {GuidToPCS4Guid(guid)}";
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
-        var libraryId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
-        if (libraryId != null)
-        {
-            return libraryId;
-        }
-        throw new Exception($"Not able to find a library item in pcs4 with guid = {guid}");
+        var sqlQuery = $"select Library_id from library where procosys_guid = :procosys_guid";
+
+        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
@@ -130,14 +131,12 @@ public static class SqlParameterConversionHelper
      */
     private static async Task<string> OidToPersonIdAsync(Guid oid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
-        var sqlQuery = $"select person_id from person where azure_oid = {GuidToPCS4Oid(oid)}";
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add(":azure_oid", GuidToPCS4Oid(oid));
 
-        var personId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
-        if (personId != null)
-        {
-            return personId;
-        }
-        throw new Exception($"Not able to find a person in pcs4 with azure_oid = {oid}");
+        var sqlQuery = $"select Person_id from person where azure_oid = :azure_oid";
+
+        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
@@ -145,14 +144,12 @@ public static class SqlParameterConversionHelper
      */
     private static async Task<string> GuidToWorkOrderIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
-        var sqlQuery = $"select wo_id from wo where procosys_guid = {GuidToPCS4Guid(guid)}";
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
-        var woId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
-        if (woId != null)
-        {
-            return woId;
-        }
-        throw new Exception($"Not able to find work order in pcs4 with guid = {guid}");
+        var sqlQuery = $"select Wo_id from wo where procosys_guid = :procosys_guid";
+
+        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
@@ -160,14 +157,12 @@ public static class SqlParameterConversionHelper
      */
     private static async Task<string> GuidToSWCRIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
-        var sqlQuery = $"select swcr_id from swcr where procosys_guid = {GuidToPCS4Guid(guid)}";
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
-        var swcrId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
-        if (swcrId != null)
-        {
-            return swcrId;
-        }
-        throw new Exception($"Not able to find SWCR in pcs4 with guid = {guid}");
+        var sqlQuery = $"select Swcr_id from swcr where procosys_guid = :procosys_guid";
+
+        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
@@ -175,14 +170,12 @@ public static class SqlParameterConversionHelper
      */
     private static async Task<string> GuidToDocumentIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
-        var sqlQuery = $"select document_id from document where procosys_guid = {GuidToPCS4Guid(guid)}";
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
-        var documentId = await oracleDBExecutor.ValueLookupAsync(sqlQuery, cancellationToken);
-        if (documentId != null)
-        {
-            return documentId;
-        }
-        throw new Exception($"Not able to find document in pcs4 with guid = {guid}");
+        var sqlQuery = $"select Document_id from document where procosys_guid = :procosys_guid";
+
+        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**

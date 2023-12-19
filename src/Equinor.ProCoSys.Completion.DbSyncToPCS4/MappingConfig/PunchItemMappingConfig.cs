@@ -10,8 +10,10 @@ public class PunchItemMappingConfig : ISourceObjectMappingConfig
         {
             new PropertyMapping("Description",         "Description",          PropertyType.String,   null),
             new PropertyMapping("RaisedByOrgGuid",     "RaisedByOrg_id",       PropertyType.Guid,     ValueConversion.GuidToLibId),
+            
             new PropertyMapping("ClearingByOrgGuid",   "ClearedByOrg_id",      PropertyType.Guid,     ValueConversion.GuidToLibId),
-            new PropertyMapping("ActionBy.Oid",        "ActionByPerson_id",    PropertyType.Guid,     ValueConversion.GuidToLibId),
+            new PropertyMapping("ActionBy.Oid",        "ActionByPerson_id",    PropertyType.Guid,     ValueConversion.OidToPersonId),
+            /*
             new PropertyMapping("DueTimeUtc",          "DueDate",              PropertyType.DateTime, ValueConversion.DateTimeToDate),
             new PropertyMapping("Estimate",            "Estimate",             PropertyType.Int,      null),
             new PropertyMapping("PriorityGuid",        "Priority_id",           PropertyType.Guid,     ValueConversion.GuidToLibId),
@@ -25,6 +27,7 @@ public class PunchItemMappingConfig : ISourceObjectMappingConfig
             new PropertyMapping("MaterialRequired",    "IsMaterialRequired",   PropertyType.Bool,     null),
             new PropertyMapping("MaterialETAUtc",      "Material_ETA",         PropertyType.DateTime, ValueConversion.DateTimeToDate),
             new PropertyMapping("MaterialExternalNo",  "MaterialNo",           PropertyType.String,   null)
+            */
         };
 
     public List<PropertyMapping> PropertyMappings { get; }

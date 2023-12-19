@@ -43,34 +43,55 @@ public class Pcs4Repository : IPcs4Repository
             }
             await transaction.CommitAsync(cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
-            throw new Exception($"Error occured when trying to execute the following sql statement: {sqlStatement}. A rollback on the transaction is performed.");
+
+            var paramsStr = BuildStringWithParamsForLogging(sqlParameters);
+
+            throw new Exception($"Error occured when trying to execute the following sql statement: {sqlStatement}. " +
+                $"Parameters: {paramsStr} A rollback on the transaction is performed.", ex);
         }
     }
 
+
     /**
-     * This method will be used to fetch a value from Pcs4 datbase, by 
+     * This method will be used to fetch a value from the Pcs4 database. If the value is not found, an exception will be thrown. 
      */
-    public async Task<string?> ValueLookupAsync(string sqlQuery, CancellationToken cancellationToken)
+    public async Task<string> ValueLookupAsync(string sqlQuery, DynamicParameters sqlParameters, CancellationToken cancellationToken)
     {
         await using var connection = new OracleConnection(_dbConnStr);
         await connection.OpenAsync(cancellationToken);
 
-        //DAPPER
-        await using var command = new OracleCommand(sqlQuery, connection);
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-
-        while (reader.Read())
+        try
         {
-            //todo: Bør kanskje sjekke at vi bare for returnert én rad
-            var value = Convert.ToString(await command.ExecuteScalarAsync(cancellationToken));
-            if (value != null)
+            var result = await connection.ExecuteScalarAsync(sqlQuery, sqlParameters);
+            var strResult = Convert.ToString(result);
+            if (strResult != null)
             {
-                return value;
+                return strResult;
             }
+
+            throw new Exception("Value lookup failed. Result was null.");
         }
-        return null;
+        catch (Exception ex)
+        {
+            var paramsStr = BuildStringWithParamsForLogging(sqlParameters);
+            throw new Exception($"Error occured when trying to look up a value in PCS4 database. Sql query: {sqlQuery}. Parameters: {paramsStr}.", ex);
+        }
     }
+
+    private static string BuildStringWithParamsForLogging(DynamicParameters sqlParameters)
+    {
+        var paramList = new List<string>();
+
+        foreach (var name in sqlParameters.ParameterNames)
+        {
+            var value = sqlParameters.Get<object>(name);
+            paramList.Add($"{name}={value}");
+        }
+        var paramsStr = string.Join(", ", paramList);
+        return paramsStr;
+    }
+
 }

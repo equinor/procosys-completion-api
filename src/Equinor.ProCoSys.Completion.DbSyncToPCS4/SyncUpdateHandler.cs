@@ -98,8 +98,8 @@ public class SyncUpdateHandler
 
         foreach (var columnUpdate in updatesForTargetColumns)
         {
-            sqlParameters.Add($"@{columnUpdate.ColumnName}", columnUpdate.ColumnValue);
-            updateStatement.Append($"{columnUpdate.ColumnName} = @{columnUpdate.ColumnName}");
+            sqlParameters.Add($":{columnUpdate.ColumnName}", columnUpdate.ColumnValue);
+            updateStatement.Append($"{columnUpdate.ColumnName} = :{columnUpdate.ColumnName}");
 
             if (columnUpdate != updatesForTargetColumns.Last())
             {
@@ -108,8 +108,8 @@ public class SyncUpdateHandler
         }
 
         var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
-        sqlParameters.Add($"@{primaryKeyName}", primaryKeySqlParamValue);
-        updateStatement.Append($" where {primaryKeyName} = @{primaryKeyName}");
+        sqlParameters.Add($":{primaryKeyName}", primaryKeySqlParamValue);
+        updateStatement.Append($" where {primaryKeyName} = :{primaryKeyName}");
 
         return (updateStatement.ToString(), sqlParameters);
     }
