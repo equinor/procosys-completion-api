@@ -41,7 +41,7 @@ public class ProjectEventConsumerTests
     }
 
     [TestMethod]
-    public async Task Consume_WorksAsExpected_WhenAddingNewProject()
+    public async Task Consume_ShouldAddNewProject_WhenProjectDoesNotExist()
     {
         //Arrange
         var guid = Guid.NewGuid();
@@ -69,7 +69,7 @@ public class ProjectEventConsumerTests
     }
     
     [TestMethod]
-    public async Task Consume_WorksAsExpected_WhenUpdatingProject()
+    public async Task Consume_ShouldUpdateProject_WhenProjectExists()
     {
         //Arrange
         var guid = Guid.NewGuid();
