@@ -170,7 +170,13 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
 
         var pcsPerson = await _personCache.GetAsync(oid);
-        var person = new Person(oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+        var person = new Person(
+            oid,
+            pcsPerson.FirstName,
+            pcsPerson.LastName,
+            pcsPerson.UserName,
+            pcsPerson.Email,
+            pcsPerson.Super);
         _personRepository.Add(person);
 
         return person;

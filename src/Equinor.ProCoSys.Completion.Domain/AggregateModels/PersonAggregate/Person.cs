@@ -12,13 +12,14 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public const int UserNameLengthMax = 128;
     public const int EmailLengthMax = 128;
 
-    public Person(Guid guid, string firstName, string lastName, string userName, string email)
+    public Person(Guid guid, string firstName, string lastName, string userName, string email, bool superuser)
     {
         Guid = guid;
         FirstName = firstName;
         LastName = lastName;
         UserName = userName;
         Email = email;
+        Superuser = superuser;
     }
 
     // private setters needed for Entity Framework
@@ -27,6 +28,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public string LastName { get; set; }
     public string UserName { get; set; }
     public string Email { get; set; }
+    public bool Superuser { get; set; }
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
