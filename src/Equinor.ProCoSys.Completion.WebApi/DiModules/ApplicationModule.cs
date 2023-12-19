@@ -31,6 +31,7 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -64,15 +65,36 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
+
+            x.AddConsumer<ProjectEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false; //MT should not create the endpoint for us, as it already exists.
+                    e.Name = "completion_project";
+                    e.Temporary = false;
+                });
             
-            x.UsingAzureServiceBus((_,cfg) =>
+            x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
                 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
-                
+                cfg.ConfigureJsonSerializerOptions(opts =>
+                {
+                    opts.Converters.Add(new OracleGuidConverter());
+                    return opts;
+                });
+                cfg.SubscriptionEndpoint("completion_project","project", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ProjectEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
+                });
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());

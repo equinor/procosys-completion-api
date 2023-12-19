@@ -56,7 +56,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
 
             var id = 5;
-            var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
+            var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!, DateTime.Now);
             _existingPunchItem = new PunchItem(
                 TestPlantA,
                 project,

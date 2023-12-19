@@ -58,9 +58,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
             AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs"));
         }
 
-        var projectA = new Project(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc");
-        var projectB = new Project(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc");
-        var closedProjectC = new Project(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc") {IsClosed = true};
+        var projectA = new Project(TestPlantA, Guid.NewGuid(), "ProA", "ProA desc", DateTime.Now);
+        var projectB = new Project(TestPlantA, Guid.NewGuid(), "ProB", "ProB desc", DateTime.Now);
+        var closedProjectC = new Project(TestPlantA, Guid.NewGuid(), "ProC", "ProC desc", DateTime.Now) {IsClosed = true};
 
         _projectAId = AddProject(context, projectA);
         _projectBId = AddProject(context, projectB);
