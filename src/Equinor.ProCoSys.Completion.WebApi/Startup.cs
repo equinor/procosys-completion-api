@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Seeding;
-using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
@@ -26,8 +25,6 @@ using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
-using Equinor.ProCoSys.PcsServiceBus;
-using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
 
