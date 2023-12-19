@@ -94,7 +94,6 @@ public static class ApplicationModule
                     e.ConfigureConsumer<ProjectEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
-                
                 });
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {

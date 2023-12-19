@@ -17,12 +17,13 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     private readonly IProjectRepository _projectRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptions<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
     
     public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger, 
         IProjectRepository projectRepository, 
         IUnitOfWork unitOfWork, 
-        ICurrentUserSetter currentUserSetter, IOptions<CompletionAuthenticatorOptions> options)
+        ICurrentUserSetter currentUserSetter, 
+        IOptionsMonitor<CompletionAuthenticatorOptions> options)
     {
         _logger = logger;
         _projectRepository = projectRepository;
@@ -49,13 +50,13 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
         else if(await _projectRepository.ExistsAsync(projectEvent.ProCoSysGuid, context.CancellationToken))
         {
             var project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
-            if (project.Pcs4LastUpdated > projectEvent.LastUpdated)
+            if (project.ProCoSys4LastUpdated > projectEvent.LastUpdated)
             {
-                _logger.LogWarning("Project Message Ignored because a newer LastUpdated already exits in db:" +
-                                       " MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                _logger.LogWarning("Project Message Ignored because a newer LastUpdated already exits in db\n" +
+                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                        "EventLastUpdated: {LastUpdated} \n" +
                                        "LastUpdatedFromDb: {ProjectLastUpdated}",
-                    context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.Pcs4LastUpdated);
+                    context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.ProCoSys4LastUpdated);
                 return;
             }
             MapFromEventToProject(projectEvent, project);
@@ -65,7 +66,7 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
             var project = CreateProjectEntity(projectEvent);
             _projectRepository.Add(project);
         }
-        _currentUserSetter.SetCurrentUserOid(_options.Value.CompletionApiObjectId);
+        _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
         
         _logger.LogInformation("Project Message Consumed: {MessageId} \n {ProjectName}", 
@@ -76,9 +77,9 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     {
         project.IsClosed = projectEvent.IsClosed;
         project.Name = projectEvent.ProjectName;
-        project.Pcs4LastUpdated = projectEvent.LastUpdated;
+        project.ProCoSys4LastUpdated = projectEvent.LastUpdated;
         
-        if (projectEvent.Description != null)
+        if (projectEvent.Description is not null)
         {
             project.Description = projectEvent.Description;
         }
@@ -86,7 +87,11 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
 
     //12/12/2023 We use name as description if description is missing. Its a super edge case and pcs4 does not have any projects with description is null today
      private static Project CreateProjectEntity(IProjectEventV1 projectEvent) 
-         => new(projectEvent.Plant, projectEvent.ProCoSysGuid, projectEvent.ProjectName,projectEvent.Description?? projectEvent.ProjectName, projectEvent.LastUpdated);
+         => new(projectEvent.Plant,
+             projectEvent.ProCoSysGuid,
+             projectEvent.ProjectName,
+             projectEvent.Description?? projectEvent.ProjectName, 
+             projectEvent.LastUpdated);
 }
 
 public record ProjectEvent(string EventType, string? Description, 

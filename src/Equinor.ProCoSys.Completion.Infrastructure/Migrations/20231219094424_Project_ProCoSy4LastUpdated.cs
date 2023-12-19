@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ProjectLastUpdatedField : Migration
+    public partial class Project_ProCoSy4LastUpdated : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<DateTime>(
-                name: "Pcs4LastUpdated",
+                name: "ProCoSys4LastUpdated",
                 table: "Projects",
                 type: "datetime2",
                 nullable: false,
@@ -28,7 +28,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Pcs4LastUpdated",
+                name: "ProCoSys4LastUpdated",
                 table: "Projects")
                 .Annotation("SqlServer:IsTemporal", true)
                 .Annotation("SqlServer:TemporalHistoryTableName", "ProjectsHistory")

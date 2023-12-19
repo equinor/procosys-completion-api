@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    [Migration("20231212112713_ProjectLastUpdatedField")]
-    partial class ProjectLastUpdatedField
+    [Migration("20231219094424_Project_ProCoSy4LastUpdated")]
+    partial class Project_ProCoSy4LastUpdated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -671,9 +671,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<DateTime>("Pcs4LastUpdated")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("PeriodEnd")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
@@ -688,6 +685,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("ProCoSys4LastUpdated")
+                        .HasColumnType("datetime2");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
