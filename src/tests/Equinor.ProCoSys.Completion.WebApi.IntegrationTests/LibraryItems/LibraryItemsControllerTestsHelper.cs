@@ -1,28 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Newtonsoft.Json;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LabelEntities;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LibraryItems;
 
-public static class LabelEntitiesControllerTestsHelper
+public static class LibraryItemsControllerTestsHelper
 {
-    private const string Route = "LabelEntities";
+    private const string Route = "LibraryItems";
 
-    public static async Task<List<string>> GetLabelsForEntityAsync(
+    public static async Task<List<LibraryItemDto>> GetLibraryItemsAsync(
         UserType userType,
-        EntityTypeWithLabel entityType,
+        string plant,
+        LibraryType libraryType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var parameters = new ParameterCollection
         {
-            { "entityType", entityType.ToString() }
+            { "libraryType", libraryType.ToString() }
         };
         var url = $"{Route}{parameters}";
 
-        var response = await TestFactory.Instance.GetHttpClient(userType, null).GetAsync(url);
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync(url);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -32,6 +33,6 @@ public static class LabelEntitiesControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<string>>(content);
+        return JsonConvert.DeserializeObject<List<LibraryItemDto>>(content);
     }
 }

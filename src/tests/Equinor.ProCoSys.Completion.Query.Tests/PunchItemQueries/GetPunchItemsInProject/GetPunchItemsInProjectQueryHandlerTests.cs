@@ -16,6 +16,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItems
 [TestClass]
 public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private PunchItem _punchItemInProjectA;
     private PunchItem _punchItemInProjectB;
     private Project _projectA;
@@ -25,13 +26,13 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _projectA = context.Projects.Single(p => p.Id == _projectAId);
-        _projectB = context.Projects.Single(p => p.Id == _projectBId);
-        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
-        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
+        _projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
+        _projectB = context.Projects.Single(p => p.Id == _projectBId[_testPlant]);
+        var raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId[_testPlant]);
+        var clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId[_testPlant]);
 
-        _punchItemInProjectA = new PunchItem(TestPlantA, _projectA, Guid.NewGuid(), Category.PA, "A", raisedByOrg, clearingByOrg);
-        _punchItemInProjectB = new PunchItem(TestPlantA, _projectB, Guid.NewGuid(), Category.PA, "B", raisedByOrg, clearingByOrg);
+        _punchItemInProjectA = new PunchItem(_testPlant, _projectA, Guid.NewGuid(), Category.PA, "A", raisedByOrg, clearingByOrg);
+        _punchItemInProjectB = new PunchItem(_testPlant, _projectB, Guid.NewGuid(), Category.PA, "B", raisedByOrg, clearingByOrg);
 
         context.PunchItems.Add(_punchItemInProjectA);
         context.PunchItems.Add(_punchItemInProjectB);

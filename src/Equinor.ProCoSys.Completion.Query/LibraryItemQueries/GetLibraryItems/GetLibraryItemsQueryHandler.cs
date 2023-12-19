@@ -20,7 +20,7 @@ public class GetLibraryItemsQueryHandler : IRequestHandler<GetLibraryItemsQuery,
     {
         var libraryItems =
             await (from libraryItem in _context.QuerySet<LibraryItem>()
-                   where libraryItem.Type == request.Type
+                   where libraryItem.Type == request.LibraryType
                    select new LibraryItemDto(
                        libraryItem.Guid,
                        libraryItem.Code,

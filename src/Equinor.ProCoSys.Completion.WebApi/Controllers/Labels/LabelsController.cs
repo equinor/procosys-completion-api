@@ -12,7 +12,6 @@ using ServiceResult.ApiExtensions;
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Labels;
 
 // Todo 108512 Secure with superuser permission
-// todo 108269 Create integration tests
 [Authorize]
 [ApiController]
 [Route("Labels")]

@@ -235,6 +235,11 @@ public static class PunchItemsControllerTestsHelper
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
         var jsonString = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
     }
@@ -252,6 +257,11 @@ public static class PunchItemsControllerTestsHelper
         httpContent.Add(new StringContent(rowVersion), nameof(rowVersion));
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
 
         return await response.Content.ReadAsStringAsync();
     }

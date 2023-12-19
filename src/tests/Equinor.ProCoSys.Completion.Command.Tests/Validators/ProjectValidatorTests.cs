@@ -12,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class ProjectValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private Project _openProject = null!;
     private Project _closedProject = null!;
 
@@ -19,8 +20,8 @@ public class ProjectValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
             
-        _openProject = new Project(TestPlantA, Guid.NewGuid(), "Project 1", "D1", DateTime.Now);
-        _closedProject = new Project(TestPlantA, Guid.NewGuid(), "Project 2", "D2", DateTime.Now) { IsClosed = true };
+        _openProject = new Project(_testPlant, Guid.NewGuid(), "Project 1", "D1", DateTime.Now);
+        _closedProject = new Project(_testPlant, Guid.NewGuid(), "Project 2", "D2", DateTime.Now) { IsClosed = true };
         context.Projects.Add(_openProject);
         context.Projects.Add(_closedProject);
 

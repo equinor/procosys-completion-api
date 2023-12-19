@@ -13,13 +13,14 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunc
 [TestClass]
 public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private UpdatePunchItemCategoryCommand _command;
     private UpdatePunchItemCategoryCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new UpdatePunchItemCategoryCommand(_punchItemPa.Guid, Category.PB, RowVersion);
+        _command = new UpdatePunchItemCategoryCommand(_punchItemPa[_testPlant].Guid, Category.PB, RowVersion);
 
         _dut = new UpdatePunchItemCategoryCommandHandler(
             _punchItemRepositoryMock,
@@ -34,7 +35,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(Category.PB, _punchItemPa.Category);
+        Assert.AreEqual(Category.PB, _punchItemPa[_testPlant].Category);
     }
 
     [TestMethod]
@@ -57,7 +58,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Substitute this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _punchItemPa.RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _punchItemPa[_testPlant].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -67,7 +68,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_punchItemPa.DomainEvents.Last(), typeof(PunchItemCategoryUpdatedDomainEvent));
+        Assert.IsInstanceOfType(_punchItemPa[_testPlant].DomainEvents.Last(), typeof(PunchItemCategoryUpdatedDomainEvent));
     }
 
     [TestMethod]
@@ -77,7 +78,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedCategoryDomainEvent = _punchItemPa.DomainEvents.Last() as PunchItemCategoryUpdatedDomainEvent;
+        var punchItemUpdatedCategoryDomainEvent = _punchItemPa[_testPlant].DomainEvents.Last() as PunchItemCategoryUpdatedDomainEvent;
         Assert.IsNotNull(punchItemUpdatedCategoryDomainEvent);
         Assert.IsNotNull(punchItemUpdatedCategoryDomainEvent.Change);
         Assert.AreEqual(nameof(PunchItem.Category), punchItemUpdatedCategoryDomainEvent.Change.Name);

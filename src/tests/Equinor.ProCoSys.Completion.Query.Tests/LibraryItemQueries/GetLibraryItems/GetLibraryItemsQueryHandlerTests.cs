@@ -15,30 +15,19 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryI
 [TestClass]
 public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
-    // perform these tests in other plant than TestPlantA since ReadOnlyTestsBase creates LibraryItem's there
+    // perform test in other plant than TestPlantA / TestPlantB, since base class initiate LibraryItems there
+    private readonly string _testPlant = TestPlantWithoutData;
+
     private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
+    private readonly LibraryType _otherThanSortingType = LibraryType.PUNCHLIST_PRIORITY;
+
     private LibraryItem _punchListSortingLibraryItemA;
     private LibraryItem _punchListSortingLibraryItemB;
     private LibraryItem _punchListSortingLibraryItemC;
+    private LibraryItem _punchListPriorityLibraryItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
-    {
-        _plantProviderMock.Plant.Returns(TestPlantB);
-        
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
-
-        _punchListSortingLibraryItemA = new LibraryItem(TestPlantB, Guid.NewGuid(), "A", "A Desc", _sortingType);
-        _punchListSortingLibraryItemB = new LibraryItem(TestPlantB, Guid.NewGuid(), "B", "B Desc", _sortingType);
-        _punchListSortingLibraryItemC = new LibraryItem(TestPlantB, Guid.NewGuid(), "C", "C Desc", _sortingType);
-        var punchListPriorityLibraryItem = new LibraryItem(TestPlantB, Guid.NewGuid(), "O", "O Desc", LibraryType.PUNCHLIST_PRIORITY);
-
-        context.Library.Add(_punchListSortingLibraryItemC);
-        context.Library.Add(_punchListSortingLibraryItemA);
-        context.Library.Add(_punchListSortingLibraryItemB);
-        context.Library.Add(punchListPriorityLibraryItem);
-
-        context.SaveChangesAsync().Wait();
-    }
+        => _plantProviderMock.Plant.Returns(_testPlant);
 
     [TestMethod]
     public async Task Handler_ShouldReturnEmptyList_IfNoneFound()
@@ -63,6 +52,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        AddLibraryDataToPlant(context);
 
         var query = new GetLibraryItemsQuery(_sortingType);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -81,6 +71,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        AddLibraryDataToPlant(context);
 
         var query = new GetLibraryItemsQuery(_sortingType);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -101,5 +92,20 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         Assert.AreEqual(libraryItem.Code, libraryItemDto.Code);
         Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
+    }
+
+    private void AddLibraryDataToPlant(CompletionContext context)
+    {
+        _punchListSortingLibraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", _sortingType);
+        _punchListSortingLibraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", _sortingType);
+        _punchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", _sortingType);
+        _punchListPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "O", "O Desc", _otherThanSortingType);
+
+        context.Library.Add(_punchListSortingLibraryItemC);
+        context.Library.Add(_punchListSortingLibraryItemA);
+        context.Library.Add(_punchListSortingLibraryItemB);
+        context.Library.Add(_punchListPriorityLibraryItem);
+
+        context.SaveChangesAsync().Wait();
     }
 }
