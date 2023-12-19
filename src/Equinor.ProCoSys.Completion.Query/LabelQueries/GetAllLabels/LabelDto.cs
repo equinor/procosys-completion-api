@@ -2,4 +2,4 @@
 
 namespace Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 
-public record LabelDto(string Text, bool IsVoided, List<string> EntitiesWithLabel);
+public record LabelDto(string Text, bool IsVoided, List<string> AvailableFor);

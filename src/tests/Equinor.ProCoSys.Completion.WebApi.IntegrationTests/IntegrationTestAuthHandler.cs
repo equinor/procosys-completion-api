@@ -25,9 +25,8 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
     public IntegrationTestAuthHandler(
         IOptionsMonitor<IntegrationTestAuthOptions> options, 
         ILoggerFactory logger, 
-        UrlEncoder encoder, 
-        ISystemClock clock) 
-        : base(options, logger, encoder, clock)
+        UrlEncoder encoder) 
+        : base(options, logger, encoder)
     {
     }
 
@@ -51,7 +50,7 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
     private Task<List<Claim>> GatherTestUserClaimsAsync()
     {
         var authorizationHeader = Request.Headers["Authorization"];
-        var tokens = authorizationHeader.ToString()?.Split(' ');
+        var tokens = authorizationHeader.ToString().Split(' ');
         if (tokens is null || tokens.Length <= 1)
         {
             throw new Exception("[Authorization] header missing");

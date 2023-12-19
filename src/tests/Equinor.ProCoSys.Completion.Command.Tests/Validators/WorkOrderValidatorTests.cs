@@ -12,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class WorkOrderValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private WorkOrder _knownWorkOrder = null!;
     private WorkOrder _openWorkOrder = null!;
     private WorkOrder _closedWorkOrder = null!;
@@ -20,8 +21,8 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _knownWorkOrder = _openWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 1");
-        _closedWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
+        _knownWorkOrder = _openWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 1");
+        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
         context.WorkOrders.Add(_openWorkOrder);
         context.WorkOrders.Add(_closedWorkOrder);
 

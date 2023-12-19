@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
@@ -17,9 +18,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.RejectPunc
 [TestClass]
 public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private RejectPunchItemCommand _command;
     private RejectPunchItemCommandHandler _dut;
-    private readonly string _rejectComment = "Must do better";
     private ILabelRepository _labelRepositoryMock;
     private ICommentService _commentServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
@@ -28,9 +29,9 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem.Clear(_currentPerson);
+        _existingPunchItem[_testPlant].Clear(_currentPerson);
 
-        _command = new RejectPunchItemCommand(_existingPunchItem.Guid, _rejectComment, RowVersion);
+        _command = new RejectPunchItemCommand(_existingPunchItem[_testPlant].Guid, Guid.NewGuid().ToString(), RowVersion);
 
         var rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
@@ -63,8 +64,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem.RejectedAtUtc);
-        Assert.AreEqual(_currentPerson.Id, _existingPunchItem.RejectedById);
+        Assert.AreEqual(_utcNow, _existingPunchItem[_testPlant].RejectedAtUtc);
+        Assert.AreEqual(_currentPerson.Id, _existingPunchItem[_testPlant].RejectedById);
     }
 
     [TestMethod]
@@ -87,7 +88,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -97,7 +98,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemRejectedDomainEvent));
+        Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemRejectedDomainEvent));
     }
 
     [TestMethod]

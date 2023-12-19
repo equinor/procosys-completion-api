@@ -103,6 +103,7 @@ public static class CompletionContextExtension
             KnownData.SortingGuid[plant],
             "A",
             LibraryType.PUNCHLIST_SORTING);
+        knownTestData.PunchSortingLibraryGuids.Add(sorting.Guid);
 
         var type = SeedLibrary(
             dbContext,
@@ -115,7 +116,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
-            KnownData.CheckListGuid[plant],
+            KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemA",
             raisedByOrg,
@@ -123,7 +124,7 @@ public static class CompletionContextExtension
             priority,
             sorting,
             type);
-        knownTestData.PunchItemGuid = punchItem.Guid;
+        knownTestData.PunchItem = punchItem;
 
         project = SeedProject(
             dbContext, 
@@ -135,7 +136,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             project,
-            KnownData.CheckListGuid[plant],
+            KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemB",
             raisedByOrg,
@@ -212,7 +213,7 @@ public static class CompletionContextExtension
         string desc)
     {
         var projectRepository = new ProjectRepository(dbContext);
-        var project = new Project(plant, guid, name, desc);
+        var project = new Project(plant, guid, name, desc, DateTime.Now);
         projectRepository.Add(project);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return project;

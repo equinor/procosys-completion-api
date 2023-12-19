@@ -18,7 +18,7 @@ public class ProjectTests : IModificationAuditableTests
     protected override IModificationAuditable GetModificationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Project(_testPlant, _guid, _name, _description);
+    public void Setup() => _dut = new Project(_testPlant, _guid, _name, _description, DateTime.Now);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()

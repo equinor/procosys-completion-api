@@ -12,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class SWCRValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private SWCR _nonVoidedSWCR = null!;
     private SWCR _voidedSWCR = null!;
 
@@ -19,8 +20,8 @@ public class SWCRValidatorTests : ReadOnlyTestsBase
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _nonVoidedSWCR = new SWCR(TestPlantA, Guid.NewGuid(), 1);
-        _voidedSWCR = new SWCR(TestPlantA, Guid.NewGuid(), 2) { IsVoided = true };
+        _nonVoidedSWCR = new SWCR(_testPlant, Guid.NewGuid(), 1);
+        _voidedSWCR = new SWCR(_testPlant, Guid.NewGuid(), 2) { IsVoided = true };
         context.SWCRs.Add(_nonVoidedSWCR);
         context.SWCRs.Add(_voidedSWCR);
 

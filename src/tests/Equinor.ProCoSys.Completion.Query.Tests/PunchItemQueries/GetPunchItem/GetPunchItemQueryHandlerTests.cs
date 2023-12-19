@@ -20,6 +20,8 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 [TestClass]
 public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
+
     private PunchItem _createdPunchItem;
     private PunchItem _modifiedPunchItem;
     private PunchItem _clearedPunchItem;
@@ -54,17 +56,17 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
-        var projectA = context.Projects.Single(p => p.Id == _projectAId);
-        _raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId);
-        _clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId);
-        _priority = context.Library.Single(l => l.Id == _priorityId);
-        _sorting = context.Library.Single(l => l.Id == _sortingId);
-        _type = context.Library.Single(l => l.Id == _typeId);
-        _document = context.Documents.Single(d => d.Id == _documentId);
-        _swcr = context.SWCRs.Single(s => s.Id == _swcrId);
-        _workOrder = context.WorkOrders.Single(w => w.Id == _workOrderId);
+        var projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
+        _raisedByOrg = context.Library.Single(l => l.Id == _raisedByOrgId[_testPlant]);
+        _clearingByOrg = context.Library.Single(l => l.Id == _clearingByOrgId[_testPlant]);
+        _priority = context.Library.Single(l => l.Id == _priorityId[_testPlant]);
+        _sorting = context.Library.Single(l => l.Id == _sortingId[_testPlant]);
+        _type = context.Library.Single(l => l.Id == _typeId[_testPlant]);
+        _document = context.Documents.Single(d => d.Id == _documentId[_testPlant]);
+        _swcr = context.SWCRs.Single(s => s.Id == _swcrId[_testPlant]);
+        _workOrder = context.WorkOrders.Single(w => w.Id == _workOrderId[_testPlant]);
 
-        _createdPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _createdPunchItem = new PunchItem(_testPlant, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
         _createdPunchItem.SetPriority(_priority);
         _createdPunchItem.SetSorting(_sorting);
         _createdPunchItem.SetType(_type);
@@ -73,10 +75,10 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         _createdPunchItem.SetOriginalWorkOrder(_workOrder);
         _createdPunchItem.SetSWCR(_swcr);
 
-        _modifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
-        _clearedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
-        _verifiedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
-        _rejectedPunchItem = new PunchItem(TestPlantA, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _modifiedPunchItem = new PunchItem(_testPlant, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _clearedPunchItem = new PunchItem(_testPlant, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _verifiedPunchItem = new PunchItem(_testPlant, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
+        _rejectedPunchItem = new PunchItem(_testPlant, projectA, Guid.NewGuid(), Category.PB, "Desc", _raisedByOrg, _clearingByOrg);
 
         _punchItemWithPriority = _punchItemWithSorting = _punchItemWithType =
             _punchItemWithDocument = _punchItemWithWorkOrder = _punchItemWithOriginalWorkOrder =
