@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,7 +26,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         _punchItem.Reject(_person);
         _punchItem.SetModified(_person);
 
-        _domainEvent = new PunchItemRejectedDomainEvent(_punchItem);
+        _domainEvent = new PunchItemRejectedDomainEvent(_punchItem, new List<IProperty>());
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new PunchItemRejectedEventHandler(_publishEndpointMock,  Substitute.For<ILogger<PunchItemRejectedEventHandler>>());
         _publishEndpointMock
@@ -58,6 +60,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.Changes, _publishedIntegrationEvent.Changes);
         AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalPropertiesIsNull(_publishedIntegrationEvent);
@@ -79,6 +82,7 @@ public class PunchItemRejectedEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual("Punch item rejected", _publishedIntegrationEvent.DisplayName);
         Assert.AreEqual(_domainEvent.PunchItem.Guid, _publishedIntegrationEvent.Guid);
+        Assert.AreEqual(_domainEvent.Changes, _publishedIntegrationEvent.Changes);
         AssertModified(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertRequiredProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);
         AssertOptionalProperties(_domainEvent.PunchItem, _publishedIntegrationEvent);

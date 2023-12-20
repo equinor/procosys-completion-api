@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
@@ -6,7 +7,9 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,6 +19,8 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
 public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemCommand, Result<string>>
 {
+    public const string RejectReasonPropertyName = "Reject reason";
+
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILabelRepository _labelRepository;
     private readonly ICommentService _commentService;
@@ -58,7 +63,9 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
             rejectLabel,
             cancellationToken);
 
-        punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(punchItem));
+        punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(
+            punchItem,
+            new List<IProperty> { new Property<string?>(RejectReasonPropertyName, null, request.Comment) }));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

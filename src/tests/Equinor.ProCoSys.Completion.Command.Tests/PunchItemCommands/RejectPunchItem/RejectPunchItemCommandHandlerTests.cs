@@ -102,6 +102,26 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldAddRejectCommentToPunchItemRejectedEvent()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        var punchItemRejectedDomainEventAdded = _existingPunchItem[_testPlant].DomainEvents.Last() as PunchItemRejectedDomainEvent;
+        Assert.IsNotNull(punchItemRejectedDomainEventAdded);
+        Assert.IsNotNull(punchItemRejectedDomainEventAdded.Changes);
+        Assert.AreEqual(1, punchItemRejectedDomainEventAdded.Changes.Count);
+
+        var change = punchItemRejectedDomainEventAdded
+            .Changes
+            .SingleOrDefault(c => c.Name == RejectPunchItemCommandHandler.RejectReasonPropertyName);
+        Assert.IsNotNull(change);
+        Assert.IsNull(change.OldValue);
+        Assert.AreEqual(_command.Comment, change.NewValue);
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_Should_CallAdd_OnCommentService()
     {
         // Act
