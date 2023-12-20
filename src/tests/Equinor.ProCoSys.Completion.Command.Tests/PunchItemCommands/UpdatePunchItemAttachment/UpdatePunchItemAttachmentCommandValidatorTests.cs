@@ -161,4 +161,20 @@ public class UpdatePunchItemAttachmentCommandValidatorTests
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item attachments can't be changed. The punch item is verified!"));
     }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PunchItemIsCleared()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is cleared!"));
+    }
 }
