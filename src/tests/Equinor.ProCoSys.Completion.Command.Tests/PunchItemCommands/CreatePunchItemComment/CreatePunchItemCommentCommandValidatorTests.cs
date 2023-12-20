@@ -118,4 +118,20 @@ public class CreatePunchItemCommentCommandValidatorTests
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith($"Label is voided! Label={_labelTextA}"));
     }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PunchItemIsVerified()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is verified!"));
+    }
 }

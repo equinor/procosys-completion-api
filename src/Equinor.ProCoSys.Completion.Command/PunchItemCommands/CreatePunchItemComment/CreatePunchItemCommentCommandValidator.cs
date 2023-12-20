@@ -21,7 +21,9 @@ public class CreatePunchItemCommentCommandValidator : AbstractValidator<CreatePu
             .MustAsync((command, cancellationToken) => BeAnExistingPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage("Tag owning punch item is voided!");
+            .WithMessage("Tag owning punch item is voided!")
+            .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item is verified! Guid={command.PunchItemGuid}");
 
         RuleForEach(command => command.Labels)
             .MustAsync((_, label, _, token) => BeAnExistingLabelAsync(label, token))
@@ -43,5 +45,8 @@ public class CreatePunchItemCommentCommandValidator : AbstractValidator<CreatePu
 
         async Task<bool> NotBeAVoidedLabelAsync(string label, CancellationToken cancellationToken)
             => !await labelValidator.IsVoidedAsync(label, cancellationToken);
+
+        async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
     }
 }
