@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Data;
+using System.Data.Common;
 using System.Text;
 using Dapper;
 
@@ -22,11 +23,16 @@ public class SyncUpdateHandler
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildSqlUpdateStatementAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, CancellationToken cancellationToken = default)
     {
         var primaryKeyValue = GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey, sourceObject);
-        var primaryKeySqlParameterValue = await SqlParameterConversionHelper.GetSqlParameterValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, _oracleDBExecutor, cancellationToken);
+        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceParameterValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, _oracleDBExecutor, cancellationToken);
+
+        if (primaryKeyTargetValue == null)
+        {
+            throw new Exception("Not able to build update statement. Primary key value is null.");
+        }
 
         var updatesForTargetColumns = await GetTargetColumnUpdatesAsync(sourceObject, sourceObjectMappingConfig.PropertyMappings, cancellationToken);
 
-        return BuildUpdateStatement(sourceObjectMappingConfig, primaryKeySqlParameterValue, updatesForTargetColumns);
+        return BuildUpdateStatement(sourceObjectMappingConfig, primaryKeyTargetValue, updatesForTargetColumns);
     }
 
 
@@ -41,7 +47,7 @@ public class SyncUpdateHandler
         {
             var sourcePropertyValue = GetSourcePropertyValue(propertyMapping, sourceObject);
 
-            var targetColumnValue = await SqlParameterConversionHelper.GetSqlParameterValueAsync(sourcePropertyValue, propertyMapping, _oracleDBExecutor, cancellationToken);
+            var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceParameterValueToTargetValueAsync(sourcePropertyValue, propertyMapping, _oracleDBExecutor, cancellationToken);
 
             var columnUpdate = new TargetColumnUpdate(propertyMapping.TargetColumnName, targetColumnValue);
 
@@ -91,9 +97,9 @@ public class SyncUpdateHandler
     /**
      * Build a string that gives the update statement
      */
-    private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, string primaryKeySqlParamValue, List<TargetColumnUpdate> updatesForTargetColumns)
+    private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, object primaryKeyTargetValue, List<TargetColumnUpdate> updatesForTargetColumns)
     {
-        var updateStatement = new StringBuilder($"update /*+ MONITOR */ {sourceObjectMappingConfig.TargetTable} set ");
+        var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");
         var sqlParameters = new DynamicParameters();
 
         foreach (var columnUpdate in updatesForTargetColumns)
@@ -108,7 +114,7 @@ public class SyncUpdateHandler
         }
 
         var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
-        sqlParameters.Add($":{primaryKeyName}", primaryKeySqlParamValue);
+        sqlParameters.Add($":{primaryKeyName}", primaryKeyTargetValue);
         updateStatement.Append($" where {primaryKeyName} = :{primaryKeyName}");
 
         return (updateStatement.ToString(), sqlParameters);

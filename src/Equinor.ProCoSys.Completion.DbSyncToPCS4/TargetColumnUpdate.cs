@@ -2,13 +2,13 @@
 
 public class TargetColumnUpdate
 {
-    public TargetColumnUpdate(string columnName, string? columnValue)
+    public TargetColumnUpdate(string columnName, object? columnValue)
     {
         ColumnName = columnName;
         ColumnValue = columnValue;
     }
 
     public string ColumnName { get; }
-    public string? ColumnValue { get; }
+    public object? ColumnValue { get; }
 }
 
