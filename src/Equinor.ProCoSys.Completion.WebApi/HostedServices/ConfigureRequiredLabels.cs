@@ -38,9 +38,9 @@ public class ConfigureRequiredLabels : IHostedService
     {
         using var scope = _serviceScopeFactory.CreateScope();
 
-        await ConfigureLabelEntities(scope, cancellationToken);
+        await ConfigureLabelEntitiesAsync(scope, cancellationToken);
 
-        await ConfigureLabels(scope, cancellationToken);
+        await ConfigureLabelsAsync(scope, cancellationToken);
 
         await SaveAsync(scope, cancellationToken);
     }
@@ -58,7 +58,7 @@ public class ConfigureRequiredLabels : IHostedService
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task ConfigureLabelEntities(IServiceScope scope, CancellationToken cancellationToken)
+    private async Task ConfigureLabelEntitiesAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         var labelEntityRepository =
             scope.ServiceProvider
@@ -100,7 +100,7 @@ public class ConfigureRequiredLabels : IHostedService
         return nonExistingLabelEntities;
     }
 
-    private async Task ConfigureLabels(IServiceScope scope, CancellationToken cancellationToken)
+    private async Task ConfigureLabelsAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         var labelRepository =
             scope.ServiceProvider
