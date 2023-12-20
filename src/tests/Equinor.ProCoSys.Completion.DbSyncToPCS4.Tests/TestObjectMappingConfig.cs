@@ -10,7 +10,7 @@ public class TestObjectMappingConfig : ISourceObjectMappingConfig
         {
             new PropertyMapping("TestString",       "TestString",       PropertyType.String,    null),
             new PropertyMapping("TestDate",         "TestDateWithTime", PropertyType.DateTime,  null),
-            new PropertyMapping("TestDate2",        "TestDate",         PropertyType.DateTime,  ValueConversion.DateTimeToDate),
+            new PropertyMapping("TestDate2",        "TestDate",         PropertyType.DateTime,  null),
             new PropertyMapping("TestBool",         "TestBool",         PropertyType.Bool,      null),
             new PropertyMapping("TestInt",          "TestInt",          PropertyType.Int,       null),
             new PropertyMapping("NestedObject.Guid", "TestLibId",       PropertyType.Guid,      ValueConversion.GuidToLibId),
