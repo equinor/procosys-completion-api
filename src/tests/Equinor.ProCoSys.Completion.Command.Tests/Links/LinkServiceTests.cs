@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -158,13 +159,33 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldAddLinkUpdatedEvent_WhenChanges()
+    public async Task UpdateAsync_ShouldAddCorrectLinkUpdatedEvent_WhenChanges()
     {
+        // Arrange
+        var oldUrl = _existingLink.Url;
+        var oldTitle = _existingLink.Title;
+        var newUrl = Guid.NewGuid().ToString();
+        var newTitle = Guid.NewGuid().ToString();
+
         // Act
-        await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
+        await _dut.UpdateAsync(_existingLink.Guid, newTitle, newUrl, _rowVersion, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkUpdatedDomainEvent));
+        var linkUpdatedDomainEventAdded = _existingLink.DomainEvents.Last() as LinkUpdatedDomainEvent;
+        Assert.IsNotNull(linkUpdatedDomainEventAdded);
+        Assert.IsNotNull(linkUpdatedDomainEventAdded.Changes);
+        AssertChange(
+            linkUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(Link.Url)),
+            oldUrl,
+            newUrl);
+        AssertChange(
+            linkUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(Link.Title)),
+            oldTitle,
+            newTitle);
     }
 
     [TestMethod]
@@ -224,4 +245,11 @@ public class LinkServiceTests : TestsBase
         Assert.AreEqual(_rowVersion, _existingLink.RowVersion.ConvertToString());
     }
     #endregion
+
+    private void AssertChange(IProperty change, object oldValue, object newValue)
+    {
+        Assert.IsNotNull(change);
+        Assert.AreEqual(oldValue, change.OldValue);
+        Assert.AreEqual(newValue, change.NewValue);
+    }
 }
