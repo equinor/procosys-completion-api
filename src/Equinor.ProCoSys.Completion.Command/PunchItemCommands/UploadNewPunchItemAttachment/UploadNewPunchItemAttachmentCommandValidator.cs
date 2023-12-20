@@ -25,7 +25,9 @@ public class UploadNewPunchItemAttachmentCommandValidator : AbstractValidator<Up
             .MustAsync((command, cancellationToken) => NotHaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName, cancellationToken))
             .WithMessage(command => $"Punch item already has an attachment with filename {command.FileName}! Please rename file or choose to overwrite")
             .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}");
+            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}")
+            .UnlessAsync((command, cancellationToken)
+                => CurrentUserIsVerifier(command.PunchItemGuid, cancellationToken), ApplyConditionTo.CurrentValidator);
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -41,5 +43,8 @@ public class UploadNewPunchItemAttachmentCommandValidator : AbstractValidator<Up
 
         async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
+
+        async Task<bool> CurrentUserIsVerifier(Guid punchItemGuid, CancellationToken cancellationToken)
+            => await punchItemValidator.CurrentUserIsVerifierAsync(punchItemGuid, cancellationToken);
     }
 }
