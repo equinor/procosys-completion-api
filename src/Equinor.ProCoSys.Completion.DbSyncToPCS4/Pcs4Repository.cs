@@ -56,9 +56,9 @@ public class Pcs4Repository : IPcs4Repository
 
 
     /**
-     * This method will be used to fetch a value from the Pcs4 database. If the value is not found, an exception will be thrown. 
+     * This method will be used to fetch a number value from the Pcs4 database. If the value is not found, an exception will be thrown. 
      */
-    public async Task<string> ValueLookupAsync(string sqlQuery, DynamicParameters sqlParameters, CancellationToken cancellationToken)
+    public async Task<long> ValueLookupNumberAsync(string sqlQuery, DynamicParameters sqlParameters, CancellationToken cancellationToken)
     {
         await using var connection = new OracleConnection(_dbConnStr);
         await connection.OpenAsync(cancellationToken);
@@ -66,13 +66,13 @@ public class Pcs4Repository : IPcs4Repository
         try
         {
             var result = await connection.ExecuteScalarAsync(sqlQuery, sqlParameters);
-            var strResult = Convert.ToString(result);
-            if (strResult != null)
+
+            if (result != null && result is long)
             {
-                return strResult;
+                return (long)result;
             }
 
-            throw new Exception("Value lookup failed. Result was null.");
+            throw new Exception($"Value lookup failed. Result was {result}.");
         }
         catch (Exception ex)
         {

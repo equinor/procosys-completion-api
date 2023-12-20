@@ -103,65 +103,65 @@ public static class SqlParameterConversionHelper
     /**
      * Will find the library id for given guid in the pcs4 database
      */
-    private static async Task<string> GuidToLibIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<long> GuidToLibIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
         var sqlQuery = $"select Library_id from library where procosys_guid = :procosys_guid";
 
-        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
+        return await oracleDBExecutor.ValueLookupNumberAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
      * Will find the person_id with given oid in the pcs4 database
      */
-    private static async Task<string> OidToPersonIdAsync(Guid oid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<long> OidToPersonIdAsync(Guid oid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add(":azure_oid", GuidToPCS4Oid(oid));
 
         var sqlQuery = $"select Person_id from person where azure_oid = :azure_oid";
 
-        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
+        return await oracleDBExecutor.ValueLookupNumberAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
      * Will find the work order with given guid in the pcs4 database
      */
-    private static async Task<string> GuidToWorkOrderIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<long> GuidToWorkOrderIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
         var sqlQuery = $"select Wo_id from wo where procosys_guid = :procosys_guid";
 
-        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
+        return await oracleDBExecutor.ValueLookupNumberAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
      * Will find the SWCR with given guid in the pcs4 database
      */
-    private static async Task<string> GuidToSWCRIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<long> GuidToSWCRIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
         var sqlQuery = $"select Swcr_id from swcr where procosys_guid = :procosys_guid";
 
-        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
+        return await oracleDBExecutor.ValueLookupNumberAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 
     /**
      * Will find the document with given guid in the pcs4 database
      */
-    private static async Task<string> GuidToDocumentIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
+    private static async Task<long> GuidToDocumentIdAsync(Guid guid, IPcs4Repository oracleDBExecutor, CancellationToken cancellationToken)
     {
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add(":procosys_guid", GuidToPCS4Guid(guid));
 
         var sqlQuery = $"select Document_id from document where procosys_guid = :procosys_guid";
 
-        return await oracleDBExecutor.ValueLookupAsync(sqlQuery, sqlParameters, cancellationToken);
+        return await oracleDBExecutor.ValueLookupNumberAsync(sqlQuery, sqlParameters, cancellationToken);
     }
 }
