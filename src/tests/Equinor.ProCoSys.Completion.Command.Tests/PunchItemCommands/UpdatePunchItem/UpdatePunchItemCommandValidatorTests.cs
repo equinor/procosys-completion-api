@@ -194,6 +194,22 @@ public class UpdatePunchItemCommandValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_When_PunchItemIsCleared()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is cleared!"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_When_RaisedByOrgNotExists()
     {
         // Arrange
