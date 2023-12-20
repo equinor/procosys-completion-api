@@ -122,4 +122,43 @@ public class LabelRepositoryTests : RepositoryTestBase<Label>
         await Assert.ThrowsExceptionAsync<Exception>(()
             => dut.GetByTextAsync(Guid.NewGuid().ToString(), default));
     }
+
+    [TestMethod]
+    public async Task ExistsAsync_KnownLabel_ShouldReturnTrue()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.ExistsAsync(_labelTextWithBothCasing, default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_KnownLabel_ShouldReturnTrue_CaseInsensitive()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.ExistsAsync(_labelTextWithBothCasing.ToLower(), default);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task ExistsAsync_KnownLabel_ShouldReturnFalse()
+    {
+        // Arrange
+        var dut = new LabelRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.ExistsAsync(Guid.NewGuid().ToString(), default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
 }

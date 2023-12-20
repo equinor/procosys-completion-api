@@ -411,16 +411,30 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid guid,
+        string comment,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
-        => await PostAsync(
-            userType,
-            plant,
-            $"{Route}/{guid}/Reject",
-            rowVersion,
-            expectedStatusCode,
-            expectedMessageOnBadRequest);
+    {
+        var bodyPayload = new
+        {
+            comment,
+            rowVersion
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Reject", content);
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
 
     public static async Task<string> VerifyPunchItemAsync(
         UserType userType,

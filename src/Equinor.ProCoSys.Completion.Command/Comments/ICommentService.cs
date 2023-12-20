@@ -14,4 +14,11 @@ public interface ICommentService
         string text,
         IEnumerable<Label> labels,
         CancellationToken cancellationToken);
+    
+    Task<CommentDto> AddAsync(
+        string parentType,
+        Guid parentGuid,
+        string text,
+        Label label,
+        CancellationToken cancellationToken);
 }

@@ -297,6 +297,7 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             UserType.RestrictedWriter,
             _plantWithAccess,
             guid,
+            Guid.NewGuid().ToString(),
             rowVersionAfterClear,
             HttpStatusCode.Forbidden);
     }

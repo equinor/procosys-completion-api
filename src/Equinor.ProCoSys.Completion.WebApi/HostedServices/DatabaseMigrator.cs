@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Middleware;
+namespace Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 public class DatabaseMigrator : IHostedService
 {
