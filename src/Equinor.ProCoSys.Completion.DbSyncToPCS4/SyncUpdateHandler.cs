@@ -93,7 +93,7 @@ public class SyncUpdateHandler
      */
     private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, string primaryKeySqlParamValue, List<TargetColumnUpdate> updatesForTargetColumns)
     {
-        var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");
+        var updateStatement = new StringBuilder($"update /*+ MONITOR */ {sourceObjectMappingConfig.TargetTable} set ");
         var sqlParameters = new DynamicParameters();
 
         foreach (var columnUpdate in updatesForTargetColumns)
