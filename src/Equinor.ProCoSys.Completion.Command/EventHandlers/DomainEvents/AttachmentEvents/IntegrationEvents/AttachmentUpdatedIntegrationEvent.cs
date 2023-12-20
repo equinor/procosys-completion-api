@@ -20,20 +20,23 @@ public record AttachmentUpdatedIntegrationEvent
     int RevisionNumber,
     List<string> Labels,
     User ModifiedBy,
-    DateTime ModifiedAtUtc
+    DateTime ModifiedAtUtc,
+    List<IProperty> Changes
 ) : IAttachmentUpdatedV1
 {
     internal AttachmentUpdatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} uploaded again",
-        domainEvent.Attachment)
+        domainEvent.Attachment,
+        new List<IProperty>())
     { }
 
     internal AttachmentUpdatedIntegrationEvent(AttachmentUpdatedDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} updated",
-        domainEvent.Attachment)
+        domainEvent.Attachment,
+        domainEvent.Changes)
     { }
 
-    private AttachmentUpdatedIntegrationEvent(string displayName, Attachment attachment) : this(
+    private AttachmentUpdatedIntegrationEvent(string displayName, Attachment attachment, List<IProperty> changes) : this(
         displayName,
         attachment.Guid,
         attachment.ParentGuid,
@@ -44,6 +47,7 @@ public record AttachmentUpdatedIntegrationEvent
         attachment.RevisionNumber,
         attachment.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
         new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
-        attachment.ModifiedAtUtc!.Value)
+        attachment.ModifiedAtUtc!.Value,
+        changes)
     { }
 }
