@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
 
@@ -28,6 +29,14 @@ public class CreateCommentDtoValidator : AbstractValidator<CreateCommentDto>
             .Must(BeUniqueLabels)
             .WithMessage("Labels must be unique!");
 
+        RuleFor(dto => dto.Mentions)
+            .NotNull();
+
+        RuleFor(dto => dto.Mentions)
+            .Must(BeUniqueMentions)
+            .WithMessage("Mentions must be unique!");
+
         bool BeUniqueLabels(IList<string> labels) => labels.Distinct().Count() == labels.Count;
+        bool BeUniqueMentions(IList<Guid> mentions) => mentions.Distinct().Count() == mentions.Count;
     }
 }
