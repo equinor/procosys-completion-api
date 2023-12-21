@@ -9,7 +9,9 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -142,14 +144,34 @@ public class AttachmentService : IAttachmentService
         CancellationToken cancellationToken)
     {
         var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
-        attachment.SetRowVersion(rowVersion);
-        attachment.Description = description;
         attachment.UpdateLabels(labels.ToList());
-        attachment.AddDomainEvent(new AttachmentUpdatedDomainEvent(attachment));
+
+        var changes = UpdateAttachment(attachment, description);
+        if (changes.Any())
+        {
+            attachment.AddDomainEvent(new AttachmentUpdatedDomainEvent(attachment, changes));
+        }
+        attachment.SetRowVersion(rowVersion);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return attachment.RowVersion.ConvertToString();
+    }
+
+    private List<IProperty> UpdateAttachment(Attachment attachment, string description)
+    {
+        var changes = new List<IProperty>();
+
+        if (attachment.Description != description)
+        {
+            changes.Add(new Property<string>(
+                nameof(Attachment.Description),
+                attachment.Description,
+                description));
+            attachment.Description = description;
+        }
+
+        return changes;
     }
 
     private async Task UploadAsync(

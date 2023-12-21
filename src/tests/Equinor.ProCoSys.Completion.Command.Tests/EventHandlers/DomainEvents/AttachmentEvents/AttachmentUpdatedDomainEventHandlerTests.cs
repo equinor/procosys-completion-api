@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,7 +25,7 @@ public class AttachmentUpdatedDomainEventHandlerTests : EventHandlerTestBase
     {
         _attachment.SetModified(_person);
 
-        _attachmentUpdatedDomainEvent = new AttachmentUpdatedDomainEvent(_attachment);
+        _attachmentUpdatedDomainEvent = new AttachmentUpdatedDomainEvent(_attachment, new List<IProperty>());
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new AttachmentUpdatedDomainEventHandler(_publishEndpointMock, Substitute.For<ILogger<AttachmentUpdatedDomainEventHandler>>());
         _publishEndpointMock
@@ -58,6 +60,7 @@ public class AttachmentUpdatedDomainEventHandlerTests : EventHandlerTestBase
         Assert.IsNotNull(_publishedIntegrationEvent);
         var attachment = _attachmentUpdatedDomainEvent.Attachment;
         Assert.AreEqual($"Attachment {attachment.FileName} updated", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_attachmentUpdatedDomainEvent.Changes, _publishedIntegrationEvent.Changes);
         Assert.AreEqual(attachment.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(attachment.ParentGuid, _publishedIntegrationEvent.ParentGuid);
         Assert.AreEqual(attachment.ParentType, _publishedIntegrationEvent.ParentType);
