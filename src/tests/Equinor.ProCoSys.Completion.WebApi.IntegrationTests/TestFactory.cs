@@ -58,7 +58,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static Guid DocumentGuid => KnownData.DocumentGuid[KnownData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
-    public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
 
     public Dictionary<string, KnownTestData> SeededData { get; }
 

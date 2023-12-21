@@ -850,6 +850,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -860,6 +861,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -871,6 +873,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -882,6 +885,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -892,6 +896,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -902,6 +907,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.NewGuid(), 
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
 
@@ -913,6 +919,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             _punchItemGuidUnderTest,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
     #endregion
 

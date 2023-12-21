@@ -121,7 +121,7 @@ public class PunchItemsControllerTests : TestBase
         patchDocument.Replace("PriorityGuid", TestFactory.PriorityGuid);
         patchDocument.Replace("SortingGuid", TestFactory.SortingGuid);
         patchDocument.Replace("TypeGuid", TestFactory.TypeGuid);
-        patchDocument.Replace("ActionByPersonOid", TestFactory.Instance.WriterOid);
+        patchDocument.Replace("ActionByPersonOid", TestFactory.Instance.GetTestProfile(UserType.Writer).Oid);
         var newDueTimeUtc = DateTime.UtcNow.AddDays(7);
         patchDocument.Replace("DueTimeUtc", newDueTimeUtc);
         var newEstimate = 8;
@@ -157,7 +157,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
-        Assert.AreEqual(TestFactory.Instance.WriterOid, punchItem.ActionBy!.Guid);
+        Assert.AreEqual(TestFactory.Instance.GetTestProfile(UserType.Writer).Guid, punchItem.ActionBy!.Guid);
         Assert.AreEqual(newDueTimeUtc, punchItem.DueTimeUtc);
         Assert.AreEqual(newEstimate, punchItem.Estimate);
         Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
@@ -422,7 +422,10 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var (_, commentGuidAndRowVersion)
-            = await CreatePunchItemCommentAsync(Guid.NewGuid().ToString(), new List<string>{"A"});
+            = await CreatePunchItemCommentAsync(
+                Guid.NewGuid().ToString(),
+                new List<string>{"A"},
+                new List<Guid>());
 
         // Assert
         AssertValidGuidAndRowVersion(commentGuidAndRowVersion);
@@ -434,7 +437,14 @@ public class PunchItemsControllerTests : TestBase
         // Arrange and Act
         var text = Guid.NewGuid().ToString();
         var labels = new List<string> { "A", "B" };
-        var (punchItemGuidAndRowVersion, commentGuidAndRowVersion) = await CreatePunchItemCommentAsync(text, labels);
+        var mentions = new List<Guid>
+        {
+            TestFactory.Instance.GetTestProfile(UserType.RestrictedWriter).Guid,
+            TestFactory.Instance.GetTestProfile(UserType.Reader).Guid
+        };
+
+        var (punchItemGuidAndRowVersion, commentGuidAndRowVersion)
+            = await CreatePunchItemCommentAsync(text, labels, mentions);
 
         // Act
         var comments = await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
@@ -448,7 +458,8 @@ public class PunchItemsControllerTests : TestBase
             punchItemGuidAndRowVersion.Guid,
             commentGuidAndRowVersion.Guid,
             text,
-            labels);
+            labels,
+            mentions);
     }
 
     [TestMethod]
@@ -708,6 +719,8 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
 
+        // todo 108276 Assert mentions
+        var mentions = new List<Guid>();
         var comment = $"Must approve {Guid.NewGuid()}";
 
         // Act
@@ -727,7 +740,7 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         Assert.IsNotNull(comments);
         Assert.AreEqual(1, comments.Count);
-        AssertComment(comments[0], guid, comment, new List<string> { KnownData.LabelReject });
+        AssertComment(comments[0], guid, comment, new List<string> { KnownData.LabelReject }, mentions);
     }
 
     [TestMethod]
@@ -811,7 +824,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion commentGuidAndRowVersion)>
-        CreatePunchItemCommentAsync(string text, List<string> labels)
+        CreatePunchItemCommentAsync(string text, List<string> labels, List<Guid> mentions)
     {
         var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
@@ -828,7 +841,8 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             punchItemGuidAndRowVersion.Guid,
             text,
-            labels);
+            labels,
+            mentions);
 
         return (punchItemGuidAndRowVersion, commentGuidAndRowVersion);
     }
@@ -878,26 +892,40 @@ public class PunchItemsControllerTests : TestBase
         Guid expectedParentGuid,
         Guid expectedCommentGuid,
         string expectedText,
-        List<string> expectedLabels)
+        List<string> expectedLabels,
+        List<Guid> expectedMentions)
     {
         Assert.IsNotNull(commentDtos);
         Assert.AreEqual(1, commentDtos.Count);
         var commentDto = commentDtos[0];
         Assert.AreEqual(expectedCommentGuid, commentDto.Guid);
-        AssertComment(commentDto, expectedParentGuid, expectedText, expectedLabels);
+        AssertComment(commentDto, expectedParentGuid, expectedText, expectedLabels, expectedMentions);
     }
 
-    private static void AssertComment(CommentDto commentDto, Guid expectedParentGuid, string expectedText,
-        List<string> expectedLabels)
+    private static void AssertComment(
+        CommentDto commentDto,
+        Guid expectedParentGuid,
+        string expectedText,
+        List<string> expectedLabels,
+        List<Guid> expectedMentions)
     {
         Assert.AreEqual(expectedParentGuid, commentDto.ParentGuid);
         Assert.AreEqual(expectedText, commentDto.Text);
         Assert.IsNotNull(commentDto.CreatedBy);
         Assert.IsNotNull(commentDto.CreatedAtUtc);
+        Assert.IsNotNull(commentDto.CreatedAtUtc);
         Assert.AreEqual(expectedLabels.Count, commentDto.Labels.Count);
-        for (var i = 0; i < expectedLabels.Count; i++)
+
+        Assert.IsNotNull(commentDto.Labels);
+        foreach (var expectedLabel in expectedLabels)
         {
-            Assert.AreEqual(expectedLabels.ElementAt(i), commentDto.Labels.ElementAt(i));
+            Assert.IsNotNull(commentDto.Labels.SingleOrDefault(l => l == expectedLabel));
+        }
+        
+        Assert.IsNotNull(commentDto.Mentions);
+        foreach (var expectedMention in expectedMentions)
+        {
+            Assert.IsNotNull(commentDto.Mentions.SingleOrDefault(p => p.Guid == expectedMention));
         }
     }
 
