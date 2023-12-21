@@ -13,7 +13,8 @@ public class TestProfile
     public string FullName => $"{FirstName} {LastName}";
     public string Email { get; set; }
     public string UserName { get; set; }
-    public bool IsAppToken { get; set; } = false;
+    public bool Superuser { get; set; }
+    public bool IsAppToken { get; set; }
     public string[] AppRoles { get; set; }
 
     public AuthPerson AsAuthProCoSysPerson()

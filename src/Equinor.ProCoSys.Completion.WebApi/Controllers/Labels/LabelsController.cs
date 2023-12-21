@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
 using Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailableFor;
 using Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Labels;
 
-// Todo 108512 Secure with superuser permission
-[Authorize]
+[AuthorizeAny(Permissions.SUPERUSER, Permissions.APPLICATION_TESTER)]
 [ApiController]
 [Route("Labels")]
 public class LabelsController : ControllerBase

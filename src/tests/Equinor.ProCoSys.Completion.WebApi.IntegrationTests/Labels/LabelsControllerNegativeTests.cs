@@ -17,12 +17,11 @@ public class LabelsControllerNegativeTests : TestBase
             UserType.Anonymous,
             HttpStatusCode.Unauthorized);
 
-    // Todo 108512 Enable test after secured with superuser permission
-    //[TestMethod]
-    //public async Task GetLabels_AsReader_ShouldReturnForbidden()
-    //    => await LabelsControllerTestsHelper.GetLabelsAsync(
-    //        UserType.Reader,
-    //        HttpStatusCode.Forbidden);
+    [TestMethod]
+    public async Task GetLabels_AsReader_ShouldReturnForbidden()
+        => await LabelsControllerTestsHelper.GetLabelsAsync(
+            UserType.Reader,
+            HttpStatusCode.Forbidden);
     #endregion
 
     #region CreateLabel
@@ -33,13 +32,12 @@ public class LabelsControllerNegativeTests : TestBase
             Guid.NewGuid().ToString(),
             HttpStatusCode.Unauthorized);
 
-    // Todo 108512 Enable test after secured with superuser permission
-    //[TestMethod]
-    //public async Task CreateLabel_AsReader_ShouldReturnForbidden()
-    //    => await LabelsControllerTestsHelper.CreateLabelAsync(
-    //        UserType.Reader,
-    //        Guid.NewGuid().ToString(),
-    //        HttpStatusCode.Forbidden);
+    [TestMethod]
+    public async Task CreateLabel_AsReader_ShouldReturnForbidden()
+        => await LabelsControllerTestsHelper.CreateLabelAsync(
+            UserType.Reader,
+            Guid.NewGuid().ToString(),
+            HttpStatusCode.Forbidden);
     #endregion
 
     #region UpdateLabel
@@ -51,21 +49,20 @@ public class LabelsControllerNegativeTests : TestBase
             new List<EntityTypeWithLabel>(),
             HttpStatusCode.Unauthorized);
 
-    // Todo 108512 Enable test after secured with superuser permission
-    //[TestMethod]
-    //public async Task UpdateLabel_AsReader_ShouldReturnForbidden()
-    //{
-    //    // Arrange
-    //    var text = Guid.NewGuid().ToString();
-    //    await LabelsControllerTestsHelper.CreateLabelAsync(UserType.Writer, text);
+    [TestMethod]
+    public async Task UpdateLabel_AsReader_ShouldReturnForbidden()
+    {
+        // Arrange
+        var text = Guid.NewGuid().ToString();
+        await LabelsControllerTestsHelper.CreateLabelAsync(UserType.Writer, text);
 
-    //    // Act and Assert
-    //    await LabelsControllerTestsHelper.UpdateLabelAsync(
-    //        UserType.Reader,
-    //        text,
-    //        new List<EntityTypeWithLabel>(),
-    //        HttpStatusCode.Forbidden);
-    //}
+        // Act and Assert
+        await LabelsControllerTestsHelper.UpdateLabelAsync(
+            UserType.Reader,
+            text,
+            new List<EntityTypeWithLabel>(),
+            HttpStatusCode.Forbidden);
+    }
 
     #endregion
 }

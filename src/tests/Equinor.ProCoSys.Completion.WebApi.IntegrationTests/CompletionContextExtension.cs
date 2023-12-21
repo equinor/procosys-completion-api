@@ -38,10 +38,17 @@ public static class CompletionContextExtension
      * This is the first user that is added to the database and will not get "Created" and "CreatedBy" data.
      */
     public static void SeedCurrentUser(this CompletionContext dbContext)
-        => SeedPerson(dbContext, SeederOid, "Siri", "Seed", "SSEED", "siri@pcs.com");
+        => SeedPerson(dbContext, SeederOid, "Siri", "Seed", "SSEED", "siri@pcs.com", false);
 
     public static void SeedPersonData(this CompletionContext dbContext, TestProfile profile)
-        => SeedPerson(dbContext, profile.Oid, profile.FirstName, profile.LastName, profile.UserName, profile.Email);
+        => SeedPerson(
+            dbContext,
+            profile.Oid,
+            profile.FirstName,
+            profile.LastName,
+            profile.UserName,
+            profile.Email,
+            profile.Superuser);
 
     public static void SeedLabels(this CompletionContext dbContext)
     {
@@ -197,9 +204,16 @@ public static class CompletionContextExtension
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
-    private static void SeedPerson(CompletionContext dbContext, string oid, string firstName, string lastName, string userName, string email)
+    private static void SeedPerson(
+        CompletionContext dbContext,
+        string oid,
+        string firstName,
+        string lastName,
+        string userName,
+        string email,
+        bool superuser)
     {
-        var person = new Person(new Guid(oid), firstName, lastName, userName, email);
+        var person = new Person(new Guid(oid), firstName, lastName, userName, email, superuser);
         var personRepository = new PersonRepository(dbContext, null!);
         personRepository.Add(person);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();

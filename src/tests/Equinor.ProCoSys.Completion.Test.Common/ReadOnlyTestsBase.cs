@@ -56,7 +56,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
         {
-            AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs"));
+            AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs", false));
         }
 
         AddTestDataToPlant(TestPlantA, context);

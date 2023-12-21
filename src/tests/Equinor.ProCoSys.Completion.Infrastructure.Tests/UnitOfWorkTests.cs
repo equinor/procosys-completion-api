@@ -46,7 +46,7 @@ public class UnitOfWorkTests
 
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
+        _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs", false);
         dut.Persons.Add(_currentUser);
         await dut.SaveChangesAsync();
 
