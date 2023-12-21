@@ -26,7 +26,9 @@ public class UpdatePunchItemAttachmentCommandValidator : AbstractValidator<Updat
             .MustAsync((command, cancellationToken) => BeAnExistingAttachment(command.AttachmentGuid, cancellationToken))
             .WithMessage(command => $"Attachment with this guid does not exist! Guid={command.AttachmentGuid}")
             .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}");
+            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}")
+            .UnlessAsync((command, cancellationToken)
+                => CurrentUserIsVerifier(command.PunchItemGuid, cancellationToken), ApplyConditionTo.CurrentValidator);
 
         RuleForEach(command => command.Labels)
             .MustAsync((_, label, _, token) => BeAnExistingLabelAsync(label, token))
@@ -54,5 +56,8 @@ public class UpdatePunchItemAttachmentCommandValidator : AbstractValidator<Updat
 
         async Task<bool> NotBeAVoidedLabelAsync(string label, CancellationToken cancellationToken)
             => !await labelValidator.IsVoidedAsync(label, cancellationToken);
+
+        async Task<bool> CurrentUserIsVerifier(Guid punchItemGuid, CancellationToken cancellationToken)
+            => await punchItemValidator.CurrentUserIsVerifierAsync(punchItemGuid, cancellationToken);
     }
 }
