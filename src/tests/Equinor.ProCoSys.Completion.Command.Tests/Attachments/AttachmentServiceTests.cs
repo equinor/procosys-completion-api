@@ -334,6 +334,50 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
+    public async Task UpdateAsync_ShouldNotAddAttachmentUpdatedDomainEvent_WhenNoChanges()
+    {
+        // Act
+        await _dut.UpdateAsync(
+            _existingAttachment.Guid,
+            _existingAttachment.Description,
+            new List<Label>(),
+            _rowVersion,
+            default);
+
+        // Assert
+        var attachmentUpdatedDomainEventAdded =
+            _existingAttachment.DomainEvents.Any(e => e.GetType() == typeof(AttachmentUpdatedDomainEvent));
+        Assert.IsFalse(attachmentUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldAddCorrectAttachmentUpdatedDomainEvent_WhenChanges()
+    {
+        // Arrange
+        var oldTitle = _existingAttachment.Description;
+        var newTitle = Guid.NewGuid().ToString();
+
+        // Act
+        await _dut.UpdateAsync(
+            _existingAttachment.Guid,
+            newTitle,
+            new List<Label>(),
+            _rowVersion,
+            default);
+
+        // Assert
+        var attachmentUpdatedDomainEventAdded = _existingAttachment.DomainEvents.Last() as AttachmentUpdatedDomainEvent;
+        Assert.IsNotNull(attachmentUpdatedDomainEventAdded);
+        Assert.IsNotNull(attachmentUpdatedDomainEventAdded.Changes);
+        var change = attachmentUpdatedDomainEventAdded
+            .Changes
+            .SingleOrDefault(c => c.Name == nameof(Attachment.Description));
+        Assert.IsNotNull(change);
+        Assert.AreEqual(oldTitle, change.OldValue);
+        Assert.AreEqual(newTitle, change.NewValue);
+    }
+
+    [TestMethod]
     public async Task UpdateAsync_ShouldSetAndReturnRowVersion()
     {
         // Act

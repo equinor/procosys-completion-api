@@ -30,6 +30,8 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
             .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Tag owning punch item is voided!")
+            .MustAsync((command, cancellationToken) => NotBeClearedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item is cleared! Guid={command.PunchItemGuid}")
 
             // validate RaisedByOrg, if given
             .MustAsync((command, cancellationToken)
@@ -335,6 +337,9 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
 
         async Task<bool> NotBeInAVoidedTagForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.TagOwningPunchItemIsVoidedAsync(punchItemGuid, cancellationToken);
+
+        async Task<bool> NotBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
 
         async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);

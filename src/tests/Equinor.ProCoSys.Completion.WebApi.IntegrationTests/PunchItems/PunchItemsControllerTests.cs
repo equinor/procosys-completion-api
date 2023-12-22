@@ -467,7 +467,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var (_, attachmentGuidAndRowVersion)
-            = await UploadNewPunchItemAttachmentAsync(Guid.NewGuid().ToString());
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(Guid.NewGuid().ToString());
 
         // Assert
         AssertValidGuidAndRowVersion(attachmentGuidAndRowVersion);
@@ -478,7 +478,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var fileName = Guid.NewGuid().ToString();
-        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
 
         // Act
         var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
@@ -500,7 +500,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange
         var fileName = Guid.NewGuid().ToString();
-        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
 
         var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Reader,
@@ -532,7 +532,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange
         var fileName = Guid.NewGuid().ToString();
-        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentAsync(fileName);
+        var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
 
         var description = Guid.NewGuid().ToString();
         var labelA = KnownData.LabelA;
@@ -568,7 +568,7 @@ public class PunchItemsControllerTests : TestBase
         // Arrange
         var fileName = Guid.NewGuid().ToString();
         var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) =
-            await UploadNewPunchItemAttachmentAsync(fileName);
+            await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
 
         // Act
         var newAttachmentRowVersion = await PunchItemsControllerTestsHelper.OverwriteExistingPunchItemAttachmentAsync(
@@ -599,7 +599,7 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange
         var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion)
-            = await UploadNewPunchItemAttachmentAsync(Guid.NewGuid().ToString());
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(Guid.NewGuid().ToString());
         var attachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
@@ -848,13 +848,13 @@ public class PunchItemsControllerTests : TestBase
     }
 
     private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion linkGuidAndRowVersion)>
-        UploadNewPunchItemAttachmentAsync(string fileName)
+        UploadNewPunchItemAttachmentOnVerifiedPunchAsync(string fileName)
     {
-        var punchItemGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+        // We test on a verified punch. This to test that current user (UserType.Writer) can work with 
+        // punch attachments even after punch is verified
+        var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            "PA",
-            Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
@@ -863,10 +863,10 @@ public class PunchItemsControllerTests : TestBase
         var attachmentGuidAndRowVersion = await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            punchItemGuidAndRowVersion.Guid,
+            guid,
             new TestFile("blah", fileName));
 
-        return (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion);
+        return (new GuidAndRowVersion{Guid = guid, RowVersion = rowVersionAfterVerify}, attachmentGuidAndRowVersion);
     }
 
     private static void AssertFirstAndOnlyLink(
