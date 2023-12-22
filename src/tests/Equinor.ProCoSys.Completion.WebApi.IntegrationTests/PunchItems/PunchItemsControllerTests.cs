@@ -919,13 +919,13 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(commentDto.Labels);
         foreach (var expectedLabel in expectedLabels)
         {
-            Assert.IsNotNull(commentDto.Labels.SingleOrDefault(l => l == expectedLabel));
+            Assert.IsTrue(commentDto.Labels.Any(l => l == expectedLabel));
         }
         
         Assert.IsNotNull(commentDto.Mentions);
         foreach (var expectedMention in expectedMentions)
         {
-            Assert.IsNotNull(commentDto.Mentions.SingleOrDefault(p => p.Guid == expectedMention));
+            Assert.IsTrue(commentDto.Mentions.Any(p => p.Guid == expectedMention));
         }
     }
 

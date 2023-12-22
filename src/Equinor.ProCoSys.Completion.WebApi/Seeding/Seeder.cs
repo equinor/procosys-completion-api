@@ -54,10 +54,7 @@ public class Seeder : IHostedService
         dbContext.Persons.Add(s_seederUser);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var personRepository = new PersonRepository(
-            dbContext,
-            userProvider,
-            null!);
+        var personRepository = new PersonRepository(dbContext, userProvider, null!);
         personRepository.AddUsers(250);
 
         var projectRepository = new ProjectRepository(dbContext);
