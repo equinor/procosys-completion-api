@@ -96,7 +96,7 @@ public class CommentServiceTests : ReadOnlyTestsBase
         var expectedOrderedNonVoidedLabels =
             comment.Labels
                 .Where(l => !l.IsVoided)
-                .Order()
+                .OrderBy(l => l.Text)
                 .ToList();
         Assert.AreEqual(expectedOrderedNonVoidedLabels.Count, commentDto.Labels.Count);
         for (var i = 0; i < expectedOrderedNonVoidedLabels.Count; i++)
