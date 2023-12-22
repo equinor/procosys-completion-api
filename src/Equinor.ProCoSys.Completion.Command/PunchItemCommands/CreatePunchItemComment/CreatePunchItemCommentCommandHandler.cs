@@ -5,6 +5,7 @@ using MediatR;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 
@@ -12,11 +13,16 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
 {
     private readonly ICommentService _commentService;
     private readonly ILabelRepository _labelRepository;
+    private readonly IPersonRepository _personRepository;
 
-    public CreatePunchItemCommentCommandHandler(ICommentService commentService, ILabelRepository labelRepository)
+    public CreatePunchItemCommentCommandHandler(
+        ICommentService commentService,
+        ILabelRepository labelRepository,
+        IPersonRepository personRepository)
     {
         _commentService = commentService;
         _labelRepository = labelRepository;
+        _personRepository = personRepository;
     }
 
     public async Task<Result<GuidAndRowVersion>> Handle(
@@ -24,12 +30,14 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         CancellationToken cancellationToken)
     {
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
+        var persons = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
         var commentDto = await _commentService.AddAsync(
             nameof(PunchItem),
             request.PunchItemGuid,
             request.Text,
             labels,
+            persons,
             cancellationToken);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(commentDto.Guid, commentDto.RowVersion));
