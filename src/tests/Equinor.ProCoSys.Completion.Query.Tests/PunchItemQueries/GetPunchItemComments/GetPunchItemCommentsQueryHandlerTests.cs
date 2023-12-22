@@ -28,6 +28,11 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
             Guid.NewGuid(),
             "T",
             new List<string> { "A" },
+            new List<PersonDto>
+            {
+                new(Guid.NewGuid(), "A", "Aa", "aa", "AaEmail"),
+                new(Guid.NewGuid(), "B", "Bb", "bb", "BbEmail")
+            },
             new PersonDto(Guid.NewGuid(), "First", "Last", "UN", "Email"),
             new DateTime(2023, 6, 11, 1, 2, 3));
         var commentDtos = new List<CommentDto>
@@ -59,14 +64,13 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
             Assert.IsTrue(comment.Labels.Any(l => l == labelText));
         }
         Assert.AreEqual(_commentDto.CreatedAtUtc, comment.CreatedAtUtc);
-        var createdBy = comment.CreatedBy;
-        Assert.IsNotNull(createdBy);
-        Assert.AreEqual(_commentDto.CreatedBy.Guid, createdBy.Guid);
-        Assert.AreEqual(_commentDto.CreatedBy.FirstName, createdBy.FirstName);
-        Assert.AreEqual(_commentDto.CreatedBy.LastName, createdBy.LastName);
-        Assert.AreEqual(_commentDto.CreatedBy.UserName, createdBy.UserName);
-        Assert.AreEqual(_commentDto.CreatedBy.Email, createdBy.Email);
-        Assert.AreEqual(_commentDto.CreatedAtUtc, comment.CreatedAtUtc);
+        AssertPerson(_commentDto.CreatedBy, comment.CreatedBy);
+
+        Assert.AreEqual(_commentDto.Mentions.Count, comment.Mentions.Count);
+        foreach (var mention in _commentDto.Mentions)
+        {
+            AssertPerson(mention, comment.Mentions.Single(p => p.Guid == mention.Guid));
+        }
     }
 
     [TestMethod]
@@ -79,5 +83,14 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         await _commentServiceMock.Received(1).GetAllForParentAsync(
             _query.PunchItemGuid,
             default);
+    }
+
+    private static void AssertPerson(PersonDto expected, PersonDto actual)
+    {
+        Assert.AreEqual(expected.Guid, actual.Guid);
+        Assert.AreEqual(expected.FirstName, actual.FirstName);
+        Assert.AreEqual(expected.LastName, actual.LastName);
+        Assert.AreEqual(expected.UserName, actual.UserName);
+        Assert.AreEqual(expected.Email, actual.Email);
     }
 }

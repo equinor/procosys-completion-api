@@ -214,7 +214,7 @@ public static class CompletionContextExtension
         bool superuser)
     {
         var person = new Person(new Guid(oid), firstName, lastName, userName, email, superuser);
-        var personRepository = new PersonRepository(dbContext, null!);
+        var personRepository = new PersonRepository(dbContext, null!, null!);
         personRepository.Add(person);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
