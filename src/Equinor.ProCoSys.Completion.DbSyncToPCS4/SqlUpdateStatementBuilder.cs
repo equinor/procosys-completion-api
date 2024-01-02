@@ -1,6 +1,4 @@
-﻿using System.Data;
-using System.Data.Common;
-using System.Text;
+﻿using System.Text;
 using Dapper;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
@@ -8,11 +6,11 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 /**
  * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
-public class SyncUpdateHandler
+public class SqlUpdateStatementBuilder
 {
     private readonly IPcs4Repository _oracleDBExecutor;
 
-    public SyncUpdateHandler(IPcs4Repository oracleDBExecutor)
+    public SqlUpdateStatementBuilder(IPcs4Repository oracleDBExecutor)
     {
         _oracleDBExecutor = oracleDBExecutor;
     }
@@ -20,17 +18,17 @@ public class SyncUpdateHandler
     /**
      * Handle the syncronization
      */
-    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildSqlUpdateStatementAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, CancellationToken cancellationToken = default)
+    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
     {
         var primaryKeyValue = GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey, sourceObject);
-        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceParameterValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, _oracleDBExecutor, cancellationToken);
+        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, plant, _oracleDBExecutor, cancellationToken);
 
         if (primaryKeyTargetValue == null)
         {
             throw new Exception("Not able to build update statement. Primary key value is null.");
         }
 
-        var updatesForTargetColumns = await GetTargetColumnUpdatesAsync(sourceObject, sourceObjectMappingConfig.PropertyMappings, cancellationToken);
+        var updatesForTargetColumns = await GetTargetColumnUpdatesAsync(sourceObject, sourceObjectMappingConfig.PropertyMappings, plant, cancellationToken);
 
         return BuildUpdateStatement(sourceObjectMappingConfig, primaryKeyTargetValue, updatesForTargetColumns);
     }
@@ -39,19 +37,19 @@ public class SyncUpdateHandler
     /**
      * Creates a list with updates the be executed on the target database. 
      */
-    private async Task<List<TargetColumnUpdate>> GetTargetColumnUpdatesAsync(object sourceObject, List<PropertyMapping> propertyMappings, CancellationToken cancellationToken)
+    private async Task<List<TargetColumnData>> GetTargetColumnUpdatesAsync(object sourceObject, List<PropertyMapping> propertyMappings, string plant, CancellationToken cancellationToken)
     {
-        var targetColumnUpdates = new List<TargetColumnUpdate>();
+        var targetColumnUpdates = new List<TargetColumnData>();
 
         foreach (var propertyMapping in propertyMappings)
         {
             var sourcePropertyValue = GetSourcePropertyValue(propertyMapping, sourceObject);
 
-            var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceParameterValueToTargetValueAsync(sourcePropertyValue, propertyMapping, _oracleDBExecutor, cancellationToken);
+            var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(sourcePropertyValue, propertyMapping, plant, _oracleDBExecutor, cancellationToken);
 
-            var columnUpdate = new TargetColumnUpdate(propertyMapping.TargetColumnName, targetColumnValue);
+            var columnData = new TargetColumnData(propertyMapping.TargetColumnName, targetColumnValue);
 
-            targetColumnUpdates.Add(columnUpdate);
+            targetColumnUpdates.Add(columnData);
         }
         return targetColumnUpdates;
     }
@@ -97,7 +95,7 @@ public class SyncUpdateHandler
     /**
      * Build a string that gives the update statement
      */
-    private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, object primaryKeyTargetValue, List<TargetColumnUpdate> updatesForTargetColumns)
+    private static (string sqlStatement, DynamicParameters sqlParameters) BuildUpdateStatement(ISourceObjectMappingConfig sourceObjectMappingConfig, object primaryKeyTargetValue, List<TargetColumnData> updatesForTargetColumns)
     {
         var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");
         var sqlParameters = new DynamicParameters();

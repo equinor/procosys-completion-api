@@ -7,11 +7,11 @@ public class TestObjectMissingPropMappingConfig : ISourceObjectMappingConfig
 {
     public string TargetTable { get; } = "TestTargetObject";
 
-    public PropertyMapping PrimaryKey { get; } = new PropertyMapping("TestGuid", "TestGuid", PropertyType.Guid, null);
+    public PropertyMapping PrimaryKey { get; } = new PropertyMapping("TestGuid", PropertyType.Guid, "TestGuid", null, null, false);
 
     public TestObjectMissingPropMappingConfig() => PropertyMappings = new List<PropertyMapping>
         {
-            new PropertyMapping("PropMissing", "PropMissing", PropertyType.String,   null)
+            new PropertyMapping("PropMissing",  PropertyType.String, "PropMissing", null, null, false)
         };
 
     public List<PropertyMapping> PropertyMappings { get; }

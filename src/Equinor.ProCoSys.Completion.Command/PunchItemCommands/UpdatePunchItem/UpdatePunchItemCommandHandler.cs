@@ -84,9 +84,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             //---
             if (changes.Any())
             {
+                //TODO: Bør ikke opprette domain events på nytt her. 
                 var domainEvent = new PunchItemUpdatedDomainEvent(punchItem, changes);
                 var integrationEvent = new PunchItemUpdatedIntegrationEvent(domainEvent);
-                await _syncToPCS4Service.SyncUpdatesAsync("PunchItem", integrationEvent, cancellationToken);
+                await _syncToPCS4Service.SyncUpdatesAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
             }
             //---
 

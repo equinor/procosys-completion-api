@@ -76,7 +76,7 @@ public class SyncUpdateHandlerTests
     private readonly Guid _personOid = new Guid("11111111-2222-3333-4444-555555555555");
     private readonly Guid _documentGuid = new Guid("11111111-2222-3333-4444-555555555555");
 
-    private SyncUpdateHandler _syncUpdateHandler;
+    private SqlUpdateStatementBuilder _syncUpdateHandler;
     private SourceTestObject _sourceTestObject;
 
     private string _expectedSqlUpdateStatement =
@@ -128,7 +128,7 @@ public class SyncUpdateHandlerTests
     public void Setup()
     {
         _oracleDBExecutorMock = Substitute.For<IPcs4Repository>();
-        _syncUpdateHandler = new SyncUpdateHandler(_oracleDBExecutorMock);
+        _syncUpdateHandler = new SqlUpdateStatementBuilder(_oracleDBExecutorMock);
         _nestedObject = new NestedObject(_testGuid2);
         _sourceTestObject = new SourceTestObject(_testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
     }
@@ -138,7 +138,7 @@ public class SyncUpdateHandlerTests
     {
         _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
 
         foreach (var expectedParam in _expectedSqlParameters)
@@ -163,7 +163,7 @@ public class SyncUpdateHandlerTests
         _sourceTestObject = new SourceTestObject(_testGuid, null, null, null, false, null, null, null, null, null, null);
 
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
 
         foreach (var expectedParam in _expectedSqlParametersNullValues)
@@ -181,7 +181,7 @@ public class SyncUpdateHandlerTests
 
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _syncUpdateHandler.BuildSqlUpdateStatementAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
+            await _syncUpdateHandler.BuildAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
         });
 
         Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);

@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -31,6 +33,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private readonly IWorkOrderRepository _woRepository;
     private readonly ISWCRRepository _swcrRepository;
     private readonly IDocumentRepository _documentRepository;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreatePunchItemCommandHandler(
@@ -43,6 +46,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         IWorkOrderRepository woRepository,
         ISWCRRepository swcrRepository,
         IDocumentRepository documentRepository,
+        ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
@@ -56,54 +60,74 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _woRepository = woRepository;
         _swcrRepository = swcrRepository;
         _documentRepository = documentRepository;
+        _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetAsync(request.ProjectGuid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
-            request.RaisedByOrgGuid,
-            LibraryType.COMPLETION_ORGANIZATION,
-            cancellationToken);
-        var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
-            request.ClearingByOrgGuid,
-            LibraryType.COMPLETION_ORGANIZATION,
-            cancellationToken);
+        try
+        {
 
-        var punchItem = new PunchItem(
-            _plantProvider.Plant,
-            project,
-            request.CheckListGuid,
-            request.Category,
-            request.Description,
-            raisedByOrg,
-            clearingByOrg);
+            var project = await _projectRepository.GetAsync(request.ProjectGuid, cancellationToken);
 
-        await SetActionByAsync(punchItem, request.ActionByPersonOid, cancellationToken);
-        punchItem.DueTimeUtc = request.DueTimeUtc;
-        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
-        await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
-        await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
-        punchItem.Estimate = request.Estimate;
-        await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid, cancellationToken);
-        await SetWorkOrderAsync(punchItem, request.WorkOrderGuid, cancellationToken);
-        await SetSWCRAsync(punchItem, request.SWCRGuid, cancellationToken);
-        await SetDocumentAsync(punchItem, request.DocumentGuid, cancellationToken);
-        punchItem.ExternalItemNo = request.ExternalItemNo;
-        punchItem.MaterialRequired = request.MaterialRequired;
-        punchItem.MaterialETAUtc = request.MaterialETAUtc;
-        punchItem.MaterialExternalNo = request.MaterialExternalNo;
+            var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+                request.RaisedByOrgGuid,
+                LibraryType.COMPLETION_ORGANIZATION,
+                cancellationToken);
+            var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+                request.ClearingByOrgGuid,
+                LibraryType.COMPLETION_ORGANIZATION,
+                cancellationToken);
 
-        _punchItemRepository.Add(punchItem);
-        punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem));
+            var punchItem = new PunchItem(
+                _plantProvider.Plant,
+                project,
+                request.CheckListGuid,
+                request.Category,
+                request.Description,
+                raisedByOrg,
+                clearingByOrg);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await SetActionByAsync(punchItem, request.ActionByPersonOid, cancellationToken);
+            punchItem.DueTimeUtc = request.DueTimeUtc;
+            await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
+            await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
+            await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
+            punchItem.Estimate = request.Estimate;
+            await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid, cancellationToken);
+            await SetWorkOrderAsync(punchItem, request.WorkOrderGuid, cancellationToken);
+            await SetSWCRAsync(punchItem, request.SWCRGuid, cancellationToken);
+            await SetDocumentAsync(punchItem, request.DocumentGuid, cancellationToken);
+            punchItem.ExternalItemNo = request.ExternalItemNo;
+            punchItem.MaterialRequired = request.MaterialRequired;
+            punchItem.MaterialETAUtc = request.MaterialETAUtc;
+            punchItem.MaterialExternalNo = request.MaterialExternalNo;
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo, punchItem.Guid);
+            _punchItemRepository.Add(punchItem);
+            punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem));
 
-        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // To be removed when sync to PCS 4 is no longer needed
+            //---
+            //todo: new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem)) 
+            //TODO: bør ikke plant være med i PunchItemCreatedDomainEvent?
+            await _syncToPCS4Service.SyncInsertAsync("PunchItem", new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem)), _plantProvider.Plant,  cancellationToken);
+            //---
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo, punchItem.Guid);
+            return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error occurred on insertion of punch item.", ex);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     private async Task SetDocumentAsync(PunchItem punchItem, Guid? documentGuid, CancellationToken cancellationToken)

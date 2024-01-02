@@ -18,14 +18,28 @@ public class SyncToPCS4Service : ISyncToPCS4Service
      * Updates the PCS 4 database with changes provided in the sourceObject, 
      * given the mapping configuration. 
      */
-    public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, CancellationToken cancellationToken = default)
+    public async Task SyncUpdatesAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken = default)
     {
         var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var syncUpdateHandler = new SyncUpdateHandler(_pcs4Repository);
-        var (sqlUpdateStatement, sqlParameters) = await syncUpdateHandler.BuildSqlUpdateStatementAsync(sourceObjectMappingConfig, sourceObject, cancellationToken);
+        var sqlUpdateStatementBuilder = new SqlUpdateStatementBuilder(_pcs4Repository);
+        var (sqlUpdateStatement, sqlParameters) = await sqlUpdateStatementBuilder.BuildAsync(sourceObjectMappingConfig, sourceObject, plant, cancellationToken);
 
-        await _pcs4Repository.UpdateSingleRowAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+        await _pcs4Repository.UpdateRowAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+    }
+
+    /**
+     * Updates the PCS 4 database with changes provided in the sourceObject, 
+     * given the mapping configuration. 
+     */
+    public async Task SyncInsertAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    {
+        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
+
+        var sqlInsertStatementBuilder = new SqlInsertStatementBuilder(_pcs4Repository);
+        var (sqlUpdateStatement, sqlParameters) = await sqlInsertStatementBuilder.BuildAsync(sourceObjectMappingConfig, sourceObject, plant, cancellationToken);
+
+        await _pcs4Repository.InsertRowAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
     }
 
     /**

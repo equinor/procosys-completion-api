@@ -18,10 +18,15 @@ public record PunchItemCreatedIntegrationEvent
     int ItemNo,
     string Description,
     string RaisedByOrgCode,
+    Guid RaisedByOrgGuid,
     string ClearingByOrgCode,
+    Guid ClearingByOrgGuid,
     string? SortingCode,
+    Guid? SortingGuid,
     string? TypeCode,
+    Guid? TypeGuid,
     string? PriorityCode,
+    Guid? PriorityGuid,
     DateTime? DueTimeUtc,
     int? Estimate,
     string? ExternalItemNo,
@@ -29,9 +34,13 @@ public record PunchItemCreatedIntegrationEvent
     DateTime? MaterialETAUtc,
     string? MaterialExternalNo,
     string? WorkOrderNo,
+    Guid? WorkOrderGuid,
     string? OriginalWorkOrderNo,
+    Guid? OriginalWorkOrderGuid,
     string? DocumentNo,
+    Guid? DocumentGuid,
     int? SWCRNo,
+    Guid? SWCRGuid,
     User? ActionBy,
     User? ClearedBy,
     DateTime? ClearedAtUtc,
@@ -40,7 +49,8 @@ public record PunchItemCreatedIntegrationEvent
     User? VerifiedBy,
     DateTime? VerifiedAtUtc,
     User CreatedBy,
-    DateTime CreatedAtUtc
+    DateTime CreatedAtUtc,
+    string Plant  //todo: skal ikke denne være med her? 
 ) : IPunchItemCreatedV1
 {
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent domainEvent) : this(
@@ -55,10 +65,15 @@ public record PunchItemCreatedIntegrationEvent
         domainEvent.PunchItem.ItemNo,
         domainEvent.PunchItem.Description,
         domainEvent.PunchItem.RaisedByOrg.Code,
+        domainEvent.PunchItem.RaisedByOrg.Guid,
         domainEvent.PunchItem.ClearingByOrg.Code,
+        domainEvent.PunchItem.ClearingByOrg.Guid,
         domainEvent.PunchItem.Sorting?.Code,
+        domainEvent.PunchItem.Sorting?.Guid,
         domainEvent.PunchItem.Type?.Code,
+        domainEvent.PunchItem.Type?.Guid,
         domainEvent.PunchItem.Priority?.Code,
+        domainEvent.PunchItem.Priority?.Guid,
         domainEvent.PunchItem.DueTimeUtc,
         domainEvent.PunchItem.Estimate,
         domainEvent.PunchItem.ExternalItemNo,
@@ -66,9 +81,13 @@ public record PunchItemCreatedIntegrationEvent
         domainEvent.PunchItem.MaterialETAUtc,
         domainEvent.PunchItem.MaterialExternalNo,
         domainEvent.PunchItem.WorkOrder?.No,
+        domainEvent.PunchItem.WorkOrder?.Guid,
         domainEvent.PunchItem.OriginalWorkOrder?.No,
+        domainEvent.PunchItem.OriginalWorkOrder?.Guid,
         domainEvent.PunchItem.Document?.No,
+        domainEvent.PunchItem.Document?.Guid,
         domainEvent.PunchItem.SWCR?.No,
+        domainEvent.PunchItem.SWCR?.Guid,
         domainEvent.PunchItem.ActionBy is null ?
             null :
             new User(domainEvent.PunchItem.ActionBy.Guid, domainEvent.PunchItem.ActionBy.GetFullName()),
@@ -85,6 +104,7 @@ public record PunchItemCreatedIntegrationEvent
             new User(domainEvent.PunchItem.VerifiedBy.Guid, domainEvent.PunchItem.VerifiedBy.GetFullName()),
         domainEvent.PunchItem.VerifiedAtUtc,
         new User(domainEvent.PunchItem.CreatedBy.Guid, domainEvent.PunchItem.CreatedBy.GetFullName()),
-        domainEvent.PunchItem.CreatedAtUtc)
+        domainEvent.PunchItem.CreatedAtUtc,
+        domainEvent.PunchItem.Plant)
     { }
 }

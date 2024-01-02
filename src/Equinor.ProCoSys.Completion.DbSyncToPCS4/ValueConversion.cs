@@ -10,5 +10,7 @@ public enum ValueConversion
     OidToPersonId,
     GuidToWorkOrderId,
     GuidToSWCRId,
-    GuidToDocumentId
+    GuidToDocumentId, 
+    GuidToTagCheckId,
+    PunchCategoryToLibId
 }

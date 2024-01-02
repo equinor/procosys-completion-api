@@ -1,24 +1,69 @@
 ﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 /**
- * Holds configuration of mapping from a source property to a target column
+ * Holds configuration of mapping from a source property to a target column. 
  */
 public class PropertyMapping
 {
     public PropertyMapping(
         string sourcePropertyName,
-        string targetColumnName,
         PropertyType sourceType,
-        ValueConversion? valueConversionMethod)
+        string targetColumnName,
+        ValueConversion? valueConversionMethod,
+        string? targetSequence,
+        bool? onlyForInsert)
     {
         SourcePropertyName = sourcePropertyName;
-        TargetColumnName = targetColumnName;
         SourceType = sourceType;
+        TargetColumnName = targetColumnName;
         ValueConversion = valueConversionMethod;
+        TargetSequence = targetSequence;
+        OnlyForInsert = onlyForInsert;
     }
 
     public string SourcePropertyName { get; }
-    public string TargetColumnName { get; }
     public PropertyType SourceType { get; }
+    public string TargetColumnName { get; }
     public ValueConversion? ValueConversion { get; }
+    public string? TargetSequence { get; }  //The name of a 'sequence' in Oracle to be used when creating new rows
+    public bool? OnlyForInsert { get; } = false;
+
+    /**
+    * Helper method to find the value of a configured property in an object. 
+    * This value might be in a nested property (e.g ActionBy.Oid)
+    */
+    public static object? GetSourcePropertyValue(string configuredPropertyName, object sourceObject)
+    {
+        var sourcePropertyNameParts = configuredPropertyName.Split('.');
+        if (sourcePropertyNameParts.Length > 2)
+        {
+            throw new Exception($"Only one nested level is supported for entities, so {configuredPropertyName} is not supported.");
+        }
+
+        var sourcePropertyName = sourcePropertyNameParts[0];
+        var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
+
+        if (sourceProperty == null)
+        {
+            throw new Exception($"A property in configuration is missing in source object: {configuredPropertyName}");
+        }
+
+        var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
+
+        if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
+        {
+            //We must find the nested property
+            sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
+
+            if (sourceProperty == null)
+            {
+                throw new Exception($"A nested property in configuration is missing in source object: {configuredPropertyName}");
+            }
+
+            sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
+        }
+
+        return sourcePropertyValue;
+    }
+
 }

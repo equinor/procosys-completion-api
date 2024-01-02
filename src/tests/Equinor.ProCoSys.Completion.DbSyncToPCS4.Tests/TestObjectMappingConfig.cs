@@ -4,20 +4,20 @@ public class TestObjectMappingConfig : ISourceObjectMappingConfig
 {
     public string TargetTable { get; } = "TestTargetTable";
 
-    public PropertyMapping PrimaryKey { get; } = new PropertyMapping("TestGuid", "TestGuid", PropertyType.Guid, null);
+    public PropertyMapping PrimaryKey { get; } = new PropertyMapping("TestGuid", PropertyType.Guid, "TestGuid", null, null, false);
 
     public TestObjectMappingConfig() => PropertyMappings = new List<PropertyMapping>
         {
-            new PropertyMapping("TestString",       "TestString",       PropertyType.String,    null),
-            new PropertyMapping("TestDate",         "TestDateWithTime", PropertyType.DateTime,  null),
-            new PropertyMapping("TestDate2",        "TestDate",         PropertyType.DateTime,  null),
-            new PropertyMapping("TestBool",         "TestBool",         PropertyType.Bool,      null),
-            new PropertyMapping("TestInt",          "TestInt",          PropertyType.Int,       null),
-            new PropertyMapping("NestedObject.Guid", "TestLibId",       PropertyType.Guid,      ValueConversion.GuidToLibId),
-            new PropertyMapping("WoGuid",           "WoGuidLibId",      PropertyType.Guid,      ValueConversion.GuidToWorkOrderId),
-            new PropertyMapping("SwcrGuid",         "SwcrLibId",        PropertyType.Guid,      ValueConversion.GuidToSWCRId),
-            new PropertyMapping("PersonOID",        "PersonOid",        PropertyType.Guid,      ValueConversion.OidToPersonId),
-            new PropertyMapping("DocumentGuid",     "DocumentId",       PropertyType.Guid,      ValueConversion.GuidToDocumentId),
+            new PropertyMapping("TestString",         PropertyType.String,   "TestString",        null, null, false),
+            new PropertyMapping("TestDate",           PropertyType.DateTime, "TestDateWithTime",  null, null, false),
+            new PropertyMapping("TestDate2",          PropertyType.DateTime, "TestDate",          null, null, false),
+            new PropertyMapping("TestBool",           PropertyType.Bool,     "TestBool",          null, null, false),
+            new PropertyMapping("TestInt",            PropertyType.Int,      "TestInt",           null, null, false),
+            new PropertyMapping("NestedObject.Guid",  PropertyType.Guid,      "TestLibId",        ValueConversion.GuidToLibId, null, false),
+            new PropertyMapping("WoGuid",             PropertyType.Guid,     "WoGuidLibId",       ValueConversion.GuidToWorkOrderId, null, false),
+            new PropertyMapping("SwcrGuid",           PropertyType.Guid,     "SwcrLibId",         ValueConversion.GuidToSWCRId, null, false),
+            new PropertyMapping("PersonOID",          PropertyType.Guid,     "PersonOid",         ValueConversion.OidToPersonId, null, false),
+            new PropertyMapping("DocumentGuid",       PropertyType.Guid,     "DocumentId",        ValueConversion.GuidToDocumentId, null, false),
         };
 
     public List<PropertyMapping> PropertyMappings { get; }
