@@ -5,14 +5,9 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 /**
  * Executes the an insert of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
-public class SqlInsertStatementBuilder
+public class SqlInsertStatementBuilder(IPcs4Repository oracleDBExecutor)
 {
-    private readonly IPcs4Repository _oracleDBExecutor;
-
-    public SqlInsertStatementBuilder(IPcs4Repository oracleDBExecutor)
-    {
-        _oracleDBExecutor = oracleDBExecutor;
-    }
+    private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
 
     /**
      * Handle the synchronization

@@ -27,8 +27,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
         protected ISyncToPCS4Service _syncToPCS4ServiceMock;
-        protected PunchItem _existingPunchItem;
-        protected PunchItem _punchItemPa;
+        //protected PunchItem _existingPunchItem;
+        //protected PunchItem _punchItemPa;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
