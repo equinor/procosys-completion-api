@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -18,6 +19,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
     {
         protected const string OriginalRowVersion = "BBBBBBBBABA=";
         protected const string RowVersion = "AAAAAAAAABA=";
+        protected IProjectRepository _projectRepositoryMock;
         protected IPersonRepository _personRepositoryMock;
         protected IPunchItemRepository _punchItemRepositoryMock;
         protected ILibraryItemRepository _libraryItemRepositoryMock;
@@ -28,28 +30,33 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected PunchItem _existingPunchItem;
         protected PunchItem _punchItemPa;
         protected Person _currentPerson;
-        protected LibraryItem _existingRaisedByOrg1;
-        protected LibraryItem _existingRaisedByOrg2;
-        protected LibraryItem _existingClearingByOrg1;
-        protected LibraryItem _existingClearingByOrg2;
-        protected LibraryItem _existingPriority1;
-        protected LibraryItem _existingPriority2;
-        protected LibraryItem _existingSorting1;
-        protected LibraryItem _existingSorting2;
-        protected LibraryItem _existingType1;
-        protected LibraryItem _existingType2;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
-        protected WorkOrder _existingWorkOrder1;
-        protected WorkOrder _existingWorkOrder2;
-        protected SWCR _existingSWCR1;
-        protected SWCR _existingSWCR2;
-        protected Document _existingDocument1;
-        protected Document _existingDocument2;
+
+        protected Dictionary<string, Project> _existingProject = new();
+        protected Dictionary<string, PunchItem> _existingPunchItem = new();
+        protected Dictionary<string, PunchItem> _punchItemPa = new();
+        protected Dictionary<string, LibraryItem> _existingRaisedByOrg1 = new();
+        protected Dictionary<string, LibraryItem> _existingRaisedByOrg2 = new();
+        protected Dictionary<string, LibraryItem> _existingClearingByOrg1 = new();
+        protected Dictionary<string, LibraryItem> _existingClearingByOrg2 = new();
+        protected Dictionary<string, LibraryItem> _existingPriority1 = new();
+        protected Dictionary<string, LibraryItem> _existingPriority2 = new();
+        protected Dictionary<string, LibraryItem> _existingSorting1 = new();
+        protected Dictionary<string, LibraryItem> _existingSorting2 = new();
+        protected Dictionary<string, LibraryItem> _existingType1 = new();
+        protected Dictionary<string, LibraryItem> _existingType2 = new();
+        protected Dictionary<string, WorkOrder> _existingWorkOrder1 = new();
+        protected Dictionary<string, WorkOrder> _existingWorkOrder2 = new();
+        protected Dictionary<string, SWCR> _existingSWCR1 = new();
+        protected Dictionary<string, SWCR> _existingSWCR2 = new();
+        protected Dictionary<string, Document> _existingDocument1 = new();
+        protected Dictionary<string, Document> _existingDocument2 = new();
 
         [TestInitialize]
         public void PunchItemCommandHandlerTestsBaseSetup()
         {
+            _projectRepositoryMock = Substitute.For<IProjectRepository>();
             _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
             _personRepositoryMock = Substitute.For<IPersonRepository>();
             _libraryItemRepositoryMock = Substitute.For<ILibraryItemRepository>();
@@ -59,54 +66,74 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
 
             var id = 5;
-            var project = new Project(TestPlantA, Guid.NewGuid(), null!, null!);
-            _existingPunchItem = new PunchItem(
-                TestPlantA,
-                project,
-                Guid.NewGuid(),
-                Category.PA,
-                Guid.NewGuid().ToString(),
-                SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id),
-                SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id));
-            _existingPunchItem.SetRowVersion(OriginalRowVersion);
-            _punchItemPa = _existingPunchItem;
-
-            _punchItemRepositoryMock.GetAsync(_existingPunchItem.Guid, default)
-                .Returns(_existingPunchItem);
-
-            _existingRaisedByOrg1 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
-            _existingRaisedByOrg2 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
-            _existingClearingByOrg1 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
-            _existingClearingByOrg2 = SetupLibraryItem(LibraryType.COMPLETION_ORGANIZATION, ++id);
-            _existingPriority1 = SetupLibraryItem(LibraryType.PUNCHLIST_PRIORITY, ++id);
-            _existingPriority2 = SetupLibraryItem(LibraryType.PUNCHLIST_PRIORITY, ++id);
-            _existingSorting1 = SetupLibraryItem(LibraryType.PUNCHLIST_SORTING, ++id);
-            _existingSorting2 = SetupLibraryItem(LibraryType.PUNCHLIST_SORTING, ++id);
-            _existingType1 = SetupLibraryItem(LibraryType.PUNCHLIST_TYPE, ++id);
-            _existingType2 = SetupLibraryItem(LibraryType.PUNCHLIST_TYPE, ++id);
-
             _currentPerson = SetupPerson(++id);
             _personRepositoryMock.GetCurrentPersonAsync(default)
                 .Returns(_currentPerson);
             _existingPerson1 = SetupPerson(++id);
             _existingPerson2 = SetupPerson(++id);
 
-            _existingWorkOrder1 = SetupWorkOrder(++id);
-            _existingWorkOrder2 = SetupWorkOrder(++id);
-
-            _existingSWCR1 = SetupSWCR(++id);
-            _existingSWCR2 = SetupSWCR(++id);
-
-            _existingDocument1 = SetupDocument(++id);
-            _existingDocument2 = SetupDocument(++id);
-
-            _existingPunchItem.SetCreated(_currentPerson);
-            _existingPunchItem.SetModified(_currentPerson);
+            AddTestDataToPlant(TestPlantA, id);
+            AddTestDataToPlant(TestPlantB, id);
         }
 
-        private Document SetupDocument(int id)
+        private void AddTestDataToPlant(string testPlant, int id)
         {
-            var document = new Document(TestPlantA, Guid.NewGuid(), null!);
+            var project = SetupProject(testPlant, ref id);
+
+            _existingProject.Add(testPlant, project);
+            _existingPunchItem.Add(testPlant, SetupPunchItem(testPlant, project, ref id));
+            _punchItemPa.Add(testPlant, SetupPunchItem(testPlant, project, ref id));
+
+            _existingRaisedByOrg1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+            _existingRaisedByOrg2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+            _existingClearingByOrg1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+            _existingClearingByOrg2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+            _existingPriority1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_PRIORITY, ++id));
+            _existingPriority2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_PRIORITY, ++id));
+            _existingSorting1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_SORTING, ++id));
+            _existingSorting2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_SORTING, ++id));
+            _existingType1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_TYPE, ++id));
+            _existingType2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_TYPE, ++id));
+
+            _existingWorkOrder1.Add(testPlant, SetupWorkOrder(testPlant, ++id));
+            _existingWorkOrder2.Add(testPlant, SetupWorkOrder(testPlant, ++id));
+
+            _existingSWCR1.Add(testPlant, SetupSWCR(testPlant, ++id));
+            _existingSWCR2.Add(testPlant, SetupSWCR(testPlant, ++id));
+
+            _existingDocument1.Add(testPlant, SetupDocument(testPlant, ++id));
+            _existingDocument2.Add(testPlant, SetupDocument(testPlant, ++id));
+        }
+
+        private Project SetupProject(string testPlant, ref int id)
+        {
+            var project = new Project(testPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
+            project.SetProtectedIdForTesting(++id);
+            _projectRepositoryMock
+                .GetAsync(project.Guid, default)
+                .Returns(project);
+            return project;
+        }
+
+        private PunchItem SetupPunchItem(string testPlant, Project project, ref int id)
+        {
+            var punchItem = new PunchItem(
+                testPlant,
+                project,
+                Guid.NewGuid(),
+                Category.PA,
+                Guid.NewGuid().ToString(),
+                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id),
+                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+            punchItem.SetProtectedIdForTesting(++id);
+            punchItem.SetRowVersion(OriginalRowVersion);
+            _punchItemRepositoryMock.GetAsync(punchItem.Guid, default).Returns(punchItem);
+            return punchItem;
+        }
+
+        private Document SetupDocument(string plant, int id)
+        {
+            var document = new Document(plant, Guid.NewGuid(), null!);
             document.SetProtectedIdForTesting(++id);
 
             _documentRepositoryMock
@@ -116,9 +143,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             return document;
         }
 
-        private SWCR SetupSWCR(int id)
+        private SWCR SetupSWCR(string plant, int id)
         {
-            var swcr = new SWCR(TestPlantA, Guid.NewGuid(), id);
+            var swcr = new SWCR(plant, Guid.NewGuid(), id);
             swcr.SetProtectedIdForTesting(id);
             _swcrRepositoryMock
                 .GetAsync(swcr.Guid, default)
@@ -127,9 +154,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             return swcr;
         }
 
-        private WorkOrder SetupWorkOrder(int id)
+        private WorkOrder SetupWorkOrder(string plant, int id)
         {
-            var workOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), null!);
+            var workOrder = new WorkOrder(plant, Guid.NewGuid(), null!);
             workOrder.SetProtectedIdForTesting(id);
             _workOrderRepositoryMock
                 .GetAsync(workOrder.Guid, default)
@@ -140,7 +167,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Person SetupPerson(int id)
         {
-            var person = new Person(Guid.NewGuid(), $"F{id}", $"L{id}", $"U{id}", "@");
+            var person = new Person(Guid.NewGuid(), $"F{id}", $"L{id}", $"U{id}", "@", false);
             person.SetProtectedIdForTesting(id);
             _personRepositoryMock
                 .GetAsync(person.Guid, default)
@@ -151,11 +178,11 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             return person;
         }
 
-        protected LibraryItem SetupLibraryItem(LibraryType libraryType, int id)
+        protected LibraryItem SetupLibraryItem(string plant, LibraryType libraryType, int id)
         {
             var libraryGuid = Guid.NewGuid();
             var libraryItem = new LibraryItem(
-                TestPlantA,
+                plant,
                 libraryGuid,
                 libraryGuid.ToString().Substring(0, 4),
                 libraryGuid.ToString(),

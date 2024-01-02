@@ -4,13 +4,13 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 
 public class Label : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IVoidable
 {
-    private readonly List<LabelHost> _hosts = new List<LabelHost>();
+    private readonly List<LabelEntity> _availableFor = new();
     public const int TextLengthMax = 60;
 
     public Label(string text) => Text = text;
@@ -24,7 +24,11 @@ public class Label : EntityBase, IAggregateRoot, ICreationAuditable, IModificati
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
-    public ICollection<LabelHost> Hosts => _hosts;
+    public ICollection<LabelEntity> AvailableFor => _availableFor;
+
+    public void MakeLabelAvailableFor(LabelEntity labelEntity) => _availableFor.Add(labelEntity);
+
+    public void RemoveLabelAvailableFor(LabelEntity labelEntity) => _availableFor.Remove(labelEntity);
 
     public void SetCreated(Person createdBy)
     {

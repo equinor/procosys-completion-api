@@ -110,4 +110,37 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith($"Punch item don't have an attachment with filename {_command.FileName}!"));
     }
+
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PunchItemIsVerified_AndCurrentUserIsNotVerifier()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item attachments can't be changed. The punch item is verified!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldBeValid_When_PunchItemIsVerified_AndCurrentUserIsVerifier()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+        _punchItemValidatorMock.CurrentUserIsVerifierAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
 }

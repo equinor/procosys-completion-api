@@ -18,7 +18,7 @@ public class LinkServiceTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
         _parentGuid = Guid.NewGuid();
         _link = new Link("X", _parentGuid, "T", "U");
@@ -31,7 +31,7 @@ public class LinkServiceTests : ReadOnlyTestsBase
     public async Task GetAllForParentAsync_ShouldReturnCorrectDtos()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new LinkService(context);
 
         // Act

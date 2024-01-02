@@ -11,7 +11,7 @@ public class PersonTests
     private readonly Guid _oid = Guid.NewGuid();
 
     [TestInitialize]
-    public void Setup() => _dut = new Person(_oid, "FirstName", "LastName", "UserName", "EmailAddress");
+    public void Setup() => _dut = new Person(_oid, "FirstName", "LastName", "UserName", "EmailAddress", true);
 
     [TestMethod]
     public void Constructor_SetsProperties()
@@ -22,5 +22,6 @@ public class PersonTests
         Assert.AreEqual("UserName", _dut.UserName);
         Assert.AreEqual("EmailAddress", _dut.Email);
         Assert.AreEqual("FirstName LastName", _dut.GetFullName());
+        Assert.IsTrue(_dut.Superuser);
     }
 }

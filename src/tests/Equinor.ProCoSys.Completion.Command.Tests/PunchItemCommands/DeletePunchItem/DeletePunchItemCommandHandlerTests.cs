@@ -12,6 +12,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
     [TestClass]
     public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
     {
+        private readonly string _testPlant = TestPlantA;
         private DeletePunchItemCommand _command;
         private DeletePunchItemCommandHandler _dut;
         private ILogger<DeletePunchItemCommandHandler> _logger;
@@ -19,7 +20,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         [TestInitialize]
         public void Setup()
         {
-            _command = new DeletePunchItemCommand(_existingPunchItem.Guid, RowVersion);
+            _command = new DeletePunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
             _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
             
@@ -36,7 +37,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             await _dut.Handle(_command, default);
 
             // Assert
-            _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem);
+            _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem[_testPlant]);
         }
 
         [TestMethod]
@@ -58,7 +59,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             // Assert
             // In real life EF Core will create a new RowVersion when save.
             // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-            Assert.AreEqual(_command.RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+            Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
         }
 
         [TestMethod]
@@ -68,7 +69,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             await _dut.Handle(_command, default);
 
             // Assert
-            Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemDeletedDomainEvent));
+            Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemDeletedDomainEvent));
         }
     }
 }

@@ -30,6 +30,10 @@ internal class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .IsRequired();
 
         builder
+            .HasMany(x => x.Labels)
+            .WithMany();
+
+        builder
             .HasIndex(x => x.ParentGuid)
             .HasDatabaseName("IX_Comments_ParentGuid")
             .IncludeProperties(x => new

@@ -52,12 +52,24 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
         string type;
         if (!pcsPerson.ServicePrincipal)
         {
-            person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+            person = new Person(
+                request.Oid,
+                pcsPerson.FirstName,
+                pcsPerson.LastName,
+                pcsPerson.UserName,
+                pcsPerson.Email,
+                pcsPerson.Super);
             type = "Person";
         }
         else
         {
-            person = new Person(request.Oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, _options.CurrentValue.ServicePrincipalMail);
+            person = new Person(
+                request.Oid,
+                pcsPerson.FirstName,
+                pcsPerson.LastName,
+                pcsPerson.UserName,
+                _options.CurrentValue.ServicePrincipalMail,
+                pcsPerson.Super);
             type = "ServicePrincipal";
         }
         _personRepository.Add(person);

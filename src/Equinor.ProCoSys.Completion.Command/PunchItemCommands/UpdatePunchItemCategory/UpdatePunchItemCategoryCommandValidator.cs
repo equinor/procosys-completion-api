@@ -21,10 +21,10 @@ public class UpdatePunchItemCategoryCommandValidator : AbstractValidator<UpdateP
             .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Tag owning punch item is voided!")
-            .MustAsync((command, cancellationToken) => NotAlreadyBeClearedAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage(command => $"Punch item is already cleared! Guid={command.PunchItemGuid}")
             .MustAsync((command, cancellationToken) => NotHaveSameCategoryAsync(command.PunchItemGuid, command.Category, cancellationToken))
-            .WithMessage(command => $"Punch item already have category {command.Category}! Guid={command.PunchItemGuid}");
+            .WithMessage(command => $"Punch item already have category {command.Category}! Guid={command.PunchItemGuid}")
+            .MustAsync((command, cancellationToken) => NotBeClearedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item is cleared! Guid={command.PunchItemGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -35,10 +35,10 @@ public class UpdatePunchItemCategoryCommandValidator : AbstractValidator<UpdateP
         async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
 
-        async Task<bool> NotAlreadyBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-            => !await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
-
         async Task<bool> NotHaveSameCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken)
             => !await punchItemValidator.HasCategoryAsync(punchItemGuid, category, cancellationToken);
+
+        async Task<bool> NotBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
     }
 }

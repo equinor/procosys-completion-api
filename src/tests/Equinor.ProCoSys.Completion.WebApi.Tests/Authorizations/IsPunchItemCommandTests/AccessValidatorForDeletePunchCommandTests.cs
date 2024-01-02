@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;

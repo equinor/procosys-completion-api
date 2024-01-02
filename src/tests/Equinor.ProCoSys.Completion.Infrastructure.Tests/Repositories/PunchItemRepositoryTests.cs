@@ -23,9 +23,11 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     private LibraryItem _sorting;
     private LibraryItem _type;
 
+    protected override EntityWithGuidRepository<PunchItem> GetDut() => new PunchItemRepository(_contextHelper.ContextMock);
+
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        _project = new Project(TestPlant, Guid.NewGuid(), null!, null!);
+        _project = new Project(TestPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), Category.PB, null!, _raisedByOrg, _clearingByOrg);
@@ -47,8 +49,6 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
             .ContextMock
             .PunchItems
             .Returns(_dbSetMock);
-
-        _dut = new PunchItemRepository(_contextHelper.ContextMock);
     }
 
     protected override PunchItem GetNewEntity() => new(TestPlant, _project, Guid.NewGuid(), Category.PA, null!, _raisedByOrg, _clearingByOrg);
@@ -57,7 +57,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
     public async Task GetAsync_KnownGuid_ShouldReturnEntityWithNavigationProperties()
     {
         // Act
-        var result = await _dut.GetAsync(_knownGuid, default);
+        var result = await GetDut().GetAsync(_knownGuid, default);
 
         // Assert
         Assert.IsNotNull(result);

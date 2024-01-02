@@ -10,7 +10,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -60,14 +60,14 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
         
-        ConfigureMassTransitOutBox(modelBuilder);
+        ConfigureOutBoxPattern(modelBuilder);
     }
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
     public static LibraryTypeConverter LibraryTypeConverter { get; } = new();
 
     public virtual DbSet<Label> Labels => Set<Label>();
-    public virtual DbSet<LabelHost> LabelHosts => Set<LabelHost>();
+    public virtual DbSet<LabelEntity> LabelEntities => Set<LabelEntity>();
     public virtual DbSet<Person> Persons => Set<Person>();
     public virtual DbSet<PunchItem> PunchItems => Set<PunchItem>();
     public virtual DbSet<Project> Projects => Set<Project>();
@@ -79,13 +79,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
-    private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
-    {
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
-    }
-
+    private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder) 
+        => modelBuilder.AddTransactionalOutboxEntities();
+    
     private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
     {
         // todo 104163 Discuss if we need plant or not
@@ -94,12 +90,13 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         foreach (var type in TypeProvider.GetEntityTypes(typeof(IDomainMarker).GetTypeInfo().Assembly, typeof(PlantEntityBase)))
         {
             typeof(CompletionContext)
-                .GetMethod(nameof(CompletionContext.SetGlobalQueryFilter))
+                .GetMethod(nameof(SetGlobalQueryFilter))
                 ?.MakeGenericMethod(type)
                 .Invoke(this, new object[] { modelBuilder });
         }
     }
 
+    // NB! This method need to be Public, if made private it will not apply
     public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
             .Entity<T>()

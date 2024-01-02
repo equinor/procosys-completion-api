@@ -11,7 +11,13 @@ public static class Seeders
     {
         for (var i = 0; i < entryCount; i++)
         {
-            var user = new Person(Guid.NewGuid(), $"Firstname-{i}", $"Lastname-{i}", $"username-{i}", $"username-{i}@pcs.pcs");
+            var user = new Person(
+                Guid.NewGuid(),
+                $"Firstname-{i}",
+                $"Lastname-{i}",
+                $"username-{i}",
+                $"username-{i}@pcs.pcs",
+                false);
             personRepository.Add(user);
         }
     }
@@ -20,7 +26,7 @@ public static class Seeders
     {
         for (var i = 0; i < entryCount; i++)
         {
-            var project = new Project(plant, Guid.NewGuid(), $"Name-{i}", $"Description-{i}");
+            var project = new Project(plant, Guid.NewGuid(), $"Name-{i}", $"Description-{i}", DateTime.Now);
             projectRepository.Add(project);
         }
     }

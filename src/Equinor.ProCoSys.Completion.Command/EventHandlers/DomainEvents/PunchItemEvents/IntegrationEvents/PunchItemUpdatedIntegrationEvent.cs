@@ -80,7 +80,7 @@ public record PunchItemUpdatedIntegrationEvent
     internal PunchItemUpdatedIntegrationEvent(PunchItemRejectedDomainEvent domainEvent) : this(
         "Punch item rejected",
         domainEvent.PunchItem,
-        new List<IProperty>())
+        domainEvent.Changes)
     {
     }
 

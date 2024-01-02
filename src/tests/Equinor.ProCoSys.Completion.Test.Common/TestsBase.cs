@@ -10,7 +10,10 @@ namespace Equinor.ProCoSys.Completion.Test.Common
     [TestClass]
     public abstract class TestsBase
     {
-        protected readonly string TestPlantA = "PCS$PlantA";
+        protected static string TestPlantA = "PCS$PlantA";
+        protected static string TestPlantB = "PCS$PlantB";
+        protected static string TestPlantWithoutData = "PCS$EmptyPlant";
+
         protected IUnitOfWork _unitOfWorkMock;
         protected IPlantProvider _plantProviderMock;
         protected ManualTimeProvider _timeProvider;

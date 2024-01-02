@@ -16,6 +16,8 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
 {
     private readonly ICurrentUserProvider _userProviderMock = Substitute.For<ICurrentUserProvider>();
 
+    protected override EntityWithGuidRepository<Person> GetDut() => new PersonRepository(_contextHelper.ContextMock, _userProviderMock);
+
     protected override void SetupRepositoryWithOneKnownItem()
     {
         var person = new Person(
@@ -23,14 +25,12 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
             "FirstName",
             "LastName",
             "UNAME",
-            "email@test.com");
+            "email@test.com", 
+            false);
         _knownGuid = person.Guid;
         person.SetProtectedIdForTesting(_knownId);
 
-        var persons = new List<Person>
-        {
-            person
-        };
+        var persons = new List<Person> { person };
 
         _dbSetMock = persons.AsQueryable().BuildMockDbSet();
 
@@ -38,9 +38,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
             .ContextMock
             .Persons
             .Returns(_dbSetMock);
-
-        _dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock);
     }
 
-    protected override Person GetNewEntity() => new (Guid.NewGuid(), "New", "Person", "NP", "@");
+    protected override Person GetNewEntity() => new (Guid.NewGuid(), "New", "Person", "NP", "@", false);
 }

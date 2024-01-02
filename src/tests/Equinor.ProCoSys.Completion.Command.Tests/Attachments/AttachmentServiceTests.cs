@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
@@ -107,6 +109,17 @@ public class AttachmentServiceTests : TestsBase
         Assert.AreEqual(_parentType, _attachmentAddedToRepository.ParentType);
         Assert.AreEqual(_newFileName, _attachmentAddedToRepository.FileName);
         Assert.AreEqual(1, _attachmentAddedToRepository.RevisionNumber);
+    }
+
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WithoutLabels()
+    {
+        // Act
+        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+
+        // Assert
+        Assert.IsNotNull(_attachmentAddedToRepository);
+        Assert.AreEqual(0, _attachmentAddedToRepository.Labels.Count);
     }
 
     [TestMethod]
@@ -268,6 +281,113 @@ public class AttachmentServiceTests : TestsBase
         await _azureBlobServiceMock.Received(1).DeleteAsync(
                 _blobContainer,
                 p);
+    }
+    #endregion
+
+    #region Update
+    [TestMethod]
+    public async Task UpdateAsync_ShouldUpdateDescription()
+    {
+        // Arrange 
+        var description = "abc";
+
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, description, new List<Label>(), _rowVersion, default);
+
+        // Assert
+        Assert.AreEqual(description, _existingAttachment.Description);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldUpdateLabels()
+    {
+        // Arrange 
+        var labelA = new Label("a");
+        var labelB = new Label("b");
+
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "", new List<Label>{labelA, labelB}, _rowVersion, default);
+
+        // Assert
+        Assert.AreEqual(2, _existingAttachment.Labels.Count);
+        Assert.AreEqual(2, _existingAttachment.GetOrderedNonVoidedLabels().Count());
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldSaveOnce()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldAddAttachmentUpdatedDomainEvent()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        Assert.IsInstanceOfType(_existingAttachment.DomainEvents.First(), typeof(AttachmentUpdatedDomainEvent));
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldNotAddAttachmentUpdatedDomainEvent_WhenNoChanges()
+    {
+        // Act
+        await _dut.UpdateAsync(
+            _existingAttachment.Guid,
+            _existingAttachment.Description,
+            new List<Label>(),
+            _rowVersion,
+            default);
+
+        // Assert
+        var attachmentUpdatedDomainEventAdded =
+            _existingAttachment.DomainEvents.Any(e => e.GetType() == typeof(AttachmentUpdatedDomainEvent));
+        Assert.IsFalse(attachmentUpdatedDomainEventAdded);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldAddCorrectAttachmentUpdatedDomainEvent_WhenChanges()
+    {
+        // Arrange
+        var oldTitle = _existingAttachment.Description;
+        var newTitle = Guid.NewGuid().ToString();
+
+        // Act
+        await _dut.UpdateAsync(
+            _existingAttachment.Guid,
+            newTitle,
+            new List<Label>(),
+            _rowVersion,
+            default);
+
+        // Assert
+        var attachmentUpdatedDomainEventAdded = _existingAttachment.DomainEvents.Last() as AttachmentUpdatedDomainEvent;
+        Assert.IsNotNull(attachmentUpdatedDomainEventAdded);
+        Assert.IsNotNull(attachmentUpdatedDomainEventAdded.Changes);
+        var change = attachmentUpdatedDomainEventAdded
+            .Changes
+            .SingleOrDefault(c => c.Name == nameof(Attachment.Description));
+        Assert.IsNotNull(change);
+        Assert.AreEqual(oldTitle, change.OldValue);
+        Assert.AreEqual(newTitle, change.NewValue);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldSetAndReturnRowVersion()
+    {
+        // Act
+        var result = await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        // In real life EF Core will create a new RowVersion when save.
+        // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
+        Assert.AreEqual(_rowVersion, result);
+        Assert.AreEqual(_rowVersion, _existingAttachment.RowVersion.ConvertToString());
     }
     #endregion
 }

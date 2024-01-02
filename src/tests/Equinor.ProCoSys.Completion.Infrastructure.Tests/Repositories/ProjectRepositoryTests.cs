@@ -13,11 +13,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
 {
-    private new ProjectRepository _dut;
+    protected override EntityWithGuidRepository<Project> GetDut() => new ProjectRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var project = new Project(TestPlant, Guid.NewGuid(), "P", "Description of project");
+        var project = new Project(TestPlant, Guid.NewGuid(), "P", "Description of project", DateTime.Now);
         _knownGuid = project.Guid;
         project.SetProtectedIdForTesting(_knownId);
 
@@ -29,10 +29,7 @@ public class ProjectRepositoryTests : EntityWithGuidRepositoryTestBase<Project>
             .ContextMock
             .Projects
             .Returns(_dbSetMock);
-
-        _dut = new ProjectRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
-    protected override Project GetNewEntity() => new(TestPlant, Guid.NewGuid(), "New Project", "D");
+    protected override Project GetNewEntity() => new(TestPlant, Guid.NewGuid(), "New Project", "D", DateTime.Now);
 }

@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -127,6 +132,48 @@ public class AttachmentService : IAttachmentService
             attachment.ParentGuid);
     }
 
+    public async Task<bool> ExistsAsync(Guid guid,
+        CancellationToken cancellationToken)
+        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
+
+    public async Task<string> UpdateAsync(
+        Guid guid,
+        string description,
+        IEnumerable<Label> labels,
+        string rowVersion,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+        attachment.UpdateLabels(labels.ToList());
+
+        var changes = UpdateAttachment(attachment, description);
+        if (changes.Any())
+        {
+            attachment.AddDomainEvent(new AttachmentUpdatedDomainEvent(attachment, changes));
+        }
+        attachment.SetRowVersion(rowVersion);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return attachment.RowVersion.ConvertToString();
+    }
+
+    private List<IProperty> UpdateAttachment(Attachment attachment, string description)
+    {
+        var changes = new List<IProperty>();
+
+        if (attachment.Description != description)
+        {
+            changes.Add(new Property<string>(
+                nameof(Attachment.Description),
+                attachment.Description,
+                description));
+            attachment.Description = description;
+        }
+
+        return changes;
+    }
+
     private async Task UploadAsync(
         Attachment attachment,
         Stream content,
@@ -141,13 +188,9 @@ public class AttachmentService : IAttachmentService
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}", 
-            attachment.FileName, 
-            attachment.Guid, 
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}",
+            attachment.FileName,
+            attachment.Guid,
             attachment.ParentGuid);
     }
-
-    public async Task<bool> ExistsAsync(Guid guid,
-        CancellationToken cancellationToken)
-        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
 }

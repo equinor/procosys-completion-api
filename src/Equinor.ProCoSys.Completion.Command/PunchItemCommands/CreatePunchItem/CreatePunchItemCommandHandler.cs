@@ -188,14 +188,19 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
     {
         var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
-        // todo 104211 Lifetime of Person is to be discussed .. for now we create Peron if not found
         if (personExists)
         {
             return await _personRepository.GetAsync(oid, cancellationToken);
         }
 
         var pcsPerson = await _personCache.GetAsync(oid);
-        var person = new Person(oid, pcsPerson.FirstName, pcsPerson.LastName, pcsPerson.UserName, pcsPerson.Email);
+        var person = new Person(
+            oid,
+            pcsPerson.FirstName,
+            pcsPerson.LastName,
+            pcsPerson.UserName,
+            pcsPerson.Email,
+            pcsPerson.Super);
         _personRepository.Add(person);
 
         return person;

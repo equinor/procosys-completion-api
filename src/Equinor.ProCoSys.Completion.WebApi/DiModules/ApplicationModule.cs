@@ -8,11 +8,14 @@ using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -29,9 +32,7 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Equinor.ProCoSys.Completion.Command.Validators;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -67,19 +68,40 @@ public static class ApplicationModule
                 o.UseBusOutbox();
             });
 
-            x.UsingAzureServiceBus((_, cfg) =>
+            x.AddConsumer<ProjectEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false; //MT should not create the endpoint for us, as it already exists.
+                    e.Name = "completion_project";
+                    e.Temporary = false;
+                });
+            
+            x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
-
-
-                cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
+                
+                cfg.ConfigureJsonSerializerOptions(opts =>
                 {
-                    topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
+                    opts.Converters.Add(new OracleGuidConverter());
+                    return opts;
                 });
-
+                cfg.SubscriptionEndpoint("completion_project","project", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ProjectEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
+                });
+                // cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
+                // {
+                //     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
+                // });
+                
                 cfg.AutoStart = true;
             });
         });
@@ -114,7 +136,7 @@ public static class ApplicationModule
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ISWCRRepository, SWCRRepository>();
         services.AddScoped<ILabelRepository, LabelRepository>();
-        services.AddScoped<ILabelHostRepository, LabelHostRepository>();
+        services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
@@ -129,6 +151,8 @@ public static class ApplicationModule
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
         services.AddScoped<IWorkOrderValidator, WorkOrderValidator>();
         services.AddScoped<ISWCRValidator, SWCRValidator>();
+        services.AddScoped<ILabelValidator, LabelValidator>();
+        services.AddScoped<ILabelEntityValidator, LabelEntityValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
