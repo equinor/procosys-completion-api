@@ -53,6 +53,8 @@ public record PunchItemCreatedIntegrationEvent
     string Plant  //todo: skal ikke denne være med her? 
 ) : IPunchItemCreatedV1
 {
+    //TODO: Vi må finne en bedre måte å håndtere at createdBy ikke er satt når vi kjører tester (pga av at vi ikke kjører saveChanges)
+
     internal PunchItemCreatedIntegrationEvent(PunchItemCreatedDomainEvent domainEvent) : this(
         "Punch item created",
         domainEvent.PunchItem.Guid,
@@ -103,7 +105,9 @@ public record PunchItemCreatedIntegrationEvent
             null :
             new User(domainEvent.PunchItem.VerifiedBy.Guid, domainEvent.PunchItem.VerifiedBy.GetFullName()),
         domainEvent.PunchItem.VerifiedAtUtc,
-        new User(domainEvent.PunchItem.CreatedBy.Guid, domainEvent.PunchItem.CreatedBy.GetFullName()),
+        domainEvent.PunchItem.CreatedBy is null ?
+            new User(new Guid(), "") :
+            new User(domainEvent.PunchItem.CreatedBy.Guid, domainEvent.PunchItem.CreatedBy.GetFullName()),
         domainEvent.PunchItem.CreatedAtUtc,
         domainEvent.PunchItem.Plant)
     { }

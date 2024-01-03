@@ -124,9 +124,9 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError("Error occurred on insertion of punch item.");
+            _logger.LogError("Error occurred on insertion of punch item. {error}.", ex);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

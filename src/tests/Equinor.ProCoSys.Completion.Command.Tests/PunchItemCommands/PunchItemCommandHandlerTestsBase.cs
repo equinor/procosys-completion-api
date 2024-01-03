@@ -124,7 +124,11 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                 Category.PA,
                 Guid.NewGuid().ToString(),
                 SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id),
-                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id)
+            );
+
+            punchItem.SetCreated(_currentPerson);
+            punchItem.SetModified(_currentPerson);
             punchItem.SetProtectedIdForTesting(++id);
             punchItem.SetRowVersion(OriginalRowVersion);
             _punchItemRepositoryMock.GetAsync(punchItem.Guid, default).Returns(punchItem);
