@@ -3,30 +3,20 @@
 /**
  * Holds configuration of mapping from a source property to a target column. 
  */
-public class PropertyMapping
+public class PropertyMapping(
+    string sourcePropertyName,
+    PropertyType sourceType,
+    string targetColumnName,
+    ValueConversion? valueConversionMethod,
+    string? targetSequence,
+    bool onlyForInsert)
 {
-    public PropertyMapping(
-        string sourcePropertyName,
-        PropertyType sourceType,
-        string targetColumnName,
-        ValueConversion? valueConversionMethod,
-        string? targetSequence,
-        bool? onlyForInsert)
-    {
-        SourcePropertyName = sourcePropertyName;
-        SourceType = sourceType;
-        TargetColumnName = targetColumnName;
-        ValueConversion = valueConversionMethod;
-        TargetSequence = targetSequence;
-        OnlyForInsert = onlyForInsert;
-    }
-
-    public string SourcePropertyName { get; }
-    public PropertyType SourceType { get; }
-    public string TargetColumnName { get; }
-    public ValueConversion? ValueConversion { get; }
-    public string? TargetSequence { get; }  //The name of a 'sequence' in Oracle to be used when creating new rows
-    public bool? OnlyForInsert { get; } = false;
+    public string SourcePropertyName { get; } = sourcePropertyName;
+    public PropertyType SourceType { get; } = sourceType;
+    public string TargetColumnName { get; } = targetColumnName;
+    public ValueConversion? ValueConversion { get; } = valueConversionMethod;
+    public string? TargetSequence { get; } = targetSequence;
+    public bool OnlyForInsert { get; } = onlyForInsert;
 
     /**
     * Helper method to find the value of a configured property in an object. 
@@ -65,5 +55,4 @@ public class PropertyMapping
 
         return sourcePropertyValue;
     }
-
 }

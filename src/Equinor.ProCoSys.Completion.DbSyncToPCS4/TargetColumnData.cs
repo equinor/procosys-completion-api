@@ -1,16 +1,9 @@
 ﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
-public class TargetColumnData
+public class TargetColumnData(string columnName, object? columnValue, bool nextValGeneration = false)
 {
-    public TargetColumnData(string columnName, object? columnValue, bool nextValGeneration = false)
-    {
-        ColumnName = columnName;
-        ColumnValue = columnValue;
-        NextValGeneration = nextValGeneration;
-    }
-
-    public string ColumnName { get; }
-    public object? ColumnValue { get; }
-    public bool NextValGeneration { get; }
+    public string ColumnName { get; } = columnName;
+    public object? ColumnValue { get; } = columnValue;
+    public bool NextValGeneration { get; } = nextValGeneration;
 }
 

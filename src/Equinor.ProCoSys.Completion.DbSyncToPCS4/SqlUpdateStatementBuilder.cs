@@ -6,21 +6,16 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 /**
  * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
-public class SqlUpdateStatementBuilder
+public class SqlUpdateStatementBuilder(IPcs4Repository oracleDBExecutor)
 {
-    private readonly IPcs4Repository _oracleDBExecutor;
-
-    public SqlUpdateStatementBuilder(IPcs4Repository oracleDBExecutor)
-    {
-        _oracleDBExecutor = oracleDBExecutor;
-    }
+    private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
 
     /**
      * Handle the syncronization
      */
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
     {
-        var primaryKeyValue = GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey, sourceObject);
+        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
         var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, plant, _oracleDBExecutor, cancellationToken);
 
         if (primaryKeyTargetValue == null)
@@ -43,7 +38,12 @@ public class SqlUpdateStatementBuilder
 
         foreach (var propertyMapping in propertyMappings)
         {
-            var sourcePropertyValue = GetSourcePropertyValue(propertyMapping, sourceObject);
+            if (propertyMapping.OnlyForInsert)
+            {
+                continue;
+            }
+
+            var sourcePropertyValue = PropertyMapping.GetSourcePropertyValue(propertyMapping.SourcePropertyName, sourceObject);
 
             var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(sourcePropertyValue, propertyMapping, plant, _oracleDBExecutor, cancellationToken);
 
@@ -52,44 +52,6 @@ public class SqlUpdateStatementBuilder
             targetColumnUpdates.Add(columnData);
         }
         return targetColumnUpdates;
-    }
-
-    /**
-     * Will find the value of the property in given source object. 
-     * This value might be in a nested property (e.g ActionBy.Oid)
-     */
-    private static object? GetSourcePropertyValue(PropertyMapping propertyMapping, object sourceObject)
-    {
-        var sourcePropertyNameParts = propertyMapping.SourcePropertyName.Split('.');
-        if (sourcePropertyNameParts.Length > 2)
-        {
-            throw new Exception($"Only one nested level is supported for entities, so {propertyMapping.SourcePropertyName} is not supported.");
-        }
-
-        var sourcePropertyName = sourcePropertyNameParts[0];
-        var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
-
-        if (sourceProperty == null)
-        {
-            throw new Exception($"A property in configuration is missing in source object: {propertyMapping.SourcePropertyName}");
-        }
-
-        var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
-
-        if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
-        {
-            //We must find the nested property
-            sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
-
-            if (sourceProperty == null)
-            {
-                throw new Exception($"A nested property in configuration is missing in source object: {propertyMapping.SourcePropertyName}");
-            }
-
-            sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
-        }
-
-        return sourcePropertyValue;
     }
 
     /**
