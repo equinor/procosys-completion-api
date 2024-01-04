@@ -9,7 +9,7 @@ public class TestObjectMappingConfig : ISourceObjectMappingConfig
     public TestObjectMappingConfig() => PropertyMappings = new List<PropertyMapping>
         {
             new("TestOnlyForInsert",  PropertyType.String,   "TestOnlyForInsert", null, null, true),
-            new("TestSequence",       PropertyType.Int,      "TestSequence",      null, "TEST_SEQUENCE", true),
+            new("TestFixedValue",     PropertyType.String,   "TestFixedValue",    null, "'Fixed value'", true),
             new("TestGuid",           PropertyType.Guid,     "TestGuid",          null, null, true),
             new("TestString",         PropertyType.String,   "TestString",        null, null, false),
             new("TestDate",           PropertyType.DateTime, "TestDateWithTime",  null, null, false),

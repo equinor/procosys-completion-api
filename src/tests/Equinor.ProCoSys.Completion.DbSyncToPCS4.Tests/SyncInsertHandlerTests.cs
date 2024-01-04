@@ -27,8 +27,8 @@ public class SyncInsertHandlerTests
     private SqlInsertStatementBuilder _syncInsertHandler;
 
     private readonly string _expectedSqlInsertStatement =
-        "insert into TestTargetTable ( TestOnlyForInsert, TestSequence, TestGuid, TestString, TestDateWithTime, TestDate, TestBool, TestInt, TestLibId, WoGuidLibId, SwcrLibId, PersonOid, DocumentId ) " +
-        "values ( :TestOnlyForInsert, TEST_SEQUENCE.NEXTVAL, :TestGuid, :TestString, :TestDateWithTime, :TestDate, :TestBool, :TestInt, :TestLibId, :WoGuidLibId, :SwcrLibId, :PersonOid, :DocumentId )";
+        "insert into TestTargetTable ( TestOnlyForInsert, TestFixedValue, TestGuid, TestString, TestDateWithTime, TestDate, TestBool, TestInt, TestLibId, WoGuidLibId, SwcrLibId, PersonOid, DocumentId ) " +
+        "values ( :TestOnlyForInsert, 'Fixed value', :TestGuid, :TestString, :TestDateWithTime, :TestDate, :TestBool, :TestInt, :TestLibId, :WoGuidLibId, :SwcrLibId, :PersonOid, :DocumentId )";
 
     private readonly Dictionary<string, object> _expectedSqlParameters = new()
     {
@@ -92,8 +92,8 @@ public class SyncInsertHandlerTests
 
         _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
-        var expectedSqlInsertStatement = "insert into TestTargetTable ( TestSequence, TestGuid, TestBool ) " +
-            "values ( TEST_SEQUENCE.NEXTVAL, :TestGuid, :TestBool )";
+        var expectedSqlInsertStatement = "insert into TestTargetTable ( TestFixedValue, TestGuid, TestBool ) " +
+            "values ( 'Fixed value', :TestGuid, :TestBool )";
 
         var testObjectMappingConfig = new TestObjectMappingConfig();
 

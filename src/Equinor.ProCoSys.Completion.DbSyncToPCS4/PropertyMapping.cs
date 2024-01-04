@@ -8,14 +8,25 @@ public class PropertyMapping(
     PropertyType sourceType,
     string targetColumnName,
     ValueConversion? valueConversionMethod,
-    string? targetSequence,
+    string? targetFixedValue,
     bool onlyForInsert)
 {
+    //Name of a property in the source object
     public string SourcePropertyName { get; } = sourcePropertyName;
+
+    //The type of the property in the source object
     public PropertyType SourceType { get; } = sourceType;
+
+    //The corresponding column in the target table
     public string TargetColumnName { get; } = targetColumnName;
+
+    //A method that must be used to convert the source value to the target value. This might involve looking up a value in the target database. 
     public ValueConversion? ValueConversion { get; } = valueConversionMethod;
-    public string? TargetSequence { get; } = targetSequence;
+
+    //Target value is a fixed value. Can be used to specify a sequence-generation, e.g 'SEQ_PUNCHLISTITEM.NEXTVAL'
+    public string? TargetFixedValue { get; } = targetFixedValue;
+
+    //Set to true if this mapping is only to be be used when inserting new rows. This will typically be properties that cannot be modified, like plant and id.  
     public bool OnlyForInsert { get; } = onlyForInsert;
 
     /**
