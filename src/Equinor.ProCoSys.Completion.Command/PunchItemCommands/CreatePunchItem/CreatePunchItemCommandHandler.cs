@@ -113,9 +113,9 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             // To be removed when sync to PCS 4 is no longer needed
             //---
-            //todo: new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem)) 
-            //TODO: bør ikke plant være med i PunchItemCreatedDomainEvent?
-            await _syncToPCS4Service.SyncInsertAsync("PunchItem", new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem)), _plantProvider.Plant, cancellationToken);
+            //TODO: bør ikke opprette event på nytt her. 
+            var integrationEvent = new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem));
+            await _syncToPCS4Service.SyncNewObjectAsync("PunchItem", integrationEvent, _plantProvider.Plant, cancellationToken);
             //---
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -124,9 +124,9 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid, punchItem.RowVersion.ConvertToString()));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError("Error occurred on insertion of punch item. {error}.", ex);
+            _logger.LogError("Error occurred on insertion of punch item.");
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

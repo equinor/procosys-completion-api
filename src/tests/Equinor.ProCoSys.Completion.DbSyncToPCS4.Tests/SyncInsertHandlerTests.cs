@@ -130,7 +130,7 @@ public class SyncInsertHandlerTests
 
         var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
         {
-            await syncService.SyncInsertAsync(sourceObjectNameMissingConfig, _sourceTestObject, default);
+            await syncService.SyncNewObjectAsync(sourceObjectNameMissingConfig, _sourceTestObject, default);
         });
 
         Assert.AreEqual($"Mapping is not implemented for source object with name '{sourceObjectNameMissingConfig}'.", exception.Message);

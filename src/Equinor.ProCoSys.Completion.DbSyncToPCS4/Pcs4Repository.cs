@@ -23,10 +23,9 @@ public class Pcs4Repository : IPcs4Repository
     }
 
     /**
-     * This method will perform a update on the Pcs4 database, using the given sqlStatment.
-     * If more than one row is affected by the sql statment, an exception will be thrown, and the udpate will not be commited. 
+     * This method will execute an sqlStatment to insert, update or delete a row in the Pcs4 database.
      */
-    public async Task UpdateRowAsync(string sqlStatement, DynamicParameters sqlParameters, CancellationToken cancellationToken)
+    public async Task ExecuteRowOperationAsync(string sqlStatement, DynamicParameters sqlParameters, CancellationToken cancellationToken)
     {
         await using var connection = new OracleConnection(_dbConnStr);
         await connection.OpenAsync(cancellationToken);
@@ -38,39 +37,7 @@ public class Pcs4Repository : IPcs4Repository
 
             if (rowsAffected != 1)
             {
-                throw new Exception($"Expected one and only one row update for the sql statement: '{sqlStatement}', " +
-                    $"but got {rowsAffected}. Update is not commited.");
-            }
-            await transaction.CommitAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-
-            var paramsStr = BuildStringWithParamsForLogging(sqlParameters);
-
-            throw new Exception($"Error occured when trying to execute the following sql statement: {sqlStatement}. " +
-                $"Parameters: {paramsStr}. A rollback on the transaction is performed.", ex);
-        }
-    }
-
-    /**
-     * This method will perform a insert on the Pcs4 database, using the given sqlStatment.
-     */
-    public async Task InsertRowAsync(string sqlStatement, DynamicParameters sqlParameters, CancellationToken cancellationToken)
-    {
-        await using var connection = new OracleConnection(_dbConnStr);
-        await connection.OpenAsync(cancellationToken);
-        await using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
-
-        try
-        {
-            var rowsAffected = await connection.ExecuteAsync(sqlStatement, sqlParameters, transaction);
-
-            if (rowsAffected != 1)
-            {
-                throw new Exception($"Expected one and only one row update for the sql statement: '{sqlStatement}', " +
-                    $"but got {rowsAffected}. Update is not commited.");
+                throw new Exception($"Expected to affect one and only one row but got {rowsAffected} numbers of affected rows.");
             }
             await transaction.CommitAsync(cancellationToken);
         }

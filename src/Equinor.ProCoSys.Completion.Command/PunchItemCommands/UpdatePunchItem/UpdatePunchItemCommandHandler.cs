@@ -85,9 +85,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             if (changes.Any())
             {
                 //TODO: Bør ikke opprette domain events på nytt her. 
-                var domainEvent = new PunchItemUpdatedDomainEvent(punchItem, changes);
-                var integrationEvent = new PunchItemUpdatedIntegrationEvent(domainEvent);
-                await _syncToPCS4Service.SyncUpdatesAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
+                var integrationEvent = new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+                await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
             }
             //---
 
@@ -97,9 +96,9 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError($"Error occurred on update of punch item with guid {request.PunchItemGuid}.", ex);
+            _logger.LogError("Error occurred on update of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
