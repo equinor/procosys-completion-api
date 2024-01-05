@@ -113,11 +113,11 @@ public static class ApplicationModule
                     e.PublishFaults = false; 
                 });
 
-                cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
-                {
-                    topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
-                });
-                
+                // cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
+                // {
+                //     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
+                // });
+
                 cfg.AutoStart = true;
             });
         });
