@@ -56,13 +56,14 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
         punchItem.Reject(currentPerson);
         punchItem.SetRowVersion(request.RowVersion);
 
+        var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
+
         await _commentService.AddAsync(
             nameof(PunchItem),
             request.PunchItemGuid,
             request.Comment,
             rejectLabel,
-            // todo 108276 list of mentions on reject. See PR for 108264
-            new List<Person>(),
+            mentions,
             cancellationToken);
 
         punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(

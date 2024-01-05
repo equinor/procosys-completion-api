@@ -27,13 +27,21 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private ICommentService _commentServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
     private Label _rejectedLabel;
+    private List<Person> _personList;
 
     [TestInitialize]
     public void Setup()
     {
         _existingPunchItem[_testPlant].Clear(_currentPerson);
 
-        _command = new RejectPunchItemCommand(_existingPunchItem[_testPlant].Guid, Guid.NewGuid().ToString(), RowVersion);
+        var person = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
+        _personList = [person];
+
+        _command = new RejectPunchItemCommand(
+            _existingPunchItem[_testPlant].Guid,
+            Guid.NewGuid().ToString(),
+            new List<Guid> { person.Guid },
+            RowVersion);
 
         var rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
@@ -48,6 +56,9 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 RejectLabel = rejectLabelText
             });
+        
+        _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
+            .Returns(_personList);
 
         _dut = new RejectPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -136,8 +147,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 _command.PunchItemGuid,
                 _command.Comment,
                 _rejectedLabel,
-                // todo 108276 list of mentions on reject
-                Arg.Any<List<Person>>(),
+                _personList,
                 default);
     }
 }
