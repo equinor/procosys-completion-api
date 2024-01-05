@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -25,6 +26,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected IWorkOrderRepository _workOrderRepositoryMock;
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
+        protected ISyncToPCS4Service _syncToPCS4ServiceMock;
+        //protected PunchItem _existingPunchItem;
+        //protected PunchItem _punchItemPa;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
@@ -59,6 +63,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _workOrderRepositoryMock = Substitute.For<IWorkOrderRepository>();
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
+            _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
 
             var id = 5;
             _currentPerson = SetupPerson(++id);
@@ -119,7 +124,11 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                 Category.PA,
                 Guid.NewGuid().ToString(),
                 SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id),
-                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
+                SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id)
+            );
+
+            punchItem.SetCreated(_currentPerson);
+            punchItem.SetModified(_currentPerson);
             punchItem.SetProtectedIdForTesting(++id);
             punchItem.SetRowVersion(OriginalRowVersion);
             _punchItemRepositoryMock.GetAsync(punchItem.Guid, default).Returns(punchItem);

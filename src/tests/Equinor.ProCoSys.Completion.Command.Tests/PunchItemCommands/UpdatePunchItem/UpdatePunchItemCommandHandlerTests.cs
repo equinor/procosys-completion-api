@@ -75,6 +75,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
     }
@@ -160,7 +161,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
         _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
         _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem[_testPlant].MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
 
         Assert.IsNotNull(_existingPunchItem[_testPlant].PriorityId);
         Assert.IsNotNull(_existingPunchItem[_testPlant].SortingId);
@@ -325,7 +326,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldRaisedByCode = _existingPunchItem[_testPlant].RaisedByOrg.Code;
         var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
-        
+
         // Act
         await _dut.Handle(_command, default);
 
@@ -471,7 +472,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
         _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
         _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem[_testPlant].MaterialETAUtc= _newMaterialETAUtc;
+        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
 
         // Act
@@ -838,7 +839,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
 
         // Act
@@ -854,7 +855,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
     {
         // Arrange
-        var nonExistingPersonOid = Guid.NewGuid();
+        var nonExistingPersonOid = new Guid("{aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}");
         _command.PatchDocument.Operations.Clear();
         _command.PatchDocument.Replace(p => p.ActionByPersonOid, nonExistingPersonOid);
         var proCoSysPerson = new ProCoSysPerson
@@ -919,7 +920,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
         var oldMaterialETAUtc = _existingPunchItem[_testPlant].MaterialETAUtc;
         var oldMaterialExternalNo = _existingPunchItem[_testPlant].MaterialExternalNo;
-        
+
         // Act
         await _dut.Handle(_command, default);
 

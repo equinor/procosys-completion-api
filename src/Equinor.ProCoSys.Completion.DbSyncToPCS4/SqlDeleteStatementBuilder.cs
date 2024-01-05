@@ -1,0 +1,37 @@
+﻿using System.Text;
+using Dapper;
+
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+
+/**
+ * Executes the a delete of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+ */
+public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
+{
+    private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
+
+    /**
+     * Handle the synchronization
+     */
+    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    {
+        var deleteStatement = new StringBuilder($"delete {sourceObjectMappingConfig.TargetTable} ");
+
+        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
+        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, plant, _oracleDBExecutor, cancellationToken);
+
+        if (primaryKeyTargetValue == null)
+        {
+            throw new Exception("Not able to build update statement. Primary key value is null.");
+        }
+
+        var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
+
+        var sqlParameters = new DynamicParameters();
+        sqlParameters.Add($":{primaryKeyName}", primaryKeyTargetValue);
+
+        deleteStatement.Append($" where {primaryKeyName} = :{primaryKeyName}");
+
+        return (deleteStatement.ToString(), sqlParameters);
+    }
+}

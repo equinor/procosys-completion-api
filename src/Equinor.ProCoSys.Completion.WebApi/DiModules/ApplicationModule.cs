@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Command.Validators;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
@@ -49,6 +50,7 @@ public static class ApplicationModule
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
         services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
+        services.Configure<OracleDBConnectionOptions>(configuration.GetSection("OracleDBConnection"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -78,7 +80,7 @@ public static class ApplicationModule
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
                 cfg.Host(connectionString);
-                
+
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
                 cfg.ConfigureJsonSerializerOptions(opts =>
@@ -160,5 +162,7 @@ public static class ApplicationModule
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IEmailService, EmailService>();
+        services.AddSingleton<IPcs4Repository, Pcs4Repository>();
+        services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
     }
 }

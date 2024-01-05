@@ -76,6 +76,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<CreatePunchItemCommandHandler>>());
     }

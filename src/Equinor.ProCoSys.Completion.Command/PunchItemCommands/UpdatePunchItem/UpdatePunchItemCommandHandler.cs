@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -32,6 +34,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly ISWCRRepository _swcrRepository;
     private readonly IDocumentRepository _documentRepository;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
@@ -43,6 +46,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         IWorkOrderRepository workOrderRepository,
         ISWCRRepository swcrRepository,
         IDocumentRepository documentRepository,
+        ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
@@ -53,27 +57,51 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         _workOrderRepository = workOrderRepository;
         _swcrRepository = swcrRepository;
         _documentRepository = documentRepository;
+        _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
-
-        if (changes.Any())
+        try
         {
-            punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+            var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
+
+            if (changes.Any())
+            {
+                punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+            }
+            punchItem.SetRowVersion(request.RowVersion);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // To be removed when sync to PCS 4 is no longer needed
+            //---
+            if (changes.Any())
+            {
+                //TODO: Bør ikke opprette domain events på nytt her. 
+                var integrationEvent = new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+                await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
+            }
+            //---
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
+
+            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
-
-        punchItem.SetRowVersion(request.RowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
-
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        catch (Exception)
+        {
+            _logger.LogError("Error occurred on update of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     private async Task<List<IProperty>> PatchAsync(
@@ -390,7 +418,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         {
             var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
                 patchedPunchItem.PriorityGuid.Value,
-                LibraryType.PUNCHLIST_PRIORITY, 
+                LibraryType.PUNCHLIST_PRIORITY,
                 cancellationToken);
             changes.Add(new Property<string?>(nameof(punchItem.Priority),
                 punchItem.Priority?.Code,
@@ -440,7 +468,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
             patchedPunchItem.RaisedByOrgGuid,
-            LibraryType.COMPLETION_ORGANIZATION, 
+            LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
         changes.Add(new Property<string>(nameof(punchItem.RaisedByOrg),
             punchItem.RaisedByOrg.Code,

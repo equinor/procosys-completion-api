@@ -52,7 +52,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .WithMessage(command =>
                 $"RaisedByOrg library item is not a {LibraryType.COMPLETION_ORGANIZATION}! " +
                 $"Guid={command.RaisedByOrgGuid}")
-
+         
             // validate given ClearingByOrg
             .MustAsync((command, cancellationToken)
                 => BeAnExistingLibraryItemAsync(command.ClearingByOrgGuid, cancellationToken))

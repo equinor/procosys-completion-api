@@ -27,6 +27,7 @@ using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 namespace Equinor.ProCoSys.Completion.WebApi;

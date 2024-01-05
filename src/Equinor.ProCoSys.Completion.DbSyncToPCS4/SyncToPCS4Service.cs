@@ -1,0 +1,71 @@
+﻿using Equinor.ProCoSys.Completion.DbSyncToPCS4.MappingConfig;
+
+namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+
+/**
+ * This class provide an interface to the operations for synchronizing data to ProCoSys 4. 
+ * The class should only be used as a singleton (through dependency injection). 
+ * It will hold a list with mapping configuration. The mapping configuration given the mapping 
+ * of properties in a source object to columns in a table in the PCS 4 database. 
+ */
+public class SyncToPCS4Service : ISyncToPCS4Service
+{
+    readonly IPcs4Repository _pcs4Repository;
+
+    public SyncToPCS4Service(IPcs4Repository oracleDBExecutor) => _pcs4Repository = oracleDBExecutor;
+
+    /**
+     * Insert a new row in the PCS 4 database based on the sourceObject. 
+     */
+    public async Task SyncNewObjectAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    {
+        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
+
+        var sqlInsertStatementBuilder = new SqlInsertStatementBuilder(_pcs4Repository);
+        var (sqlUpdateStatement, sqlParameters) = await sqlInsertStatementBuilder.BuildAsync(sourceObjectMappingConfig, sourceObject, plant, cancellationToken);
+
+        await _pcs4Repository.ExecuteRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+    }
+
+    /**
+     * Updates the PCS 4 database with changes provided by the sourceObject. 
+     */
+    public async Task SyncObjectUpdateAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    {
+        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
+
+        var sqlUpdateStatementBuilder = new SqlUpdateStatementBuilder(_pcs4Repository);
+        var (sqlUpdateStatement, sqlParameters) = await sqlUpdateStatementBuilder.BuildAsync(sourceObjectMappingConfig, sourceObject, plant, cancellationToken);
+
+        await _pcs4Repository.ExecuteRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+    }
+
+    /**
+     * Deletes the row in the PCS 4 database that correspond to the given source object. 
+    */
+    public async Task SyncObjectDeletionAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    {
+        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
+
+        var sqlDeleteStatementBuilder = new SqlDeleteStatementBuilder(_pcs4Repository);
+        var (sqlDeleteStatement, sqlParameters) = await sqlDeleteStatementBuilder.BuildAsync(sourceObjectMappingConfig, sourceObject, plant, cancellationToken);
+
+        await _pcs4Repository.ExecuteRowOperationAsync(sqlDeleteStatement, sqlParameters, cancellationToken);
+    }
+
+
+
+    /**
+     * Will return the mapping configuration for the given source object
+     */
+    private static ISourceObjectMappingConfig GetMappingConfigurationForSourceObject(string sourceObjectName)
+    {
+        return sourceObjectName switch
+        {
+            "PunchItem" => new PunchItemMappingConfig(),
+            _ => throw new NotImplementedException($"Mapping is not implemented for source object with name '{sourceObjectName}'."),
+        };
+    }
+}
+
+

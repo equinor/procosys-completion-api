@@ -23,9 +23,10 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             _command = new DeletePunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
             _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
-            
+
             _dut = new DeletePunchItemCommandHandler(
                 _punchItemRepositoryMock,
+                _syncToPCS4ServiceMock,
                 _unitOfWorkMock,
                 _logger);
         }
