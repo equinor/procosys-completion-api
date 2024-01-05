@@ -414,6 +414,7 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         Guid guid,
         string comment,
+        List<Guid> mentions,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
@@ -421,6 +422,7 @@ public static class PunchItemsControllerTestsHelper
         var bodyPayload = new
         {
             comment,
+            mentions,
             rowVersion
         };
 

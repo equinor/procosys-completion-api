@@ -1640,6 +1640,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Unauthorized);
 
@@ -1650,6 +1651,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -1661,6 +1663,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -1672,6 +1675,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1682,6 +1686,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1692,6 +1697,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             Guid.NewGuid(), 
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
@@ -1703,6 +1709,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1725,6 +1732,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             guid,
             Guid.NewGuid().ToString(),
+            [],
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
     }
