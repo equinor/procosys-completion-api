@@ -12,7 +12,13 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public const int UserNameLengthMax = 128;
     public const int EmailLengthMax = 128;
 
-    public Person(Guid guid, string firstName, string lastName, string userName, string email, bool superuser)
+#pragma warning disable CS8618
+    protected Person()
+#pragma warning restore CS8618
+    {
+    }
+
+    public Person(Guid guid, string firstName, string lastName, string userName, string email, bool superuser, DateTime? lastUpdated = null)
     {
         Guid = guid;
         FirstName = firstName;
@@ -20,6 +26,11 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
         UserName = userName;
         Email = email;
         Superuser = superuser;
+        if (lastUpdated == null)
+        {
+            lastUpdated = DateTime.Now;
+        }
+        ProCoSys4LastUpdated = lastUpdated.Value;
     }
 
     // private setters needed for Entity Framework
@@ -32,6 +43,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
 
     public void SetModified(Person modifiedBy)
     {
