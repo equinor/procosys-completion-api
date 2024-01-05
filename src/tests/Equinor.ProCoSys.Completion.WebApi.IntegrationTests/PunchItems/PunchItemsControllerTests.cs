@@ -334,7 +334,7 @@ public class PunchItemsControllerTests : TestBase
     [TestMethod]
     public async Task GetPunchItemLinksAsync_AsReader_ShouldGetPunchItemLinks()
     {
-        // Arrange and Act
+        // Arrange
         var title = Guid.NewGuid().ToString();
         var url = Guid.NewGuid().ToString();
         var (punchItemGuidAndRowVersion, linkGuidAndRowVersion) = await CreatePunchItemLinkAsync(title, url);
@@ -422,19 +422,16 @@ public class PunchItemsControllerTests : TestBase
     {
         // Arrange and Act
         var (_, commentGuidAndRowVersion)
-            = await CreatePunchItemCommentAsync(
-                Guid.NewGuid().ToString(),
-                new List<string>{"A"},
-                new List<Guid>());
+            = await CreatePunchItemCommentAsync(Guid.NewGuid().ToString(), [], []);
 
         // Assert
         AssertValidGuidAndRowVersion(commentGuidAndRowVersion);
     }
 
     [TestMethod]
-    public async Task GetPunchItemCommentsAsync_AsReader_ShouldGetPunchItemComments()
+    public async Task GetPunchItemCommentsAsync_AsReader_ShouldGetPunchItemCommentsWithLabelsAndMentions()
     {
-        // Arrange and Act
+        // Arrange
         var text = Guid.NewGuid().ToString();
         var labels = new List<string> { "A", "B" };
         var mentions = new List<Guid>
@@ -476,7 +473,7 @@ public class PunchItemsControllerTests : TestBase
     [TestMethod]
     public async Task GetPunchItemAttachmentsAsync_AsReader_ShouldGetPunchItemAttachments()
     {
-        // Arrange and Act
+        // Arrange
         var fileName = Guid.NewGuid().ToString();
         var (punchItemGuidAndRowVersion, attachmentGuidAndRowVersion) = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
 
