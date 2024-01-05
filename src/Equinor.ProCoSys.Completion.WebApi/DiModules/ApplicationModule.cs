@@ -73,7 +73,15 @@ public static class ApplicationModule
                     e.Name = "completion_project";
                     e.Temporary = false;
                 });
-            
+
+            x.AddConsumer<PersonEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false; 
+                    e.Name = "completion_person";
+                    e.Temporary = false;
+                });
+
             x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
@@ -95,6 +103,16 @@ public static class ApplicationModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
                 });
+                cfg.SubscriptionEndpoint("completion_person", "person", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PersonEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false; 
+                });
+
                 cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 {
                     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
