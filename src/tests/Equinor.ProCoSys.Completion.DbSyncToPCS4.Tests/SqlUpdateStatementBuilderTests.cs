@@ -5,7 +5,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
 [TestClass]
-public class SyncUpdateHandlerTests
+public class SqlUpdateStatementBuilderTests
 {
     private IPcs4Repository _oracleDBExecutorMock;
 
@@ -25,7 +25,7 @@ public class SyncUpdateHandlerTests
     private readonly Guid _personOid = new Guid("11111111-2222-3333-4444-555555555555");
     private readonly Guid _documentGuid = new Guid("11111111-2222-3333-4444-555555555555");
 
-    private SqlUpdateStatementBuilder _syncUpdateHandler;
+    private SqlUpdateStatementBuilder _dut;
     private SourceTestObject _sourceTestObject;
 
     private string _expectedSqlUpdateStatement =
@@ -77,7 +77,7 @@ public class SyncUpdateHandlerTests
     public void Setup()
     {
         _oracleDBExecutorMock = Substitute.For<IPcs4Repository>();
-        _syncUpdateHandler = new SqlUpdateStatementBuilder(_oracleDBExecutorMock);
+        _dut = new SqlUpdateStatementBuilder(_oracleDBExecutorMock);
         _nestedObject = new NestedSourceTestObject(_testGuid2);
         _sourceTestObject = new SourceTestObject(null, _testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
     }
@@ -85,9 +85,14 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
     {
+        // Arrange
         _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
+
+        // Act
+        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
+
+        // Assert
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
 
         foreach (var expectedParam in _expectedSqlParameters)
@@ -107,12 +112,17 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenSourceObjectHasNullValues()
     {
+        // Arrange
         _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         _sourceTestObject = new SourceTestObject(null, _testGuid, null, null, null, false, null, null, null, null, null, null);
 
         var testObjectMappingConfig = new TestObjectMappingConfig();
-        var (actualSqlUpdateStatement, actualSqlParams) = await _syncUpdateHandler.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
+
+        // Act
+        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
+
+        // Assert
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
 
         foreach (var expectedParam in _expectedSqlParametersNullValues)
@@ -126,26 +136,32 @@ public class SyncUpdateHandlerTests
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingProperty()
     {
+        // Arrange
         var testObjectMissingPropMappingConfig = new TestObjectMissingPropMappingConfig();
 
+        // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _syncUpdateHandler.BuildAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
+            await _dut.BuildAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
         });
 
+        // Assert
         Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);
     }
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
+        // Arrange
         var syncService = new SyncToPCS4Service(_oracleDBExecutorMock);
 
+        // Act
         var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
         {
             await syncService.SyncObjectUpdateAsync(_sourceObjectNameMissingConfig, _sourceTestObject, default);
         });
 
+        // Assert
         Assert.AreEqual($"Mapping is not implemented for source object with name '{_sourceObjectNameMissingConfig}'.", exception.Message);
     }
 }
