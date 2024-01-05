@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -27,7 +26,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 {
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
-    private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly ISWCRRepository _swcrRepository;
@@ -38,7 +36,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     public UpdatePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
         ILibraryItemRepository libraryItemRepository,
-        IPersonCache personCache,
         IPersonRepository personRepository,
         IWorkOrderRepository workOrderRepository,
         ISWCRRepository swcrRepository,
@@ -48,7 +45,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     {
         _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
-        _personCache = personCache;
         _personRepository = personRepository;
         _workOrderRepository = workOrderRepository;
         _swcrRepository = swcrRepository;
@@ -298,7 +294,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         if (patchedPunchItem.ActionByPersonOid is not null)
         {
-            var person = await GetOrCreatePersonAsync(patchedPunchItem.ActionByPersonOid.Value, cancellationToken);
+            var person = await _personRepository.GetOrCreateAsync(patchedPunchItem.ActionByPersonOid.Value, cancellationToken);
             changes.Add(new Property<User?>(nameof(punchItem.ActionBy),
                 punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
                 new User(person.Guid, person.GetFullName())));
@@ -543,25 +539,4 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         => patchDocument.Operations
             .Where(op => op.OperationType == OperationType.Replace)
             .Select(op => op.path.TrimStart('/')).ToList();
-
-    private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
-    {
-        var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
-        if (personExists)
-        {
-            return await _personRepository.GetAsync(oid, cancellationToken);
-        }
-
-        var pcsPerson = await _personCache.GetAsync(oid);
-        var person = new Person(
-            oid,
-            pcsPerson.FirstName,
-            pcsPerson.LastName,
-            pcsPerson.UserName,
-            pcsPerson.Email,
-            pcsPerson.Super);
-        _personRepository.Add(person);
-
-        return person;
-    }
 }

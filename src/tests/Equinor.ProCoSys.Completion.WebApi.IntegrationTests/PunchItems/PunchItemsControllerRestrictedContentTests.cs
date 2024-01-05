@@ -157,6 +157,7 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             guidAndRowVersion.Guid,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
     }
     #endregion

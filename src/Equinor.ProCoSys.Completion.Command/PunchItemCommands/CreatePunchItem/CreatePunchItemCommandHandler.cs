@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -26,7 +25,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
     private readonly IWorkOrderRepository _woRepository;
     private readonly ISWCRRepository _swcrRepository;
@@ -39,7 +37,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         ILibraryItemRepository libraryItemRepository,
         IProjectRepository projectRepository,
         IPersonRepository personRepository,
-        IPersonCache personCache,
         IWorkOrderRepository woRepository,
         ISWCRRepository swcrRepository,
         IDocumentRepository documentRepository,
@@ -52,7 +49,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _projectRepository = projectRepository;
         _logger = logger;
         _personRepository = personRepository;
-        _personCache = personCache;
         _woRepository = woRepository;
         _swcrRepository = swcrRepository;
         _documentRepository = documentRepository;
@@ -157,29 +153,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var person = await GetOrCreatePersonAsync(actionByPersonOid.Value, cancellationToken);
+        var person = await _personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
-    }
-
-    private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
-    {
-        var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
-        if (personExists)
-        {
-            return await _personRepository.GetAsync(oid, cancellationToken);
-        }
-
-        var pcsPerson = await _personCache.GetAsync(oid);
-        var person = new Person(
-            oid,
-            pcsPerson.FirstName,
-            pcsPerson.LastName,
-            pcsPerson.UserName,
-            pcsPerson.Email,
-            pcsPerson.Super);
-        _personRepository.Add(person);
-
-        return person;
     }
 
     private async Task SetLibraryItemAsync(

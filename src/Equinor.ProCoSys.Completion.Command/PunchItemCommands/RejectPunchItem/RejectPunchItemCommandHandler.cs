@@ -61,6 +61,8 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
             request.PunchItemGuid,
             request.Comment,
             rejectLabel,
+            // todo 108276 list of mentions on reject. See PR for 108264
+            new List<Person>(),
             cancellationToken);
 
         punchItem.AddDomainEvent(new PunchItemRejectedDomainEvent(

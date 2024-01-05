@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -6,6 +7,7 @@ using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
@@ -134,6 +136,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 _command.PunchItemGuid,
                 _command.Comment,
                 _rejectedLabel,
+                // todo 108276 list of mentions on reject
+                Arg.Any<List<Person>>(),
                 default);
     }
 }

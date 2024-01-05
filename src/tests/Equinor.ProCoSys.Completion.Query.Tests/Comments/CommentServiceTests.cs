@@ -9,13 +9,14 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Comments;
 
 [TestClass]
 public class CommentServiceTests : ReadOnlyTestsBase
 {
-    private Comment _createdComment;
+    private Comment _comment;
     private Guid _parentGuid;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
@@ -29,12 +30,17 @@ public class CommentServiceTests : ReadOnlyTestsBase
         var labelC = context.Labels.Single(l => l.Text == LabelTextC);
         var voidedLabel = context.Labels.Single(l => l.Text == LabelTextVoided);
 
-        _parentGuid = Guid.NewGuid();
-        _createdComment = new Comment("X", _parentGuid, "T");
-        // insert labels non-ordered to test ordering
-        _createdComment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
+        var personA = context.Persons.Single(p => p.Guid == PersonAOid);
+        var personB = context.Persons.Single(p => p.Guid == PersonBOid);
 
-        context.Comments.Add(_createdComment);
+        _parentGuid = Guid.NewGuid();
+        _comment = new Comment("X", _parentGuid, "T");
+        // insert mentions non-ordered to test ordering
+        _comment.SetMentions(new List<Person> { personB, personA });
+        // insert labels non-ordered to test ordering
+        _comment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
+
+        context.Comments.Add(_comment);
         context.SaveChangesAsync().Wait();
     }
 
@@ -52,25 +58,52 @@ public class CommentServiceTests : ReadOnlyTestsBase
         var commentDtos = result.ToList();
         Assert.AreEqual(1, commentDtos.Count);
         var commentDto = commentDtos.ElementAt(0);
-        Assert.AreEqual(_createdComment.ParentGuid, commentDto.ParentGuid);
-        Assert.AreEqual(_createdComment.Guid, commentDto.Guid);
-        Assert.AreEqual(_createdComment.Text, commentDto.Text);
+        Assert.AreEqual(_comment.ParentGuid, commentDto.ParentGuid);
+        Assert.AreEqual(_comment.Guid, commentDto.Guid);
+        Assert.AreEqual(_comment.Text, commentDto.Text);
         var createdBy = commentDto.CreatedBy;
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
-        Assert.AreEqual(_createdComment.CreatedAtUtc, commentDto.CreatedAtUtc);
+        Assert.AreEqual(_comment.CreatedAtUtc, commentDto.CreatedAtUtc);
 
-        AssertOrderedNonVoidedLabels(_createdComment, commentDto);
+        AssertOrderedNonVoidedLabels(_comment, commentDto);
+        AssertOrderedMentions(_comment, commentDto);
+    }
+
+    private void AssertOrderedMentions(Comment comment, CommentDto commentDto)
+    {
+        Assert.IsNotNull(commentDto.Mentions);
+        var expectedOrderedMentions =
+            comment.Mentions
+                .OrderBy(p => p.FirstName).ThenBy(p => p.LastName)
+                .ToList();
+        Assert.AreEqual(expectedOrderedMentions.Count, commentDto.Mentions.Count);
+        for (var i = 0; i < expectedOrderedMentions.Count; i++)
+        {
+            var expectedPerson = expectedOrderedMentions.ElementAt(i);
+            var personDto = commentDto.Mentions.ElementAt(i);
+            Assert.AreEqual(expectedPerson.Guid, personDto.Guid);
+            Assert.AreEqual(expectedPerson.FirstName, personDto.FirstName);
+            Assert.AreEqual(expectedPerson.LastName, personDto.LastName);
+            Assert.AreEqual(expectedPerson.UserName, personDto.UserName);
+            Assert.AreEqual(expectedPerson.Email, personDto.Email);
+        }
     }
 
     private static void AssertOrderedNonVoidedLabels(Comment comment, CommentDto commentDto)
     {
         Assert.IsNotNull(commentDto.Labels);
-        var expectedLabels = comment.Labels.Where(l => !l.IsVoided).ToList();
-        Assert.AreEqual(expectedLabels.Count, commentDto.Labels.Count);
-        foreach (var label in expectedLabels)
+        var expectedOrderedNonVoidedLabels =
+            comment.Labels
+                .Where(l => !l.IsVoided)
+                .OrderBy(l => l.Text)
+                .ToList();
+        Assert.AreEqual(expectedOrderedNonVoidedLabels.Count, commentDto.Labels.Count);
+        for (var i = 0; i < expectedOrderedNonVoidedLabels.Count; i++)
         {
-            Assert.IsTrue(commentDto.Labels.Any(l => l == label.Text));
+            var expectedLabel = expectedOrderedNonVoidedLabels.ElementAt(i);
+            var label = commentDto.Labels.ElementAt(i);
+            Assert.AreEqual(expectedLabel.Text, label);
         }
     }
 }

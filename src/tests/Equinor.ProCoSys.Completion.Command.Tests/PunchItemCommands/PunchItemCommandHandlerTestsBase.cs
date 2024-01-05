@@ -165,11 +165,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var person = new Person(Guid.NewGuid(), $"F{id}", $"L{id}", $"U{id}", "@", false);
             person.SetProtectedIdForTesting(id);
             _personRepositoryMock
-                .GetAsync(person.Guid, default)
+                .GetOrCreateAsync(person.Guid, default)
                 .Returns(person);
-            _personRepositoryMock
-                .ExistsAsync(person.Guid, default)
-                .Returns(true);
             return person;
         }
 

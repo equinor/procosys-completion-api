@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
-using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Microsoft.Extensions.Logging;
@@ -17,10 +14,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunc
 public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
     private readonly string _testPlant = TestPlantA;
-    private IPersonCache _personCacheMock;
     private readonly Guid _existingCheckListGuid = Guid.NewGuid();
     private PunchItem _punchItemAddedToRepository;
-    private Person _personAddedToRepository;
 
     private CreatePunchItemCommandHandler _dut;
     private CreatePunchItemCommand _command;
@@ -34,15 +29,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 _punchItemAddedToRepository = callInfo.Arg<PunchItem>();
             });
-
-        _personRepositoryMock
-            .When(x => x.Add(Arg.Any<Person>()))
-            .Do(callInfo =>
-            {
-                _personAddedToRepository = callInfo.Arg<Person>();
-            });
-
-        _personCacheMock = Substitute.For<IPersonCache>();
 
         _command = new CreatePunchItemCommand(
             Category.PA,
@@ -72,7 +58,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _libraryItemRepositoryMock,
             _projectRepositoryMock,
             _personRepositoryMock,
-            _personCacheMock,
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
@@ -167,61 +152,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsFalse(_punchItemAddedToRepository.MaterialRequired);
         Assert.IsFalse(_punchItemAddedToRepository.MaterialETAUtc.HasValue);
         Assert.IsNull(_punchItemAddedToRepository.MaterialExternalNo);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
-    {
-        // Arrange
-        var nonExistingPersonOid = Guid.NewGuid();
-        var command = new CreatePunchItemCommand(
-            Category.PA,
-            "P123",
-            _existingProject[_testPlant].Guid,
-            _existingCheckListGuid,
-            _existingRaisedByOrg1[_testPlant].Guid,
-            _existingClearingByOrg1[_testPlant].Guid,
-            nonExistingPersonOid,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            null,
-            null);
-        var proCoSysPerson = new ProCoSysPerson
-        {
-            UserName = "YODA",
-            FirstName = "YO",
-            LastName = "DA",
-            Email = "@",
-            AzureOid = nonExistingPersonOid.ToString(),
-            Super = true
-        };
-        _personCacheMock.GetAsync(nonExistingPersonOid)
-            .Returns(proCoSysPerson);
-
-        // Act
-        await _dut.Handle(command, default);
-
-        // Assert
-        Assert.IsNotNull(_punchItemAddedToRepository);
-        Assert.IsNotNull(_personAddedToRepository);
-        Assert.IsNotNull(_punchItemAddedToRepository.ActionBy);
-        Assert.AreEqual(nonExistingPersonOid, _punchItemAddedToRepository.ActionBy!.Guid);
-        Assert.AreEqual(nonExistingPersonOid, _personAddedToRepository.Guid);
-        Assert.AreEqual(proCoSysPerson.AzureOid, _personAddedToRepository.Guid.ToString());
-        Assert.AreEqual(proCoSysPerson.UserName, _personAddedToRepository.UserName);
-        Assert.AreEqual(proCoSysPerson.FirstName, _personAddedToRepository.FirstName);
-        Assert.AreEqual(proCoSysPerson.LastName, _personAddedToRepository.LastName);
-        Assert.AreEqual(proCoSysPerson.Email, _personAddedToRepository.Email);
-        Assert.AreEqual(proCoSysPerson.Super, _personAddedToRepository.Superuser);
     }
 
     [TestMethod]
