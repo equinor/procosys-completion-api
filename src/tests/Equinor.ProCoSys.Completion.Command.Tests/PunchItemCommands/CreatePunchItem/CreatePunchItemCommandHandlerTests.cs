@@ -52,7 +52,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _existingRaisedByOrg1[_testPlant].Guid,
             _existingClearingByOrg1[_testPlant].Guid,
             _existingPerson1.Guid,
-            DateTime.UtcNow, 
+            DateTime.UtcNow,
             _existingPriority1[_testPlant].Guid,
             _existingSorting1[_testPlant].Guid,
             _existingType1[_testPlant].Guid,
@@ -63,7 +63,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _existingDocument1[_testPlant].Guid,
             "123",
             true,
-            DateTime.UtcNow, 
+            DateTime.UtcNow,
             "123.1");
 
         _dut = new CreatePunchItemCommandHandler(
@@ -127,7 +127,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Category.PA,
             "P123",
             _existingProject[_testPlant].Guid,
-            _existingCheckListGuid, 
+            _existingCheckListGuid,
             _existingRaisedByOrg1[_testPlant].Guid,
             _existingClearingByOrg1[_testPlant].Guid,
             null,
@@ -233,6 +233,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
     }
 
     [TestMethod]

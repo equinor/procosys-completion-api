@@ -292,6 +292,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
     }
 
     [TestMethod]
@@ -955,6 +956,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _syncToPCS4ServiceMock.Received(0).SyncObjectUpdateAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
     }
 
     [TestMethod]

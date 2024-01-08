@@ -39,6 +39,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
 
             // Assert
             _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem[_testPlant]);
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
         }
 
         [TestMethod]
@@ -49,6 +50,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
 
             // Assert
             await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
         }
 
         [TestMethod]
