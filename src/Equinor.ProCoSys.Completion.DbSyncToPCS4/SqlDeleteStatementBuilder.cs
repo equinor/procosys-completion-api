@@ -4,7 +4,7 @@ using Dapper;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 /**
- * Executes the a delete of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+ * Build sql statement for the deletion of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
 public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
 {

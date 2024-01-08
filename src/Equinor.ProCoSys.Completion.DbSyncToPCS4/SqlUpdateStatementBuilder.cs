@@ -4,7 +4,7 @@ using Dapper;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 /**
- * Executes the an update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+ * Build an sql statement for update of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
 public class SqlUpdateStatementBuilder(IPcs4Repository oracleDBExecutor)
 {

@@ -3,15 +3,12 @@
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 /**
- * Executes the an insert of a row in the PCS 4 database, based on a sourceObject and mapping configuration
+ * Build an sql statement for insertion of a new row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
 public class SqlInsertStatementBuilder(IPcs4Repository oracleDBExecutor)
 {
     private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
 
-    /**
-     * Handle the synchronization
-     */
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
     {
         var columnNamesForInsert = new List<string>();
@@ -48,6 +45,4 @@ public class SqlInsertStatementBuilder(IPcs4Repository oracleDBExecutor)
         return (insertStatement, sqlParameters);
 
     }
-
-
 }
