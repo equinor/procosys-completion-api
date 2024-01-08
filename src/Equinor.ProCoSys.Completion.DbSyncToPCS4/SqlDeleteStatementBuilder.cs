@@ -13,9 +13,13 @@ public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
     /**
      * Handle the synchronization
      */
-    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
+    public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(
+        ISourceObjectMappingConfig sourceObjectMappingConfig,
+        object sourceObject,
+        string plant,
+        CancellationToken cancellationToken = default)
     {
-        var deleteStatement = new StringBuilder($"delete {sourceObjectMappingConfig.TargetTable} ");
+        var deleteStatement = new StringBuilder($"delete from {sourceObjectMappingConfig.TargetTable} ");
 
         var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
         var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, plant, _oracleDBExecutor, cancellationToken);
@@ -30,7 +34,7 @@ public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
         var sqlParameters = new DynamicParameters();
         sqlParameters.Add($":{primaryKeyName}", primaryKeyTargetValue);
 
-        deleteStatement.Append($" where {primaryKeyName} = :{primaryKeyName}");
+        deleteStatement.Append($"where {primaryKeyName} = :{primaryKeyName}");
 
         return (deleteStatement.ToString(), sqlParameters);
     }

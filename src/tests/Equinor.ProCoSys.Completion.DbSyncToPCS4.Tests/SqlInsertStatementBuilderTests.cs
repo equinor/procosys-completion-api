@@ -5,25 +5,9 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
 [TestClass]
-public class SqlInsertStatementBuilderTests
+public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
 {
-    private IPcs4Repository _oracleDBExecutorMock;
 
-    private readonly string _testOnlyForInsert = "testOnlyForInsert";
-    private readonly Guid _testGuid = new Guid("805519D7-0DB6-44B7-BF99-A0818CEA778E");
-    private readonly Guid _testGuid2 = new Guid("11111111-2222-3333-4444-555555555555");
-
-    private readonly string _testString = "test";
-    private readonly DateTime _testDate = new DateTime(2023, 11, 29, 10, 20, 30);
-    private readonly DateTime _testDate2 = new DateTime(2023, 11, 30, 10, 20, 30);
-    private readonly bool _testBool = true;
-    private readonly int _testInt = 1234;
-    private NestedSourceTestObject _nestedObject;
-    private readonly Guid _woGuid = new Guid("11111111-2222-3333-4444-555555555555");
-    private readonly Guid _swcrGuid = new Guid("11111111-2222-3333-4444-555555555555");
-    private readonly Guid _personOid = new Guid("11111111-2222-3333-4444-555555555555");
-    private readonly Guid _documentGuid = new Guid("11111111-2222-3333-4444-555555555555");
-    private SourceTestObject _sourceTestObject;
     private SqlInsertStatementBuilder _dut;
 
     private readonly string _expectedSqlInsertStatement =
@@ -55,11 +39,7 @@ public class SqlInsertStatementBuilderTests
     [TestInitialize]
     public void Setup()
     {
-        _oracleDBExecutorMock = Substitute.For<IPcs4Repository>();
         _dut = new SqlInsertStatementBuilder(_oracleDBExecutorMock);
-        _nestedObject = new NestedSourceTestObject(_testGuid2);
-        _sourceTestObject = new SourceTestObject(_testOnlyForInsert, _testGuid, _testString, _testDate, _testDate2, _testBool, _testInt, _nestedObject, _woGuid, _swcrGuid, _personOid, _documentGuid);
-
     }
 
     [TestMethod]
@@ -67,10 +47,9 @@ public class SqlInsertStatementBuilderTests
     {
         // Arrange
         _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
-        var testObjectMappingConfig = new TestObjectMappingConfig();
 
         // Act
-        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, default);
 
         // Assert
         Assert.AreEqual(_expectedSqlInsertStatement, actualSqlInsertStatement);
@@ -100,10 +79,8 @@ public class SqlInsertStatementBuilderTests
         var expectedSqlInsertStatement = "insert into TestTargetTable ( TestFixedValue, TestGuid, TestBool ) " +
             "values ( 'Fixed value', :TestGuid, :TestBool )";
 
-        var testObjectMappingConfig = new TestObjectMappingConfig();
-
         // Act
-        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(testObjectMappingConfig, sourceTestObject, default);
+        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, sourceTestObject, default);
 
         // Assert
         Assert.AreEqual(expectedSqlInsertStatement, actualSqlInsertStatement);
@@ -119,13 +96,10 @@ public class SqlInsertStatementBuilderTests
     [TestMethod]
     public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingProperty()
     {
-        // Arrange
-        var testObjectMissingPropMappingConfig = new TestObjectMissingPropMappingConfig();
-
         // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _dut.BuildAsync(testObjectMissingPropMappingConfig, _sourceTestObject, default);
+            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, default);
         });
 
         // Assert
