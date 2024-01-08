@@ -41,6 +41,19 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
             throw new Exception("Message is missing user Azure oid");
         }
 
+        if (personEvent.Behavior == "delete")
+        {
+            _logger.LogInformation("Delete behavior for person is currently not implemented.");
+            return;
+        }
+
+        if (!await _personRepository.ExistsAsync(personEvent.Guid, context.CancellationToken))
+        {
+            _logger.LogInformation("Person does not exists. Message Skipped: {MessageId} \n {UserName} \n {Guid}",
+                context.MessageId, personEvent.UserName, personEvent.Guid);
+            return;
+        }
+
         var person = await _personRepository.GetAsync(personEvent.Guid, context.CancellationToken);
 
         if (person.ProCoSys4LastUpdated > personEvent.LastUpdated)
@@ -58,8 +71,8 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
         _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Person Message Consumed: {MessageId} \n {UserName}",
-            context.MessageId, personEvent.UserName);
+        _logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",
+            context.MessageId, personEvent.Guid, personEvent.UserName);
     }
 
     private static void MapFromEventToPerson(IPersonEventV1 personEvent, Person person)
@@ -69,17 +82,8 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
         person.Email = personEvent.Email;
         person.UserName = personEvent.UserName;
         person.Superuser = personEvent.SuperUser;
-        person.ProCoSys4LastUpdated = personEvent.LastUpdated;
+        person.SetProCoSys4LastUpdated(personEvent.LastUpdated);
     }
-
-    private static Person CreatePersonEntity(IPersonEventV1 personEvent) 
-         => new(personEvent.Guid,
-             personEvent.FirstName,
-             personEvent.LastName,
-             personEvent.UserName,
-             personEvent.Email, 
-             personEvent.SuperUser,
-             personEvent.LastUpdated);
 }
 
 public record PersonEvent(string EventType, 

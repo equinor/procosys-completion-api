@@ -18,7 +18,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     {
     }
 
-    public Person(Guid guid, string firstName, string lastName, string userName, string email, bool superuser, DateTime? lastUpdated = null)
+    public Person(Guid guid, string firstName, string lastName, string userName, string email, bool superuser)
     {
         Guid = guid;
         FirstName = firstName;
@@ -26,11 +26,7 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
         UserName = userName;
         Email = email;
         Superuser = superuser;
-        if (lastUpdated == null)
-        {
-            lastUpdated = DateTime.Now;
-        }
-        ProCoSys4LastUpdated = lastUpdated.Value;
+        ProCoSys4LastUpdated = DateTime.Now;
     }
 
     // private setters needed for Entity Framework
@@ -43,7 +39,9 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
-    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime ProCoSys4LastUpdated { get; private set; }
+
+    public void SetProCoSys4LastUpdated(DateTime proCoSys4LastUpdated) =>  ProCoSys4LastUpdated = proCoSys4LastUpdated;
 
     public void SetModified(Person modifiedBy)
     {

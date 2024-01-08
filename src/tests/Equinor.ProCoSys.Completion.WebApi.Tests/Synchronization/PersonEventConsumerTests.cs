@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Person = Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 
@@ -23,7 +22,6 @@ public class PersonEventConsumerTests
     private readonly PersonEventConsumer _personEventConsumer;
     private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _optionsMock = Substitute.For<IOptionsMonitor<CompletionAuthenticatorOptions>>();
     private readonly ConsumeContext<PersonEvent> _contextMock = Substitute.For<ConsumeContext<PersonEvent>>();
-    private Project? _projectAddedToRepository;
 
     public PersonEventConsumerTests() =>
         _personEventConsumer = new PersonEventConsumer(Substitute.For<ILogger<PersonEventConsumer>>(), _personRepoMock, 
@@ -33,13 +31,6 @@ public class PersonEventConsumerTests
     public void Setup()
     {
         _optionsMock.CurrentValue.Returns(new CompletionAuthenticatorOptions { CompletionApiObjectId = new Guid() });
-        
-        _personRepoMock
-            .When(x => x.Add(Arg.Any<Person>()))
-            .Do(callInfo =>
-            {
-                _projectAddedToRepository = callInfo.Arg<Project>();
-            });
     }
     
     [TestMethod]
@@ -64,8 +55,7 @@ public class PersonEventConsumerTests
             "Joe", 
             "AJOE", 
             "average.joe@equinor.com", 
-            false, 
-            DateTime.Now);
+            false);
         
         _personRepoMock.ExistsAsync(guid, default).Returns(true);
         _personRepoMock.GetAsync(guid, default).Returns(personToUpdate);
@@ -75,7 +65,6 @@ public class PersonEventConsumerTests
         await _personEventConsumer.Consume(_contextMock);
         
         //Assert
-        Assert.IsNull(_projectAddedToRepository);
         Assert.AreEqual(guid, personToUpdate.Guid);
         Assert.AreEqual("Average Max", personToUpdate.FirstName);
         Assert.AreEqual(true, personToUpdate.Superuser);
@@ -116,8 +105,9 @@ public class PersonEventConsumerTests
             "Joe", 
             "AJOE", 
             "average.joe@equinor.com", 
-            false, 
-            DateTime.Now.AddDays(1));
+            false);
+
+        person.SetProCoSys4LastUpdated(DateTime.Now.AddDays(1));
         _personRepoMock.ExistsAsync(guid, default).Returns(true);
         _personRepoMock.GetAsync(guid, default).Returns(person);
         _contextMock.Message.Returns(testEvent);
@@ -131,4 +121,58 @@ public class PersonEventConsumerTests
         _personRepoMock.Received(0).Add(person);
         await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
     }
+
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreMessage_WhenPersonDoesNotExist()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var testEvent = new PersonEvent(
+            "",
+            guid,
+            "Average Max",
+            "Joe",
+            "AJOE",
+            "average.joe@equinor.com",
+            true,
+            DateTime.Now,
+            null);
+
+        _personRepoMock.ExistsAsync(guid, default).Returns(false);
+        _contextMock.Message.Returns(testEvent);
+
+        //Act
+        await _personEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _personRepoMock.Received(1).ExistsAsync(guid, default);
+        await _personRepoMock.Received(0).GetAsync(guid, default);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreMessage_WhenBehaviorDelete()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var testEvent = new PersonEvent(
+            "",
+            guid,
+            "Average Max",
+            "Joe",
+            "AJOE",
+            "average.joe@equinor.com",
+            true,
+            DateTime.Now,
+            "delete");
+
+        _contextMock.Message.Returns(testEvent);
+
+        //Act
+        await _personEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _personRepoMock.Received(0).ExistsAsync(guid, default);
+    }
+
 }

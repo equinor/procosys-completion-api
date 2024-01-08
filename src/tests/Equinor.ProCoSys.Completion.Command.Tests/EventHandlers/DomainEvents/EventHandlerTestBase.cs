@@ -37,7 +37,7 @@ public class EventHandlerTestBase
         _person = new Person(Guid.NewGuid(), "Yo", "Da", "YD", "@", false);
         _person.SetProtectedIdForTesting(3);
 
-        _project = new Project(_testPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
+        _project = new Project(_testPlant, Guid.NewGuid(), null!, null!);
         var raisedByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), "RC", "RD", LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), "CC", "CD", LibraryType.COMPLETION_ORGANIZATION);
         _punchItem = new PunchItem(_testPlant, _project, Guid.NewGuid(), Category.PB, "Desc", raisedByOrg, clearingByOrg);

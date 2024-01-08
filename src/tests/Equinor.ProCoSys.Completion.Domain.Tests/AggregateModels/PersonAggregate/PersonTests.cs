@@ -24,4 +24,13 @@ public class PersonTests
         Assert.AreEqual("FirstName LastName", _dut.GetFullName());
         Assert.IsTrue(_dut.Superuser);
     }
+
+    [TestMethod]
+    public void ProCoSys4LastUpdated_ShouldSetProCoSys4LastUpdated_WhenSetProCoSys4LastUpdated()
+    {
+        var lastUpdated = DateTime.Now;
+        _dut.SetProCoSys4LastUpdated(lastUpdated);
+        Assert.AreEqual(_dut.ProCoSys4LastUpdated, lastUpdated);
+    }
+
 }

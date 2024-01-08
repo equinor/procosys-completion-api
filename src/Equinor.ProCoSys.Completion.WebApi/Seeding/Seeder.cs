@@ -58,7 +58,7 @@ public class Seeder : IHostedService
         personRepository.AddUsers(250);
 
         var projectRepository = new ProjectRepository(dbContext);
-        projectRepository.Add(new Project(_testPlant, _testProjectGuid, _testProject, _testProject, DateTime.Now));
+        projectRepository.Add(new Project(_testPlant, _testProjectGuid, _testProject, _testProject));
         projectRepository.AddProjects(_testPlant, 50);
 
         var libraryRepository = new LibraryItemRepository(dbContext);
