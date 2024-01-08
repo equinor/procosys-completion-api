@@ -26,7 +26,7 @@ public static class Seeders
     {
         for (var i = 0; i < entryCount; i++)
         {
-            var project = new Project(plant, Guid.NewGuid(), $"Name-{i}", $"Description-{i}", DateTime.Now);
+            var project = new Project(plant, Guid.NewGuid(), $"Name-{i}", $"Description-{i}");
             projectRepository.Add(project);
         }
     }

@@ -69,15 +69,15 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
         _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
         
-        _logger.LogInformation("Project Message Consumed: {MessageId} \n {ProjectName}", 
-            context.MessageId, projectEvent.ProjectName);
+        _logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
+            context.MessageId, projectEvent.ProCoSysGuid, projectEvent.ProjectName);
     }
 
     private static void MapFromEventToProject(IProjectEventV1 projectEvent, Project project)
     {
         project.IsClosed = projectEvent.IsClosed;
         project.Name = projectEvent.ProjectName;
-        project.ProCoSys4LastUpdated = projectEvent.LastUpdated;
+        project.SetProCoSys4LastUpdated(projectEvent.LastUpdated);
         
         if (projectEvent.Description is not null)
         {
@@ -86,12 +86,15 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     }
 
     //12/12/2023 We use name as description if description is missing. Its a super edge case and pcs4 does not have any projects with description is null today
-     private static Project CreateProjectEntity(IProjectEventV1 projectEvent) 
-         => new(projectEvent.Plant,
+    private static Project CreateProjectEntity(IProjectEventV1 projectEvent)
+    {
+        var project = new Project(projectEvent.Plant,
              projectEvent.ProCoSysGuid,
              projectEvent.ProjectName,
-             projectEvent.Description?? projectEvent.ProjectName, 
-             projectEvent.LastUpdated);
+             projectEvent.Description ?? projectEvent.ProjectName);
+        project.SetProCoSys4LastUpdated(projectEvent.LastUpdated);
+        return project;
+    }
 }
 
 public record ProjectEvent(string EventType, string? Description, 
