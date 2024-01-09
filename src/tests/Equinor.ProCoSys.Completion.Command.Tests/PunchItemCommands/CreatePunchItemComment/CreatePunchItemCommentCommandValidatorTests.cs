@@ -24,7 +24,8 @@ public class CreatePunchItemCommentCommandValidatorTests
         _command = new CreatePunchItemCommentCommand(
             Guid.NewGuid(), 
             "Test title", 
-            new List<string> { _labelTextA, _labelTextB });
+            new List<string> { _labelTextA, _labelTextB },
+            new List<Guid>());
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default).Returns(true);
         _labelValidatorMock = Substitute.For<ILabelValidator>();

@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -32,10 +33,12 @@ public class CommentService : ICommentService
         Guid parentGuid,
         string text,
         IEnumerable<Label> labels,
+        IEnumerable<Person> mentions,
         CancellationToken cancellationToken)
     {
         var comment = new Comment(parentType, parentGuid, text);
         comment.UpdateLabels(labels.ToList());
+        comment.SetMentions(mentions.ToList());
 
         _commentRepository.Add(comment);
 
@@ -54,6 +57,7 @@ public class CommentService : ICommentService
         Guid parentGuid,
         string text,
         Label label,
+        IEnumerable<Person> mentions,
         CancellationToken cancellationToken)
-        => await AddAsync(parentType, parentGuid, text, new List<Label> { label }, cancellationToken);
+        => await AddAsync(parentType, parentGuid, text, new List<Label> { label }, mentions, cancellationToken);
 }
