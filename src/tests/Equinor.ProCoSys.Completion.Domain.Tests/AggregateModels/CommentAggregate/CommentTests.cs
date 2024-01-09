@@ -52,6 +52,23 @@ public class CommentTests : ICreationAuditableTests
     }
 
     [TestMethod]
+    public void SetMentions_ShouldRemoveAlreadySetMentions()
+    {
+        // Arrange
+        var personA = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
+        _dut.SetMentions(new List<Person> { personA });
+        var personB = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
+
+        // Act
+        _dut.SetMentions(new List<Person> { personB });
+
+        // Assert
+        Assert.AreEqual(1, _dut.Mentions.Count);
+        Assert.IsFalse(_dut.Mentions.Any(p => p.Guid == personA.Guid));
+        Assert.IsTrue(_dut.Mentions.Any(p => p.Guid == personB.Guid));
+    }
+
+    [TestMethod]
     public void GetOrderedMentions_ShouldReturnOrderedMentions()
     {
         // Arrange
