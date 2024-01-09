@@ -30,14 +30,14 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         CancellationToken cancellationToken)
     {
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
-        var persons = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
+        var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
         var commentDto = await _commentService.AddAsync(
             nameof(PunchItem),
             request.PunchItemGuid,
             request.Text,
             labels,
-            persons,
+            mentions,
             cancellationToken);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(commentDto.Guid, commentDto.RowVersion));

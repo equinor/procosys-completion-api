@@ -299,6 +299,7 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             _plantWithAccess,
             guid,
             Guid.NewGuid().ToString(),
+            [],
             rowVersionAfterClear,
             HttpStatusCode.Forbidden);
     }

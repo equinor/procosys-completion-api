@@ -696,6 +696,7 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer, TestFactory.PlantWithAccess,
             guid,
             Guid.NewGuid().ToString(),
+            [],
             rowVersionAfterClear);
 
         // Assert
@@ -705,7 +706,7 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task RejectPunchItem_AsWriter_ShouldAddRejectedCommentToComments()
+    public async Task RejectPunchItem_AsWriter_ShouldAddRejectedCommentWithMentionsToComments()
     {
         // Arrange
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
@@ -716,8 +717,11 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
 
-        // todo 108276 Assert mentions
-        var mentions = new List<Guid>();
+        var mentions = new List<Guid>
+        {
+            TestFactory.Instance.GetTestProfile(UserType.RestrictedWriter).Guid,
+            TestFactory.Instance.GetTestProfile(UserType.Reader).Guid
+        };
         var comment = $"Must approve {Guid.NewGuid()}";
 
         // Act
@@ -726,6 +730,7 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             guid,
             comment,
+            mentions,
             rowVersionAfterClear);
 
         // Assert
@@ -737,7 +742,7 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         Assert.IsNotNull(comments);
         Assert.AreEqual(1, comments.Count);
-        AssertComment(comments[0], guid, comment, new List<string> { KnownData.LabelReject }, mentions);
+        AssertComment(comments[0], guid, comment, [KnownData.LabelReject], mentions);
     }
 
     [TestMethod]
@@ -909,7 +914,6 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(expectedParentGuid, commentDto.ParentGuid);
         Assert.AreEqual(expectedText, commentDto.Text);
         Assert.IsNotNull(commentDto.CreatedBy);
-        Assert.IsNotNull(commentDto.CreatedAtUtc);
         Assert.IsNotNull(commentDto.CreatedAtUtc);
         Assert.AreEqual(expectedLabels.Count, commentDto.Labels.Count);
 

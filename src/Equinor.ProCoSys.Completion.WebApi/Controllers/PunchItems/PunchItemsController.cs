@@ -274,7 +274,7 @@ public class PunchItemsController : ControllerBase
         [FromBody] RejectPunchItemDto dto)
     {
         var result = await _mediator.Send(
-            new RejectPunchItemCommand(guid, dto.Comment, dto.RowVersion), cancellationToken);
+            new RejectPunchItemCommand(guid, dto.Comment, dto.Mentions, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
