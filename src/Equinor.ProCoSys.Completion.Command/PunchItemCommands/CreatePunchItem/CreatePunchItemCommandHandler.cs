@@ -133,6 +133,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _syncToPCS4Service.SyncNewObjectAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
 
+            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo, punchItem.Guid);

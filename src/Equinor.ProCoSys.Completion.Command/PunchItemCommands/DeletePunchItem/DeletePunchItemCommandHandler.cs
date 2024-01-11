@@ -69,6 +69,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
             await _syncToPCS4Service.SyncObjectDeletionAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
 
+            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);

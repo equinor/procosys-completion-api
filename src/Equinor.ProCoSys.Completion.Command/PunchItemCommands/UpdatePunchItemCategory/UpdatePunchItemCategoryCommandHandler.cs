@@ -69,6 +69,9 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
 
             await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
 
+            // todo 109356 add unit tests
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
                 punchItem.ItemNo,
                 punchItem.Guid,

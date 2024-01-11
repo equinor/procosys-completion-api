@@ -72,6 +72,9 @@ public class ClearPunchItemCommandHandler : IRequestHandler<ClearPunchItemComman
 
             await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
 
+            // todo 109356 add unit tests
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} cleared", punchItem.ItemNo, punchItem.Guid);
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
