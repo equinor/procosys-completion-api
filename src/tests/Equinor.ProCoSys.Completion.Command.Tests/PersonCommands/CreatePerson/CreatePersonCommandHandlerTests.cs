@@ -49,7 +49,6 @@ public class CreatePersonCommandHandlerTests : TestsBase
                 _personAddedToRepository = person;
                 person.SetProtectedIdForTesting(PersonIdOnNew);
             });
-
             
         _proCoSysPerson = new ProCoSysPerson
         {

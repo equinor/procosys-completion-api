@@ -5,6 +5,7 @@ using MediatR;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 
@@ -12,11 +13,16 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
 {
     private readonly ICommentService _commentService;
     private readonly ILabelRepository _labelRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreatePunchItemCommentCommandHandler(ICommentService commentService, ILabelRepository labelRepository)
+    public CreatePunchItemCommentCommandHandler(
+        ICommentService commentService,
+        ILabelRepository labelRepository,
+        IUnitOfWork unitOfWork)
     {
         _commentService = commentService;
         _labelRepository = labelRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<GuidAndRowVersion>> Handle(
@@ -25,7 +31,8 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
     {
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
 
-        var commentDto = await _commentService.AddAsync(
+        var commentDto = await _commentService.AddAndSaveAsync(
+            _unitOfWork,
             nameof(PunchItem),
             request.PunchItemGuid,
             request.Text,

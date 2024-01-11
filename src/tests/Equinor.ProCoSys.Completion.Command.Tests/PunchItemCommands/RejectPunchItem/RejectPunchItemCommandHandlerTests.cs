@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
@@ -113,13 +115,31 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _commentServiceMock.Received(1)
-            .AddAsync(
-                nameof(PunchItem),
-                _command.PunchItemGuid,
-                _command.Comment,
-                _rejectedLabel,
-                default);
+        _commentServiceMock.Received(1)
+            .Add(nameof(PunchItem), _command.PunchItemGuid, _command.Comment, Arg.Any<IEnumerable<Label>>());
+    }
+
+    [TestMethod]
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    public async Task HandlingCommand_Should_CallAdd_OnCommentServiceWithCorrectLabel()
+    {
+        // Arrange 
+        IEnumerable<Label> labelsAdded = null!;
+        _commentServiceMock
+            .When(x => x.Add(
+                Arg.Any<string>(), 
+                Arg.Any<Guid>(),
+                Arg.Any<string>(),
+                Arg.Any<IEnumerable<Label>>()))
+            .Do(info => labelsAdded = info.Arg<IEnumerable<Label>>());
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.IsNotNull(labelsAdded);
+        Assert.AreEqual(1, labelsAdded.Count());
+        Assert.AreEqual(_rejectedLabel, labelsAdded.ElementAt(0));
     }
 
     [TestMethod]

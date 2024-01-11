@@ -83,12 +83,7 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
                 [change],
                 cancellationToken);
 
-            await _commentService.AddAsync(
-                nameof(PunchItem),
-                request.PunchItemGuid,
-                request.Comment,
-                rejectLabel,
-                cancellationToken);
+            _commentService.Add(nameof(PunchItem), request.PunchItemGuid, request.Comment, [rejectLabel]);
 
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -33,14 +33,15 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
         _labelRepositoryMock.GetManyAsync(_command.Labels, default).Returns(_labelList);
 
         _commentServiceMock = Substitute.For<ICommentService>();
-        _commentServiceMock.AddAsync(
+        _commentServiceMock.AddAndSaveAsync(
+            _unitOfWorkMock,
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.Text,
             _labelList,
             default).Returns(new CommentDto(_guid, _rowVersion));
 
-        _dut = new CreatePunchItemCommentCommandHandler(_commentServiceMock, _labelRepositoryMock);
+        _dut = new CreatePunchItemCommentCommandHandler(_commentServiceMock, _labelRepositoryMock, _unitOfWorkMock);
     }
 
     [TestMethod]
@@ -63,11 +64,12 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
 
         // Assert
         await _commentServiceMock.Received(1)
-            .AddAsync(
-            nameof(PunchItem), 
-            _command.PunchItemGuid, 
-            _command.Text,
-            _labelList,
-            default);
+            .AddAndSaveAsync(
+                _unitOfWorkMock,
+                nameof(PunchItem),
+                _command.PunchItemGuid,
+                _command.Text,
+                _labelList,
+                default);
     }
 }

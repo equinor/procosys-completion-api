@@ -31,10 +31,10 @@ public class CommentServiceTests : TestsBase
             });
 
         var logger = Substitute.For<ILogger<CommentService>>();
-        _dut = new CommentService(_commentRepository, _unitOfWorkMock, logger);
+        _dut = new CommentService(_commentRepository, logger);
     }
 
-    #region AddAsync - with list of labels
+    #region AddAsync
     [TestMethod]
     public async Task AddAsync_ShouldAddCommentToRepository()
     {
@@ -43,7 +43,7 @@ public class CommentServiceTests : TestsBase
         var text = "T";
 
         // Act
-        await _dut.AddAsync(parentType, _parentGuid, text, new List<Label>(), default);
+        await _dut.AddAndSaveAsync(_unitOfWorkMock, parentType, _parentGuid, text, new List<Label>(), default);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
@@ -56,7 +56,7 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldAddCommentToRepository_WithoutLabels()
     {
         // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new List<Label>(), default);
+        await _dut.AddAndSaveAsync(_unitOfWorkMock, "Whatever", _parentGuid, "T", new List<Label>(), default);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
@@ -71,7 +71,7 @@ public class CommentServiceTests : TestsBase
         var labelB = new Label("b");
 
         // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new List<Label> { labelA, labelB }, default);
+        await _dut.AddAndSaveAsync(_unitOfWorkMock, "Whatever", _parentGuid, "T", new List<Label> { labelA, labelB }, default);
 
         // Assert
         Assert.AreEqual(2, _commentAddedToRepository.Labels.Count);
@@ -82,33 +82,23 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldSaveOnce()
     {
         // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new List<Label>(), default);
+        await _dut.AddAndSaveAsync(_unitOfWorkMock, "Whatever", _parentGuid, "T", new List<Label>(), default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAsync_ShouldNotAddAnyDomainEvent()
-    {
-        // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new List<Label>(), default);
-
-        // Assert
-        Assert.AreEqual(0, _commentAddedToRepository.DomainEvents.Count);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
     #endregion
 
-    #region AddAsync - with single label
+    #region Add
     [TestMethod]
-    public async Task AddAsync_SingleLabel_ShouldAddCommentToRepository()
+    public void Add_ShouldAddCommentToRepository()
     {
         // Arrange 
         var parentType = "Whatever";
         var text = "T";
 
         // Act
-        await _dut.AddAsync(parentType, _parentGuid, text, new Label("L"), default);
+        _dut.Add(parentType, _parentGuid, text, [new Label("L")]);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
@@ -118,37 +108,17 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAsync_SingleLabel_ShouldAddCommentToRepository_WithLabel()
+    public void Add_ShouldAddCommentToRepository_WithLabel()
     {
         // Arrange 
         var labelA = new Label("a");
 
         // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", labelA, default);
+        _dut.Add("Whatever", _parentGuid, "T", [labelA]);
 
         // Assert
         Assert.AreEqual(1, _commentAddedToRepository.Labels.Count);
         Assert.AreEqual(1, _commentAddedToRepository.GetOrderedNonVoidedLabels().Count());
-    }
-
-    [TestMethod]
-    public async Task AddAsync_SingleLabel_ShouldSaveOnce()
-    {
-        // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new Label("L"), default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAsync_SingleLabel_ShouldNotAddAnyDomainEvent()
-    {
-        // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", new Label("L"), default);
-
-        // Assert
-        Assert.AreEqual(0, _commentAddedToRepository.DomainEvents.Count);
     }
     #endregion
 }
