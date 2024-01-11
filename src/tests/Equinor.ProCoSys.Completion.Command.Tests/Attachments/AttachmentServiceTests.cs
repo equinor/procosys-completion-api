@@ -129,7 +129,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -189,7 +189,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -320,7 +320,7 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UpdateAsync(_existingAttachment.Guid, "abc", new List<Label>(), _rowVersion, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]

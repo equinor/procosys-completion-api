@@ -5,7 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -14,9 +15,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -36,6 +38,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPunchEventPublisher _punchEventPublisher;
+    private readonly IHistoryEventPublisher _historyEventPublisher;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
@@ -48,6 +52,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
+        IPunchEventPublisher punchEventPublisher,
+        IHistoryEventPublisher historyEventPublisher,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
@@ -59,6 +65,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
+        _punchEventPublisher = punchEventPublisher;
+        _historyEventPublisher = historyEventPublisher;
         _logger = logger;
     }
 
@@ -72,23 +80,30 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
             var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
 
+            // AuditData must be set before publishing events due to use of Created- and Modified-properties
+            await _unitOfWork.SetAuditDataAsync();
+
+            IPunchItemUpdatedV1 integrationEvent = null!;
             if (changes.Any())
             {
-                punchItem.AddDomainEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
+                integrationEvent = await _punchEventPublisher.PublishUpdatedEventAsync(punchItem, cancellationToken);
+                await _historyEventPublisher.PublishUpdatedEventAsync(
+                    punchItem.Plant,
+                    "Punch item updated",
+                    punchItem.Guid,
+                    new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
+                    punchItem.ModifiedAtUtc!.Value,
+                    changes,
+                    cancellationToken);
             }
-            punchItem.SetRowVersion(request.RowVersion);
 
+            punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // To be removed when sync to PCS 4 is no longer needed
-            //---
             if (changes.Any())
             {
-                //TODO: Bør ikke opprette domain events på nytt her. 
-                var integrationEvent = new PunchItemUpdatedIntegrationEvent(new PunchItemUpdatedDomainEvent(punchItem, changes));
                 await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
             }
-            //---
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

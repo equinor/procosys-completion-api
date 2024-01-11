@@ -79,9 +79,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
 
-    private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder) 
+    private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder)
         => modelBuilder.AddTransactionalOutboxEntities();
-    
+
     private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
     {
         // todo 104163 Discuss if we need plant or not
@@ -187,7 +187,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         await _eventDispatcher.DispatchPostSaveEventsAsync(entities, cancellationToken);
     }
 
-    private async Task SetAuditDataAsync()
+    // todo 109354 move public method up, and privates at end of class
+    public async Task SetAuditDataAsync()
     {
         var addedEntries = ChangeTracker
             .Entries<ICreationAuditable>()

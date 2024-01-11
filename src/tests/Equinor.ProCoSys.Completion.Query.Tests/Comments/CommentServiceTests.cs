@@ -35,7 +35,7 @@ public class CommentServiceTests : ReadOnlyTestsBase
         _createdComment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
 
         context.Comments.Add(_createdComment);
-        context.SaveChangesAsync().Wait();
+        context.SaveChangesAsync(default).Wait();
     }
 
     [TestMethod]

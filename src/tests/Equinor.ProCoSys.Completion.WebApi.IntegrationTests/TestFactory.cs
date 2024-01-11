@@ -38,7 +38,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
-    private readonly ISyncToPCS4Service _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
+    private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -156,7 +156,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _publishEndpointMock);
-            services.AddScoped(_ => _syncToPCS4ServiceMock);
+            services.AddScoped(_ => _pcs4RepositoryMock);
         });
 
         builder.ConfigureServices(services =>

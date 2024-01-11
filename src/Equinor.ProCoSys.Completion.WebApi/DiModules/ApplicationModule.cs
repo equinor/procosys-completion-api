@@ -7,7 +7,8 @@ using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
@@ -157,6 +158,8 @@ public static class ApplicationModule
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
+        services.AddScoped<IPunchEventPublisher, PunchEventPublisher>();
+        services.AddScoped<IHistoryEventPublisher, HistoryEventPublisher>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
 
