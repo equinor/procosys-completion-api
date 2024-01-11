@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
-using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
@@ -22,7 +19,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunc
 public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
     private readonly string _testPlant = TestPlantA;
-    private IPersonCache _personCacheMock;
     private UpdatePunchItemCommand _command;
     private UpdatePunchItemCommandHandler _dut;
     private readonly string _newDescription = Guid.NewGuid().ToString();
@@ -32,18 +28,10 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private readonly bool _newMaterialRequired = true;
     private readonly DateTime _newMaterialETAUtc = DateTime.UtcNow.AddDays(17);
     private readonly string _newMaterialExternalNo = "B7";
-    private Person _personAddedToRepository;
 
     [TestInitialize]
     public void Setup()
     {
-        _personRepositoryMock
-            .When(x => x.Add(Arg.Any<Person>()))
-            .Do(callInfo =>
-            {
-                _personAddedToRepository = callInfo.Arg<Person>();
-            });
-
         _command = new UpdatePunchItemCommand(
             _existingPunchItem[_testPlant].Guid,
             new JsonPatchDocument<PatchablePunchItem>(),
@@ -68,11 +56,9 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         _command.EnsureValidInputValidation();
 
-        _personCacheMock = Substitute.For<IPersonCache>();
         _dut = new UpdatePunchItemCommandHandler(
             _punchItemRepositoryMock,
             _libraryItemRepositoryMock,
-            _personCacheMock,
             _personRepositoryMock,
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
@@ -977,40 +963,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<DateTime>(),
             Arg.Any<List<IProperty>>(),
             default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
-    {
-        // Arrange
-        var nonExistingPersonOid = new Guid("{aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}");
-        _command.PatchDocument.Operations.Clear();
-        _command.PatchDocument.Replace(p => p.ActionByPersonOid, nonExistingPersonOid);
-        var proCoSysPerson = new ProCoSysPerson
-        {
-            UserName = "YODA",
-            FirstName = "YO",
-            LastName = "DA",
-            Email = "@",
-            AzureOid = nonExistingPersonOid.ToString(),
-            Super = true
-        };
-        _personCacheMock.GetAsync(nonExistingPersonOid)
-            .Returns(proCoSysPerson);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        Assert.IsNotNull(_personAddedToRepository);
-        Assert.AreEqual(nonExistingPersonOid, _existingPunchItem[_testPlant].ActionBy!.Guid);
-        Assert.AreEqual(nonExistingPersonOid, _personAddedToRepository.Guid);
-        Assert.AreEqual(proCoSysPerson.AzureOid, _personAddedToRepository.Guid.ToString());
-        Assert.AreEqual(proCoSysPerson.UserName, _personAddedToRepository.UserName);
-        Assert.AreEqual(proCoSysPerson.FirstName, _personAddedToRepository.FirstName);
-        Assert.AreEqual(proCoSysPerson.LastName, _personAddedToRepository.LastName);
-        Assert.AreEqual(proCoSysPerson.Email, _personAddedToRepository.Email);
-        Assert.AreEqual(proCoSysPerson.Super, _personAddedToRepository.Superuser);
     }
 
     #endregion

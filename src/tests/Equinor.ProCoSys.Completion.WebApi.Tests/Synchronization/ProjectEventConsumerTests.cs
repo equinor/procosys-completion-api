@@ -78,8 +78,8 @@ public class ProjectEventConsumerTests
         const string ProjectName = "ProjectName";
         var testEvent = new ProjectEvent("", Description, false, lastUpdated, "plant", guid, ProjectName, null);
         //simulate project received from db to be one hour "older" than event coming in.
-        var projectToUpdate = new Project("AnyPlant",guid, "AnyProjectName", "AnyDescription", DateTime.Now.Subtract(TimeSpan.FromHours(1)));
-        
+        var projectToUpdate = new Project("AnyPlant",guid, "AnyProjectName", "AnyDescription");
+        projectToUpdate.SetProCoSys4LastUpdated(DateTime.Now.Subtract(TimeSpan.FromHours(1)));
         _projectRepoMock.ExistsAsync(guid, default).Returns(true);
         _projectRepoMock.GetAsync(guid, default).Returns(projectToUpdate);
         _contextMock.Message.Returns(testEvent);
@@ -150,7 +150,8 @@ public class ProjectEventConsumerTests
             "ProjectName", 
             "delete");
 
-        var toDelete = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription",DateTime.Now);
+        var toDelete = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription");
+        toDelete.SetProCoSys4LastUpdated(DateTime.Now);
         _projectRepoMock.GetAsync(guid, default).Returns(toDelete);
         _contextMock.Message.Returns(testEvent);
 
@@ -170,7 +171,8 @@ public class ProjectEventConsumerTests
         var testEvent = new ProjectEvent("", "project", false, DateTime.Now, "plant", guid,
             "ProjectName", null);
 
-        var project = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription",DateTime.Now.AddDays(1));
+        var project = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription");
+        project.SetProCoSys4LastUpdated(DateTime.Now.AddDays(1));
         _projectRepoMock.ExistsAsync(guid, default).Returns(true);
         _projectRepoMock.GetAsync(guid, default).Returns(project);
         _contextMock.Message.Returns(testEvent);

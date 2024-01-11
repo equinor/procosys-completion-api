@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
@@ -29,13 +30,21 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private ICommentService _commentServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
     private Label _rejectedLabel;
+    private List<Person> _personList;
 
     [TestInitialize]
     public void Setup()
     {
         _existingPunchItem[_testPlant].Clear(_currentPerson);
 
-        _command = new RejectPunchItemCommand(_existingPunchItem[_testPlant].Guid, Guid.NewGuid().ToString(), RowVersion);
+        var person = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
+        _personList = [person];
+
+        _command = new RejectPunchItemCommand(
+            _existingPunchItem[_testPlant].Guid,
+            Guid.NewGuid().ToString(),
+            new List<Guid> { person.Guid },
+            RowVersion);
 
         var rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
@@ -50,6 +59,9 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 RejectLabel = rejectLabelText
             });
+        
+        _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
+            .Returns(_personList);
 
         _dut = new RejectPunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -116,7 +128,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         _commentServiceMock.Received(1)
-            .Add(nameof(PunchItem), _command.PunchItemGuid, _command.Comment, Arg.Any<IEnumerable<Label>>());
+            .Add(
+                nameof(PunchItem), 
+                _command.PunchItemGuid, 
+                _command.Comment, 
+                Arg.Any<IEnumerable<Label>>(),
+                Arg.Any<IEnumerable<Person>>());
     }
 
     [TestMethod]
@@ -130,7 +147,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 Arg.Any<string>(), 
                 Arg.Any<Guid>(),
                 Arg.Any<string>(),
-                Arg.Any<IEnumerable<Label>>()))
+                Arg.Any<IEnumerable<Label>>(),
+                Arg.Any<IEnumerable<Person>>()))
             .Do(info => labelsAdded = info.Arg<IEnumerable<Label>>());
 
         // Act

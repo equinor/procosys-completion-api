@@ -22,7 +22,7 @@ public class RejectPunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new RejectPunchItemCommand(Guid.NewGuid(), "c", "r");
+        _command = new RejectPunchItemCommand(Guid.NewGuid(), "c", [], "r");
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default).Returns(true);
         _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)         

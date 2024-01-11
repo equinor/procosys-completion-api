@@ -29,7 +29,7 @@ public class PunchEventPublisherTests
         TimeService.SetProvider(new ManualTimeProvider(new(2021, 1, 1, 12, 0, 0, DateTimeKind.Utc)));
         _person = new Person(Guid.NewGuid(), "Yo", "Da", "YD", "@", false);
 
-        var project = new Project(plant, Guid.NewGuid(), null!, null!, DateTime.Now);
+        var project = new Project(plant, Guid.NewGuid(), null!, null!);
         var raisedByOrg = new LibraryItem(plant, Guid.NewGuid(), "RC", "RD", LibraryType.COMPLETION_ORGANIZATION);
         var clearingByOrg = new LibraryItem(plant, Guid.NewGuid(), "CC", "CD", LibraryType.COMPLETION_ORGANIZATION);
         _punchItem = new PunchItem(plant, project, Guid.NewGuid(), Category.PB, "Desc", raisedByOrg, clearingByOrg);

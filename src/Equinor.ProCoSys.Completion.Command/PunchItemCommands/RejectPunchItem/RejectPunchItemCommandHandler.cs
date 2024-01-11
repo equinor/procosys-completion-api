@@ -70,6 +70,8 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
 
             var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
 
+            var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
+
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
@@ -83,7 +85,7 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
                 [change],
                 cancellationToken);
 
-            _commentService.Add(nameof(PunchItem), request.PunchItemGuid, request.Comment, [rejectLabel]);
+            _commentService.Add(nameof(PunchItem), request.PunchItemGuid, request.Comment, [rejectLabel], mentions);
 
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -30,9 +31,10 @@ public class CommentService : ICommentService
         Guid parentGuid,
         string text,
         IEnumerable<Label> labels,
+        IEnumerable<Person> mentions,
         CancellationToken cancellationToken)
     {
-        var comment = AddToRepository(parentType, parentGuid, text, labels);
+        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -44,9 +46,9 @@ public class CommentService : ICommentService
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
 
-    public Guid Add(string parentType, Guid parentGuid, string text, IEnumerable<Label> labels)
+    public Guid Add(string parentType, Guid parentGuid, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
     {
-        var comment = AddToRepository(parentType, parentGuid, text, labels);
+        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
 
         _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
             comment.Guid,
@@ -60,10 +62,12 @@ public class CommentService : ICommentService
         string parentType,
         Guid parentGuid,
         string text,
-        IEnumerable<Label> labels)
+        IEnumerable<Label> labels,
+        IEnumerable<Person> mentions)
     {
         var comment = new Comment(parentType, parentGuid, text);
         comment.UpdateLabels(labels.ToList());
+        comment.SetMentions(mentions.ToList());
 
         _commentRepository.Add(comment);
 

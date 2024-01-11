@@ -21,8 +21,9 @@ public class CommentService : ICommentService
     {
         var comments =
             await (from c in _context.QuerySet<Comment>()
-                        .Include(a => a.Labels.Where(l => !l.IsVoided))
-                        .Include(a => a.CreatedBy)
+                        .Include(c => c.Labels.Where(l => !l.IsVoided))
+                        .Include(c => c.Mentions)
+                        .Include(c => c.CreatedBy)
                     where c.ParentGuid == parentGuid
                     select c)
                 .TagWith($"{nameof(CommentService)}.{nameof(GetAllForParentAsync)}")
@@ -33,6 +34,13 @@ public class CommentService : ICommentService
             c.Guid,
             c.Text,
             c.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
+            c.GetOrderedMentions()
+                .Select(p => new PersonDto(
+                    p.Guid, 
+                    p.FirstName, 
+                    p.LastName, 
+                    p.UserName, 
+                    p.Email)).ToList(),
             new PersonDto(
                 c.CreatedBy.Guid,
                 c.CreatedBy.FirstName,

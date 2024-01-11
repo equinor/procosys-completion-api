@@ -27,6 +27,8 @@ public class TestProfile
             UserName = UserName ?? throw new ArgumentException($"Bad test setup. {nameof(UserName)} needed")
         };
 
+    public Guid Guid => new(Oid);
+
     public override string ToString() => $"{FullName} {Oid}";
         
     /// <summary>

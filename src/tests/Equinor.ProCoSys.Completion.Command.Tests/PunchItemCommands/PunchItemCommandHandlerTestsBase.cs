@@ -180,7 +180,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Project SetupProject(string testPlant, ref int id)
         {
-            var project = new Project(testPlant, Guid.NewGuid(), null!, null!, DateTime.Now);
+            var project = new Project(testPlant, Guid.NewGuid(), null!, null!);
             project.SetProtectedIdForTesting(++id);
             _projectRepositoryMock
                 .GetAsync(project.Guid, default)
@@ -247,11 +247,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             var person = new Person(Guid.NewGuid(), $"F{id}", $"L{id}", $"U{id}", "@", false);
             person.SetProtectedIdForTesting(id);
             _personRepositoryMock
-                .GetAsync(person.Guid, default)
+                .GetOrCreateAsync(person.Guid, default)
                 .Returns(person);
-            _personRepositoryMock
-                .ExistsAsync(person.Guid, default)
-                .Returns(true);
             return person;
         }
 
