@@ -37,7 +37,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
-    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
     private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
@@ -154,7 +153,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _permissionApiServiceMock);
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
-            services.AddScoped(_ => _publishEndpointMock);
             services.AddScoped(_ => _pcs4RepositoryMock);
         });
 
