@@ -42,10 +42,13 @@ public class PunchItemIntegrationEventTestsBase
         Assert.AreEqual(punchItem.Project.Guid, integrationEvent.ProjectGuid);
         Assert.AreEqual(punchItem.Project.Description, integrationEvent.ProjectDescription);
         Assert.AreEqual(punchItem.Project.Name, integrationEvent.ProjectName);
+        Assert.AreEqual(punchItem.CheckListGuid, integrationEvent.CheckListGuid);
         Assert.AreEqual(punchItem.Category.ToString(), integrationEvent.Category);
         Assert.AreEqual(punchItem.ItemNo, integrationEvent.ItemNo);
         Assert.AreEqual(punchItem.RaisedByOrg.Code, integrationEvent.RaisedByOrgCode);
+        Assert.AreEqual(punchItem.RaisedByOrg.Guid, integrationEvent.RaisedByOrgGuid);
         Assert.AreEqual(punchItem.ClearingByOrg.Code, integrationEvent.ClearingByOrgCode);
+        Assert.AreEqual(punchItem.ClearingByOrg.Guid, integrationEvent.ClearingByOrgGuid);
         Assert.AreEqual(punchItem.CreatedAtUtc, integrationEvent.CreatedAtUtc);
         Assert.AreEqual(punchItem.CreatedBy.Guid, integrationEvent.CreatedBy.Oid);
         Assert.AreEqual(punchItem.CreatedBy.GetFullName(), integrationEvent.CreatedBy.FullName);
@@ -134,8 +137,11 @@ public class PunchItemIntegrationEventTestsBase
     protected void AssertOptionalProperties(PunchItem punchItem, IPunchItem integrationEvent)
     {
         Assert.AreEqual(punchItem.Sorting!.Code, integrationEvent.SortingCode);
+        Assert.AreEqual(punchItem.Sorting!.Guid, integrationEvent.SortingGuid);
         Assert.AreEqual(punchItem.Type!.Code, integrationEvent.TypeCode);
+        Assert.AreEqual(punchItem.Type!.Guid, integrationEvent.TypeGuid);
         Assert.AreEqual(punchItem.Priority!.Code, integrationEvent.PriorityCode);
+        Assert.AreEqual(punchItem.Priority!.Guid, integrationEvent.PriorityGuid);
         Assert.AreEqual(punchItem.DueTimeUtc, integrationEvent.DueTimeUtc);
         Assert.AreEqual(punchItem.Estimate, integrationEvent.Estimate);
         Assert.AreEqual(punchItem.ExternalItemNo, integrationEvent.ExternalItemNo);
@@ -143,9 +149,13 @@ public class PunchItemIntegrationEventTestsBase
         Assert.AreEqual(punchItem.MaterialETAUtc, integrationEvent.MaterialETAUtc);
         Assert.AreEqual(punchItem.MaterialExternalNo, integrationEvent.MaterialExternalNo);
         Assert.AreEqual(punchItem.WorkOrder!.No, integrationEvent.WorkOrderNo);
+        Assert.AreEqual(punchItem.WorkOrder!.Guid, integrationEvent.WorkOrderGuid);
         Assert.AreEqual(punchItem.OriginalWorkOrder!.No, integrationEvent.OriginalWorkOrderNo);
+        Assert.AreEqual(punchItem.OriginalWorkOrder!.Guid, integrationEvent.OriginalWorkOrderGuid);
         Assert.AreEqual(punchItem.Document!.No, integrationEvent.DocumentNo);
+        Assert.AreEqual(punchItem.Document!.Guid, integrationEvent.DocumentGuid);
         Assert.AreEqual(punchItem.SWCR!.No, integrationEvent.SWCRNo);
+        Assert.AreEqual(punchItem.SWCR!.Guid, integrationEvent.SWCRGuid);
         Assert.IsNotNull(integrationEvent.ActionBy);
         Assert.AreEqual(punchItem.ActionBy!.Guid, integrationEvent.ActionBy.Oid);
         Assert.AreEqual(punchItem.ActionBy!.GetFullName(), integrationEvent.ActionBy.FullName);

@@ -76,7 +76,7 @@ public class UnverifyPunchItemCommandHandler : IRequestHandler<UnverifyPunchItem
         }
         catch (Exception)
         {
-            _logger.LogError("Error occurred on update of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            _logger.LogError("Error occurred on unverify of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

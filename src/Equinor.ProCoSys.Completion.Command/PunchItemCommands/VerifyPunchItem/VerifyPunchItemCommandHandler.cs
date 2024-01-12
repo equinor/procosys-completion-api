@@ -50,7 +50,7 @@ public class VerifyPunchItemCommandHandler : IRequestHandler<VerifyPunchItemComm
         try
         {
             var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-            if (punchItem == null)
+            if (punchItem is null)
             {
                 throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
             }
@@ -85,7 +85,7 @@ public class VerifyPunchItemCommandHandler : IRequestHandler<VerifyPunchItemComm
         }
         catch (Exception)
         {
-            _logger.LogError("Error occurred on update of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            _logger.LogError("Error occurred on verify of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
