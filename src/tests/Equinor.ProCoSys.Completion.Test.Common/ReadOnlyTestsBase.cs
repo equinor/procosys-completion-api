@@ -11,6 +11,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using NSubstitute;
@@ -37,6 +38,10 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected readonly string LabelTextB = "B";
     protected readonly string LabelTextC = "C";
     protected readonly string LabelTextVoided = "V";
+    protected readonly string MailTemplateCodeA = "A";
+    protected readonly string MailTemplateCodeB = "B";
+    protected readonly string MailTemplateCodeC = "C";
+    protected readonly string MailTemplateCodeVoided = "V";
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected ICurrentUserProvider _currentUserProviderMock;
     protected IEventDispatcher _eventDispatcherMock;
@@ -189,5 +194,44 @@ public abstract class ReadOnlyTestsBase : TestsBase
         AddLabel(context, new Label(LabelTextC));
         AddLabel(context, new Label(LabelTextVoided) { IsVoided = true });
         AddLabel(context, new Label(LabelTextB));
+    }
+
+    private void AddMailTemplate(CompletionContext context, MailTemplate mailTemplate)
+    {
+        context.MailTemplates.Add(mailTemplate);
+        context.SaveChangesAsync().Wait();
+    }
+
+    public void Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(CompletionContext context)
+        => Add4UnorderedMailTemplatesInclusiveAVoidedMailTemplate(context, null);
+
+    public void Add4UnorderedMailTemplatesForPlantInclusiveAVoidedMailTemplate(
+        CompletionContext context,
+        string plant)
+        => Add4UnorderedMailTemplatesInclusiveAVoidedMailTemplate(context, plant);
+
+    public void Add4UnorderedMailTemplatesInclusiveAVoidedMailTemplate(CompletionContext context, string plant)
+    {
+        AddMailTemplate(context, 
+            new MailTemplate(MailTemplateCodeA, Guid.NewGuid().ToString(), Guid.NewGuid().ToString())
+            {
+                Plant = plant
+            });
+        AddMailTemplate(context, 
+            new MailTemplate(MailTemplateCodeC, Guid.NewGuid().ToString(), Guid.NewGuid().ToString())
+            {
+                Plant = plant
+            });
+        AddMailTemplate(context,
+            new MailTemplate(MailTemplateCodeVoided, Guid.NewGuid().ToString(), Guid.NewGuid().ToString())
+            {
+                IsVoided = true,
+                Plant = plant
+            });
+        AddMailTemplate(context, 
+            new MailTemplate(MailTemplateCodeB, Guid.NewGuid().ToString(), Guid.NewGuid().ToString())
+            {
+                Plant = plant
+            });
     }
 }
