@@ -10,9 +10,6 @@ public class SqlUpdateStatementBuilder(IPcs4Repository oracleDBExecutor)
 {
     private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
 
-    /**
-     * Handle the syncronization
-     */
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(ISourceObjectMappingConfig sourceObjectMappingConfig, object sourceObject, string plant, CancellationToken cancellationToken = default)
     {
         var updateStatement = new StringBuilder($"update {sourceObjectMappingConfig.TargetTable} set ");

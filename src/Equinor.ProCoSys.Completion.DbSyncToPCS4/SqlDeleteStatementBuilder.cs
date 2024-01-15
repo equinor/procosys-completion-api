@@ -10,9 +10,6 @@ public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
 {
     private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
 
-    /**
-     * Handle the synchronization
-     */
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(
         ISourceObjectMappingConfig sourceObjectMappingConfig,
         object sourceObject,
