@@ -39,7 +39,7 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
     public bool IsVoided { get; set; }
     // Plant in MailTemplate is not required. Hence: Do not inherit PlantEntityBase
     // A MailTemplate without Plant set is GLOBAL (i.e. valid for all Plants)
-    // A MailTemplate with Plant set is valid for that particular Plant
+    // A MailTemplate with Plant set is valid for that particular Plant only
     public string? Plant { get; set; }
 
     public void SetCreated(Person createdBy)
@@ -59,6 +59,4 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
         ModifiedById = modifiedBy.Id;
         ModifiedBy = modifiedBy;
     }
-
-    public string GetFullName() => $"{Code} {Subject}";
 }
