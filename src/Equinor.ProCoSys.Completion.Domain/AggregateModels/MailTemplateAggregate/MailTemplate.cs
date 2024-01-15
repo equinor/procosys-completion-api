@@ -10,7 +10,7 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
 {
     public const int CodeLengthMax = 64;
     public const int SubjectLengthMax = 512;
-    public const int BodyLengthMax = 4096;
+    public const int BodyLengthMax = 2048;
     public const int PlantLengthMax = 255;
 
 #pragma warning disable CS8618
