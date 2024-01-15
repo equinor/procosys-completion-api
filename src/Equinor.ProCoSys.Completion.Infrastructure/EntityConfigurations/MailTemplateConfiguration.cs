@@ -14,8 +14,6 @@ internal class MailTemplateConfiguration : IEntityTypeConfiguration<MailTemplate
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
-        builder.ToTable(t => t.IsTemporal());
-
         builder.Property(x => x.Code)
             .HasMaxLength(MailTemplate.CodeLengthMax)
             .IsRequired();

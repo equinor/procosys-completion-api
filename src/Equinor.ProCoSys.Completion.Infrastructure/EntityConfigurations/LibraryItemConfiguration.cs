@@ -15,8 +15,6 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
-        builder.ToTable(t => t.IsTemporal());
-
         builder.Property(x => x.Code)
             .HasMaxLength(LibraryItem.CodeLengthMax)
             .IsRequired();
