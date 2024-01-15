@@ -8,10 +8,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.MailTemplates;
 public class MailTemplatesControllerTests : TestBase
 {
     [TestMethod]
-    public async Task GetMailTemplates_AsWriter_ShouldGetMailTemplates()
+    public async Task GetAllMailTemplates_AsWriter_ShouldGetMailTemplates()
     {
         // Act
-        var mailTemplates = await MailTemplatesControllerTestsHelper.GetMailTemplatesAsync(UserType.Writer);
+        var mailTemplates = await MailTemplatesControllerTestsHelper.GetAllMailTemplatesAsync(UserType.Writer);
 
         // Assert
         Assert.IsTrue(mailTemplates.Count >= 2);

@@ -9,7 +9,7 @@ public static class MailTemplatesControllerTestsHelper
 {
     private const string Route = "MailTemplates";
 
-    public static async Task<List<MailTemplateDto>> GetMailTemplatesAsync(
+    public static async Task<List<MailTemplateDto>> GetAllMailTemplatesAsync(
         UserType userType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)

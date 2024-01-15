@@ -9,14 +9,14 @@ public class MailTemplatesControllerNegativeTests : TestBase
 {
     #region GetMailTemplates
     [TestMethod]
-    public async Task GetMailTemplates_AsAnonymous_ShouldReturnUnauthorized()
-        => await MailTemplatesControllerTestsHelper.GetMailTemplatesAsync(
+    public async Task GetAllMailTemplates_AsAnonymous_ShouldReturnUnauthorized()
+        => await MailTemplatesControllerTestsHelper.GetAllMailTemplatesAsync(
             UserType.Anonymous,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
-    public async Task GetMailTemplates_AsReader_ShouldReturnForbidden()
-        => await MailTemplatesControllerTestsHelper.GetMailTemplatesAsync(
+    public async Task GetAllMailTemplates_AsReader_ShouldReturnForbidden()
+        => await MailTemplatesControllerTestsHelper.GetAllMailTemplatesAsync(
             UserType.Reader,
             HttpStatusCode.Forbidden);
     #endregion
