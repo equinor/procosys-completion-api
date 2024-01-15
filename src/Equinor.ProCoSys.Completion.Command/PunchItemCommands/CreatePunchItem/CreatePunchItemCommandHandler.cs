@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -13,7 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -22,19 +22,19 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemCommand, Result<GuidAndRowVersion>>
 {
-    private readonly ILogger<CreatePunchItemCommandHandler> _logger;
-
     private readonly IPlantProvider _plantProvider;
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
     private readonly IWorkOrderRepository _woRepository;
     private readonly ISWCRRepository _swcrRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPunchEventPublisher _punchEventPublisher;
+    private readonly IHistoryEventPublisher _historyEventPublisher;
+    private readonly ILogger<CreatePunchItemCommandHandler> _logger;
 
     public CreatePunchItemCommandHandler(
         IPlantProvider plantProvider,
@@ -42,26 +42,28 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         ILibraryItemRepository libraryItemRepository,
         IProjectRepository projectRepository,
         IPersonRepository personRepository,
-        IPersonCache personCache,
         IWorkOrderRepository woRepository,
         ISWCRRepository swcrRepository,
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
+        IPunchEventPublisher punchEventPublisher,
+        IHistoryEventPublisher historyEventPublisher,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
         _plantProvider = plantProvider;
         _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
         _projectRepository = projectRepository;
-        _logger = logger;
         _personRepository = personRepository;
-        _personCache = personCache;
         _woRepository = woRepository;
         _swcrRepository = swcrRepository;
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
+        _punchEventPublisher = punchEventPublisher;
+        _historyEventPublisher = historyEventPublisher;
+        _logger = logger;
     }
 
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchItemCommand request, CancellationToken cancellationToken)
@@ -70,7 +72,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         try
         {
-
             var project = await _projectRepository.GetAsync(request.ProjectGuid, cancellationToken);
 
             var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
@@ -107,17 +108,28 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             punchItem.MaterialExternalNo = request.MaterialExternalNo;
 
             _punchItemRepository.Add(punchItem);
-            punchItem.AddDomainEvent(new PunchItemCreatedDomainEvent(punchItem));
+
+            // AuditData must be set before publishing events due to use of Created- and Modified-properties
+            await _unitOfWork.SetAuditDataAsync();
+
+            var integrationEvent = await _punchEventPublisher.PublishCreatedEventAsync(punchItem, cancellationToken);
+
+            await _historyEventPublisher.PublishCreatedEventAsync(
+                punchItem.Plant,
+                "Punch item created",
+                punchItem.Guid,
+                punchItem.CheckListGuid,
+                new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
+                punchItem.CreatedAtUtc,
+                // todo 109354 add list of properties
+                [],
+                cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // To be removed when sync to PCS 4 is no longer needed
-            //---
-            //TODO: bør ikke opprette event på nytt her. 
-            var integrationEvent = new PunchItemCreatedIntegrationEvent(new PunchItemCreatedDomainEvent(punchItem));
-            await _syncToPCS4Service.SyncNewObjectAsync("PunchItem", integrationEvent, _plantProvider.Plant, cancellationToken);
-            //---
+            await _syncToPCS4Service.SyncNewObjectAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
 
+            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo, punchItem.Guid);
@@ -183,29 +195,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var person = await GetOrCreatePersonAsync(actionByPersonOid.Value, cancellationToken);
+        var person = await _personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
-    }
-
-    private async Task<Person> GetOrCreatePersonAsync(Guid oid, CancellationToken cancellationToken)
-    {
-        var personExists = await _personRepository.ExistsAsync(oid, cancellationToken);
-        if (personExists)
-        {
-            return await _personRepository.GetAsync(oid, cancellationToken);
-        }
-
-        var pcsPerson = await _personCache.GetAsync(oid);
-        var person = new Person(
-            oid,
-            pcsPerson.FirstName,
-            pcsPerson.LastName,
-            pcsPerson.UserName,
-            pcsPerson.Email,
-            pcsPerson.Super);
-        _personRepository.Add(person);
-
-        return person;
     }
 
     private async Task SetLibraryItemAsync(

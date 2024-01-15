@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.Attachment;
@@ -14,7 +15,6 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },

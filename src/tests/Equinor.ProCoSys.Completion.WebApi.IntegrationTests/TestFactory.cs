@@ -13,7 +13,6 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -37,8 +36,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
-    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
-    private readonly ISyncToPCS4Service _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
+    private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -60,7 +58,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static Guid DocumentGuid => KnownData.DocumentGuid[KnownData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
-    public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
 
     public Dictionary<string, KnownTestData> SeededData { get; }
 
@@ -155,8 +152,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _permissionApiServiceMock);
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
-            services.AddScoped(_ => _publishEndpointMock);
-            services.AddScoped(_ => _syncToPCS4ServiceMock);
+            services.AddScoped(_ => _pcs4RepositoryMock);
         });
 
         builder.ConfigureServices(services =>

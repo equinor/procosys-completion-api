@@ -15,6 +15,7 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     public const int TextLengthMax = 4000;
 
     private readonly List<Label> _labels = new();
+    private readonly List<Person> _mentions = new();
 
     public Comment(string parentType, Guid parentGuid, string text)
     {
@@ -27,6 +28,10 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
     public IOrderedEnumerable<Label> GetOrderedNonVoidedLabels()
         => _labels.Where(l => !l.IsVoided).OrderBy(l => l.Text);
+
+    public IReadOnlyCollection<Person> Mentions => _mentions.AsReadOnly();
+    public IOrderedEnumerable<Person> GetOrderedMentions()
+        => _mentions.OrderBy(p => p.FirstName).ThenBy(p => p.LastName);
 
     // private setters needed for Entity Framework
     public string ParentType { get; private set; }
@@ -48,6 +53,12 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     {
         RemoveRemovedLabels(labels);
         AddNewLabels(labels);
+    }
+
+    public void SetMentions(IList<Person> mentions)
+    {
+        _mentions.Clear();
+        _mentions.AddRange(mentions);
     }
 
     private void AddNewLabels(IList<Label> labels)

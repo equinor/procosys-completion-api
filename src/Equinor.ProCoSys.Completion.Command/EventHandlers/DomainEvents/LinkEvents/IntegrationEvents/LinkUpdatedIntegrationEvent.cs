@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
 
 namespace Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents.IntegrationEvents;

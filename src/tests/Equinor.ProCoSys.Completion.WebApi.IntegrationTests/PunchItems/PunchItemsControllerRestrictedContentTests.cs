@@ -157,6 +157,7 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             guidAndRowVersion.Guid,
             "T",
             new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
     }
     #endregion
@@ -298,6 +299,7 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             _plantWithAccess,
             guid,
             Guid.NewGuid().ToString(),
+            [],
             rowVersionAfterClear,
             HttpStatusCode.Forbidden);
     }

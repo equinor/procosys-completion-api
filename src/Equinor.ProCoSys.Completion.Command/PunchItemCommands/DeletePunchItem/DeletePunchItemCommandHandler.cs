@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.PunchItemEvents.IntegrationEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -17,23 +18,28 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPunchEventPublisher _punchEventPublisher;
+    private readonly IHistoryEventPublisher _historyEventPublisher;
     private readonly ILogger<DeletePunchItemCommandHandler> _logger;
 
     public DeletePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
+        IPunchEventPublisher punchEventPublisher,
+        IHistoryEventPublisher historyEventPublisher,
         ILogger<DeletePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
+        _punchEventPublisher = punchEventPublisher;
+        _historyEventPublisher = historyEventPublisher;
         _logger = logger;
     }
 
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
-
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
@@ -42,20 +48,28 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
             // Setting RowVersion before delete has 2 missions:
             // 1) Set correct Concurrency
-            // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
+            // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
             punchItem.SetRowVersion(request.RowVersion);
             _punchItemRepository.Remove(punchItem);
-            punchItem.AddDomainEvent(new PunchItemDeletedDomainEvent(punchItem));
+
+            // AuditData must be set before publishing events due to use of Created- and Modified-properties
+            await _unitOfWork.SetAuditDataAsync();
+
+            var integrationEvent = await _punchEventPublisher.PublishDeletedEventAsync(punchItem, cancellationToken);
+            await _historyEventPublisher.PublishDeletedEventAsync(
+                punchItem.Plant,
+                "Punch item deleted",
+                punchItem.Guid,
+                punchItem.CheckListGuid,
+                new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
+                punchItem.ModifiedAtUtc!.Value,
+                cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // To be removed when sync to PCS 4 is no longer needed
-            //---
-            //TODO: Bør ikke opprette event på nytt her. 
-            var integrationEvent = new PunchItemDeletedIntegrationEvent(new PunchItemDeletedDomainEvent(punchItem));
             await _syncToPCS4Service.SyncObjectDeletionAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
-            //---
 
+            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);

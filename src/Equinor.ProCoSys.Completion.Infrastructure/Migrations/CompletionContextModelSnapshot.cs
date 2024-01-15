@@ -94,6 +94,42 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("CommentPerson", b =>
+                {
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MentionsId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.HasKey("CommentId", "MentionsId");
+
+                    b.HasIndex("MentionsId");
+
+                    b.ToTable("CommentPerson");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CommentPersonHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate.Attachment", b =>
                 {
                     b.Property<int>("Id")
@@ -674,6 +710,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
                         .HasColumnName("PeriodStart");
+
+                    b.Property<DateTime>("ProCoSys4LastUpdated")
+                        .HasColumnType("datetime2");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1373,6 +1412,21 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label", null)
                         .WithMany()
                         .HasForeignKey("LabelsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CommentPerson", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate.Comment", null)
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
+                        .WithMany()
+                        .HasForeignKey("MentionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -14,46 +15,62 @@ namespace Equinor.ProCoSys.Completion.Command.Comments;
 public class CommentService : ICommentService
 {
     private readonly ICommentRepository _commentRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CommentService> _logger;
 
     public CommentService(
         ICommentRepository commentRepository,
-        IUnitOfWork unitOfWork,
         ILogger<CommentService> logger)
     {
         _commentRepository = commentRepository;
-        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public async Task<CommentDto> AddAsync(
+    public async Task<CommentDto> AddAndSaveAsync(
+        IUnitOfWork unitOfWork,
         string parentType,
         Guid parentGuid,
         string text,
         IEnumerable<Label> labels,
+        IEnumerable<Person> mentions,
         CancellationToken cancellationToken)
     {
-        var comment = new Comment(parentType, parentGuid, text);
-        comment.UpdateLabels(labels.ToList());
+        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
 
-        _commentRepository.Add(comment);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}", 
-            comment.Guid, 
+        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
+            comment.Guid,
             comment.ParentType,
             comment.ParentGuid);
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
 
-    public async Task<CommentDto> AddAsync(
+    public Guid Add(string parentType, Guid parentGuid, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
+    {
+        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
+
+        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
+            comment.Guid,
+            comment.ParentType,
+            comment.ParentGuid);
+
+        return comment.Guid;
+    }
+
+    private Comment AddToRepository(
         string parentType,
         Guid parentGuid,
         string text,
-        Label label,
-        CancellationToken cancellationToken)
-        => await AddAsync(parentType, parentGuid, text, new List<Label> { label }, cancellationToken);
+        IEnumerable<Label> labels,
+        IEnumerable<Person> mentions)
+    {
+        var comment = new Comment(parentType, parentGuid, text);
+        comment.UpdateLabels(labels.ToList());
+        comment.SetMentions(mentions.ToList());
+
+        _commentRepository.Add(comment);
+
+        return comment;
+    }
 }

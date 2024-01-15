@@ -8,5 +8,6 @@ public record CommentDto(
     Guid Guid,
     string Text,
     List<string> Labels,
+    List<PersonDto> Mentions,
     PersonDto CreatedBy,
     DateTime CreatedAtUtc);

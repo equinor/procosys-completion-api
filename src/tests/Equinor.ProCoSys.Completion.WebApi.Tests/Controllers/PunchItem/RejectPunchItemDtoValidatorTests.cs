@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,14 +21,14 @@ public class RejectPunchItemDtoValidatorTests
         _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
-        _dut = new RejectPunchItemDtoValidator(_rowVersionValidatorMock);
+        _dut = new(_rowVersionValidatorMock);
     }
 
     [TestMethod]
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new RejectPunchItemDto("Rejected because", _rowVersion);
+        var dto = new RejectPunchItemDto("Rejected because", [], _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -40,7 +41,7 @@ public class RejectPunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenCommentNotGiven()
     {
         // Arrange
-        var dto = new RejectPunchItemDto(null!, _rowVersion);
+        var dto = new RejectPunchItemDto(null!, [], _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -55,7 +56,7 @@ public class RejectPunchItemDtoValidatorTests
     public async Task Validate_ShouldFail_WhenCommentIsEmpty()
     {
         // Arrange
-        var dto = new RejectPunchItemDto(string.Empty, _rowVersion);
+        var dto = new RejectPunchItemDto(string.Empty, [], _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -71,7 +72,8 @@ public class RejectPunchItemDtoValidatorTests
     {
         // Arrange
         var dto = new RejectPunchItemDto(
-            new string('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1),
+            new('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1),
+            [],
             _rowVersion);
 
         // Act
@@ -84,10 +86,41 @@ public class RejectPunchItemDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenListOfMentionsNotGiven()
+    {
+        // Arrange
+        var dto = new RejectPunchItemDto("Rejected because", null!, _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Mentions' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenAMentionNotUnique()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var dto = new RejectPunchItemDto("Rejected because", [guid, guid], _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Mentions must be unique!"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenRowVersionNotGiven()
     {
         // Arrange
-        var dto = new RejectPunchItemDto("Rejected because", null!);
+        var dto = new RejectPunchItemDto("Rejected because", [], null!);
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -103,7 +136,7 @@ public class RejectPunchItemDtoValidatorTests
     {
         // Arrange
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(false);
-        var dto = new RejectPunchItemDto("Rejected because", _rowVersion);
+        var dto = new RejectPunchItemDto("Rejected because", [], _rowVersion);
 
         // Act
         var result = await _dut.ValidateAsync(dto);

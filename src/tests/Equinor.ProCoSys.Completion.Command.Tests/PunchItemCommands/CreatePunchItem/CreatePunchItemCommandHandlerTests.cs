@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Caches;
-using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -17,10 +16,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunc
 public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
     private readonly string _testPlant = TestPlantA;
-    private IPersonCache _personCacheMock;
     private readonly Guid _existingCheckListGuid = Guid.NewGuid();
     private PunchItem _punchItemAddedToRepository;
-    private Person _personAddedToRepository;
 
     private CreatePunchItemCommandHandler _dut;
     private CreatePunchItemCommand _command;
@@ -35,14 +32,12 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 _punchItemAddedToRepository = callInfo.Arg<PunchItem>();
             });
 
-        _personRepositoryMock
-            .When(x => x.Add(Arg.Any<Person>()))
-            .Do(callInfo =>
+        _unitOfWorkMock
+            .When(x => x.SetAuditDataAsync())
+            .Do(_ =>
             {
-                _personAddedToRepository = callInfo.Arg<Person>();
+                _punchItemAddedToRepository.SetCreated(_currentPerson);
             });
-
-        _personCacheMock = Substitute.For<IPersonCache>();
 
         _command = new CreatePunchItemCommand(
             Category.PA,
@@ -72,12 +67,13 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _libraryItemRepositoryMock,
             _projectRepositoryMock,
             _personRepositoryMock,
-            _personCacheMock,
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
+            _punchEventPublisherMock,
+            _historyEventPublisherMock,
             Substitute.For<ILogger<CreatePunchItemCommandHandler>>());
     }
 
@@ -171,58 +167,13 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_WithNonExistingActionByPerson_ShouldAddActionByPerson_ToPersonRepository()
+    public async Task HandlingCommand_ShouldSetAuditData()
     {
-        // Arrange
-        var nonExistingPersonOid = Guid.NewGuid();
-        var command = new CreatePunchItemCommand(
-            Category.PA,
-            "P123",
-            _existingProject[_testPlant].Guid,
-            _existingCheckListGuid,
-            _existingRaisedByOrg1[_testPlant].Guid,
-            _existingClearingByOrg1[_testPlant].Guid,
-            nonExistingPersonOid,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            null,
-            null);
-        var proCoSysPerson = new ProCoSysPerson
-        {
-            UserName = "YODA",
-            FirstName = "YO",
-            LastName = "DA",
-            Email = "@",
-            AzureOid = nonExistingPersonOid.ToString(),
-            Super = true
-        };
-        _personCacheMock.GetAsync(nonExistingPersonOid)
-            .Returns(proCoSysPerson);
-
         // Act
-        await _dut.Handle(command, default);
+        await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsNotNull(_punchItemAddedToRepository);
-        Assert.IsNotNull(_personAddedToRepository);
-        Assert.IsNotNull(_punchItemAddedToRepository.ActionBy);
-        Assert.AreEqual(nonExistingPersonOid, _punchItemAddedToRepository.ActionBy!.Guid);
-        Assert.AreEqual(nonExistingPersonOid, _personAddedToRepository.Guid);
-        Assert.AreEqual(proCoSysPerson.AzureOid, _personAddedToRepository.Guid.ToString());
-        Assert.AreEqual(proCoSysPerson.UserName, _personAddedToRepository.UserName);
-        Assert.AreEqual(proCoSysPerson.FirstName, _personAddedToRepository.FirstName);
-        Assert.AreEqual(proCoSysPerson.LastName, _personAddedToRepository.LastName);
-        Assert.AreEqual(proCoSysPerson.Email, _personAddedToRepository.Email);
-        Assert.AreEqual(proCoSysPerson.Super, _personAddedToRepository.Superuser);
+        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
     }
 
     [TestMethod]
@@ -232,17 +183,70 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
-        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemCreatedEvent()
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
+        _punchEventPublisherMock
+            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
+            .Returns(integrationEvent);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync("PunchItem", integrationEvent, _testPlant);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCreatedEvent()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_punchItemAddedToRepository.DomainEvents.First(), typeof(PunchItemCreatedDomainEvent));
+        await _punchEventPublisherMock.Received(1).PublishCreatedEventAsync(_punchItemAddedToRepository, default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCreateToHistory()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _historyEventPublisherMock.Received(1).PublishCreatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<Guid?>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<INewProperty>>(),
+            default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.AreEqual(_punchItemAddedToRepository.Plant, _plantPublishedToHistory);
+        Assert.AreEqual("Punch item created", _displayNamePublishedToHistory);
+        Assert.AreEqual(_punchItemAddedToRepository.Guid, _guidPublishedToHistory);
+        Assert.AreEqual(_punchItemAddedToRepository.CheckListGuid, _parentGuidPublishedToHistory);
+        Assert.IsNotNull(_userPublishedToHistory);
+        Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.Guid, _userPublishedToHistory.Oid);
+        Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.GetFullName(), _userPublishedToHistory.FullName);
+        Assert.AreEqual(_punchItemAddedToRepository.CreatedAtUtc, _dateTimePublishedToHistory);
+        Assert.IsNotNull(_newPropertiesPublishedToHistory);
+        // todo 109354 test published properties to history
+        Assert.AreEqual(0, _newPropertiesPublishedToHistory.Count);
     }
 }

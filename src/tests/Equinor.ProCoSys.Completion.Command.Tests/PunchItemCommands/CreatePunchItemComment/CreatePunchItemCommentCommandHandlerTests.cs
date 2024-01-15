@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
  using NSubstitute;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItemComment;
 
@@ -20,27 +21,44 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
     private CreatePunchItemCommentCommand _command;
     private ICommentService _commentServiceMock;
     private ILabelRepository _labelRepositoryMock;
+    private IPersonRepository _personRepositoryMock;
     private List<Label> _labelList;
+    private List<Person> _personList;
 
     [TestInitialize]
     public void Setup()
     {
         var labelText = "a";
-        _command = new CreatePunchItemCommentCommand(Guid.NewGuid(), "T", new List<string> { labelText });
+        var person = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
+        _personList = new List<Person> { person };
+        _command = new CreatePunchItemCommentCommand(
+            Guid.NewGuid(),
+            "T",
+            new List<string> { labelText },
+            new List<Guid> { person.Guid });
 
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
         _labelList = new List<Label> { new(labelText) };
         _labelRepositoryMock.GetManyAsync(_command.Labels, default).Returns(_labelList);
+        _personRepositoryMock = Substitute.For<IPersonRepository>();
+        _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
+            .Returns(_personList);
 
         _commentServiceMock = Substitute.For<ICommentService>();
-        _commentServiceMock.AddAsync(
+        _commentServiceMock.AddAndSaveAsync(
+            _unitOfWorkMock,
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.Text,
             _labelList,
+            _personList,
             default).Returns(new CommentDto(_guid, _rowVersion));
 
-        _dut = new CreatePunchItemCommentCommandHandler(_commentServiceMock, _labelRepositoryMock);
+        _dut = new CreatePunchItemCommentCommandHandler(
+            _commentServiceMock, 
+            _labelRepositoryMock, 
+            _personRepositoryMock, 
+            _unitOfWorkMock);
     }
 
     [TestMethod]
@@ -63,11 +81,13 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
 
         // Assert
         await _commentServiceMock.Received(1)
-            .AddAsync(
-            nameof(PunchItem), 
-            _command.PunchItemGuid, 
-            _command.Text,
-            _labelList,
-            default);
+            .AddAndSaveAsync(
+                _unitOfWorkMock,
+                nameof(PunchItem),
+                _command.PunchItemGuid,
+                _command.Text,
+                _labelList,
+                _personList,
+                default);
     }
 }

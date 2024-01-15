@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 

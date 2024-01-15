@@ -30,7 +30,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected Dictionary<string, int> _documentId = new ();
     protected Dictionary<string, int> _swcrId = new ();
     protected Dictionary<string, int> _workOrderId = new ();
-    protected readonly Guid CurrentUserOid = new ("12345678-1234-1234-1234-123456789123");
+    protected readonly Guid CurrentUserOid = new ("00000000-0000-0000-0000-000000000111");
+    protected readonly Guid PersonAOid = new ("00000000-0000-0000-0000-000000000aaa");
+    protected readonly Guid PersonBOid = new ("00000000-0000-0000-0000-000000000bbb");
     protected readonly string LabelTextA = "A";
     protected readonly string LabelTextB = "B";
     protected readonly string LabelTextC = "C";
@@ -59,6 +61,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
             AddPerson(context, new Person(CurrentUserOid, "Ole", "Lukkøye", "ol", "ol@pcs.pcs", false));
         }
 
+        AddPerson(context, new Person(PersonAOid, "A", "Ab", "aa", "aa@pcs.pcs", false));
+        AddPerson(context, new Person(PersonBOid, "B", "Bb", "bb", "bb@pcs.pcs", false));
+
         AddTestDataToPlant(TestPlantA, context);
         AddTestDataToPlant(TestPlantB, context);
 
@@ -67,9 +72,9 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
     private void AddTestDataToPlant(string plant, CompletionContext context)
     {
-        var projectA = new Project(plant, Guid.NewGuid(), "ProA", "ProA desc", DateTime.Now);
-        var projectB = new Project(plant, Guid.NewGuid(), "ProB", "ProB desc", DateTime.Now);
-        var closedProjectC = new Project(plant, Guid.NewGuid(), "ProC", "ProC desc", DateTime.Now) { IsClosed = true };
+        var projectA = new Project(plant, Guid.NewGuid(), "ProA", "ProA desc");
+        var projectB = new Project(plant, Guid.NewGuid(), "ProB", "ProB desc");
+        var closedProjectC = new Project(plant, Guid.NewGuid(), "ProC", "ProC desc") { IsClosed = true };
 
         _projectAId.Add(plant, AddProject(context, projectA));
         _projectBId.Add(plant, AddProject(context, projectB));

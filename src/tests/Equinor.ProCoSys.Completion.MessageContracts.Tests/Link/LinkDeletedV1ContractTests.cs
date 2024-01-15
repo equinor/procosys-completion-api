@@ -14,7 +14,6 @@ public class LinkDeletedV1ContractTests : ContractTestBase<ILinkDeletedV1>
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "DeletedBy", typeof(User) },
