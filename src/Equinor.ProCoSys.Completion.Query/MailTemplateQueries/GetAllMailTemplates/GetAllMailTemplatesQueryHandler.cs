@@ -26,7 +26,7 @@ public class GetAllMailTemplatesQueryHandler : IRequestHandler<GetAllMailTemplat
                 .ToListAsync(cancellationToken);
 
         var orderedMailTemplateDtos = orderedMailTemplates
-            .Select(mt => new MailTemplateDto(mt.Code, mt.Subject, mt.Body, mt.IsVoided, mt.Plant));
+            .Select(mt => new MailTemplateDto(mt.Code, mt.Subject, mt.Body, mt.IsVoided, mt.Plant, mt.IsGlobal()));
 
         return new SuccessResult<IEnumerable<MailTemplateDto>>(orderedMailTemplateDtos);
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,5 +24,28 @@ public class MailTemplateTests : IModificationAuditableTests
         Assert.AreEqual(_code, _dut.Code);
         Assert.AreEqual(_subject, _dut.Subject);
         Assert.AreEqual(_body, _dut.Body);
+    }
+
+    [TestMethod]
+    public void IsGlobal_ShouldBeTrue_WhenPlantIsNull()
+    {
+        // Act
+        var result = _dut.IsGlobal();
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void IsGlobal_ShouldBeFalse_WhenPlantHasValue()
+    {
+        // Arrange
+        _dut.Plant = "p";
+
+        // Act
+        var result = _dut.IsGlobal();
+
+        // Assert
+        Assert.IsFalse(result);
     }
 }

@@ -3,6 +3,7 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Common.Misc;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 
@@ -41,6 +42,8 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
     // A MailTemplate without Plant set is GLOBAL (i.e. valid for all Plants)
     // A MailTemplate with Plant set is valid for that particular Plant only
     public string? Plant { get; set; }
+    
+    public bool IsGlobal() => Plant.IsEmpty();
 
     public void SetCreated(Person createdBy)
     {

@@ -4,6 +4,4 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
 
-public class GetAllMailTemplatesQuery : IRequest<Result<IEnumerable<MailTemplateDto>>>
-{
-}
+public class GetAllMailTemplatesQuery : IRequest<Result<IEnumerable<MailTemplateDto>>>;
