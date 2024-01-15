@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -67,6 +68,17 @@ public static class CompletionContextExtension
 
         var labelEntityRepository = new LabelEntityRepository(dbContext);
         labelEntityRepository.Add(labelEntity);
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
+    }
+
+    public static void SeedMailTemplates(this CompletionContext dbContext)
+    {
+        var mailTemplateA = new MailTemplate(KnownData.MailTemplateA, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
+        var mailTemplateB = new MailTemplate(KnownData.MailTemplateB, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
+
+        var mailTemplateRepository = new MailTemplateRepository(dbContext);
+        mailTemplateRepository.Add(mailTemplateA);
+        mailTemplateRepository.Add(mailTemplateB);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 

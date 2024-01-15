@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServiceResult.ApiExtensions;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Controllers.MailTemplate;
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.MailTemplates;
 
 [AuthorizeAny(Permissions.SUPERUSER, Permissions.APPLICATION_TESTER)]
 [ApiController]
