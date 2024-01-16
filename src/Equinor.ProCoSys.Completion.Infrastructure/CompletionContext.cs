@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -78,6 +79,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
+    public virtual DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
 
     private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder) 
         => modelBuilder.AddTransactionalOutboxEntities();

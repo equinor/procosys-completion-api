@@ -8,6 +8,8 @@ public static class KnownData
 {
     public static string LabelA => "A";
     public static string LabelB => "B";
+    public static string MailTemplateA => "A";
+    public static string MailTemplateB => "B";
 
     // A label with this text must be seeded and correspond to the label configured via
     // appsettings.json, key Application.RejectLabel
