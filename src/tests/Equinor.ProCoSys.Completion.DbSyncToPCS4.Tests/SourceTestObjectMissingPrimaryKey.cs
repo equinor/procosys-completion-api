@@ -1,28 +1,28 @@
 ﻿#nullable enable
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
-public class SourceTestObjectMissingPrimaryKey(
-    string? testOnlyForInsert,
-    string? testString,
-    DateTime? testDate,
-    DateTime? testDate2,
-    bool testBool,
-    int? testInt,
-    NestedSourceTestObject nestedObject,
-    Guid? woGuid,
-    Guid? swcrGuid,
-    Guid? personOID,
-    Guid? documentGuid)
+public record SourceTestObjectMissingPrimaryKey(
+    string? TestOnlyForInsert,
+    string? TestString,
+    DateTime? TestDate,
+    DateTime? TestDate2,
+    bool TestBool,
+    int? TestInt,
+    NestedSourceTestObject NestedObject,
+    Guid? WoGuid,
+    Guid? SwcrGuid,
+    Guid? PersonOID,
+    Guid? DocumentGuid)
 {
-    public string? TestOnlyForInsert { get; } = testOnlyForInsert;
-    public string? TestString { get; } = testString;
-    public DateTime? TestDate { get; } = testDate;
-    public DateTime? TestDate2 { get; } = testDate2;
-    public bool TestBool { get; } = testBool;
-    public int? TestInt { get; } = testInt;
-    public NestedSourceTestObject NestedObject { get; } = nestedObject;
-    public Guid? WoGuid { get; } = woGuid;
-    public Guid? SwcrGuid { get; } = swcrGuid;
-    public Guid? PersonOID { get; } = personOID;
-    public Guid? DocumentGuid { get; } = documentGuid;
+    public string? TestOnlyForInsert { get; } = TestOnlyForInsert;
+    public string? TestString { get; } = TestString;
+    public DateTime? TestDate { get; } = TestDate;
+    public DateTime? TestDate2 { get; } = TestDate2;
+    public bool TestBool { get; } = TestBool;
+    public int? TestInt { get; } = TestInt;
+    public NestedSourceTestObject NestedObject { get; } = NestedObject;
+    public Guid? WoGuid { get; } = WoGuid;
+    public Guid? SwcrGuid { get; } = SwcrGuid;
+    public Guid? PersonOID { get; } = PersonOID;
+    public Guid? DocumentGuid { get; } = DocumentGuid;
 }

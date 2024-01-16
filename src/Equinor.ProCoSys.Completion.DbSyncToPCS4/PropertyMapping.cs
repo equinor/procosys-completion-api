@@ -44,19 +44,19 @@ public class PropertyMapping(
         var sourcePropertyName = sourcePropertyNameParts[0];
         var sourceProperty = sourceObject.GetType().GetProperty(sourcePropertyName);
 
-        if (sourceProperty == null)
+        if (sourceProperty is null)
         {
             throw new Exception($"A property in configuration is missing in source object: {configuredPropertyName}");
         }
 
         var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
 
-        if (sourcePropertyValue != null && sourcePropertyNameParts.Length > 1)
+        if (sourcePropertyValue is not null && sourcePropertyNameParts.Length > 1)
         {
             //We must find the nested property
-            sourceProperty = sourcePropertyValue?.GetType().GetProperty(sourcePropertyNameParts[1]);
+            sourceProperty = sourcePropertyValue.GetType().GetProperty(sourcePropertyNameParts[1]);
 
-            if (sourceProperty == null)
+            if (sourceProperty is null)
             {
                 throw new Exception($"A nested property in configuration is missing in source object: {configuredPropertyName}");
             }

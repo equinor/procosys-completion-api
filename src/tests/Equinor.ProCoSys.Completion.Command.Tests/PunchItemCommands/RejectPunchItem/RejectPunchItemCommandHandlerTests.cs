@@ -59,7 +59,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 RejectLabel = rejectLabelText
             });
-        
+
         _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
             .Returns(_personList);
 
@@ -129,9 +129,9 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         _commentServiceMock.Received(1)
             .Add(
-                nameof(PunchItem), 
-                _command.PunchItemGuid, 
-                _command.Comment, 
+                nameof(PunchItem),
+                _command.PunchItemGuid,
+                _command.Comment,
                 Arg.Any<IEnumerable<Label>>(),
                 Arg.Any<IEnumerable<Person>>());
     }
@@ -144,7 +144,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         IEnumerable<Label> labelsAdded = null!;
         _commentServiceMock
             .When(x => x.Add(
-                Arg.Any<string>(), 
+                Arg.Any<string>(),
                 Arg.Any<Guid>(),
                 Arg.Any<string>(),
                 Arg.Any<IEnumerable<Label>>(),
@@ -173,7 +173,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]

@@ -307,7 +307,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]
@@ -1049,7 +1049,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(0).SyncObjectUpdateAsync("PunchItem", Arg.Any<object>(), _testPlant);
+        await _syncToPCS4ServiceMock.Received(0).SyncObjectUpdateAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
     }
 
     [TestMethod]

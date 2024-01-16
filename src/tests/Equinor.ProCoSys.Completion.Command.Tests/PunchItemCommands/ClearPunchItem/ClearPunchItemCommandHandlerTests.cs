@@ -62,7 +62,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
             await _dut.Handle(_command, default);
 
             // Assert
-          await  _unitOfWorkMock.Received(1).SaveChangesAsync();
+            await _unitOfWorkMock.Received(1).SaveChangesAsync();
         }
 
         [TestMethod]
@@ -91,7 +91,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
             await _dut.Handle(_command, default);
 
             // Assert
-            await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant);
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
         }
 
         [TestMethod]

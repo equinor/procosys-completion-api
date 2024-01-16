@@ -16,7 +16,7 @@ public class Pcs4Repository : IPcs4Repository
     {
         _dbConnStr = options.CurrentValue.ConnectionString;
 
-        if (_dbConnStr == null)
+        if (_dbConnStr is null)
         {
             throw new Exception("DB connection string for Oracle is not set.");
         }
@@ -64,9 +64,9 @@ public class Pcs4Repository : IPcs4Repository
         {
             var result = await connection.ExecuteScalarAsync(sqlQuery, sqlParameters);
 
-            if (result != null && result is long)
+            if (result is long l)
             {
-                return (long)result;
+                return l;
             }
 
             throw new Exception($"Value lookup failed. Result was {result}.");

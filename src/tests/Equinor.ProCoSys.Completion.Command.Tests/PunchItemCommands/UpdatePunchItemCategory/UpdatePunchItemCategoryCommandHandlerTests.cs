@@ -90,7 +90,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]

@@ -17,19 +17,16 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
     };
 
     [TestInitialize]
-    public void Setup()
-    {
-        _dut = new SqlDeleteStatementBuilder(_oracleDBExecutorMock);
-    }
+    public void Setup() => _dut = new SqlDeleteStatementBuilder(_pcs4Repository);
 
     [TestMethod]
-    public async Task BuildSqlDeleteStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
+    public async Task BuildSqlDeleteStatement_ShouldReturnSqlStatment_WhenInputIsCorrect()
     {
         // Arrange
-        _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         // Act
-        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
 
         // Assert
         Assert.AreEqual(_expectedSqlDeleteStatement, actualSqlUpdateStatement);
@@ -54,7 +51,7 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
         // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObjectMissingPrimaryKey, default);
+            await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObjectMissingPrimaryKey, null!, default);
         });
 
         // Assert
@@ -65,15 +62,15 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
         // Arrange
-        var syncService = new SyncToPCS4Service(_oracleDBExecutorMock);
+        var syncService = new SyncToPCS4Service(_pcs4Repository);
 
         // Act
         var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
         {
-            await syncService.SyncObjectUpdateAsync(_sourceObjectNameMissingConfig, _sourceTestObject, default);
+            await syncService.SyncObjectUpdateAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
         });
 
         // Assert
-        Assert.AreEqual($"Mapping is not implemented for source object with name '{_sourceObjectNameMissingConfig}'.", exception.Message);
+        Assert.AreEqual($"Mapping is not implemented for source object with name '{SourceObjectNameMissingConfig}'.", exception.Message);
     }
 }

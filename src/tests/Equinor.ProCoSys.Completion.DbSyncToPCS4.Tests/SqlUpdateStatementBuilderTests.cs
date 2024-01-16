@@ -55,19 +55,16 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
     };
 
     [TestInitialize]
-    public void Setup()
-    {
-        _dut = new SqlUpdateStatementBuilder(_oracleDBExecutorMock);
-    }
+    public void Setup() => _dut = new SqlUpdateStatementBuilder(_pcs4Repository);
 
     [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
+    public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatment_WhenInputIsCorrect()
     {
         // Arrange
-        _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         // Act
-        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
 
         // Assert
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
@@ -87,14 +84,14 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
     }
 
     [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatmeent_WhenSourceObjectHasNullValues()
+    public async Task BuildSqlUpdateStatement_ShouldReturnSqlStatment_WhenSourceObjectHasNullValues()
     {
         // Arrange
-        _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
-        _sourceTestObject = new SourceTestObject(null, _testGuid, null, null, null, false, null, null, null, null, null, null);
+        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, null!, null, null, null, null);
 
         // Act
-        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
 
         // Assert
         Assert.AreEqual(_expectedSqlUpdateStatement, actualSqlUpdateStatement);
@@ -112,7 +109,7 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
         // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, default);
+            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, null!, default);
         });
 
         // Assert
@@ -123,15 +120,15 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
         // Arrange
-        var syncService = new SyncToPCS4Service(_oracleDBExecutorMock);
+        var syncService = new SyncToPCS4Service(_pcs4Repository);
 
         // Act
         var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
         {
-            await syncService.SyncObjectUpdateAsync(_sourceObjectNameMissingConfig, _sourceTestObject, default);
+            await syncService.SyncObjectUpdateAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
         });
 
         // Assert
-        Assert.AreEqual($"Mapping is not implemented for source object with name '{_sourceObjectNameMissingConfig}'.", exception.Message);
+        Assert.AreEqual($"Mapping is not implemented for source object with name '{SourceObjectNameMissingConfig}'.", exception.Message);
     }
 }

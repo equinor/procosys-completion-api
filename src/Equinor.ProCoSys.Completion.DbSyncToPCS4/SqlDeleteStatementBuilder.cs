@@ -6,22 +6,28 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 /**
  * Build sql statement for the deletion of a row in the PCS 4 database, based on a sourceObject and mapping configuration
  */
-public class SqlDeleteStatementBuilder(IPcs4Repository oracleDBExecutor)
+public class SqlDeleteStatementBuilder(IPcs4Repository pcs4Repository)
 {
-    private readonly IPcs4Repository _oracleDBExecutor = oracleDBExecutor;
-
     public async Task<(string sqlStatement, DynamicParameters sqlParameters)> BuildAsync(
         ISourceObjectMappingConfig sourceObjectMappingConfig,
         object sourceObject,
         string plant,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var deleteStatement = new StringBuilder($"delete from {sourceObjectMappingConfig.TargetTable} ");
 
-        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
-        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue, sourceObjectMappingConfig.PrimaryKey, plant, _oracleDBExecutor, cancellationToken);
+        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(
+            sourceObjectMappingConfig.PrimaryKey.SourcePropertyName,
+            sourceObject);
 
-        if (primaryKeyTargetValue == null)
+        var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(
+            primaryKeyValue,
+            sourceObjectMappingConfig.PrimaryKey,
+            plant,
+            pcs4Repository,
+            cancellationToken);
+
+        if (primaryKeyTargetValue is null)
         {
             throw new Exception("Not able to build update statement. Primary key value is null.");
         }

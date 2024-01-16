@@ -37,19 +37,16 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     };
 
     [TestInitialize]
-    public void Setup()
-    {
-        _dut = new SqlInsertStatementBuilder(_oracleDBExecutorMock);
-    }
+    public void Setup() => _dut = new SqlInsertStatementBuilder(_pcs4Repository);
 
     [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatmeent_WhenInputIsCorrect()
+    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatment_WhenInputIsCorrect()
     {
         // Arrange
-        _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         // Act
-        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, default);
+        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
 
         // Assert
         Assert.AreEqual(_expectedSqlInsertStatement, actualSqlInsertStatement);
@@ -72,15 +69,15 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     public async Task BuildSqlInsertStatement_ShouldReturnSqlStatment_WhenSourceObjectHasNullValues()
     {
         // Arrange
-        var sourceTestObject = new SourceTestObject(null, _testGuid, null, null, null, false, null, null, null, null, null, null);
+        var sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, null!, null, null, null, null);
 
-        _oracleDBExecutorMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         var expectedSqlInsertStatement = "insert into TestTargetTable ( TestFixedValue, TestGuid, TestBool ) " +
             "values ( 'Fixed value', :TestGuid, :TestBool )";
 
         // Act
-        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, sourceTestObject, default);
+        var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, sourceTestObject, null!, default);
 
         // Assert
         Assert.AreEqual(expectedSqlInsertStatement, actualSqlInsertStatement);
@@ -99,7 +96,7 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
         {
-            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, default);
+            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, null!, default);
         });
 
         // Assert
@@ -110,13 +107,13 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
         // Arrange 
-        var syncService = new SyncToPCS4Service(_oracleDBExecutorMock);
+        var syncService = new SyncToPCS4Service(_pcs4Repository);
         var sourceObjectNameMissingConfig = "NotInConfiguration";
 
         // Act
         var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
         {
-            await syncService.SyncNewObjectAsync(sourceObjectNameMissingConfig, _sourceTestObject, default);
+            await syncService.SyncNewObjectAsync(sourceObjectNameMissingConfig, _sourceTestObject, null!, default);
         });
 
         // Assert

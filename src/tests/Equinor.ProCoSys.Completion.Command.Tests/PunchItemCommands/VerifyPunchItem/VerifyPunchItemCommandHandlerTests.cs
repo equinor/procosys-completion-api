@@ -23,7 +23,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public void Setup()
     {
         _existingPunchItem[_testPlant].Clear(_currentPerson);
-        
+
         _command = new VerifyPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
         _dut = new VerifyPunchItemCommandHandler(
@@ -93,7 +93,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]
