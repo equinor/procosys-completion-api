@@ -8,6 +8,8 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
  */
 public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Service
 {
+    public const string PunchItem = "PunchItem";
+
     /**
      * Insert a new row in the PCS 4 database based on the sourceObject.
      * Note: The GetMappingConfigurationForSourceObject method in this class must have support for the given sourceObjectName.
@@ -66,13 +68,12 @@ public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Serv
      * Will return the mapping configuration for the given source object
      */
     private static ISourceObjectMappingConfig GetMappingConfigurationForSourceObject(string sourceObjectName)
-    {
-        return sourceObjectName switch
+        => sourceObjectName switch
         {
-            "PunchItem" => new PunchItemMappingConfig(),
-            _ => throw new NotImplementedException($"Mapping is not implemented for source object with name '{sourceObjectName}'."),
+            PunchItem => new PunchItemMappingConfig(),
+            _ => throw new NotImplementedException(
+                $"Mapping is not implemented for source object with name '{sourceObjectName}'."),
         };
-    }
 }
 
 
