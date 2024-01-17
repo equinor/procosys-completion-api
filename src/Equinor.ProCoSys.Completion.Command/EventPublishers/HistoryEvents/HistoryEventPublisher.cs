@@ -18,7 +18,7 @@ public class HistoryEventPublisher(IPublishEndpoint publishEndpoint) : EventPubl
         Guid? parentGuid,
         User createdBy,
         DateTime createdAt,
-        List<INewProperty> properties,
+        List<IProperty> properties,
         CancellationToken cancellationToken)
     {
         var historyEvent = new HistoryCreatedIntegrationEvent(plant, displayName, guid, parentGuid, createdBy, createdAt, properties);
@@ -31,7 +31,7 @@ public class HistoryEventPublisher(IPublishEndpoint publishEndpoint) : EventPubl
         Guid guid,
         User modifiedBy,
         DateTime modifiedAt,
-        List<IProperty> changedProperties,
+        List<IChangedProperty> changedProperties,
         CancellationToken cancellationToken)
     {
         var historyEvent = new HistoryUpdatedIntegrationEvent(plant, displayName, guid, modifiedBy, modifiedAt, changedProperties);

@@ -6,8 +6,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomai
 
 public class AttachmentUpdatedDomainEvent : AttachmentDomainEvent
 {
-    public AttachmentUpdatedDomainEvent(Attachment attachment, List<IProperty> changes) : base(attachment)
+    public AttachmentUpdatedDomainEvent(Attachment attachment, List<IChangedProperty> changes) : base(attachment)
         => Changes = changes;
 
-    public List<IProperty> Changes { get; }
+    public List<IChangedProperty> Changes { get; }
 }

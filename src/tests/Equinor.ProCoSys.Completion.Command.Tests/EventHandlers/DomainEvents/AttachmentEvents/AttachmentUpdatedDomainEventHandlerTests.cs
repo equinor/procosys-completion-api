@@ -25,7 +25,7 @@ public class AttachmentUpdatedDomainEventHandlerTests : EventHandlerTestBase
     {
         _attachment.SetModified(_person);
 
-        _attachmentUpdatedDomainEvent = new AttachmentUpdatedDomainEvent(_attachment, new List<IProperty>());
+        _attachmentUpdatedDomainEvent = new AttachmentUpdatedDomainEvent(_attachment, new List<IChangedProperty>());
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new AttachmentUpdatedDomainEventHandler(_publishEndpointMock, Substitute.For<ILogger<AttachmentUpdatedDomainEventHandler>>());
         _publishEndpointMock

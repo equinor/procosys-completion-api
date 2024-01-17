@@ -12,4 +12,4 @@ public record HistoryCreatedIntegrationEvent(
     Guid? ParentGuid,
     User EventBy,
     DateTime EventAtUtc,
-    List<INewProperty> Properties) : IHistoryItemCreatedV1;
+    List<IProperty> Properties) : IHistoryItemCreatedV1;

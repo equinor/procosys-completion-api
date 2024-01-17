@@ -1,7 +1,8 @@
 ﻿namespace Equinor.ProCoSys.Completion.MessageContracts.History;
 
-public interface IProperty
+public interface IChangedProperty
 {
     string Name { get; }
-    object? Value { get; }
+    object? OldValue { get; }
+    object? NewValue { get; }
 }

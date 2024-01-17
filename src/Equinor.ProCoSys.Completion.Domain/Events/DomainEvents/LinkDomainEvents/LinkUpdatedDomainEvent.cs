@@ -6,8 +6,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvent
 
 public class LinkUpdatedDomainEvent : LinkDomainEvent
 {
-    public LinkUpdatedDomainEvent(Link link, List<IProperty> changes) : base(link)
+    public LinkUpdatedDomainEvent(Link link, List<IChangedProperty> changes) : base(link)
         => Changes = changes;
 
-    public List<IProperty> Changes { get; }
+    public List<IChangedProperty> Changes { get; }
 }

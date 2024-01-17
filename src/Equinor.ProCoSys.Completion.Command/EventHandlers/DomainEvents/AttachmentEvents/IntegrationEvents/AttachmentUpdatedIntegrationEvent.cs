@@ -22,13 +22,13 @@ public record AttachmentUpdatedIntegrationEvent
     List<string> Labels,
     User ModifiedBy,
     DateTime ModifiedAtUtc,
-    List<IProperty> Changes
+    List<IChangedProperty> Changes
 ) : IAttachmentUpdatedV1
 {
     internal AttachmentUpdatedIntegrationEvent(ExistingAttachmentUploadedAndOverwrittenDomainEvent domainEvent) : this(
         $"Attachment {domainEvent.Attachment.FileName} uploaded again",
         domainEvent.Attachment,
-        new List<IProperty>())
+        new List<IChangedProperty>())
     { }
 
     internal AttachmentUpdatedIntegrationEvent(AttachmentUpdatedDomainEvent domainEvent) : this(
@@ -37,7 +37,7 @@ public record AttachmentUpdatedIntegrationEvent
         domainEvent.Changes)
     { }
 
-    private AttachmentUpdatedIntegrationEvent(string displayName, Attachment attachment, List<IProperty> changes) : this(
+    private AttachmentUpdatedIntegrationEvent(string displayName, Attachment attachment, List<IChangedProperty> changes) : this(
         displayName,
         attachment.Guid,
         attachment.ParentGuid,

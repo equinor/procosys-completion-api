@@ -11,4 +11,4 @@ public record HistoryUpdatedIntegrationEvent(
     Guid Guid,
     User EventBy,
     DateTime EventAtUtc,
-    List<IProperty> ChangedProperties) : IHistoryItemUpdatedV1;
+    List<IChangedProperty> ChangedProperties) : IHistoryItemUpdatedV1;

@@ -107,13 +107,13 @@ public class RejectPunchItemCommandHandler : IRequestHandler<RejectPunchItemComm
         }
     }
 
-    private async Task<IProperty> RejectAsync(
+    private async Task<IChangedProperty> RejectAsync(
         PunchItem punchItem,
         string comment,
         CancellationToken cancellationToken)
     {
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
-        var change = new Property<string?>(RejectReasonPropertyName, null, comment);
+        var change = new ChangedProperty<string?>(RejectReasonPropertyName, null, comment);
         punchItem.Reject(currentPerson);
 
         return change;

@@ -246,7 +246,7 @@ public class LinkServiceTests : TestsBase
     }
     #endregion
 
-    private void AssertChange(IProperty change, object oldValue, object newValue)
+    private void AssertChange(IChangedProperty change, object oldValue, object newValue)
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);

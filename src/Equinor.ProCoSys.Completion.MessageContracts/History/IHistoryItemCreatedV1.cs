@@ -7,6 +7,6 @@ public interface IHistoryItemCreatedV1 : IHistoryItem, IIntegrationEvent
 {
     // Guid of the parent entity of the event
     Guid? ParentGuid { get; }
-    List<INewProperty> Properties { get; }
+    List<IProperty> Properties { get; }
 }
 

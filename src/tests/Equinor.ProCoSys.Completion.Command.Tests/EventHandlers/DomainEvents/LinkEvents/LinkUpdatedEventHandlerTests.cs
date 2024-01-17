@@ -24,7 +24,7 @@ public class LinkUpdatedEventHandlerTests : EventHandlerTestBase
     {
         _link.SetModified(_person);
 
-        _linkUpdatedEvent = new LinkUpdatedDomainEvent(_link, new List<IProperty>());
+        _linkUpdatedEvent = new LinkUpdatedDomainEvent(_link, new List<IChangedProperty>());
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new LinkUpdatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<LinkUpdatedEventHandler>>());
         _publishEndpointMock

@@ -42,8 +42,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected Guid? _parentGuidPublishedToHistory;
         protected User _userPublishedToHistory;
         protected DateTime _dateTimePublishedToHistory;
-        protected List<INewProperty> _newPropertiesPublishedToHistory;
-        protected List<IProperty> _changedPropertiesPublishedToHistory;
+        protected List<IProperty> _newPropertiesPublishedToHistory;
+        protected List<IChangedProperty> _changedPropertiesPublishedToHistory;
 
         protected Dictionary<string, Project> _existingProject = new();
         protected Dictionary<string, PunchItem> _existingPunchItem = new();
@@ -87,7 +87,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                     Arg.Any<Guid>(),
                     Arg.Any<User>(),
                     Arg.Any<DateTime>(),
-                    Arg.Any<List<INewProperty>>(),
+                    Arg.Any<List<IProperty>>(),
                     default))
                 .Do(info =>
                 {
@@ -97,7 +97,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                     _parentGuidPublishedToHistory = info.Arg<Guid?>();
                     _userPublishedToHistory = info.Arg<User>();
                     _dateTimePublishedToHistory = info.Arg<DateTime>();
-                    _newPropertiesPublishedToHistory = info.Arg<List<INewProperty>>();
+                    _newPropertiesPublishedToHistory = info.Arg<List<IProperty>>();
                 });
 
             _historyEventPublisherMock
@@ -107,7 +107,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                     Arg.Any<Guid>(),
                     Arg.Any<User>(),
                     Arg.Any<DateTime>(),
-                    Arg.Any<List<IProperty>>(),
+                    Arg.Any<List<IChangedProperty>>(),
                     default))
                 .Do(info =>
                 {
@@ -116,7 +116,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                     _guidPublishedToHistory = info.Arg<Guid>();
                     _userPublishedToHistory = info.Arg<User>();
                     _dateTimePublishedToHistory = info.Arg<DateTime>();
-                    _changedPropertiesPublishedToHistory = info.Arg<List<IProperty>>();
+                    _changedPropertiesPublishedToHistory = info.Arg<List<IChangedProperty>>();
                 });
 
             _historyEventPublisherMock

@@ -19,7 +19,7 @@ public class INewPropertyContractTests
             { "Name", typeof(string) },
             { "Value", typeof(object) }
         };
-        var actualProperties = typeof(INewProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
+        var actualProperties = typeof(IProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
         // Act
         TestHelper.AssertPropertiesNotChanged(expectedProperties, actualProperties);

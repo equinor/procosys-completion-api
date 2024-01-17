@@ -19,7 +19,7 @@ public class HistoryUpdatedV1ContractTests : ContractTestBase<IHistoryItemUpdate
             { "Guid", typeof(Guid) },
             { "EventBy", typeof(User) },
             { "EventAtUtc", typeof(DateTime) },
-            { "ChangedProperties", typeof(List<IProperty>) }
+            { "ChangedProperties", typeof(List<IChangedProperty>) }
         };
 
         // Act

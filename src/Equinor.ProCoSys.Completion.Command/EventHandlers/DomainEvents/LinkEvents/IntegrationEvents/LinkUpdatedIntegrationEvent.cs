@@ -17,7 +17,7 @@ public record LinkUpdatedIntegrationEvent
     string Url,
     User ModifiedBy,
     DateTime ModifiedAtUtc,
-    List<IProperty> Changes
+    List<IChangedProperty> Changes
 ) : ILinkUpdatedV1
 {
     internal LinkUpdatedIntegrationEvent(LinkUpdatedDomainEvent domainEvent) : this(

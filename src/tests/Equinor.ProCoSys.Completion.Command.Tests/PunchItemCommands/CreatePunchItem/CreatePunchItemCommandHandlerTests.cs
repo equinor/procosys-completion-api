@@ -226,7 +226,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid?>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<INewProperty>>(),
+            Arg.Any<List<IProperty>>(),
             default);
     }
 

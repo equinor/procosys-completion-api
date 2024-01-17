@@ -104,13 +104,13 @@ public class LinkService : ILinkService
             link.ParentGuid);
     }
 
-    private List<IProperty> UpdateLink(Link link, string title, string url)
+    private List<IChangedProperty> UpdateLink(Link link, string title, string url)
     {
-        var changes = new List<IProperty>();
+        var changes = new List<IChangedProperty>();
 
         if (link.Url != url)
         {
-            changes.Add(new Property<string>(
+            changes.Add(new ChangedProperty<string>(
                 nameof(Link.Url), 
                 link.Url,
                 url));
@@ -118,7 +118,7 @@ public class LinkService : ILinkService
         }
         if (link.Title != title)
         {
-            changes.Add(new Property<string>(
+            changes.Add(new ChangedProperty<string>(
                 nameof(Link.Title),
                 link.Title,
                 title));

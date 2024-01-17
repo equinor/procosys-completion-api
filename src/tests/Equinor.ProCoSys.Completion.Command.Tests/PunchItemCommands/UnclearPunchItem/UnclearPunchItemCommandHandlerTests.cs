@@ -122,7 +122,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 

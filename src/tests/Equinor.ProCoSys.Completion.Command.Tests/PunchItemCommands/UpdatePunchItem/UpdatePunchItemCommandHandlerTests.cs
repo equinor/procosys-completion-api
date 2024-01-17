@@ -346,7 +346,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -595,7 +595,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -617,7 +617,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -639,7 +639,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -662,7 +662,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -685,7 +685,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -708,7 +708,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -731,7 +731,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -754,7 +754,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -777,7 +777,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -800,7 +800,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -823,7 +823,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -846,7 +846,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -869,7 +869,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -892,7 +892,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -915,7 +915,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -938,7 +938,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -961,7 +961,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
 
@@ -1085,19 +1085,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             Arg.Any<Guid>(),
             Arg.Any<User>(),
             Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
+            Arg.Any<List<IChangedProperty>>(),
             default);
     }
     #endregion
 
-    private void AssertChange(IProperty change, object oldValue, object newValue)
+    private void AssertChange(IChangedProperty change, object oldValue, object newValue)
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
         Assert.AreEqual(newValue, change.NewValue);
     }
 
-    private void AssertPersonChange(IProperty change, User oldValue, User newValue)
+    private void AssertPersonChange(IChangedProperty change, User oldValue, User newValue)
     {
         Assert.IsNotNull(change);
         if (change.OldValue is null)

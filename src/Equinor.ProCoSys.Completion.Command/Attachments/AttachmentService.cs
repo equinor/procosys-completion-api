@@ -158,13 +158,13 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    private List<IProperty> UpdateAttachment(Attachment attachment, string description)
+    private List<IChangedProperty> UpdateAttachment(Attachment attachment, string description)
     {
-        var changes = new List<IProperty>();
+        var changes = new List<IChangedProperty>();
 
         if (attachment.Description != description)
         {
-            changes.Add(new Property<string>(
+            changes.Add(new ChangedProperty<string>(
                 nameof(Attachment.Description),
                 attachment.Description,
                 description));

@@ -11,5 +11,5 @@ public interface IAttachmentUpdatedV1 : IAttachment, IIntegrationEvent
     List<string> Labels { get; }
     User ModifiedBy { get; }
     DateTime ModifiedAtUtc { get; }
-    List<IProperty> Changes { get; }
+    List<IChangedProperty> Changes { get; }
 }

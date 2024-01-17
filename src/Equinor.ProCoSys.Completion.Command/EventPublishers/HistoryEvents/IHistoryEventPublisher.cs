@@ -16,7 +16,7 @@ public interface IHistoryEventPublisher
         Guid? parentGuid,
         User createdBy,
         DateTime createdAt,
-        List<INewProperty> properties,
+        List<IProperty> properties,
         CancellationToken cancellationToken);
 
     Task PublishUpdatedEventAsync(
@@ -25,7 +25,7 @@ public interface IHistoryEventPublisher
         Guid guid,
         User modifiedBy,
         DateTime modifiedAt,
-        List<IProperty> changedProperties,
+        List<IChangedProperty> changedProperties,
         CancellationToken cancellationToken);
 
     Task PublishDeletedEventAsync(

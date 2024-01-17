@@ -25,7 +25,7 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
             { "Labels", typeof(List<string>) },
             { "ModifiedBy", typeof(User) },
             { "ModifiedAtUtc", typeof(DateTime) },
-            { "Changes", typeof(List<IProperty>) }
+            { "Changes", typeof(List<IChangedProperty>) }
         };
 
         // Act

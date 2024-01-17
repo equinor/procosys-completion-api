@@ -87,9 +87,9 @@ public class UpdatePunchItemCategoryCommandHandler : IRequestHandler<UpdatePunch
         }
     }
 
-    private IProperty UpdateCategory(PunchItem punchItem, Category category)
+    private IChangedProperty UpdateCategory(PunchItem punchItem, Category category)
     {
-        var change = new Property<string>(
+        var change = new ChangedProperty<string>(
             nameof(PunchItem.Category),
             punchItem.Category.ToString(),
             category.ToString());

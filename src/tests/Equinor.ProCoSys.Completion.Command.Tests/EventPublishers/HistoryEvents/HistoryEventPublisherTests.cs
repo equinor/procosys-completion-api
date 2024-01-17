@@ -22,8 +22,8 @@ public class HistoryEventPublisherTests
     protected DateTime _dateTime = DateTime.Now;
     private IPublishEndpoint _publishEndpointMock;
     private HistoryEventPublisher _dut;
-    private readonly List<INewProperty> _properties = [];
-    private readonly List<IProperty> _changedProperties = [];
+    private readonly List<IProperty> _properties = [];
+    private readonly List<IChangedProperty> _changedProperties = [];
 
     [TestInitialize]
     public void Setup()
