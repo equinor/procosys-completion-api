@@ -10,7 +10,7 @@ public class OracleGuidConverter : JsonConverter<Guid>
     {
         var s = reader.GetString();
 
-        if (s == null)
+        if (s is null)
         {
             throw new NullReferenceException();
         }
@@ -18,6 +18,6 @@ public class OracleGuidConverter : JsonConverter<Guid>
         return Guid.Parse(s);
     }
 
-    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options) 
+    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
         => writer.WriteStringValue(value.ToString());
 }

@@ -16,7 +16,7 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.Comments;
 [TestClass]
 public class CommentServiceTests : ReadOnlyTestsBase
 {
-    private Comment _comment;
+    private Comment _createdComment;
     private Guid _parentGuid;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
@@ -34,13 +34,13 @@ public class CommentServiceTests : ReadOnlyTestsBase
         var personB = context.Persons.Single(p => p.Guid == PersonBOid);
 
         _parentGuid = Guid.NewGuid();
-        _comment = new Comment("X", _parentGuid, "T");
+        _createdComment = new Comment("X", _parentGuid, "T");
         // insert mentions non-ordered to test ordering
-        _comment.SetMentions(new List<Person> { personB, personA });
+        _createdComment.SetMentions(new List<Person> { personB, personA });
         // insert labels non-ordered to test ordering
-        _comment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
+        _createdComment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
 
-        context.Comments.Add(_comment);
+        context.Comments.Add(_createdComment);
         context.SaveChangesAsync().Wait();
     }
 
@@ -58,16 +58,16 @@ public class CommentServiceTests : ReadOnlyTestsBase
         var commentDtos = result.ToList();
         Assert.AreEqual(1, commentDtos.Count);
         var commentDto = commentDtos.ElementAt(0);
-        Assert.AreEqual(_comment.ParentGuid, commentDto.ParentGuid);
-        Assert.AreEqual(_comment.Guid, commentDto.Guid);
-        Assert.AreEqual(_comment.Text, commentDto.Text);
+        Assert.AreEqual(_createdComment.ParentGuid, commentDto.ParentGuid);
+        Assert.AreEqual(_createdComment.Guid, commentDto.Guid);
+        Assert.AreEqual(_createdComment.Text, commentDto.Text);
         var createdBy = commentDto.CreatedBy;
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
-        Assert.AreEqual(_comment.CreatedAtUtc, commentDto.CreatedAtUtc);
+        Assert.AreEqual(_createdComment.CreatedAtUtc, commentDto.CreatedAtUtc);
 
-        AssertOrderedNonVoidedLabels(_comment, commentDto);
-        AssertOrderedMentions(_comment, commentDto);
+        AssertOrderedNonVoidedLabels(_createdComment, commentDto);
+        AssertOrderedMentions(_createdComment, commentDto);
     }
 
     private void AssertOrderedMentions(Comment comment, CommentDto commentDto)

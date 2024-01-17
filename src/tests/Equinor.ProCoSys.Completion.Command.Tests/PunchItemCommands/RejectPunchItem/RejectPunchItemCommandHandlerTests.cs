@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -9,7 +10,9 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,7 +59,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             {
                 RejectLabel = rejectLabelText
             });
-        
+
         _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
             .Returns(_personList);
 
@@ -65,7 +68,10 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _labelRepositoryMock,
             _commentServiceMock,
             _personRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
+            _punchEventPublisherMock,
+            _historyEventPublisherMock,
             Substitute.For<ILogger<RejectPunchItemCommandHandler>>(),
             _optionsMock);
     }
@@ -82,13 +88,23 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldSetAuditData()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSave()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -105,49 +121,107 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemRejectedDomainEvent()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        Assert.IsInstanceOfType(_existingPunchItem[_testPlant].DomainEvents.Last(), typeof(PunchItemRejectedDomainEvent));
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldAddRejectCommentToPunchItemRejectedEvent()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        var punchItemRejectedDomainEventAdded = _existingPunchItem[_testPlant].DomainEvents.Last() as PunchItemRejectedDomainEvent;
-        Assert.IsNotNull(punchItemRejectedDomainEventAdded);
-        Assert.IsNotNull(punchItemRejectedDomainEventAdded.Changes);
-        Assert.AreEqual(1, punchItemRejectedDomainEventAdded.Changes.Count);
-
-        var change = punchItemRejectedDomainEventAdded
-            .Changes
-            .SingleOrDefault(c => c.Name == RejectPunchItemCommandHandler.RejectReasonPropertyName);
-        Assert.IsNotNull(change);
-        Assert.IsNull(change.OldValue);
-        Assert.AreEqual(_command.Comment, change.NewValue);
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_Should_CallAdd_OnCommentService()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _commentServiceMock.Received(1)
-            .AddAsync(
+        _commentServiceMock.Received(1)
+            .Add(
                 nameof(PunchItem),
                 _command.PunchItemGuid,
                 _command.Comment,
-                _rejectedLabel,
-                _personList,
-                default);
+                Arg.Any<IEnumerable<Label>>(),
+                Arg.Any<IEnumerable<Person>>());
+    }
+
+    [TestMethod]
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    public async Task HandlingCommand_Should_CallAdd_OnCommentServiceWithCorrectLabel()
+    {
+        // Arrange 
+        IEnumerable<Label> labelsAdded = null!;
+        _commentServiceMock
+            .When(x => x.Add(
+                Arg.Any<string>(),
+                Arg.Any<Guid>(),
+                Arg.Any<string>(),
+                Arg.Any<IEnumerable<Label>>(),
+                Arg.Any<IEnumerable<Person>>()))
+            .Do(info => labelsAdded = info.Arg<IEnumerable<Label>>());
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.IsNotNull(labelsAdded);
+        Assert.AreEqual(1, labelsAdded.Count());
+        Assert.AreEqual(_rejectedLabel, labelsAdded.ElementAt(0));
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemUpdatedV1>();
+        _punchEventPublisherMock
+            .PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default)
+            .Returns(integrationEvent);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _punchEventPublisherMock.Received(1).PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishUpdateToHistory()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _historyEventPublisherMock.Received(1).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
+        Assert.AreEqual("Punch item rejected", _displayNamePublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
+        Assert.IsNotNull(_userPublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
+        Assert.IsNotNull(_changedPropertiesPublishedToHistory);
+        Assert.AreEqual(1, _changedPropertiesPublishedToHistory.Count);
+        var changedProperty = _changedPropertiesPublishedToHistory[0];
+        Assert.AreEqual(RejectPunchItemCommandHandler.RejectReasonPropertyName, changedProperty.Name);
+        Assert.IsNull(changedProperty.OldValue);
+        Assert.AreEqual(_command.Comment, changedProperty.NewValue);
     }
 }

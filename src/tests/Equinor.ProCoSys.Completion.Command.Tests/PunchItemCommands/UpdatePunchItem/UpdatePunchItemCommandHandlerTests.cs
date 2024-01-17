@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -61,7 +63,10 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _workOrderRepositoryMock,
             _swcrRepositoryMock,
             _documentRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
+            _punchEventPublisherMock,
+            _historyEventPublisherMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
     }
 
@@ -146,7 +151,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
         _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
         _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem[_testPlant].MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
 
         Assert.IsNotNull(_existingPunchItem[_testPlant].PriorityId);
         Assert.IsNotNull(_existingPunchItem[_testPlant].SortingId);
@@ -181,19 +186,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsNull(_existingPunchItem[_testPlant].PriorityId);
-        Assert.IsNull(_existingPunchItem[_testPlant].SortingId);
-        Assert.IsNull(_existingPunchItem[_testPlant].TypeId);
-        Assert.IsNull(_existingPunchItem[_testPlant].ActionById);
-        Assert.IsNull(_existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.IsNull(_existingPunchItem[_testPlant].Estimate);
-        Assert.IsNull(_existingPunchItem[_testPlant].OriginalWorkOrderId);
-        Assert.IsNull(_existingPunchItem[_testPlant].WorkOrderId);
-        Assert.IsNull(_existingPunchItem[_testPlant].SWCRId);
-        Assert.IsNull(_existingPunchItem[_testPlant].DocumentId);
-        Assert.IsNull(_existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.IsNull(_existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.IsNull(_existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.IsFalse(_existingPunchItem[_testPlant].PriorityId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].SortingId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].TypeId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].ActionById.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].DueTimeUtc.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].Estimate.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].OriginalWorkOrderId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].WorkOrderId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].SWCRId.HasValue);
+        Assert.IsFalse(_existingPunchItem[_testPlant].DocumentId.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].ExternalItemNo is null);
+        Assert.IsFalse(_existingPunchItem[_testPlant].MaterialETAUtc.HasValue);
+        Assert.IsTrue(_existingPunchItem[_testPlant].MaterialExternalNo is null);
     }
 
     [TestMethod]
@@ -270,13 +275,39 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldSetAuditData_WhenOperationsGiven()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSave_WhenOperationsGiven()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncWithPcs4_WhenOperationsGiven()
+    {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemUpdatedV1>();
+        _punchEventPublisherMock
+            .PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default)
+            .Returns(integrationEvent);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]
@@ -293,141 +324,145 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemUpdatedEvent_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent_WhenOperationsGiven()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedDomainEventAdded = _existingPunchItem[_testPlant].DomainEvents.Last();
-        Assert.IsInstanceOfType(punchItemUpdatedDomainEventAdded, typeof(PunchItemUpdatedDomainEvent));
+        await _punchEventPublisherMock.Received(1).PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddChangesToPunchItemUpdatedEvent_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldPublishHistoryEvent_WhenOperationsGiven()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _historyEventPublisherMock.Received(1).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent_WhenOperationsGiven()
     {
         // Arrange
         var oldDescription = _existingPunchItem[_testPlant].Description;
         var oldRaisedByCode = _existingPunchItem[_testPlant].RaisedByOrg.Code;
         var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
-        
+
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedDomainEventAdded = _existingPunchItem[_testPlant].DomainEvents.Last() as PunchItemUpdatedDomainEvent;
-        Assert.IsNotNull(punchItemUpdatedDomainEventAdded);
-        Assert.IsNotNull(punchItemUpdatedDomainEventAdded.Changes);
+        Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
+        Assert.AreEqual("Punch item updated", _displayNamePublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
+        Assert.IsNotNull(_userPublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
+        Assert.IsNotNull(_changedPropertiesPublishedToHistory);
         Assert.AreEqual(17, _command.PatchDocument.Operations.Count);
-        Assert.AreEqual(_command.PatchDocument.Operations.Count, punchItemUpdatedDomainEventAdded.Changes.Count);
+        Assert.AreEqual(_command.PatchDocument.Operations.Count, _changedPropertiesPublishedToHistory.Count);
 
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
             oldDescription,
             _newDescription);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
             oldRaisedByCode,
             _existingRaisedByOrg1[_testPlant].Code);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             oldClearingByOrg,
             _existingClearingByOrg1[_testPlant].Code);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
             null,
             _existingPriority1[_testPlant].Code);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
             null,
             _existingSorting1[_testPlant].Code);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             null,
             _existingType1[_testPlant].Code);
         AssertPersonChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
             null,
             new User(_existingPerson1.Guid, _existingPerson1.GetFullName()));
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
             null,
             _newDueTimeUtc);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
             null,
             _newEstimate);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
             null,
             _existingWorkOrder1[_testPlant].No);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
             null,
             _existingWorkOrder1[_testPlant].No);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             null,
             _existingSWCR1[_testPlant].No);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
             null,
             _existingDocument1[_testPlant].No);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
             null,
             _newExternalItemNo);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
             oldMaterialRequired,
             _newMaterialRequired);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
             null,
             _newMaterialETAUtc);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
             null,
             _newMaterialExternalNo);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddChangesToPunchItemUpdatedEvent_WhenOperationsWithNullGiven()
+    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent_WhenOperationsWithNullGiven()
     {
         // Don't test MaterialRequired here. Can't be null
         // Arrange
@@ -457,101 +492,93 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
         _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
         _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem[_testPlant].MaterialETAUtc= _newMaterialETAUtc;
+        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedDomainEventAdded = _existingPunchItem[_testPlant].DomainEvents.Last() as PunchItemUpdatedDomainEvent;
-        Assert.IsNotNull(punchItemUpdatedDomainEventAdded);
-        Assert.IsNotNull(punchItemUpdatedDomainEventAdded.Changes);
+        Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
+        Assert.AreEqual("Punch item updated", _displayNamePublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
+        Assert.IsNotNull(_userPublishedToHistory);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
+        Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
+        Assert.IsNotNull(_changedPropertiesPublishedToHistory);
         Assert.AreEqual(13, _command.PatchDocument.Operations.Count);
-        Assert.AreEqual(_command.PatchDocument.Operations.Count, punchItemUpdatedDomainEventAdded.Changes.Count);
+        Assert.AreEqual(_command.PatchDocument.Operations.Count, _changedPropertiesPublishedToHistory.Count);
 
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
             _existingPriority1[_testPlant].Code,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
             _existingSorting1[_testPlant].Code,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             _existingType1[_testPlant].Code,
             null);
         AssertPersonChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
             new User(_existingPerson1.Guid, _existingPerson1.GetFullName()),
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
             _newDueTimeUtc,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
             _newEstimate,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
             _existingWorkOrder1[_testPlant].No,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
             _existingWorkOrder1[_testPlant].No,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             _existingSWCR1[_testPlant].No,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
             _existingDocument1[_testPlant].No,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
             _newExternalItemNo,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
             _newMaterialETAUtc,
             null);
         AssertChange(
-            punchItemUpdatedDomainEventAdded
-                .Changes
+            _changedPropertiesPublishedToHistory
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
             _newMaterialExternalNo,
             null);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchDescriptionWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchDescriptionWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -561,13 +588,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchRaisedByOrgWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchRaisedByOrgWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -577,13 +610,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchClearingByOrgWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchClearingByOrgWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -593,13 +632,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchPriorityWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchPriorityWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -610,13 +655,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchSortingWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchSortingWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -627,13 +678,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchTypeWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchTypeWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -644,13 +701,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchActionByWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchActionByWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -661,13 +724,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchDueTimeWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchDueTimeWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -678,13 +747,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchEstimateWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchEstimateWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -695,13 +770,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchOriginalWorkOrderWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchOriginalWorkOrderWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -712,13 +793,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchWorkOrderWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchWorkOrderWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -729,13 +816,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchSWCRWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchSWCRWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -746,13 +839,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchDocumentWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchDocumentWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -763,13 +862,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchExternalItemNoWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchExternalItemNoWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -780,13 +885,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchMaterialRequiredWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialRequiredWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -797,13 +908,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchMaterialETAWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialETAWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -814,26 +931,38 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenPatchMaterialExternalNoWithSameValue()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialExternalNoWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].MaterialExternalNo= _newMaterialExternalNo;
+        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert 
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
 
     #endregion
@@ -860,7 +989,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
         var oldMaterialETAUtc = _existingPunchItem[_testPlant].MaterialETAUtc;
         var oldMaterialExternalNo = _existingPunchItem[_testPlant].MaterialExternalNo;
-        
+
         // Act
         await _dut.Handle(_command, default);
 
@@ -885,6 +1014,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldSetAuditData_WhenNoOperationsGiven()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSave_WhenNoOperationsGiven()
     {
         // Arrange 
@@ -894,7 +1036,20 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenNoOperationsGiven()
+    {
+        // Arrange 
+        _command.PatchDocument.Operations.Clear();
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(0).SyncObjectUpdateAsync("PunchItem", Arg.Any<object>(), _testPlant, default);
     }
 
     [TestMethod]
@@ -914,7 +1069,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotAddPunchItemUpdatedEvent_WhenNoOperationsGiven()
+    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenNoOperationsGiven()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
@@ -923,9 +1078,15 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedDomainEventAdded =
-            _existingPunchItem[_testPlant].DomainEvents.Any(e => e.GetType() == typeof(PunchItemUpdatedDomainEvent));
-        Assert.IsFalse(punchItemUpdatedDomainEventAdded);
+        await _punchEventPublisherMock.Received(0).PublishUpdatedEventAsync(Arg.Any<PunchItem>(), default);
+        await _historyEventPublisherMock.Received(0).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
     }
     #endregion
 

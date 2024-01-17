@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -24,7 +27,10 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
 
         _dut = new UpdatePunchItemCategoryCommandHandler(
             _punchItemRepositoryMock,
+            _syncToPCS4ServiceMock,
             _unitOfWorkMock,
+            _punchEventPublisherMock,
+            _historyEventPublisherMock,
             Substitute.For<ILogger<UpdatePunchItemCategoryCommandHandler>>());
     }
 
@@ -39,13 +45,23 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldSetAuditData()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSave()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -62,27 +78,67 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemUpdatedCategoryDomainEvent()
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
     {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemUpdatedV1>();
+        _punchEventPublisherMock
+            .PublishUpdatedEventAsync(_punchItemPa[_testPlant], default)
+            .Returns(integrationEvent);
+
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(_punchItemPa[_testPlant].DomainEvents.Last(), typeof(PunchItemCategoryUpdatedDomainEvent));
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldAddPunchItemUpdatedCategoryDomainEvent_WithOneChange()
+    public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItemUpdatedCategoryDomainEvent = _punchItemPa[_testPlant].DomainEvents.Last() as PunchItemCategoryUpdatedDomainEvent;
-        Assert.IsNotNull(punchItemUpdatedCategoryDomainEvent);
-        Assert.IsNotNull(punchItemUpdatedCategoryDomainEvent.Change);
-        Assert.AreEqual(nameof(PunchItem.Category), punchItemUpdatedCategoryDomainEvent.Change.Name);
-        Assert.AreEqual(Category.PA.ToString(), punchItemUpdatedCategoryDomainEvent.Change.OldValue);
-        Assert.AreEqual(Category.PB.ToString(), punchItemUpdatedCategoryDomainEvent.Change.NewValue);
+        await _punchEventPublisherMock.Received(1).PublishUpdatedEventAsync(_punchItemPa[_testPlant], default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishUpdateToHistory()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _historyEventPublisherMock.Received(1).PublishUpdatedEventAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<Guid>(),
+            Arg.Any<User>(),
+            Arg.Any<DateTime>(),
+            Arg.Any<List<IProperty>>(),
+            default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
+        Assert.AreEqual($"Punch item category changed to {_command.Category}", _displayNamePublishedToHistory);
+        Assert.AreEqual(_punchItemPa[_testPlant].Guid, _guidPublishedToHistory);
+        Assert.IsNotNull(_userPublishedToHistory);
+        Assert.AreEqual(_punchItemPa[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
+        Assert.AreEqual(_punchItemPa[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
+        Assert.AreEqual(_punchItemPa[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
+        Assert.IsNotNull(_changedPropertiesPublishedToHistory);
+        Assert.AreEqual(1, _changedPropertiesPublishedToHistory.Count);
+        var changedProperty = _changedPropertiesPublishedToHistory[0];
+        Assert.AreEqual(nameof(PunchItem.Category), changedProperty.Name);
+        Assert.AreEqual(Category.PA.ToString(), changedProperty.OldValue);
+        Assert.AreEqual(Category.PB.ToString(), changedProperty.NewValue);
     }
 }

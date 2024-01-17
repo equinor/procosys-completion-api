@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.AttachmentEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

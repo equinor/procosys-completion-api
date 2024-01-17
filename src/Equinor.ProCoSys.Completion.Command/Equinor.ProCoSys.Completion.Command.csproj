@@ -7,15 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MeetingCommands\**" />
-    <Compile Remove="ResponsibleCommands\**" />
-    <EmbeddedResource Remove="MeetingCommands\**" />
-    <EmbeddedResource Remove="ResponsibleCommands\**" />
-    <None Remove="MeetingCommands\**" />
-    <None Remove="ResponsibleCommands\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.1" />
     <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.0" />
     <PackageReference Include="FluentValidation" Version="11.8.1" />
@@ -26,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
   </ItemGroup>

@@ -70,6 +70,6 @@ public class CreateLabelCommandHandlerTests
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.MessageContracts.Link;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +15,6 @@ public class LinkUpdatedV1ContractTests : ContractTestBase<ILinkUpdatedV1>
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },

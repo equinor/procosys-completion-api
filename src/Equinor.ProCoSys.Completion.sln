@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{946E8B4F-9EA5-4301-AFAD-14299C816709}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\.gitignore = ..\.gitignore
 		..\doc\adr\0001-record-architecture-decisions.md = ..\doc\adr\0001-record-architecture-decisions.md
 		..\doc\adr\0002-use-net-core-with-ef.md = ..\doc\adr\0002-use-net-core-with-ef.md
 		..\doc\adr\0003-use-masstransit.md = ..\doc\adr\0003-use-masstransit.md
@@ -24,7 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\radixconfig.yaml = ..\radixconfig.yaml
 		..\README.md = ..\README.md
 		usersecrets_minimum.json = usersecrets_minimum.json
-		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DFB50BC5-5201-42FD-A049-CF0259AA7AE8}"
@@ -52,6 +52,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.ForeignApiTests", "tests\Equinor.ProCoSys.Completion.ForeignApiTests\Equinor.ProCoSys.Completion.ForeignApiTests.csproj", "{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{680A3102-2853-4C03-88BC-44142512352D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.Completion.DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests", "tests\Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests\Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests.csproj", "{E660C261-2DAC-4272-B9A4-6C3D2904DECD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD} = {BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +134,14 @@ Global
 		{680A3102-2853-4C03-88BC-44142512352D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{680A3102-2853-4C03-88BC-44142512352D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E660C261-2DAC-4272-B9A4-6C3D2904DECD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E660C261-2DAC-4272-B9A4-6C3D2904DECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E660C261-2DAC-4272-B9A4-6C3D2904DECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E660C261-2DAC-4272-B9A4-6C3D2904DECD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,6 +156,7 @@ Global
 		{75BF00C3-7FC9-49AD-9EF5-51DB36CEDE60} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{C318C627-9419-42FC-B652-660795962C7F} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
+		{E660C261-2DAC-4272-B9A4-6C3D2904DECD} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C79730D0-E4C2-474A-9D04-1C07256B6DF3}

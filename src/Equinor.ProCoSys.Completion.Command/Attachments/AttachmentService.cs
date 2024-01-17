@@ -9,9 +9,9 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -119,7 +119,7 @@ public class AttachmentService : IAttachmentService
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency
-        // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
+        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
         attachment.SetRowVersion(rowVersion);
         _attachmentRepository.Remove(attachment);
         attachment.AddDomainEvent(new AttachmentDeletedDomainEvent(attachment));

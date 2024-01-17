@@ -55,7 +55,7 @@ public class Startup
                 services.AddHostedService<DatabaseMigrator>();
             }
         }
-        
+
         if (_environment.IsDevelopment())
         {
             DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
@@ -112,7 +112,7 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-        
+
         services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
         {

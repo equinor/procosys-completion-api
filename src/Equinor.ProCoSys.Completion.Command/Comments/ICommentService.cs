@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
@@ -9,7 +10,8 @@ namespace Equinor.ProCoSys.Completion.Command.Comments;
 
 public interface ICommentService
 {
-    Task<CommentDto> AddAsync(
+    Task<CommentDto> AddAndSaveAsync(
+        IUnitOfWork unitOfWork,
         string parentType,
         Guid parentGuid,
         string text,
@@ -17,11 +19,10 @@ public interface ICommentService
         IEnumerable<Person> mentions,
         CancellationToken cancellationToken);
     
-    Task<CommentDto> AddAsync(
+    Guid Add(
         string parentType,
         Guid parentGuid,
         string text,
-        Label label,
-        IEnumerable<Person> mentions,
-        CancellationToken cancellationToken);
+        IEnumerable<Label> labels,
+        IEnumerable<Person> mentions);
 }

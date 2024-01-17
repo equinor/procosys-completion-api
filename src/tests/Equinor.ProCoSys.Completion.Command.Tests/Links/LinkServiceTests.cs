@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -70,7 +70,7 @@ public class LinkServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, _existingLink.Title, _existingLink.Url, _rowVersion, default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -220,7 +220,7 @@ public class LinkServiceTests : TestsBase
         await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]

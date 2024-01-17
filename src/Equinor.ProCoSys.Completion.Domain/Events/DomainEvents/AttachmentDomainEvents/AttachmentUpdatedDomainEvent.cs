@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
 
