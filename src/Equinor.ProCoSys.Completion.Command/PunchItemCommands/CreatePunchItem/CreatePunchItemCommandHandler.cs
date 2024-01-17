@@ -127,7 +127,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncNewObjectAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
+            await _syncToPCS4Service.SyncNewObjectAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
 
             // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);

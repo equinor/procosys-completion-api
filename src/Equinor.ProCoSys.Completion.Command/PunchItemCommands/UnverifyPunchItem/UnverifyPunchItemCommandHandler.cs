@@ -65,7 +65,7 @@ public class UnverifyPunchItemCommandHandler : IRequestHandler<UnverifyPunchItem
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncObjectUpdateAsync("PunchItem", integrationEvent, punchItem.Plant, cancellationToken);
+            await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
 
             // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
