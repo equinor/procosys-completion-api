@@ -23,7 +23,7 @@ public class Pcs4Repository : IPcs4Repository
     }
 
     /**
-     * This method will execute an sqlStatment to insert, update or delete a row in the Pcs4 database.
+     * This method will execute an sqlStatement to insert, update or delete a row in the Pcs4 database.
      */
     public async Task ExecuteSingleRowOperationAsync(string sqlStatement, DynamicParameters sqlParameters, CancellationToken cancellationToken)
     {

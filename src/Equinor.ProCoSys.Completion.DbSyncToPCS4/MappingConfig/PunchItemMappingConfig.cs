@@ -4,7 +4,7 @@ public class PunchItemMappingConfig : ISourceObjectMappingConfig
 {
     public string TargetTable { get; } = "PunchListItem";
 
-    public PropertyMapping PrimaryKey { get; } = new PropertyMapping("Guid", PropertyType.Guid, "Procosys_guid", null, null, false);
+    public PropertyMapping PrimaryKey { get; } = new("Guid", PropertyType.Guid, "Procosys_guid", null, null, false);
 
     public PunchItemMappingConfig() => PropertyMappings = new List<PropertyMapping>
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Dapper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
@@ -39,4 +40,28 @@ public class SqlStatementBuilderTestsBase
         _sourceTestObject = new SourceTestObject(TestOnlyForInsert, TestGuid, TestString, TestDate, TestDate2, TestBool, TestInt, _nestedObject, WoGuid, SwcrGuid, PersonOid, DocumentGuid);
         _sourceTestObjectMissingPrimaryKey = new SourceTestObjectMissingPrimaryKey(null, TestString, TestDate, TestDate2, TestBool, TestInt, _nestedObject, WoGuid, SwcrGuid, PersonOid, DocumentGuid);
     }
+
+
+    /**
+     * Asserts that the given expected parameters are the same as the actual DynamicParameters 
+     */
+    protected static void AssertTheSqlParameters(Dictionary<string, object> expectedSqlParams, DynamicParameters actualSqlParams)
+    {
+        foreach (var expectedParam in expectedSqlParams)
+        {
+            var actualParamValue = actualSqlParams.Get<object>(expectedParam.Key);
+
+            if (actualParamValue is not null && (actualParamValue is int || actualParamValue is long))
+            {
+                //Assert if parameter is an integer (we need to convert to be able to compare)
+                Assert.AreEqual(Convert.ToInt64(expectedParam.Value), Convert.ToInt64(actualParamValue));
+            }
+            else
+            {
+                //Assert if parameter is not an integer
+                Assert.AreEqual(expectedParam.Value, actualParamValue);
+            }
+        }
+    }
+
 }

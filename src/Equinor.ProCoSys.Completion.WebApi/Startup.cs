@@ -27,7 +27,6 @@ using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
@@ -56,7 +55,7 @@ public class Startup
                 services.AddHostedService<DatabaseMigrator>();
             }
         }
-        
+
         if (_environment.IsDevelopment())
         {
             DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
@@ -113,7 +112,7 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-        
+
         services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
         {

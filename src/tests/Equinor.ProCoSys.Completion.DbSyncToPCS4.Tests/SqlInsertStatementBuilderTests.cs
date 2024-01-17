@@ -30,7 +30,7 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         { "TestGuid" , "805519D70DB644B7BF99A0818CEA778E" }
     };
 
-    private readonly Dictionary<string, string> _expectedSqlParametersNullValues = new()
+    private readonly Dictionary<string, object> _expectedSqlParametersNullValues = new()
     {
         { "TestBool", "N" },
         { "TestGuid" , "805519D70DB644B7BF99A0818CEA778E" }
@@ -40,7 +40,7 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     public void Setup() => _dut = new SqlInsertStatementBuilder(_pcs4Repository);
 
     [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatment_WhenInputIsCorrect()
+    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatement_WhenInputIsCorrect()
     {
         // Arrange
         _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
@@ -51,22 +51,11 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         // Assert
         Assert.AreEqual(_expectedSqlInsertStatement, actualSqlInsertStatement);
 
-        foreach (var expectedParam in _expectedSqlParameters)
-        {
-            var actualParamValue = actualSqlParams.Get<object>(expectedParam.Key);
-            if (actualParamValue != null && (actualParamValue is int || actualParamValue is long))
-            {
-                Assert.AreEqual(Convert.ToInt64(expectedParam.Value), Convert.ToInt64(actualParamValue));
-            }
-            else
-            {
-                Assert.AreEqual(expectedParam.Value, actualParamValue);
-            }
-        }
+        AssertTheSqlParameters(_expectedSqlParameters, actualSqlParams);
     }
 
     [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatment_WhenSourceObjectHasNullValues()
+    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatement_WhenSourceObjectHasNullValues()
     {
         // Arrange
         var sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, null!, null, null, null, null);
@@ -82,11 +71,7 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         // Assert
         Assert.AreEqual(expectedSqlInsertStatement, actualSqlInsertStatement);
 
-        foreach (var expectedParam in _expectedSqlParametersNullValues)
-        {
-            var actualParamValue = actualSqlParams.Get<string>(expectedParam.Key);
-            Assert.AreEqual(expectedParam.Value, actualParamValue);
-        }
+        AssertTheSqlParameters(_expectedSqlParametersNullValues, actualSqlParams);
     }
 
 

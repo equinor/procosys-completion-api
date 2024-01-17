@@ -20,7 +20,7 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
     public void Setup() => _dut = new SqlDeleteStatementBuilder(_pcs4Repository);
 
     [TestMethod]
-    public async Task BuildSqlDeleteStatement_ShouldReturnSqlStatment_WhenInputIsCorrect()
+    public async Task BuildSqlDeleteStatement_ShouldReturnSqlStatement_WhenInputIsCorrect()
     {
         // Arrange
         _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
@@ -31,19 +31,9 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
         // Assert
         Assert.AreEqual(_expectedSqlDeleteStatement, actualSqlUpdateStatement);
 
-        foreach (var expectedParam in _expectedSqlParameters)
-        {
-            var actualParamValue = actualSqlParams.Get<object>(expectedParam.Key);
-            if (actualParamValue != null && (actualParamValue is int || actualParamValue is long))
-            {
-                Assert.AreEqual(Convert.ToInt64(expectedParam.Value), Convert.ToInt64(actualParamValue));
-            }
-            else
-            {
-                Assert.AreEqual(expectedParam.Value, actualParamValue);
-            }
-        }
+        AssertTheSqlParameters(_expectedSqlParameters, actualSqlParams);
     }
+
 
     [TestMethod]
     public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingPrimarykey()

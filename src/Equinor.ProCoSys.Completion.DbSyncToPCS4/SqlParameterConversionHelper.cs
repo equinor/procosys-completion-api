@@ -20,7 +20,7 @@ public static class SqlParameterConversionHelper
             return null;
         }
 
-        if (propertyMapping.ValueConversion != null)
+        if (propertyMapping.ValueConversion is not null)
         {
             return propertyMapping.ValueConversion switch
             {

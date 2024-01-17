@@ -76,9 +76,9 @@ public class SqlUpdateStatementBuilder(IPcs4Repository pcs4Repository)
                                                                                                             pcs4Repository,
                                                                                                             cancellationToken);
 
-        if (primaryKeyTargetValue is null)
+        if (primaryKeyValue is null || primaryKeyTargetValue is null)
         {
-            throw new Exception("Not able to build update statement. Primary key value is null.");
+            throw new Exception("Not able to build update statement. Primary key value or primary key target value is null.");
         }
 
         var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
