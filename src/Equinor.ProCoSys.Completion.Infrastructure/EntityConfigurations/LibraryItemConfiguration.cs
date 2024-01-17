@@ -10,11 +10,10 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
     public void Configure(EntityTypeBuilder<LibraryItem> builder)
     {
         builder.ConfigureSystemVersioning();
+        builder.ConfigurePlant();
         builder.ConfigureCreationAudit();
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
-
-        builder.ToTable(t => t.IsTemporal());
 
         builder.Property(x => x.Code)
             .HasMaxLength(LibraryItem.CodeLengthMax)
