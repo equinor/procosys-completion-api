@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -13,7 +14,9 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -92,37 +95,42 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
                 raisedByOrg,
                 clearingByOrg);
 
-            await SetActionByAsync(punchItem, request.ActionByPersonOid, cancellationToken);
-            punchItem.DueTimeUtc = request.DueTimeUtc;
-            await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
-            await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
-            await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
-            punchItem.Estimate = request.Estimate;
-            await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid, cancellationToken);
-            await SetWorkOrderAsync(punchItem, request.WorkOrderGuid, cancellationToken);
-            await SetSWCRAsync(punchItem, request.SWCRGuid, cancellationToken);
-            await SetDocumentAsync(punchItem, request.DocumentGuid, cancellationToken);
-            punchItem.ExternalItemNo = request.ExternalItemNo;
-            punchItem.MaterialRequired = request.MaterialRequired;
-            punchItem.MaterialETAUtc = request.MaterialETAUtc;
-            punchItem.MaterialExternalNo = request.MaterialExternalNo;
+            var properties = GetRequiredProperties(punchItem);
+
+            await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
+            SetDueTime(punchItem,request.DueTimeUtc, properties);
+            await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, properties, cancellationToken);
+            await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, properties, cancellationToken);
+            await SetLibraryItemAsync(punchItem, request.TypeGuid, LibraryType.PUNCHLIST_TYPE, properties, cancellationToken);
+            SetEstimate(punchItem, request.Estimate, properties);
+            await SetOriginalWorkOrderAsync(punchItem, request.OriginalWorkOrderGuid, properties, cancellationToken);
+            await SetWorkOrderAsync(punchItem, request.WorkOrderGuid, properties, cancellationToken);
+            await SetSWCRAsync(punchItem, request.SWCRGuid, properties, cancellationToken);
+            await SetDocumentAsync(punchItem, request.DocumentGuid, properties, cancellationToken);
+            SetExternalItemNo(punchItem, request.ExternalItemNo, properties);
+            SetMaterialRequired(punchItem, request.MaterialRequired, properties);
+            SetMaterialETAUtc(punchItem, request.MaterialETAUtc, properties);
+            SetMaterialExternalNo(punchItem, request.MaterialExternalNo, properties);
 
             _punchItemRepository.Add(punchItem);
 
-            // AuditData must be set before publishing events due to use of Created- and Modified-properties
-            await _unitOfWork.SetAuditDataAsync();
+            // must save twice when creating. Must save before publishing events both to set with internal database ID
+            // since ItemNo depend on it. Must save after publishing events because we use outbox pattern
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Add property for ItemNo first in list, since it is an "important" property
+            properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo));
 
             var integrationEvent = await _punchEventPublisher.PublishCreatedEventAsync(punchItem, cancellationToken);
 
             await _historyEventPublisher.PublishCreatedEventAsync(
                 punchItem.Plant,
-                "Punch item created",
+                $"{punchItem.Category} punch item {punchItem.ItemNo} created",
                 punchItem.Guid,
                 punchItem.CheckListGuid,
                 new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
                 punchItem.CreatedAtUtc,
-                // todo 109354 add list of properties
-                [],
+                properties,
                 cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -144,7 +152,80 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
     }
 
-    private async Task SetDocumentAsync(PunchItem punchItem, Guid? documentGuid, CancellationToken cancellationToken)
+    private List<IProperty> GetRequiredProperties(PunchItem punchItem)
+        =>
+        [
+            new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
+            new Property(nameof(PunchItem.Description), punchItem.Description),
+            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.Code),
+            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.Code)
+        ];
+
+    private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo, List<IProperty> properties)
+    {
+        if (materialExternalNo is null)
+        {
+            return;
+        }
+        punchItem.MaterialExternalNo = materialExternalNo;
+        properties.Add(new Property(nameof(PunchItem.MaterialExternalNo), punchItem.MaterialExternalNo));
+    }
+
+    private void SetMaterialETAUtc(PunchItem punchItem, DateTime? materialETAUtc, List<IProperty> properties)
+    {
+        if (materialETAUtc is null)
+        {
+            return;
+        }
+        punchItem.MaterialETAUtc = materialETAUtc;
+        properties.Add(new Property(nameof(PunchItem.MaterialETAUtc), punchItem.MaterialETAUtc));
+    }
+
+    private void SetMaterialRequired(PunchItem punchItem, bool materialRequired, List<IProperty> properties)
+    {
+        if (!materialRequired)
+        {
+            return;
+        }
+        punchItem.MaterialRequired = materialRequired;
+        properties.Add(new Property(nameof(PunchItem.MaterialRequired), punchItem.MaterialRequired));
+    }
+
+    private void SetExternalItemNo(PunchItem punchItem, string? externalItemNo, List<IProperty> properties)
+    {
+        if (externalItemNo is null)
+        {
+            return;
+        }
+        punchItem.ExternalItemNo = externalItemNo;
+        properties.Add(new Property(nameof(PunchItem.ExternalItemNo), punchItem.ExternalItemNo));
+    }
+
+    private void SetEstimate(PunchItem punchItem, int? estimate, List<IProperty> properties)
+    {
+        punchItem.Estimate = estimate;
+        if (!estimate.HasValue)
+        {
+            return;
+        }
+        properties.Add(new Property(nameof(PunchItem.Estimate), estimate.Value));
+    }
+
+    private void SetDueTime(PunchItem punchItem, DateTime? dueTimeUtc, List<IProperty> properties)
+    {
+        if (!dueTimeUtc.HasValue)
+        {
+            return;
+        }
+        punchItem.DueTimeUtc = dueTimeUtc;
+        properties.Add(new Property(nameof(PunchItem.DueTimeUtc), punchItem.DueTimeUtc.Value));
+    }
+
+    private async Task SetDocumentAsync(
+        PunchItem punchItem, 
+        Guid? documentGuid, 
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
     {
         if (!documentGuid.HasValue)
         {
@@ -153,9 +234,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var doc = await _documentRepository.GetAsync(documentGuid.Value, cancellationToken);
         punchItem.SetDocument(doc);
+        properties.Add(new Property(nameof(PunchItem.Document), punchItem.Document!.No));
     }
 
-    private async Task SetSWCRAsync(PunchItem punchItem, Guid? swcrGuid, CancellationToken cancellationToken)
+    private async Task SetSWCRAsync(
+        PunchItem punchItem, 
+        Guid? swcrGuid, 
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
     {
         if (!swcrGuid.HasValue)
         {
@@ -164,9 +250,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var swcr = await _swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
         punchItem.SetSWCR(swcr);
+        properties.Add(new Property(nameof(PunchItem.SWCR), punchItem.SWCR!.No));
     }
 
-    private async Task SetOriginalWorkOrderAsync(PunchItem punchItem, Guid? originalWorkOrderGuid, CancellationToken cancellationToken)
+    private async Task SetOriginalWorkOrderAsync(
+        PunchItem punchItem, 
+        Guid? originalWorkOrderGuid, 
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
     {
         if (!originalWorkOrderGuid.HasValue)
         {
@@ -175,9 +266,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);
+        properties.Add(new Property(nameof(PunchItem.OriginalWorkOrder), punchItem.OriginalWorkOrder!.No));
     }
 
-    private async Task SetWorkOrderAsync(PunchItem punchItem, Guid? workOrderGuid, CancellationToken cancellationToken)
+    private async Task SetWorkOrderAsync(
+        PunchItem punchItem, 
+        Guid? workOrderGuid, 
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
     {
         if (!workOrderGuid.HasValue)
         {
@@ -186,9 +282,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var wo = await _woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
         punchItem.SetWorkOrder(wo);
+        properties.Add(new Property(nameof(PunchItem.WorkOrder), punchItem.WorkOrder!.No));
     }
 
-    private async Task SetActionByAsync(PunchItem punchItem, Guid? actionByPersonOid, CancellationToken cancellationToken)
+    private async Task SetActionByAsync(
+        PunchItem punchItem,
+        Guid? actionByPersonOid,
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
     {
         if (!actionByPersonOid.HasValue)
         {
@@ -197,12 +298,16 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var person = await _personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
+        properties.Add(new Property(
+            nameof(PunchItem.ActionBy),
+            new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName())));
     }
 
     private async Task SetLibraryItemAsync(
         PunchItem punchItem,
         Guid? libraryGuid,
         LibraryType libraryType,
+        List<IProperty> properties,
         CancellationToken cancellationToken)
     {
         if (!libraryGuid.HasValue)
@@ -215,12 +320,15 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         {
             case LibraryType.PUNCHLIST_PRIORITY:
                 punchItem.SetPriority(libraryItem);
+                properties.Add(new Property(nameof(PunchItem.Priority), punchItem.Priority!.Code));
                 break;
             case LibraryType.PUNCHLIST_SORTING:
                 punchItem.SetSorting(libraryItem);
+                properties.Add(new Property(nameof(PunchItem.Sorting), punchItem.Sorting!.Code));
                 break;
             case LibraryType.PUNCHLIST_TYPE:
                 punchItem.SetType(libraryItem);
+                properties.Add(new Property(nameof(PunchItem.Type), punchItem.Type!.Code));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
