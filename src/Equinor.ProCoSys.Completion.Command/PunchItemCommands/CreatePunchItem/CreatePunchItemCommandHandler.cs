@@ -204,7 +204,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private void SetEstimate(PunchItem punchItem, int? estimate, List<IProperty> properties)
     {
         punchItem.Estimate = estimate;
-        if (!estimate.HasValue)
+        if (estimate is null)
         {
             return;
         }
@@ -213,7 +213,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
     private void SetDueTime(PunchItem punchItem, DateTime? dueTimeUtc, List<IProperty> properties)
     {
-        if (!dueTimeUtc.HasValue)
+        if (dueTimeUtc is null)
         {
             return;
         }
@@ -227,7 +227,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!documentGuid.HasValue)
+        if (documentGuid is null)
         {
             return;
         }
@@ -243,7 +243,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!swcrGuid.HasValue)
+        if (swcrGuid is null)
         {
             return;
         }
@@ -259,7 +259,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!originalWorkOrderGuid.HasValue)
+        if (originalWorkOrderGuid is null)
         {
             return;
         }
@@ -275,7 +275,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!workOrderGuid.HasValue)
+        if (workOrderGuid is null)
         {
             return;
         }
@@ -291,7 +291,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!actionByPersonOid.HasValue)
+        if (actionByPersonOid is null)
         {
             return;
         }
@@ -310,10 +310,11 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         List<IProperty> properties,
         CancellationToken cancellationToken)
     {
-        if (!libraryGuid.HasValue)
+        if (libraryGuid is null)
         {
             return;
         }
+
         var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
 
         switch (libraryType)
