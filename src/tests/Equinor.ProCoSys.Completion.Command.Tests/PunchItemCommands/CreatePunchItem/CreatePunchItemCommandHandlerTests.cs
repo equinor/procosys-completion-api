@@ -243,7 +243,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         Assert.AreEqual(_punchItemAddedToRepository.Plant, _plantPublishedToHistory);
         Assert.AreEqual(
-            $"{_punchItemAddedToRepository.Category} punch item {_punchItemAddedToRepository.ItemNo} created", 
+            $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created", 
             _displayNamePublishedToHistory);
         Assert.AreEqual(_punchItemAddedToRepository.Guid, _guidPublishedToHistory);
         Assert.AreEqual(_punchItemAddedToRepository.CheckListGuid, _parentGuidPublishedToHistory);

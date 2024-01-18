@@ -125,7 +125,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _historyEventPublisher.PublishCreatedEventAsync(
                 punchItem.Plant,
-                $"{punchItem.Category} punch item {punchItem.ItemNo} created",
+                $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
                 punchItem.Guid,
                 punchItem.CheckListGuid,
                 new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
