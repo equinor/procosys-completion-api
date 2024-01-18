@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -245,11 +244,4 @@ public class LinkServiceTests : TestsBase
         Assert.AreEqual(_rowVersion, _existingLink.RowVersion.ConvertToString());
     }
     #endregion
-
-    private void AssertChange(IChangedProperty change, object oldValue, object newValue)
-    {
-        Assert.IsNotNull(change);
-        Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(newValue, change.NewValue);
-    }
 }

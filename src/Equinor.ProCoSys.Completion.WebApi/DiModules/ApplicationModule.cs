@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
 using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.Validators;
@@ -176,6 +177,7 @@ public static class ApplicationModule
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
+        services.AddScoped<IEventPublisher, EventPublisher>();
         services.AddScoped<IPunchEventPublisher, PunchEventPublisher>();
         services.AddScoped<IHistoryEventPublisher, HistoryEventPublisher>();
 

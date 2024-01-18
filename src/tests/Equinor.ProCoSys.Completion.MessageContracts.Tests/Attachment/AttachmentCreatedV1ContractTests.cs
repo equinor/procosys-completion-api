@@ -14,6 +14,7 @@ public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCrea
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },

@@ -171,7 +171,7 @@ public class PunchItemIntegrationEventTestsBase
     protected void AssertDeletedBy(PunchItem punchItem, PunchItemDeletedIntegrationEvent integrationEvent)
     {
         // Our domain entities don't have DeletedByOid / DeletedAtUtc ...
-        // ... use ModifiedBy/ModifiedAtUtc which is set when saving a delete
+        // ... use ModifiedBy/ModifiedAtUtc which is set when saving a deletion
         Assert.AreEqual(punchItem.ModifiedAtUtc, integrationEvent.DeletedAtUtc);
         Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.DeletedBy.Oid);
         Assert.AreEqual(punchItem.ModifiedBy!.GetFullName(), integrationEvent.DeletedBy.FullName);

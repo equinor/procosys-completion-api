@@ -378,20 +378,4 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             _punchItemAddedToRepository.ClearingByOrg.Code);
     }
-
-    private void AssertPerson(IProperty property, User value)
-    {
-        Assert.IsNotNull(property);
-        var user = property.Value as User;
-        Assert.IsNotNull(user);
-        Assert.AreEqual(value.Oid, user.Oid);
-        Assert.AreEqual(value.FullName, user.FullName);
-    }
-
-    private void AssertProperty(IProperty property, object value)
-    {
-        Assert.IsNotNull(property);
-        Assert.IsNotNull(value);
-        Assert.AreEqual(value, property.Value);
-    }
 }

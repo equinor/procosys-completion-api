@@ -1089,38 +1089,4 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             default);
     }
     #endregion
-
-    private void AssertChange(IChangedProperty change, object oldValue, object newValue)
-    {
-        Assert.IsNotNull(change);
-        Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(newValue, change.NewValue);
-    }
-
-    private void AssertPersonChange(IChangedProperty change, User oldValue, User newValue)
-    {
-        Assert.IsNotNull(change);
-        if (change.OldValue is null)
-        {
-            Assert.IsNull(oldValue);
-        }
-        else
-        {
-            var user = change.OldValue as User;
-            Assert.IsNotNull(user);
-            Assert.AreEqual(oldValue.Oid, user.Oid);
-            Assert.AreEqual(oldValue.FullName, user.FullName);
-        }
-        if (change.NewValue is null)
-        {
-            Assert.IsNull(newValue);
-        }
-        else
-        {
-            var user = change.NewValue as User;
-            Assert.IsNotNull(user);
-            Assert.AreEqual(newValue.Oid, user.Oid);
-            Assert.AreEqual(newValue.FullName, user.FullName);
-        }
-    }
 }
