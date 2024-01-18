@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
@@ -79,22 +80,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldSyncWithPcs4()
-        {
-            // Arrange
-            var integrationEvent = Substitute.For<IPunchItemUpdatedV1>();
-            _punchEventPublisherMock
-                .PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default)
-                .Returns(integrationEvent);
-
-            // Act
-            await _dut.Handle(_command, default);
-
-            // Assert
-            await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
-        }
-
-        [TestMethod]
         public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent()
         {
             // Act
@@ -140,6 +125,23 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunch
         }
 
         #region Unit Tests which can be removed when no longer sync to pcs4
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSyncWithPcs4()
+        {
+            // Arrange
+            var integrationEvent = Substitute.For<IPunchItemUpdatedV1>();
+            _punchEventPublisherMock
+                .PublishUpdatedEventAsync(_existingPunchItem[_testPlant], default)
+                .Returns(integrationEvent);
+
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+        }
+
         [TestMethod]
         public async Task HandlingCommand_ShouldBeginTransaction()
         {

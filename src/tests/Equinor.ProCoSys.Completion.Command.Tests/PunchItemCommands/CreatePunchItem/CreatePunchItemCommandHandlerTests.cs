@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
@@ -187,22 +188,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSyncWithPcs4()
-    {
-        // Arrange
-        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
-        _punchEventPublisherMock
-            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
-            .Returns(integrationEvent);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync("PunchItem", integrationEvent, _testPlant, default);
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_ShouldPublishCreatedEvent()
     {
         // Act
@@ -251,6 +236,22 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
+        _punchEventPublisherMock
+            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
+            .Returns(integrationEvent);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+    }
+
     [TestMethod]
     public async Task HandlingCommand_ShouldBeginTransaction()
     {
