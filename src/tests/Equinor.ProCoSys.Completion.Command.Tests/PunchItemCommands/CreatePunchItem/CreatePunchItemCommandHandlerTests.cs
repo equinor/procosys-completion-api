@@ -171,16 +171,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotSetAuditData()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(0).SetAuditDataAsync();
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_ShouldSaveTwice()
     {
         // Act
