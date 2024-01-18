@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
+using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using User = Equinor.ProCoSys.Completion.MessageContracts.User;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItem;
 
@@ -18,6 +20,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private readonly string _testPlant = TestPlantA;
     private readonly Guid _existingCheckListGuid = Guid.NewGuid();
     private PunchItem _punchItemAddedToRepository;
+    private readonly int _punchItemId = 17;
 
     private CreatePunchItemCommandHandler _dut;
     private CreatePunchItemCommand _command;
@@ -33,11 +36,12 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             });
 
         _unitOfWorkMock
-            .When(x => x.SetAuditDataAsync())
-            .Do(_ =>
+            .When(x => x.SaveChangesAsync())
+            .Do(Callback.First(_ =>
             {
                 _punchItemAddedToRepository.SetCreated(_currentPerson);
-            });
+                _punchItemAddedToRepository.SetProtectedIdForTesting(_punchItemId);
+            }));
 
         _command = new CreatePunchItemCommand(
             Category.PA,
@@ -167,23 +171,13 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSetAuditData()
+    public async Task HandlingCommand_ShouldSaveTwice()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SetAuditDataAsync();
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSave()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(2).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -231,22 +225,173 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+    public async Task HandlingCommand_WithAllPropertiesSet_ShouldPublishCorrectHistoryEvent()
     {
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
         Assert.AreEqual(_punchItemAddedToRepository.Plant, _plantPublishedToHistory);
-        Assert.AreEqual("Punch item created", _displayNamePublishedToHistory);
+        Assert.AreEqual(
+            $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created", 
+            _displayNamePublishedToHistory);
         Assert.AreEqual(_punchItemAddedToRepository.Guid, _guidPublishedToHistory);
         Assert.AreEqual(_punchItemAddedToRepository.CheckListGuid, _parentGuidPublishedToHistory);
         Assert.IsNotNull(_userPublishedToHistory);
         Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.Guid, _userPublishedToHistory.Oid);
         Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.GetFullName(), _userPublishedToHistory.FullName);
         Assert.AreEqual(_punchItemAddedToRepository.CreatedAtUtc, _dateTimePublishedToHistory);
-        Assert.IsNotNull(_newPropertiesPublishedToHistory);
-        // todo 109354 test published properties to history
-        Assert.AreEqual(0, _newPropertiesPublishedToHistory.Count);
+        Assert.IsNotNull(_propertiesPublishedToHistory);
+
+        Assert.AreEqual(19, _propertiesPublishedToHistory.Count);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
+            _punchItemAddedToRepository.ItemNo);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),
+            _punchItemAddedToRepository.Category.ToString());
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
+            _punchItemAddedToRepository.Description);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
+            _punchItemAddedToRepository.RaisedByOrg.Code);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
+            _punchItemAddedToRepository.ClearingByOrg.Code);
+        AssertPerson(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
+            new User(_existingPerson1.Guid, _existingPerson1.GetFullName()));
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
+            _punchItemAddedToRepository.DueTimeUtc);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
+            _punchItemAddedToRepository.Priority!.Code);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
+            _punchItemAddedToRepository.Sorting!.Code);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
+            _punchItemAddedToRepository.Type!.Code);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
+            _punchItemAddedToRepository.Estimate!.Value);
+
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
+            _punchItemAddedToRepository.Document!.No);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
+            _punchItemAddedToRepository.SWCR!.No);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
+            _punchItemAddedToRepository.OriginalWorkOrder!.No);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
+            _punchItemAddedToRepository.WorkOrder!.No);
+
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
+            _punchItemAddedToRepository.ExternalItemNo);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
+            _punchItemAddedToRepository.MaterialRequired);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
+            _punchItemAddedToRepository.MaterialETAUtc!.Value);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
+            _punchItemAddedToRepository.MaterialExternalNo);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishCorrectHistoryEvent()
+    {
+        // Arrange
+        var command = new CreatePunchItemCommand(
+            Category.PA,
+            "P123",
+            _existingProject[_testPlant].Guid,
+            _existingCheckListGuid,
+            _existingRaisedByOrg1[_testPlant].Guid,
+            _existingClearingByOrg1[_testPlant].Guid,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            null,
+            null);
+
+        // Act
+        await _dut.Handle(command, default);
+
+        // Assert
+        Assert.IsNotNull(_propertiesPublishedToHistory);
+
+        Assert.AreEqual(5, _propertiesPublishedToHistory.Count);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
+            _punchItemAddedToRepository.ItemNo);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),
+            _punchItemAddedToRepository.Category.ToString());
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
+            _punchItemAddedToRepository.Description);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
+            _punchItemAddedToRepository.RaisedByOrg.Code);
+        AssertProperty(
+            _propertiesPublishedToHistory
+                .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
+            _punchItemAddedToRepository.ClearingByOrg.Code);
+    }
+
+    private void AssertPerson(IProperty property, User value)
+    {
+        Assert.IsNotNull(property);
+        var user = property.Value as User;
+        Assert.IsNotNull(user);
+        Assert.AreEqual(value.Oid, user.Oid);
+        Assert.AreEqual(value.FullName, user.FullName);
+    }
+
+    private void AssertProperty(IProperty property, object value)
+    {
+        Assert.IsNotNull(property);
+        Assert.IsNotNull(value);
+        Assert.AreEqual(value, property.Value);
     }
 }
