@@ -115,7 +115,10 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         var addedEntries = ChangeTracker
             .Entries<ICreationAuditable>()
-            .Where(x => x.State == EntityState.Added)
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            // CreatedBy WILL be null after newing a new entity, before using SetCreated()
+            // We want to skip entities where CreatedBy is set, since SetAuditDataAsync can be used repeatedly 
+            .Where(x => x.State == EntityState.Added && x.Entity.CreatedBy is null)
             .ToList();
         var modifiedEntries = ChangeTracker
             .Entries<IModificationAuditable>()
