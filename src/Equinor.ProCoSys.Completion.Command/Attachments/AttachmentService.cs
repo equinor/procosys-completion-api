@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -114,7 +119,7 @@ public class AttachmentService : IAttachmentService
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency
-        // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
+        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
         attachment.SetRowVersion(rowVersion);
         _attachmentRepository.Remove(attachment);
         attachment.AddDomainEvent(new AttachmentDeletedDomainEvent(attachment));
@@ -125,6 +130,48 @@ public class AttachmentService : IAttachmentService
             attachment.FileName, 
             attachment.Guid, 
             attachment.ParentGuid);
+    }
+
+    public async Task<bool> ExistsAsync(Guid guid,
+        CancellationToken cancellationToken)
+        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
+
+    public async Task<string> UpdateAsync(
+        Guid guid,
+        string description,
+        IEnumerable<Label> labels,
+        string rowVersion,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+        attachment.UpdateLabels(labels.ToList());
+
+        var changes = UpdateAttachment(attachment, description);
+        if (changes.Any())
+        {
+            attachment.AddDomainEvent(new AttachmentUpdatedDomainEvent(attachment, changes));
+        }
+        attachment.SetRowVersion(rowVersion);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return attachment.RowVersion.ConvertToString();
+    }
+
+    private List<IChangedProperty> UpdateAttachment(Attachment attachment, string description)
+    {
+        var changes = new List<IChangedProperty>();
+
+        if (attachment.Description != description)
+        {
+            changes.Add(new ChangedProperty<string>(
+                nameof(Attachment.Description),
+                attachment.Description,
+                description));
+            attachment.Description = description;
+        }
+
+        return changes;
     }
 
     private async Task UploadAsync(
@@ -141,13 +188,9 @@ public class AttachmentService : IAttachmentService
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}", 
-            attachment.FileName, 
-            attachment.Guid, 
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}",
+            attachment.FileName,
+            attachment.Guid,
             attachment.ParentGuid);
     }
-
-    public async Task<bool> ExistsAsync(Guid guid,
-        CancellationToken cancellationToken)
-        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
 }

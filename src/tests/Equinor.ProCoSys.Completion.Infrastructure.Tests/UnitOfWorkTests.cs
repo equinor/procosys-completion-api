@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -46,7 +47,7 @@ public class UnitOfWorkTests
 
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs");
+        _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs", false);
         dut.Persons.Add(_currentUser);
         await dut.SaveChangesAsync();
 
@@ -55,46 +56,101 @@ public class UnitOfWorkTests
     }
 
     [TestMethod]
-    public async Task SaveChangesAsync_SetsCreatedProperties_WhenCreated()
+    public async Task SetAuditDataAsync_ShouldSetCreatedProperties_WhenCreated()
     {
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(raisedByOrg);
+        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(libraryItem);
+
+        // Act
+        await dut.SetAuditDataAsync();
+
+        // Assert
+        AssertCreated(libraryItem);
+        AssertNotModified(libraryItem);
+    }
+
+    [TestMethod]
+    public async Task SaveChangesAsync_ShouldSetCreatedProperties_WhenCreated()
+    {
+        // Arrange
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+
+        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(libraryItem);
 
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, raisedByOrg.CreatedAtUtc);
-        Assert.AreEqual(_currentUser.Id, raisedByOrg.CreatedById);
-        Assert.AreEqual(_currentUser.Guid, raisedByOrg.CreatedBy.Guid);
-        Assert.IsNull(raisedByOrg.ModifiedAtUtc);
-        Assert.IsNull(raisedByOrg.ModifiedById);
-        Assert.IsNull(raisedByOrg.ModifiedBy);
+        AssertCreated(libraryItem);
+        AssertNotModified(libraryItem);
     }
 
     [TestMethod]
-    public async Task SaveChangesAsync_SetsModifiedProperties_WhenModified()
+    public async Task SetAuditDataAsync_ShouldSetModifiedProperties_WhenModified()
     {
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var raisedByOrg = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(raisedByOrg);
+        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(libraryItem);
 
         await dut.SaveChangesAsync();
 
         // trigger a change on record. EF change tracker notice this
-        raisedByOrg.IsVoided = true;
-            
+        libraryItem.IsVoided = true;
+
+        // Act
+        await dut.SetAuditDataAsync();
+
+        // Assert
+        AssertCreated(libraryItem);
+        AssertModified(libraryItem);
+    }
+
+    [TestMethod]
+    public async Task SaveChangesAsync_ShouldSetModifiedProperties_WhenModified()
+    {
+        // Arrange
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+
+        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
+        dut.Library.Add(libraryItem);
+
+        await dut.SaveChangesAsync();
+
+        // trigger a change on record. EF change tracker notice this
+        libraryItem.IsVoided = true;
+
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        Assert.AreEqual(_currentTime, raisedByOrg.ModifiedAtUtc);
-        Assert.AreEqual(_currentUser.Id, raisedByOrg.ModifiedById);
-        Assert.AreEqual(_currentUser.Guid, raisedByOrg.ModifiedBy!.Guid);
+        AssertCreated(libraryItem);
+        AssertModified(libraryItem);
+    }
+
+    private void AssertModified(IModificationAuditable auditable)
+    {
+        Assert.AreEqual(_currentTime, auditable.ModifiedAtUtc);
+        Assert.AreEqual(_currentUser.Id, auditable.ModifiedById);
+        Assert.AreEqual(_currentUser.Guid, auditable.ModifiedBy!.Guid);
+    }
+
+    private void AssertNotModified(IModificationAuditable auditable)
+    {
+        Assert.IsNull(auditable.ModifiedAtUtc);
+        Assert.IsNull(auditable.ModifiedById);
+        Assert.IsNull(auditable.ModifiedBy);
+    }
+
+    private void AssertCreated(ICreationAuditable auditable)
+    {
+        Assert.AreEqual(_currentTime, auditable.CreatedAtUtc);
+        Assert.AreEqual(_currentUser.Id, auditable.CreatedById);
+        Assert.AreEqual(_currentUser.Guid, auditable.CreatedBy.Guid);
     }
 }

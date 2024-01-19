@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Labels;
@@ -9,19 +12,12 @@ public static class LabelsControllerTestsHelper
 {
     private const string Route = "Labels";
 
-    public static async Task<List<string>> GetLabelsForHostAsync(
+    public static async Task<List<LabelDto>> GetLabelsAsync(
         UserType userType,
-        string hostType,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var parameters = new ParameterCollection
-        {
-            { "hostType", hostType }
-        };
-        var url = $"{Route}{parameters}";
-
-        var response = await TestFactory.Instance.GetHttpClient(userType, null).GetAsync(url);
+        var response = await TestFactory.Instance.GetHttpClient(userType, null).GetAsync(Route);
 
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
@@ -31,6 +27,49 @@ public static class LabelsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<string>>(content);
+        return JsonConvert.DeserializeObject<List<LabelDto>>(content);
+    }
+
+    public static async Task<string> CreateLabelAsync(
+        UserType userType,
+        string text,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            text
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, null).PostAsync(Route, content);
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    public static async Task UpdateLabelAsync(
+        UserType userType,
+        string text,
+        List<EntityTypeWithLabel> availableForLabels,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            text,
+            availableForLabels
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, null).PutAsync(Route, content);
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Equinor.ProCoSys.Completion.WebApi;
+﻿using Equinor.ProCoSys.Auth.Authorization;
+
+namespace Equinor.ProCoSys.Completion.WebApi;
 
 public class Permissions
 {
@@ -17,4 +19,6 @@ public class Permissions
     public const string LIBRARY_READ = "LIBRARY_GENERAL/READ";
 
     public const string APPLICATION_TESTER = "APPLICATION_EXPLORER/EXECUTE";
+
+    public const string SUPERUSER = ClaimsTransformation.Superuser;
 }

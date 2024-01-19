@@ -9,10 +9,10 @@ using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,28 +35,29 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
+    public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
+    private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
 
-    public static string PlantWithAccess => KnownPlantData.PlantA;
-    public static string PlantWithoutAccess => KnownPlantData.PlantB;
+    public static string ResponsibleCodeWithAccess = "RespA";
+    public static string ResponsibleCodeWithoutAccess = "RespB";
+    public static string PlantWithAccess => KnownData.PlantA;
+    public static string PlantWithoutAccess => KnownData.PlantB;
     public static string Unknown => "UNKNOWN";
-    public static Guid ProjectGuidWithAccess => KnownPlantData.ProjectGuidA[KnownPlantData.PlantA];
-    public static Guid ProjectGuidWithoutAccess => KnownPlantData.ProjectGuidB[KnownPlantData.PlantA];
-    public static Guid CheckListGuid => KnownPlantData.CheckListGuid[KnownPlantData.PlantA];
-    public static Guid RaisedByOrgGuid => KnownPlantData.RaisedByOrgGuid[KnownPlantData.PlantA];
-    public static Guid ClearingByOrgGuid => KnownPlantData.ClearingByOrgGuid[KnownPlantData.PlantA];
-    public static Guid PriorityGuid => KnownPlantData.PriorityGuid[KnownPlantData.PlantA];
-    public static Guid SortingGuid => KnownPlantData.SortingGuid[KnownPlantData.PlantA];
-    public static Guid TypeGuid => KnownPlantData.TypeGuid[KnownPlantData.PlantA];
-    public static Guid OriginalWorkOrderGuid => KnownPlantData.OriginalWorkOrderGuid[KnownPlantData.PlantA];
-    public static Guid WorkOrderGuid => KnownPlantData.WorkOrderGuid[KnownPlantData.PlantA];
-    public static Guid SWCRGuid => KnownPlantData.SWCRGuid[KnownPlantData.PlantA];
-    public static Guid DocumentGuid => KnownPlantData.DocumentGuid[KnownPlantData.PlantA];
+    public static Guid ProjectGuidWithAccess => KnownData.ProjectGuidA[KnownData.PlantA];
+    public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
+    public static Guid CheckListGuidNotRestricted => KnownData.CheckListGuidA[KnownData.PlantA];
+    public static Guid CheckListGuidRestricted => KnownData.CheckListGuidB[KnownData.PlantA];
+    public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
+    public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
+    public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
+    public static Guid SortingGuid => KnownData.SortingGuid[KnownData.PlantA];
+    public static Guid TypeGuid => KnownData.TypeGuid[KnownData.PlantA];
+    public static Guid OriginalWorkOrderGuid => KnownData.OriginalWorkOrderGuid[KnownData.PlantA];
+    public static Guid WorkOrderGuid => KnownData.WorkOrderGuid[KnownData.PlantA];
+    public static Guid SWCRGuid => KnownData.SWCRGuid[KnownData.PlantA];
+    public static Guid DocumentGuid => KnownData.DocumentGuid[KnownData.PlantA];
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
-    public Guid WriterOid => new(_testUsers[UserType.Writer].Profile.Oid);
-    public Guid ReaderOid => new(_testUsers[UserType.Reader].Profile.Oid);
 
     public Dictionary<string, KnownTestData> SeededData { get; }
 
@@ -149,9 +150,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
             services.AddScoped(_ => _personApiServiceMock);
             services.AddScoped(_ => _permissionApiServiceMock);
-            services.AddScoped(_ => _checkListApiServiceMock);
+            services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
-            services.AddScoped(_ => _publishEndpointMock);
+            services.AddScoped(_ => _pcs4RepositoryMock);
         });
 
         builder.ConfigureServices(services =>
@@ -195,13 +196,15 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         dbContext.SeedCurrentUser();
 
-        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantA);
-        SeedDataForPlant(dbContext, scopeServiceProvider, KnownPlantData.PlantB);
+        SeedDataForPlant(dbContext, scopeServiceProvider, KnownData.PlantA);
+        SeedDataForPlant(dbContext, scopeServiceProvider, KnownData.PlantB);
 
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
+        dbContext.SeedPersonData(_testUsers[UserType.RestrictedWriter].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
 
         dbContext.SeedLabels();
+        dbContext.SeedMailTemplates();
     }
 
     private void SeedDataForPlant(CompletionContext dbContext, IServiceProvider serviceProvider, string plant)
@@ -258,8 +261,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     {
         var accessablePlants = new List<AccessablePlant>
         {
-            new() {Id = KnownPlantData.PlantA, Title = KnownPlantData.PlantATitle, HasAccess = true},
-            new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
+            new() {Id = KnownData.PlantA, Title = KnownData.PlantATitle, HasAccess = true},
+            new() {Id = KnownData.PlantB, Title = KnownData.PlantBTitle}
         };
 
         var accessableProjects = new List<AccessableProject>
@@ -275,16 +278,13 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             }
         };
 
-        var restrictions = new List<string>
-        {
-            ClaimsTransformation.NoRestrictions
-        };
-
         SetupAnonymousUser();
 
-        SetupWriterUser(accessablePlants, accessableProjects, restrictions);
+        SetupWriterUser(accessablePlants, accessableProjects);
+        
+        SetupRestrictedWriterUser(accessablePlants, accessableProjects);
 
-        SetupReaderUser(accessablePlants, accessableProjects, restrictions);
+        SetupReaderUser(accessablePlants, accessableProjects);
     
         SetupNoPermissionUser();
             
@@ -349,8 +349,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Email = "noreply@pcs.com",
                 ServicePrincipal = true
             }));
-        _checkListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuid)
-            .Returns(new ProCoSys4CheckList("RC", false, ProjectGuidWithAccess));
+        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidNotRestricted)
+            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
+        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidRestricted)
+            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
     }
 
     // Authenticated client without any roles
@@ -369,8 +371,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     },
                 AccessablePlants = new List<AccessablePlant>
                 {
-                    new() {Id = KnownPlantData.PlantA, Title = KnownPlantData.PlantATitle},
-                    new() {Id = KnownPlantData.PlantB, Title = KnownPlantData.PlantBTitle}
+                    new() {Id = KnownData.PlantA, Title = KnownData.PlantATitle},
+                    new() {Id = KnownData.PlantB, Title = KnownData.PlantBTitle}
                 },
                 Permissions = new List<string>(),
                 AccessableProjects = new List<AccessableProject>(),
@@ -380,8 +382,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     // Authenticated client with necessary roles to read PunchItems
     private void SetupReaderUser(
         List<AccessablePlant> commonAccessablePlants,
-        List<AccessableProject> accessableProjects,
-        List<string> restrictions)
+        List<AccessableProject> accessableProjects)
         => _testUsers.Add(UserType.Reader,
             new TestUser
             {
@@ -397,18 +398,22 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 AccessablePlants = commonAccessablePlants,
                 Permissions = new List<string>
                 {
-                    Permissions.PUNCHITEM_READ
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
-                Restrictions = restrictions
-
+                Restrictions = new List<string>
+                {
+                    ClaimsTransformation.NoRestrictions
+                }
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
+    // Is also Superuser
+    // Not restricted to content
     private void SetupWriterUser(
         List<AccessablePlant> accessablePlants,
-        List<AccessableProject> accessableProjects,
-        List<string> restrictions)
+        List<AccessableProject> accessableProjects)
         => _testUsers.Add(UserType.Writer,
             new TestUser
             {
@@ -419,7 +424,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         LastName = "Write",
                         UserName = "WW",
                         Email = "ww@pcs.com",
-                        Oid = "00000000-0000-0000-0000-000000000001"
+                        Oid = "00000000-0000-0000-0000-000000000001",
+                        Superuser = true
                     },
                 AccessablePlants = accessablePlants,
                 Permissions = new List<string>
@@ -431,10 +437,51 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_ATTACH,
                     Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
-                    Permissions.PUNCHITEM_READ
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
                 },
                 AccessableProjects = accessableProjects,
-                Restrictions = restrictions
+                Restrictions = new List<string>
+                {
+                    ClaimsTransformation.NoRestrictions
+                }
+            });
+
+    // Authenticated client with necessary roles to Create and Update a PunchItem
+    // Restricted to content with responsible code = ResponsibleCodeAvailableForRestrictedWriter
+    private void SetupRestrictedWriterUser(
+        List<AccessablePlant> accessablePlants,
+        List<AccessableProject> accessableProjects)
+        => _testUsers.Add(UserType.RestrictedWriter,
+            new TestUser
+            {
+                Profile =
+                    new TestProfile
+                    {
+                        FirstName = "Reidar",
+                        LastName = "Resttricted",
+                        UserName = "RR",
+                        Email = "rr@pcs.com",
+                        Oid = "00000000-0000-0000-0000-000000000009"
+                    },
+                AccessablePlants = accessablePlants,
+                Permissions = new List<string>
+                {
+                    Permissions.PUNCHITEM_CREATE,
+                    Permissions.PUNCHITEM_CLEAR,
+                    Permissions.PUNCHITEM_VERIFY,
+                    Permissions.PUNCHITEM_WRITE,
+                    Permissions.PUNCHITEM_ATTACH,
+                    Permissions.PUNCHITEM_DETACH,
+                    Permissions.PUNCHITEM_DELETE,
+                    Permissions.PUNCHITEM_READ,
+                    Permissions.LIBRARY_READ
+                },
+                AccessableProjects = accessableProjects,
+                Restrictions = new List<string>
+                {
+                    ResponsibleCodeWithAccess
+                }
             });
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());

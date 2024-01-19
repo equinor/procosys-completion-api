@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -69,7 +70,7 @@ public class LinkServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -132,7 +133,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, _existingLink.Title, _existingLink.Url, _rowVersion, default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -142,7 +143,7 @@ public class LinkServiceTests : TestsBase
         await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -158,13 +159,33 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldAddLinkUpdatedEvent_WhenChanges()
+    public async Task UpdateAsync_ShouldAddCorrectLinkUpdatedEvent_WhenChanges()
     {
+        // Arrange
+        var oldUrl = _existingLink.Url;
+        var oldTitle = _existingLink.Title;
+        var newUrl = Guid.NewGuid().ToString();
+        var newTitle = Guid.NewGuid().ToString();
+
         // Act
-        await _dut.UpdateAsync(_existingLink.Guid, Guid.NewGuid().ToString(), _existingLink.Url, _rowVersion, default);
+        await _dut.UpdateAsync(_existingLink.Guid, newTitle, newUrl, _rowVersion, default);
 
         // Assert
-        Assert.IsInstanceOfType(_existingLink.DomainEvents.Last(), typeof(LinkUpdatedDomainEvent));
+        var linkUpdatedDomainEventAdded = _existingLink.DomainEvents.Last() as LinkUpdatedDomainEvent;
+        Assert.IsNotNull(linkUpdatedDomainEventAdded);
+        Assert.IsNotNull(linkUpdatedDomainEventAdded.Changes);
+        AssertChange(
+            linkUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(Link.Url)),
+            oldUrl,
+            newUrl);
+        AssertChange(
+            linkUpdatedDomainEventAdded
+                .Changes
+                .SingleOrDefault(c => c.Name == nameof(Link.Title)),
+            oldTitle,
+            newTitle);
     }
 
     [TestMethod]
@@ -199,7 +220,7 @@ public class LinkServiceTests : TestsBase
         await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -224,4 +245,11 @@ public class LinkServiceTests : TestsBase
         Assert.AreEqual(_rowVersion, _existingLink.RowVersion.ConvertToString());
     }
     #endregion
+
+    private void AssertChange(IChangedProperty change, object oldValue, object newValue)
+    {
+        Assert.IsNotNull(change);
+        Assert.AreEqual(oldValue, change.OldValue);
+        Assert.AreEqual(newValue, change.NewValue);
+    }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Equinor.ProCoSys.Common;
 using System;
 using Equinor.ProCoSys.Completion.Domain.Validators;
+using Equinor.ProCoSys.Common.Misc;
 
 namespace Equinor.ProCoSys.Completion.Command.Validators;
 
@@ -14,11 +15,16 @@ public class PunchItemValidator : IPunchItemValidator
 {
     private readonly IReadOnlyContext _context;
     private readonly ICheckListValidator _checkListValidator;
+    private readonly ICurrentUserProvider _currentUserProvider;
 
-    public PunchItemValidator(IReadOnlyContext context, ICheckListValidator checkListValidator)
+    public PunchItemValidator(
+        IReadOnlyContext context,
+        ICheckListValidator checkListValidator,
+        ICurrentUserProvider currentUserProvider)
     {
         _context = context;
         _checkListValidator = checkListValidator;
+        _currentUserProvider = currentUserProvider;
     }
 
     public async Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -71,8 +77,21 @@ public class PunchItemValidator : IPunchItemValidator
         return punchItem is not null && punchItem.Category == category;
     }
 
+    public async Task<bool> CurrentUserIsVerifierAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    {
+        var punchItem = await GetPunchItemWithVerifiedByAsync(punchItemGuid, cancellationToken);
+        var currentUserOid = _currentUserProvider.GetCurrentUserOid();
+        return punchItem?.VerifiedBy is not null && punchItem.VerifiedBy.Guid == currentUserOid;
+    }
+
     private async Task<PunchItem?> GetPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
+            where pi.Guid == punchItemGuid
+            select pi).SingleOrDefaultAsync(cancellationToken);
+
+    private async Task<PunchItem?> GetPunchItemWithVerifiedByAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+        => await (from pi in _context.QuerySet<PunchItem>()
+                .Include(p => p.VerifiedBy)
             where pi.Guid == punchItemGuid
             select pi).SingleOrDefaultAsync(cancellationToken);
 }

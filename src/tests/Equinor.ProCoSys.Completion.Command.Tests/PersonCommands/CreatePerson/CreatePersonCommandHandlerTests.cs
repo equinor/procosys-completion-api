@@ -26,6 +26,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
     private const string Email = "vp@pcs.com";
     private const string SpEmail = "noreply@pcs.com";
     private const string AzureOid = "8d508aa7-b753-4cb7-b084-cf5508c8ac17";
+    private const bool Superuser = true;
     private readonly Guid _azureOid = new (AzureOid);
 
     private const int PersonIdOnNew = 1;
@@ -48,7 +49,6 @@ public class CreatePersonCommandHandlerTests : TestsBase
                 _personAddedToRepository = person;
                 person.SetProtectedIdForTesting(PersonIdOnNew);
             });
-
             
         _proCoSysPerson = new ProCoSysPerson
         {
@@ -57,6 +57,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
             LastName = LastName,
             Email = Email,
             AzureOid = AzureOid,
+            Super = Superuser,
             ServicePrincipal = false
         };
         _personCacheMock = Substitute.For<IPersonCache>();
@@ -94,6 +95,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
         Assert.AreEqual(FistName, _personAddedToRepository.FirstName);
         Assert.AreEqual(LastName, _personAddedToRepository.LastName);
         Assert.AreEqual(Email, _personAddedToRepository.Email);
+        Assert.AreEqual(Superuser, _personAddedToRepository.Superuser);
     }
 
     [TestMethod]

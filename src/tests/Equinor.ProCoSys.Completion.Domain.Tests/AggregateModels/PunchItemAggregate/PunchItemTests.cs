@@ -64,7 +64,7 @@ public class PunchItemTests : IModificationAuditableTests
         _swcr = new SWCR(_testPlant, Guid.NewGuid(), 1);
         _swcr.SetProtectedIdForTesting(131);
 
-        _actionBy = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+        _actionBy = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
         _actionBy.SetProtectedIdForTesting(132);
 
         _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg,

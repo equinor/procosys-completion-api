@@ -13,4 +13,5 @@ public interface IPunchItemValidator
     Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
     Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
     Task<bool> HasCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken);
+    Task<bool> CurrentUserIsVerifierAsync(Guid punchItemGuid, CancellationToken cancellationToken);
 }

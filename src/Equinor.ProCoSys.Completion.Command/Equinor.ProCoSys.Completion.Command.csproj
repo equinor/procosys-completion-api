@@ -1,24 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MeetingCommands\**" />
-    <Compile Remove="ResponsibleCommands\**" />
-    <EmbeddedResource Remove="MeetingCommands\**" />
-    <EmbeddedResource Remove="ResponsibleCommands\**" />
-    <None Remove="MeetingCommands\**" />
-    <None Remove="ResponsibleCommands\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="1.0.4" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="1.0.3" />
-    <PackageReference Include="FluentValidation" Version="11.8.0" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.1" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.8.1" />
     <PackageReference Include="MassTransit" Version="8.1.2" />
     <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.1.2" />
     <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
@@ -26,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.MessageContracts\Equinor.ProCoSys.Completion.MessageContracts.csproj" />
   </ItemGroup>

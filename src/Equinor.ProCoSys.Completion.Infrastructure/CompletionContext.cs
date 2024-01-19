@@ -10,9 +10,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -60,14 +61,14 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
         
-        ConfigureMassTransitOutBox(modelBuilder);
+        ConfigureOutBoxPattern(modelBuilder);
     }
 
     public static DateTimeKindConverter DateTimeKindConverter { get; } = new();
     public static LibraryTypeConverter LibraryTypeConverter { get; } = new();
 
     public virtual DbSet<Label> Labels => Set<Label>();
-    public virtual DbSet<LabelHost> LabelHosts => Set<LabelHost>();
+    public virtual DbSet<LabelEntity> LabelEntities => Set<LabelEntity>();
     public virtual DbSet<Person> Persons => Set<Person>();
     public virtual DbSet<PunchItem> PunchItems => Set<PunchItem>();
     public virtual DbSet<Project> Projects => Set<Project>();
@@ -78,28 +79,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
+    public virtual DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
 
-    private static void ConfigureMassTransitOutBox(ModelBuilder modelBuilder)
-    {
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
-    }
-
-    private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
-    {
-        // todo 104163 Discuss if we need plant or not
-        // Set global query filter on entities inheriting from PlantEntityBase
-        // https://gunnarpeipman.com/ef-core-global-query-filters/
-        foreach (var type in TypeProvider.GetEntityTypes(typeof(IDomainMarker).GetTypeInfo().Assembly, typeof(PlantEntityBase)))
-        {
-            typeof(CompletionContext)
-                .GetMethod(nameof(CompletionContext.SetGlobalQueryFilter))
-                ?.MakeGenericMethod(type)
-                .Invoke(this, new object[] { modelBuilder });
-        }
-    }
-
+    // NB! This method need to be Public, if made private it will not apply
     public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
             .Entity<T>()
@@ -128,7 +110,45 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             throw new ConcurrencyException("Data store operation failed. Data may have been modified or deleted since entities were loaded.", concurrencyException);
         }
     }
-            
+
+    public async Task SetAuditDataAsync()
+    {
+        var addedEntries = ChangeTracker
+            .Entries<ICreationAuditable>()
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            // CreatedBy WILL be null after newing a new entity, before using SetCreated()
+            // We want to skip entities where CreatedBy is set, since SetAuditDataAsync can be used repeatedly 
+            .Where(x => x.State == EntityState.Added && x.Entity.CreatedBy is null)
+            .ToList();
+        var modifiedEntries = ChangeTracker
+            .Entries<IModificationAuditable>()
+            // Also update modifiedBy / modifiedAt when deleting ...
+            // ... This to be able to create integration events with info about who performed the deletion and when
+            .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted)
+            .ToList();
+
+        if (addedEntries.Any() || modifiedEntries.Any())
+        {
+            var currentUserOid = _currentUserProvider.GetCurrentUserOid();
+            var currentPerson = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
+            if (currentPerson is null)
+            {
+                throw new Exception(
+                    $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");
+            }
+
+            foreach (var entry in addedEntries)
+            {
+                entry.Entity.SetCreated(currentPerson);
+            }
+
+            foreach (var entry in modifiedEntries)
+            {
+                entry.Entity.SetModified(currentPerson);
+            }
+        }
+    }
+
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default) 
         => await base.Database.BeginTransactionAsync(cancellationToken);
 
@@ -137,6 +157,23 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         => await base.Database.RollbackTransactionAsync(cancellationToken);
+
+    private static void ConfigureOutBoxPattern(ModelBuilder modelBuilder)
+        => modelBuilder.AddTransactionalOutboxEntities();
+
+    private void SetGlobalPlantFilter(ModelBuilder modelBuilder)
+    {
+        // todo 104163 Discuss if we need plant or not
+        // Set global query filter on entities inheriting from PlantEntityBase
+        // https://gunnarpeipman.com/ef-core-global-query-filters/
+        foreach (var type in TypeProvider.GetEntityTypes(typeof(IDomainMarker).GetTypeInfo().Assembly, typeof(PlantEntityBase)))
+        {
+            typeof(CompletionContext)
+                .GetMethod(nameof(SetGlobalQueryFilter))
+                ?.MakeGenericMethod(type)
+                .Invoke(this, new object[] { modelBuilder });
+        }
+    }
 
     /// <summary>
     /// The UpdateConcurrencyToken method is used to manage concurrency conflicts in Entity Framework. 
@@ -188,40 +225,5 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .Where(x => x.Entity.PostSaveDomainEvents is not null && x.Entity.PostSaveDomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchPostSaveEventsAsync(entities, cancellationToken);
-    }
-
-    private async Task SetAuditDataAsync()
-    {
-        var addedEntries = ChangeTracker
-            .Entries<ICreationAuditable>()
-            .Where(x => x.State == EntityState.Added)
-            .ToList();
-        var modifiedEntries = ChangeTracker
-            .Entries<IModificationAuditable>()
-            // Also update modifiedBy / modifiedAt when deleting ...
-            // ... This to be able to create integration events with info about who performed the deletion and when
-            .Where(x => x.State == EntityState.Modified || x.State == EntityState.Deleted)
-            .ToList();
-
-        if (addedEntries.Any() || modifiedEntries.Any())
-        {
-            var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-            var currentPerson = await Persons.SingleOrDefaultAsync(p => p.Guid == currentUserOid);
-            if (currentPerson is null)
-            {
-                throw new Exception(
-                    $"{nameof(Person)} {currentUserOid} not found when setting SetCreated / SetModified");
-            }
-
-            foreach (var entry in addedEntries)
-            {
-                entry.Entity.SetCreated(currentPerson);
-            }
-
-            foreach (var entry in modifiedEntries)
-            {
-                entry.Entity.SetModified(currentPerson);
-            }
-        }
     }
 }

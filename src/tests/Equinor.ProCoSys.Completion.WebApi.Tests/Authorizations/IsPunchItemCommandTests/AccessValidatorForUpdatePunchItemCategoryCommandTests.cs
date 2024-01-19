@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

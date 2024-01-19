@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents;
 using Equinor.ProCoSys.Completion.Command.EventHandlers.DomainEvents.LinkEvents.IntegrationEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.LinkDomainEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,7 +24,7 @@ public class LinkUpdatedEventHandlerTests : EventHandlerTestBase
     {
         _link.SetModified(_person);
 
-        _linkUpdatedEvent = new LinkUpdatedDomainEvent(_link, new List<IProperty>());
+        _linkUpdatedEvent = new LinkUpdatedDomainEvent(_link, new List<IChangedProperty>());
         _publishEndpointMock = Substitute.For<IPublishEndpoint>();
         _dut = new LinkUpdatedEventHandler(_publishEndpointMock, Substitute.For<ILogger<LinkUpdatedEventHandler>>());
         _publishEndpointMock
@@ -58,6 +58,7 @@ public class LinkUpdatedEventHandlerTests : EventHandlerTestBase
         // Assert
         Assert.IsNotNull(_publishedIntegrationEvent);
         Assert.AreEqual($"Link {_linkUpdatedEvent.Link.Title} updated", _publishedIntegrationEvent.DisplayName);
+        Assert.AreEqual(_linkUpdatedEvent.Changes, _publishedIntegrationEvent.Changes);
         Assert.AreEqual(_linkUpdatedEvent.Link.Guid, _publishedIntegrationEvent.Guid);
         Assert.AreEqual(_linkUpdatedEvent.Link.ParentGuid, _publishedIntegrationEvent.ParentGuid);
         Assert.AreEqual(_linkUpdatedEvent.Link.ParentType, _publishedIntegrationEvent.ParentType);

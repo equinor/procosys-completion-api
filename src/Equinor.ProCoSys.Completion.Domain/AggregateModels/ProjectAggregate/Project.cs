@@ -26,12 +26,19 @@ public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMod
         Guid = guid;
         Name = name;
         Description = description;
+        ProCoSys4LastUpdated = DateTime.Now;
     }
 
     // private setters needed for Entity Framework
     public string Name { get; set; }
     public string Description { get; set; }
     public bool IsClosed { get; set; }
+    
+    /**
+     * LastUpdated is the last time the project was updated in ProCoSys4
+     * We do not save it as UTC, because we do not know for sure if it is UTC or not (it is, but we don't know for sure)
+     */
+    public DateTime ProCoSys4LastUpdated { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;
@@ -39,6 +46,11 @@ public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMod
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
+
+    public void SetProCoSys4LastUpdated(DateTime proCoSys4LastUpdated)
+    {
+        ProCoSys4LastUpdated = proCoSys4LastUpdated;
+    }
 
     public void SetCreated(Person createdBy)
     {
