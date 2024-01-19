@@ -234,11 +234,7 @@ public class ImportHandler : IImportHandler
             pcsProperty.SetValue(pcsObject, tieObject.Site, null);
         }
 
-        //if (pcsObject is PcsNcrDocumentIn pcsNcrDocumentIn)
-        //{
-        //    pcsNcrDocumentIn.NcrPart.PlantId = tieObject.Site;
-        //    pcsNcrDocumentIn.DocumentPart.PlantId = tieObject.Site;
-        //}
+        //TODO: 106693 NCR special handling
     }
 
     private static bool SetFailed(TIMessageResult result)
@@ -254,12 +250,6 @@ public class ImportHandler : IImportHandler
             $"Error when committing message. Exception: {e.Message} Stacktrace: {e.StackTrace} TIEMessage: {message}",
             e.Message, e.StackTrace, message);
 
-        //if (e is AbortImportException)
-        //{
-        //    // Import of message frame to be aborted.
-        //    Logger.Error("Error is causing rest of message frame to be dropped.");
-        //    break;
-        //}
         return tiMessageResult;
     }
 
