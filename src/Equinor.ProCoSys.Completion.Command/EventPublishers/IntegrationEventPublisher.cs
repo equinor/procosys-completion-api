@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.EventPublishers;
 
-public class EventPublisher(IPublishEndpoint publishEndpoint, ILogger<EventPublisher> logger) : IEventPublisher
+public class IntegrationEventPublisher(IPublishEndpoint publishEndpoint, ILogger<IntegrationEventPublisher> logger)
+    : IIntegrationEventPublisher
 {
     public async Task PublishAsync<T>(T message, CancellationToken cancellationToken) where T : class, IIntegrationEvent
         => await publishEndpoint.Publish(message,

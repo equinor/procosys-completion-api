@@ -26,7 +26,7 @@ public class AttachmentService : IAttachmentService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IIntegrationEventPublisher _eventPublisher;
     private readonly ILogger<AttachmentService> _logger;
 
     public AttachmentService(
@@ -35,7 +35,7 @@ public class AttachmentService : IAttachmentService
         IUnitOfWork unitOfWork,
         IAzureBlobService azureBlobService,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IEventPublisher eventPublisher,
+        IIntegrationEventPublisher eventPublisher,
         ILogger<AttachmentService> logger)
     {
         _attachmentRepository = attachmentRepository;

@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,10 +21,12 @@ namespace Equinor.ProCoSys.Completion.Test.Common
         protected IPlantProvider _plantProviderMock;
         protected ManualTimeProvider _timeProvider;
         protected DateTime _utcNow;
+        protected Person _person;
 
         [TestInitialize]
         public void BaseSetup()
         {
+            _person = new Person(Guid.NewGuid(), "F", "L", "U", "@", false);
             _unitOfWorkMock = Substitute.For<IUnitOfWork>();
             _plantProviderMock = Substitute.For<IPlantProvider>();
             _plantProviderMock.Plant.Returns(TestPlantA);

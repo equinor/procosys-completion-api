@@ -177,7 +177,7 @@ public static class ApplicationModule
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
-        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
         services.AddScoped<IPunchEventPublisher, PunchEventPublisher>();
         services.AddScoped<IHistoryEventPublisher, HistoryEventPublisher>();
 

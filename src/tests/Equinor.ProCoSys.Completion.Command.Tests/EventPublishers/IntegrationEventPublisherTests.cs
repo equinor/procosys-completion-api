@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
@@ -11,14 +12,14 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.EventPublishers;
 
 [TestClass]
-public class EventPublisherTests
+public class IntegrationEventPublisherTests
 {
     [TestMethod]
     public async Task Publish_ShouldPublishToEndpoint()
     {
         // Arrange
         var publishEndpointMock = Substitute.For<IPublishEndpoint>();
-        var dut = new EventPublisher(publishEndpointMock, Substitute.For<ILogger<EventPublisher>>());
+        var dut = new IntegrationEventPublisher(publishEndpointMock, Substitute.For<ILogger<IntegrationEventPublisher>>());
         var message = new TestMessage(Guid.NewGuid());
 
         // Act
@@ -26,7 +27,9 @@ public class EventPublisherTests
 
         // Assert
         await publishEndpointMock.Received(1)
-            .Publish(message, Arg.Any<IPipe<PublishContext<PunchItemCreatedIntegrationEvent>>>());
+            .Publish(
+                message, 
+                Arg.Any<IPipe<PublishContext<TestMessage>>>());
     }
 
     record TestMessage(Guid Guid) : IIntegrationEvent;

@@ -10,7 +10,6 @@ using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
@@ -33,7 +32,7 @@ public class AttachmentServiceTests : TestsBase
     private Attachment _attachmentAddedToRepository;
     private Attachment _existingAttachment;
     private IAzureBlobService _azureBlobServiceMock;
-    private IEventPublisher _eventPublisherMock;
+    private IIntegrationEventPublisher _eventPublisherMock;
     private readonly string _existingFileName = "E.txt";
     private readonly string _newFileName = "N.txt";
     private readonly string _rowVersion = "AAAAAAAAABA=";
@@ -41,20 +40,18 @@ public class AttachmentServiceTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        var currentPerson = new Person(Guid.NewGuid(), "F", "L", "U", "@", false);
-        
         _attachmentRepositoryMock = Substitute.For<IAttachmentRepository>();
         _attachmentRepositoryMock
             .When(x => x.Add(Arg.Any<Attachment>()))
             .Do(callInfo =>
             {
                 _attachmentAddedToRepository = callInfo.Arg<Attachment>();
-                _attachmentAddedToRepository.SetCreated(currentPerson);
+                _attachmentAddedToRepository.SetCreated(_person);
             });
 
         _existingAttachment = new Attachment(_parentType, _parentGuid, TestPlantA, _existingFileName);
-        _existingAttachment.SetCreated(currentPerson);
-        _existingAttachment.SetModified(currentPerson);
+        _existingAttachment.SetCreated(_person);
+        _existingAttachment.SetModified(_person);
 
         _attachmentRepositoryMock
             .GetAttachmentWithFileNameForParentAsync(_existingAttachment.ParentGuid, _existingAttachment.FileName, default)
@@ -76,7 +73,7 @@ public class AttachmentServiceTests : TestsBase
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
 
-        _eventPublisherMock = Substitute.For<IEventPublisher>();
+        _eventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
 
         var blobStorageOptions = new BlobStorageOptions
         {
