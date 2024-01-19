@@ -131,11 +131,6 @@ public class ImportHandler : IImportHandler
             return importResult;
         }
 
-        TIEPCSCommonConverters.FillInCommandVerbToPerformFromTieObject(
-            tiObject,
-            message,
-            proCoSysImportObject);
-
         _messageInspector.UpdateImportOptions(proCoSysImportObject, message);
 
         EnsureObjectNameHasValue(tiObject, proCoSysImportObject);
