@@ -17,15 +17,11 @@ public class ImportHandler : IImportHandler
 {
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
-    private readonly IMessageInspector _messageInspector;
-    private readonly IMediator _mediator;
 
-    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger, IMessageInspector messageInspector, IMediator mediator)
+    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
     {
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
-        _messageInspector = messageInspector;
-        _mediator = mediator;
     }
     public TIResponseFrame Handle(TIInterfaceMessage? message)
     {
@@ -72,29 +68,19 @@ public class ImportHandler : IImportHandler
     private TIMessageResult ImportMessage(TIInterfaceMessage message)
     {
         _logger.LogInformation($"To import message GUID={message.Guid} with {message.Objects.Count} object(s)");
-
-        var tiMessageResult = new TIMessageResult { Result = MessageResults.Successful };
-
+        //TODO: 109642 Collect errors and warnings
         try
         {
             foreach (var tiObject in message.Objects)
             {
                 LogImportStarting(tiObject);
 
-                var importResult = ImportObject(message, tiObject);
-
-                importResult.AppendTo(tiMessageResult, tiObject);
-
-                if (tiMessageResult.Result != MessageResults.Successful)
-                {
-                    LogImportResultUnsuccessful(tiObject);
-                    break;
-                }
+                ImportObject(message, tiObject);
 
                 LogImportIsDone(tiObject);
             }
         }
-        catch (Exception ex) when (SetFailed(tiMessageResult))
+        catch (Exception ex) //TODO: 109642 SetFailed result
         {
             _logger.LogError($"Exception: {ex.Message}, InnerException {ex.InnerException?.Message}");
         }
@@ -103,10 +89,11 @@ public class ImportHandler : IImportHandler
             //This is where existing code does commit or abort...
         }
 
-        return tiMessageResult;
+        //TODO: 109642 return tiMessageResult;
+        return new TIMessageResult(); //TODO: Dummy for now
     }
 
-    private ImportResult? ImportObject(TIInterfaceMessage message, TIObject tiObject)
+    private void ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
         //TODO: 105834 CollectWarnings
 
@@ -114,23 +101,18 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106699 TIEProCoSysMapperCustomMapper.CustomMap
 
-        _messageInspector.CheckForScriptInjection(tiObject);
-        var importResult = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger);
-        if (ImportResultHasError(importResult))
-        {
-            return importResult;
-        }
+        //TODO: 109739 _messageInspector.CheckForScriptInjection(tiObject);
+        //TODO: 109738 TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger);
+
+        //TODO: 109642 ImportResultHasError
 
         //TODO: 106691 SiteSpecificHandler
 
-        var proCoSysImportObject = CreateProCoSysImportObject(tiObject, out importResult);
+        var proCoSysImportObject = CreateProCoSysImportObject(tiObject);
 
-        if (ImportResultHasError(importResult))
-        {
-            return importResult;
-        }
+        //TODO: 109642 ImportResultHasError
 
-        _messageInspector.UpdateImportOptions(proCoSysImportObject, message);
+        //TODO: 109739 _messageInspector.UpdateImportOptions(proCoSysImportObject, message);
 
         EnsureObjectNameHasValue(tiObject, proCoSysImportObject);
 
@@ -141,10 +123,10 @@ public class ImportHandler : IImportHandler
         //TODO: 106693 NCR special handling
 
         var command = CreateCommand(incomingObjectType, proCoSysImportObject);
-        
+
         //TODO: 106687 CommandFailureHandler;
-        
-        return ImportResult.Ok();
+
+        //TODO: 109642 return ImportResult.Ok();
     }
 
     private static void EnsureObjectNameHasValue(TIObject tiObject, IPcsObjectIn pcsObject)
@@ -154,9 +136,6 @@ public class ImportHandler : IImportHandler
             tiObject.ObjectName = ((PcsaObjectIn) pcsObject).Name;
         }
     }
-
-    private static bool ImportResultHasError(ImportResult? importResult) => importResult != null;
-
     private IIsProjectCommand CreateCommand(Type incomingObjectType, IPcsObjectIn pcsObjectIn)
     {
         //Always return a CreatePunchItemCommand for now
@@ -166,15 +145,13 @@ public class ImportHandler : IImportHandler
             throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
         }
 
-        var createPunchCommand = new CreatePunchItemCommand(Category.PA, punchItemIn.Description, new Guid(), new Guid(), new Guid(), 
+        var createPunchCommand = new CreatePunchItemCommand(Category.PA, punchItemIn.Description, new Guid(), new Guid(), new Guid(),
             new Guid(), new Guid(), null, null, null, null, null, null, null, null, null, null, false, null, null);
         return createPunchCommand;
     }
 
-
-    private IPcsObjectIn CreateProCoSysImportObject(TIObject tieObject, out ImportResult? result)
+    private IPcsObjectIn? CreateProCoSysImportObject(TIObject tieObject)
     {
-        result = null;
         var pcsObject = PcsFromTie(tieObject);
 
         if (pcsObject != null)
@@ -202,7 +179,8 @@ public class ImportHandler : IImportHandler
 
         message += " is not supported.";
         _logger.LogError(message);
-        result = ImportResult.SingleError(message);
+
+        //TODO: 109642 ImportResult.SingleError(message);
         return null;
     }
 

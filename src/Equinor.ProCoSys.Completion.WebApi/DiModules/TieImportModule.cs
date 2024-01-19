@@ -38,7 +38,6 @@ public static class TieImportModule
 
         //TODO: Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
-        services.AddTransient<IMessageInspector, MessageInspector>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
 
