@@ -146,7 +146,7 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106693 NCR special handling
 
-        var command = CreateCommand(incomingObjectType, proCoSysImportObject.ImportMethod, proCoSysImportObject);
+        var command = CreateCommand(incomingObjectType, proCoSysImportObject);
         
         //TODO: 106687 CommandFailureHandler;
         
@@ -163,7 +163,7 @@ public class ImportHandler : IImportHandler
 
     private static bool ImportResultHasError(ImportResult? importResult) => importResult != null;
 
-    private IIsProjectCommand CreateCommand(Type incomingObjectType, ImportMethod pcsObjectImportMethod, IPcsObjectIn pcsObjectIn)
+    private IIsProjectCommand CreateCommand(Type incomingObjectType, IPcsObjectIn pcsObjectIn)
     {
         //Always return a CreatePunchItemCommand for now
         var punchItemIn = pcsObjectIn as PcsPunchItemIn;
