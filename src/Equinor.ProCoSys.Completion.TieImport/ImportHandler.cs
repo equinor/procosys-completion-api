@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Completion.TieImport.Converters;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
-using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
@@ -113,7 +112,7 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106686 MapRelationsUntilTieMapperGetsFixed
 
-        TIEProCoSysMapperCustomMapper.CustomMap(tiObject, message);
+        //TODO: 106699 TIEProCoSysMapperCustomMapper.CustomMap
 
         _messageInspector.CheckForScriptInjection(tiObject);
         var importResult = TIEPCSCommonConverters.ValidateTieObjectCommonMinimumRequirements(tiObject, _logger);
