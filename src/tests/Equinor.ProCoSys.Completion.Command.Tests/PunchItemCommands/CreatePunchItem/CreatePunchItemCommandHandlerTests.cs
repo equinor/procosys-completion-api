@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
@@ -178,22 +179,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _unitOfWorkMock.Received(2).SaveChangesAsync();
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldSyncWithPcs4()
-    {
-        // Arrange
-        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
-        _punchEventPublisherMock
-            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
-            .Returns(integrationEvent);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync("PunchItem", integrationEvent, _testPlant, default);
     }
 
     [TestMethod]
@@ -394,4 +379,60 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         Assert.IsNotNull(value);
         Assert.AreEqual(value, property.Value);
     }
+
+    #region Unit Tests which can be removed when no longer sync to pcs4
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
+        _punchEventPublisherMock
+            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
+            .Returns(integrationEvent);
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldBeginTransaction()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
+    {
+        // Arrange
+        _unitOfWorkMock
+            .When(u => u.SaveChangesAsync())
+            .Do(_ => throw new Exception());
+
+        // Act
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+
+        // Assert
+        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+        Assert.IsInstanceOfType(exception, typeof(Exception));
+    }
+    #endregion
 }

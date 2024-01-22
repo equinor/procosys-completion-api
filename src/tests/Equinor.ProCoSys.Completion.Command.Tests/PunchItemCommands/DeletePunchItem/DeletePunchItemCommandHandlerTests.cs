@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.Extensions.Logging;
@@ -78,22 +78,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldSyncWithPcs4()
-        {
-            // Arrange
-            var integrationEvent = Substitute.For<IPunchItemDeletedV1>();
-            _punchEventPublisherMock
-                .PublishDeletedEventAsync(_existingPunchItem[_testPlant], default)
-                .Returns(integrationEvent);
-
-            // Act
-            await _dut.Handle(_command, default);
-
-            // Assert
-            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync("PunchItem", integrationEvent, _testPlant, default);
-        }
-
-        [TestMethod]
         public async Task HandlingCommand_ShouldPublishDeletedEvent()
         {
             // Act
@@ -138,5 +122,61 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
             Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
         }
+
+        #region Unit Tests which can be removed when no longer sync to pcs4
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSyncWithPcs4()
+        {
+            // Arrange
+            var integrationEvent = Substitute.For<IPunchItemDeletedV1>();
+            _punchEventPublisherMock
+                .PublishDeletedEventAsync(_existingPunchItem[_testPlant], default)
+                .Returns(integrationEvent);
+
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldBeginTransaction()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+            await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
+        {
+            // Arrange
+            _unitOfWorkMock
+                .When(u => u.SaveChangesAsync())
+                .Do(_ => throw new Exception());
+
+            // Act
+            var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+
+            // Assert
+            await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+            await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+            Assert.IsInstanceOfType(exception, typeof(Exception));
+        }
+        #endregion
     }
 }
