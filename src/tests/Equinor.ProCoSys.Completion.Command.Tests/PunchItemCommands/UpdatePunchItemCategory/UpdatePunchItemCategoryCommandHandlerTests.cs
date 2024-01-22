@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
@@ -75,24 +77,6 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSyncWithPcs4()
-    {
-        PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
-            .Do(Callback.First(callbackInfo =>
-            {
-                integrationEvent = callbackInfo.Arg<PunchItemUpdatedIntegrationEvent>();
-            }));
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync("PunchItem", integrationEvent, _testPlant, default);
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent()
     {
         // Arrange
@@ -145,4 +129,63 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         Assert.AreEqual(Category.PA.ToString(), changedProperty.OldValue);
         Assert.AreEqual(Category.PB.ToString(), changedProperty.NewValue);
     }
+
+    #region Unit Tests which can be removed when no longer sync to pcs4
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncWithPcs4()
+    {
+        PunchItemUpdatedIntegrationEvent integrationEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                integrationEvent = callbackInfo.Arg<PunchItemUpdatedIntegrationEvent>();
+            }));
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldBeginTransaction()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
+    {
+        // Arrange
+        _unitOfWorkMock
+            .When(u => u.SaveChangesAsync())
+            .Do(_ => throw new Exception());
+
+        // Act
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+
+        // Assert
+        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+        Assert.IsInstanceOfType(exception, typeof(Exception));
+    }
+    #endregion
 }
