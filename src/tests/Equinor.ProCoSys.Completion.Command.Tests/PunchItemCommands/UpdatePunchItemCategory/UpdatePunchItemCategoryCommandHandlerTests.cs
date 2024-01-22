@@ -77,7 +77,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent()
+    public async Task HandlingCommand_ShouldPublishPunchItemUpdatedIntegrationEvent()
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
@@ -98,7 +98,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishUpdateToHistory()
+    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent()
     {
         // Arrange
         HistoryUpdatedIntegrationEvent historyEvent = null!;

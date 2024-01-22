@@ -360,6 +360,35 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
+    public async Task DeleteAsync_ShouldPublishLinkDeletedIntegrationEvent()
+    {
+        // Arrange
+        LinkDeletedIntegrationEvent integrationEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<LinkDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                integrationEvent = callbackInfo.Arg<LinkDeletedIntegrationEvent>();
+            }));
+
+        // Act
+        await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+
+        // Assert
+        Assert.IsNotNull(integrationEvent);
+        Assert.AreEqual(TestPlantA, integrationEvent.Plant);
+        Assert.AreEqual(_existingLink.Guid, integrationEvent.Guid);
+        Assert.AreEqual(_existingLink.Guid, integrationEvent.Guid);
+        Assert.AreEqual(_existingLink.ParentGuid, integrationEvent.ParentGuid);
+
+        // Our entities don't have DeletedByOid / DeletedAtUtc ...
+        // ... use ModifiedBy/ModifiedAtUtc which is set when saving a deletion
+        Assert.AreEqual(_existingLink.ModifiedAtUtc, integrationEvent.DeletedAtUtc);
+        Assert.AreEqual(_existingLink.ModifiedBy!.Guid, integrationEvent.DeletedBy.Oid);
+        Assert.AreEqual(_existingLink.ModifiedBy!.GetFullName(), integrationEvent.DeletedBy.FullName);
+    }
+
+    [TestMethod]
     public async Task DeleteAsync_ShouldPublishHistoryDeletedIntegrationEvent()
     {
         // Arrange

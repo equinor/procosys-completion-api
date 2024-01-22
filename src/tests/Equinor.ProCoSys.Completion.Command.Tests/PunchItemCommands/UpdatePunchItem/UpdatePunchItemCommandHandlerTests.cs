@@ -308,7 +308,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishUpdatedPunchEvent_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldPublishPunchItemUpdatedIntegrationEvent_WhenOperationsGiven()
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
@@ -330,7 +330,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishHistoryEvent_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent_WhenOperationsGiven()
     {
         // Arrange
         var oldDescription = _existingPunchItem[_testPlant].Description;
@@ -450,7 +450,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent_WhenOperationsWithNullGiven()
+    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent_WhenOperationsWithNullGiven()
     {
         // Don't test MaterialRequired here. Can't be null
         // Arrange

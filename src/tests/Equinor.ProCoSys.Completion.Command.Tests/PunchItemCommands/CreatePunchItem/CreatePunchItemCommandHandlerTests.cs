@@ -312,7 +312,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishCorrectHistoryEvent()
+    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishHistoryCreatedIntegrationEvent()
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
