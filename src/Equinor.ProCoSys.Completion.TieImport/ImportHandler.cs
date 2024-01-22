@@ -26,7 +26,7 @@ public class ImportHandler : IImportHandler
     public TIResponseFrame Handle(TIInterfaceMessage? message)
     {
         var response = new TIResponseFrame();
-        if (message == null)
+        if (message is null)
         {
             _logger.LogWarning("Received an empty message. Skipped.");
             return response;
@@ -196,7 +196,7 @@ public class ImportHandler : IImportHandler
     }
     private void SetPlantIdFromTieObject(TIObject tieObject, IPcsObjectIn pcsObject)
     {
-        if (tieObject.Site == null)
+        if (tieObject.Site is null)
         {
             return;
         }

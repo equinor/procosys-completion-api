@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
-using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Infrastructure;
@@ -125,8 +124,8 @@ public static class TIEPCSCommonConverters
 
     private static void fnAddToListOfAdditionalFieldsUniquely(List<AdditionalFieldForImport> listOfAddnFields, AdditionalFieldForImport addnField)
     {
-        if (addnField == null) return;
-        if (listOfAddnFields == null)
+        if (addnField is null) return;
+        if (listOfAddnFields is null)
         {
             listOfAddnFields = new List<AdditionalFieldForImport>();
             listOfAddnFields.Add(addnField);

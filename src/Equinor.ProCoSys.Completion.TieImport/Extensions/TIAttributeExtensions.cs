@@ -30,7 +30,7 @@ public static class TIAttributeExtensions
         }
 
         var toDecimal = NumberConverter.ConvertToDecimal(tiAttribute.Value.Trim());
-        return toDecimal == null ? null : (double)toDecimal;
+        return toDecimal is null ? null : (double)toDecimal;
     }
 
     public static bool HasValue(this TIAttribute tiAttribute)

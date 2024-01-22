@@ -12,7 +12,6 @@ using System;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
-using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 
@@ -27,16 +26,13 @@ public static class TieImportModule
         services.AddOptions<TieImportOptions>()
             .BindConfiguration("TieImport")
             .ValidateDataAnnotations();
-            //.ValidateOnStart(); //TODO: JSOI
         configuration.Bind("TieImport", configOptions);
-        //services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
             .ValidateDataAnnotations();
-            //.ValidateOnStart(); //TODO: JSOI
 
-        //TODO: Scoped or Singleton or Transient?
+        //TODO: JSOI Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
