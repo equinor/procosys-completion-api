@@ -9,7 +9,7 @@ public class TIE2PCSPunchItemConverter : ITIE2PCSConverter
     {
         var pcsObject = new PcsPunchItemIn();
 
-        //TODO: 109738 TIEPCSCommonConverters.UpdatePcsObjectFromTieAttributes(pcsObject, tieObject.Attributes);
+        TIEPCSCommonConverters.UpdatePcsObjectFromTieAttributes(pcsObject, tieObject.Attributes);
         
         SetNameBasedOnTieObjectIfNotSet(tieObject, pcsObject);
 
