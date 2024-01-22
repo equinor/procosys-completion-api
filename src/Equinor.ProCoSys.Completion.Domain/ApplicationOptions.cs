@@ -5,4 +5,5 @@ public class ApplicationOptions
 {
     public string ServicePrincipalMail { get; set; }
     public string RejectLabel { get; set; }
+    public bool FakeEMail { get; set; }
 }

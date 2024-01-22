@@ -8,11 +8,13 @@ using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
+using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -37,6 +39,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
+    private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
+    private readonly IPublishEndpoint _publishEndpointMock = Substitute.For<IPublishEndpoint>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -153,6 +157,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _pcs4RepositoryMock);
+            services.AddScoped(_ => _emailServiceMock);
+            services.AddScoped(_ => _publishEndpointMock);
         });
 
         builder.ConfigureServices(services =>

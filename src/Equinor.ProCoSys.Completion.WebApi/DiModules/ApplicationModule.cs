@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
+using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.Command.Validators;
@@ -51,6 +52,8 @@ public static class ApplicationModule
         services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<OracleDBConnectionOptions>(configuration.GetSection("OracleDBConnection"));
+        services.Configure<EmailOptions>(configuration.GetSection("Email"));
+        services.Configure<GraphOptions>(configuration.GetSection("Graph"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -176,8 +179,8 @@ public static class ApplicationModule
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
         services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
-
         services.AddScoped<IAzureBlobService, AzureBlobService>();
+        services.AddSingleton<ICompletionMailService, CompletionMailService>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IEmailService, EmailService>();
