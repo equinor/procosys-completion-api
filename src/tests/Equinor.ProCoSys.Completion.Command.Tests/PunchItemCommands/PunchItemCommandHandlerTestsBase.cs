@@ -42,7 +42,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected Guid? _parentGuidPublishedToHistory;
         protected User _userPublishedToHistory;
         protected DateTime _dateTimePublishedToHistory;
-        protected List<IProperty> _newPropertiesPublishedToHistory;
+        protected List<IProperty> _propertiesPublishedToHistory;
         protected List<IChangedProperty> _changedPropertiesPublishedToHistory;
 
         protected Dictionary<string, Project> _existingProject = new();
@@ -97,7 +97,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
                     _parentGuidPublishedToHistory = info.Arg<Guid?>();
                     _userPublishedToHistory = info.Arg<User>();
                     _dateTimePublishedToHistory = info.Arg<DateTime>();
-                    _newPropertiesPublishedToHistory = info.Arg<List<IProperty>>();
+                    _propertiesPublishedToHistory = info.Arg<List<IProperty>>();
                 });
 
             _historyEventPublisherMock
@@ -210,7 +210,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Document SetupDocument(string plant, int id)
         {
-            var document = new Document(plant, Guid.NewGuid(), null!);
+            var document = new Document(plant, Guid.NewGuid(), Guid.NewGuid().ToString());
             document.SetProtectedIdForTesting(++id);
 
             _documentRepositoryMock
@@ -233,7 +233,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private WorkOrder SetupWorkOrder(string plant, int id)
         {
-            var workOrder = new WorkOrder(plant, Guid.NewGuid(), null!);
+            var workOrder = new WorkOrder(plant, Guid.NewGuid(), Guid.NewGuid().ToString());
             workOrder.SetProtectedIdForTesting(id);
             _workOrderRepositoryMock
                 .GetAsync(workOrder.Guid, default)

@@ -112,7 +112,9 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
 
             // Assert
             Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
-            Assert.AreEqual("Punch item deleted", _displayNamePublishedToHistory);
+            Assert.AreEqual(
+                $"Punch item {_existingPunchItem[_testPlant].Category} {_existingPunchItem[_testPlant].ItemNo} deleted", 
+                _displayNamePublishedToHistory);
             Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
             Assert.AreEqual(_existingPunchItem[_testPlant].CheckListGuid, _parentGuidPublishedToHistory);
             Assert.IsNotNull(_userPublishedToHistory);
