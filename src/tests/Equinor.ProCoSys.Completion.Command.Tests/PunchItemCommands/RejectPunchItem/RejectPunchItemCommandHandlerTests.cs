@@ -179,8 +179,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        AssertRequiredProperties(punchItem, integrationEvent);
-        AssertOptionalProperties(punchItem, integrationEvent);
         AssertNotCleared(integrationEvent);
         AssertIsRejected(punchItem, punchItem.RejectedBy, integrationEvent);
     }

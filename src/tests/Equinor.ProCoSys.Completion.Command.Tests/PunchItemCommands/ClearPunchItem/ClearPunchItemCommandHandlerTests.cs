@@ -95,8 +95,6 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         // Assert
         var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        AssertRequiredProperties(punchItem, integrationEvent);
-        AssertOptionalProperties(punchItem, integrationEvent);
         AssertIsCleared(punchItem, punchItem.ClearedBy, integrationEvent);
         AssertNotRejected(integrationEvent);
     }

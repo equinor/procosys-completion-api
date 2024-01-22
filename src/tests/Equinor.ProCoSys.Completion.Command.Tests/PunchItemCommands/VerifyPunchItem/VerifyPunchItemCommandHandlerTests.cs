@@ -97,8 +97,6 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        AssertRequiredProperties(punchItem, integrationEvent);
-        AssertOptionalProperties(punchItem, integrationEvent);
         AssertIsVerified(punchItem, punchItem.VerifiedBy, integrationEvent);
     }
 

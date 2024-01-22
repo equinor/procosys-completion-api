@@ -489,8 +489,8 @@ public class AttachmentServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Attachment {_existingAttachment.FileName} deleted",
             _existingAttachment.ParentGuid,
-            _attachmentAddedToRepository,
-            _attachmentAddedToRepository);
+            _existingAttachment,
+            _existingAttachment);
     }
     #endregion
 

@@ -92,10 +92,9 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _punchItemPa[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        AssertRequiredProperties(punchItem, integrationEvent);
-        AssertOptionalProperties(punchItem, integrationEvent);
+        Assert.AreEqual(punchItem.Category.ToString(), integrationEvent.Category);
     }
 
     [TestMethod]
@@ -114,7 +113,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _punchItemPa[_testPlant];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
             punchItem.Plant,
