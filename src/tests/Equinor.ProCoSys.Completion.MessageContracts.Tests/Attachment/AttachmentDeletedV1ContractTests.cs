@@ -14,6 +14,7 @@ public class AttachmentDeletedV1ContractTests : ContractTestBase<IAttachmentDele
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "DeletedBy", typeof(User) },

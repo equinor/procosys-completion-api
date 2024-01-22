@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
-using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -77,8 +77,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _documentRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
-            _punchEventPublisherMock,
-            _historyEventPublisherMock,
+            _integrationEventPublisherMock,
             Substitute.For<ILogger<CreatePunchItemCommandHandler>>());
     }
 
@@ -182,136 +181,148 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishCreatedEvent()
+    public async Task HandlingCommand_ShouldPublishPunchItemCreatedIntegrationEvent()
     {
+        // Arrange
+        PunchItemCreatedIntegrationEvent integrationEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<PunchItemCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                integrationEvent = callbackInfo.Arg<PunchItemCreatedIntegrationEvent>();
+            }));
+
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _punchEventPublisherMock.Received(1).PublishCreatedEventAsync(_punchItemAddedToRepository, default);
+        var punchItem = _punchItemAddedToRepository;
+        Assert.IsNotNull(integrationEvent);
+        AssertRequiredProperties(punchItem, integrationEvent);
+        AssertOptionalProperties(punchItem, integrationEvent);
+        AssertNotCleared(integrationEvent);
+        AssertNotRejected(integrationEvent);
+        AssertNotVerified(integrationEvent);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishCreateToHistory()
+    public async Task HandlingCommand_WithAllPropertiesSet_ShouldPublishHistoryCreatedIntegrationEvent()
     {
+        // Arrange
+        HistoryCreatedIntegrationEvent historyEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
+            }));
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        await _historyEventPublisherMock.Received(1).PublishCreatedEventAsync(
-            Arg.Any<string>(),
-            Arg.Any<string>(),
-            Arg.Any<Guid>(),
-            Arg.Any<Guid?>(),
-            Arg.Any<User>(),
-            Arg.Any<DateTime>(),
-            Arg.Any<List<IProperty>>(),
-            default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_WithAllPropertiesSet_ShouldPublishCorrectHistoryEvent()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        Assert.AreEqual(_punchItemAddedToRepository.Plant, _plantPublishedToHistory);
-        Assert.AreEqual(
-            $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created", 
-            _displayNamePublishedToHistory);
-        Assert.AreEqual(_punchItemAddedToRepository.Guid, _guidPublishedToHistory);
-        Assert.AreEqual(_punchItemAddedToRepository.CheckListGuid, _parentGuidPublishedToHistory);
-        Assert.IsNotNull(_userPublishedToHistory);
-        Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.Guid, _userPublishedToHistory.Oid);
-        Assert.AreEqual(_punchItemAddedToRepository.CreatedBy.GetFullName(), _userPublishedToHistory.FullName);
-        Assert.AreEqual(_punchItemAddedToRepository.CreatedAtUtc, _dateTimePublishedToHistory);
-        Assert.IsNotNull(_propertiesPublishedToHistory);
-
-        Assert.AreEqual(19, _propertiesPublishedToHistory.Count);
+        AssertHistoryCreatedIntegrationEvent(
+            historyEvent,
+            _punchItemAddedToRepository.Plant,
+            $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
+            _punchItemAddedToRepository.CheckListGuid,
+            _punchItemAddedToRepository,
+            _punchItemAddedToRepository);
+       
+        var properties = historyEvent.Properties;
+        Assert.IsNotNull(properties);
+        Assert.AreEqual(19, properties.Count);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
             _punchItemAddedToRepository.ItemNo);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),
             _punchItemAddedToRepository.Category.ToString());
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
             _punchItemAddedToRepository.Description);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
             _punchItemAddedToRepository.RaisedByOrg.Code);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             _punchItemAddedToRepository.ClearingByOrg.Code);
         AssertPerson(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
             new User(_existingPerson1.Guid, _existingPerson1.GetFullName()));
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
             _punchItemAddedToRepository.DueTimeUtc);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
             _punchItemAddedToRepository.Priority!.Code);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
             _punchItemAddedToRepository.Sorting!.Code);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             _punchItemAddedToRepository.Type!.Code);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
             _punchItemAddedToRepository.Estimate!.Value);
 
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
             _punchItemAddedToRepository.Document!.No);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             _punchItemAddedToRepository.SWCR!.No);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
             _punchItemAddedToRepository.OriginalWorkOrder!.No);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
             _punchItemAddedToRepository.WorkOrder!.No);
 
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
             _punchItemAddedToRepository.ExternalItemNo);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
             _punchItemAddedToRepository.MaterialRequired);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
             _punchItemAddedToRepository.MaterialETAUtc!.Value);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
             _punchItemAddedToRepository.MaterialExternalNo);
     }
 
     [TestMethod]
-    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishCorrectHistoryEvent()
+    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishHistoryCreatedIntegrationEvent()
     {
+        // Arrange
+        HistoryCreatedIntegrationEvent historyEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
+            }));
+
         // Arrange
         var command = new CreatePunchItemCommand(
             Category.PA,
@@ -339,45 +350,37 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(command, default);
 
         // Assert
-        Assert.IsNotNull(_propertiesPublishedToHistory);
+        AssertHistoryCreatedIntegrationEvent(
+            historyEvent,
+            _punchItemAddedToRepository.Plant,
+            $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
+            _punchItemAddedToRepository.CheckListGuid,
+            _punchItemAddedToRepository,
+            _punchItemAddedToRepository);
+        var properties = historyEvent.Properties;
 
-        Assert.AreEqual(5, _propertiesPublishedToHistory.Count);
+        Assert.IsNotNull(properties);
+        Assert.AreEqual(5, properties.Count);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
             _punchItemAddedToRepository.ItemNo);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),
             _punchItemAddedToRepository.Category.ToString());
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Description)),
             _punchItemAddedToRepository.Description);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
             _punchItemAddedToRepository.RaisedByOrg.Code);
         AssertProperty(
-            _propertiesPublishedToHistory
+            properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             _punchItemAddedToRepository.ClearingByOrg.Code);
-    }
-
-    private void AssertPerson(IProperty property, User value)
-    {
-        Assert.IsNotNull(property);
-        var user = property.Value as User;
-        Assert.IsNotNull(user);
-        Assert.AreEqual(value.Oid, user.Oid);
-        Assert.AreEqual(value.FullName, user.FullName);
-    }
-
-    private void AssertProperty(IProperty property, object value)
-    {
-        Assert.IsNotNull(property);
-        Assert.IsNotNull(value);
-        Assert.AreEqual(value, property.Value);
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4
@@ -385,10 +388,16 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldSyncWithPcs4()
     {
         // Arrange
-        var integrationEvent = Substitute.For<IPunchItemCreatedV1>();
-        _punchEventPublisherMock
-            .PublishCreatedEventAsync(Arg.Any<PunchItem>(), default)
-            .Returns(integrationEvent);
+        PunchItemCreatedIntegrationEvent integrationEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(
+                Arg.Any<PunchItemCreatedIntegrationEvent>(),
+                default))
+            .Do(info =>
+            {
+                integrationEvent = info.Arg<PunchItemCreatedIntegrationEvent>();
+            });
+
 
         // Act
         await _dut.Handle(_command, default);

@@ -4,8 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -26,7 +25,7 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
-public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemCommand, Result<string>>
+public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCommand, Result<string>>
 {
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
@@ -36,8 +35,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPunchEventPublisher _punchEventPublisher;
-    private readonly IHistoryEventPublisher _historyEventPublisher;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
@@ -49,8 +47,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IPunchEventPublisher punchEventPublisher,
-        IHistoryEventPublisher historyEventPublisher,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
@@ -61,8 +58,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _punchEventPublisher = punchEventPublisher;
-        _historyEventPublisher = historyEventPublisher;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
@@ -82,13 +78,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             IPunchItemUpdatedV1 integrationEvent = null!;
             if (changes.Any())
             {
-                integrationEvent = await _punchEventPublisher.PublishUpdatedEventAsync(punchItem, cancellationToken);
-                await _historyEventPublisher.PublishUpdatedEventAsync(
-                    punchItem.Plant,
+                integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+                    _integrationEventPublisher,
+                    punchItem,
                     "Punch item updated",
-                    punchItem.Guid,
-                    new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
-                    punchItem.ModifiedAtUtc!.Value,
                     changes,
                     cancellationToken);
             }
