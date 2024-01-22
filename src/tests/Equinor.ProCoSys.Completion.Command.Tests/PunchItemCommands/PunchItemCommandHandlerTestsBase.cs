@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -10,8 +9,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,19 +28,10 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
         protected ISyncToPCS4Service _syncToPCS4ServiceMock;
-        protected IPunchEventPublisher _punchEventPublisherMock;
-        protected IHistoryEventPublisher _historyEventPublisherMock;
+        protected IIntegrationEventPublisher _integrationEventPublisherMock;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
-        protected string _plantPublishedToHistory;
-        protected string _displayNamePublishedToHistory;
-        protected Guid _guidPublishedToHistory;
-        protected Guid? _parentGuidPublishedToHistory;
-        protected User _userPublishedToHistory;
-        protected DateTime _dateTimePublishedToHistory;
-        protected List<IProperty> _propertiesPublishedToHistory;
-        protected List<IChangedProperty> _changedPropertiesPublishedToHistory;
 
         protected Dictionary<string, Project> _existingProject = new();
         protected Dictionary<string, PunchItem> _existingPunchItem = new();
@@ -76,68 +64,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
             _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
-            _punchEventPublisherMock = Substitute.For<IPunchEventPublisher>();
-            _historyEventPublisherMock = Substitute.For<IHistoryEventPublisher>();
-            
-            _historyEventPublisherMock
-                .When(x => x.PublishCreatedEventAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<Guid>(),
-                    Arg.Any<Guid>(),
-                    Arg.Any<User>(),
-                    Arg.Any<DateTime>(),
-                    Arg.Any<List<IProperty>>(),
-                    default))
-                .Do(info =>
-                {
-                    _plantPublishedToHistory = info.ArgAt<string>(0);
-                    _displayNamePublishedToHistory = info.ArgAt<string>(1);
-                    _guidPublishedToHistory = info.Arg<Guid>();
-                    _parentGuidPublishedToHistory = info.Arg<Guid?>();
-                    _userPublishedToHistory = info.Arg<User>();
-                    _dateTimePublishedToHistory = info.Arg<DateTime>();
-                    _propertiesPublishedToHistory = info.Arg<List<IProperty>>();
-                });
-
-            _historyEventPublisherMock
-                .When(x => x.PublishUpdatedEventAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<Guid>(),
-                    Arg.Any<User>(),
-                    Arg.Any<DateTime>(),
-                    Arg.Any<List<IChangedProperty>>(),
-                    default))
-                .Do(info =>
-                {
-                    _plantPublishedToHistory = info.ArgAt<string>(0);
-                    _displayNamePublishedToHistory = info.ArgAt<string>(1);
-                    _guidPublishedToHistory = info.Arg<Guid>();
-                    _userPublishedToHistory = info.Arg<User>();
-                    _dateTimePublishedToHistory = info.Arg<DateTime>();
-                    _changedPropertiesPublishedToHistory = info.Arg<List<IChangedProperty>>();
-                });
-
-            _historyEventPublisherMock
-                .When(x => x.PublishDeletedEventAsync(
-                    Arg.Any<string>(),
-                    Arg.Any<string>(),
-                    Arg.Any<Guid>(),
-                    Arg.Any<Guid?>(),
-                    Arg.Any<User>(),
-                    Arg.Any<DateTime>(),
-                    default))
-                .Do(info =>
-                {
-                    _plantPublishedToHistory = info.ArgAt<string>(0);
-                    _displayNamePublishedToHistory = info.ArgAt<string>(1);
-                    _guidPublishedToHistory = info.Arg<Guid>();
-                    _parentGuidPublishedToHistory = info.Arg<Guid?>();
-                    _userPublishedToHistory = info.Arg<User>();
-                    _dateTimePublishedToHistory = info.Arg<DateTime>();
-                });
-
+            _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
             var id = 5;
             _currentPerson = SetupPerson(++id);
             _personRepositoryMock.GetCurrentPersonAsync(default)

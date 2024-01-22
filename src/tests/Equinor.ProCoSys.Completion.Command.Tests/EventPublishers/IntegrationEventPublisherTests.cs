@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
-using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using MassTransit;
 using Microsoft.Extensions.Logging;

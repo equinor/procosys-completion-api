@@ -26,7 +26,7 @@ public class AttachmentService : IAttachmentService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IIntegrationEventPublisher _eventPublisher;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<AttachmentService> _logger;
 
     public AttachmentService(
@@ -35,7 +35,7 @@ public class AttachmentService : IAttachmentService
         IUnitOfWork unitOfWork,
         IAzureBlobService azureBlobService,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IIntegrationEventPublisher eventPublisher,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<AttachmentService> logger)
     {
         _attachmentRepository = attachmentRepository;
@@ -43,7 +43,7 @@ public class AttachmentService : IAttachmentService
         _unitOfWork = unitOfWork;
         _azureBlobService = azureBlobService;
         _blobStorageOptions = blobStorageOptions;
-        _eventPublisher = eventPublisher;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
@@ -228,7 +228,7 @@ public class AttachmentService : IAttachmentService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new AttachmentCreatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var properties = new List<IProperty>
         {
@@ -242,7 +242,7 @@ public class AttachmentService : IAttachmentService
             new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),
             attachment.CreatedAtUtc,
             properties);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -256,7 +256,7 @@ public class AttachmentService : IAttachmentService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new AttachmentUpdatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             _plantProvider.Plant,
@@ -265,7 +265,7 @@ public class AttachmentService : IAttachmentService
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value,
             changes);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -275,7 +275,7 @@ public class AttachmentService : IAttachmentService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new AttachmentDeletedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             _plantProvider.Plant,
@@ -286,7 +286,7 @@ public class AttachmentService : IAttachmentService
             // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 

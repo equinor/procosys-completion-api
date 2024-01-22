@@ -8,8 +8,6 @@ using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
@@ -178,8 +176,6 @@ public static class ApplicationModule
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
         services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
-        services.AddScoped<IPunchEventPublisher, PunchEventPublisher>();
-        services.AddScoped<IHistoryEventPublisher, HistoryEventPublisher>();
 
         services.AddScoped<IAzureBlobService, AzureBlobService>();
 

@@ -32,7 +32,7 @@ public class AttachmentServiceTests : TestsBase
     private Attachment _attachmentAddedToRepository;
     private Attachment _existingAttachment;
     private IAzureBlobService _azureBlobServiceMock;
-    private IIntegrationEventPublisher _eventPublisherMock;
+    private IIntegrationEventPublisher _integrationEventPublisherMock;
     private readonly string _existingFileName = "E.txt";
     private readonly string _newFileName = "N.txt";
     private readonly string _rowVersion = "AAAAAAAAABA=";
@@ -73,7 +73,7 @@ public class AttachmentServiceTests : TestsBase
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
 
-        _eventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+        _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
 
         var blobStorageOptions = new BlobStorageOptions
         {
@@ -88,7 +88,7 @@ public class AttachmentServiceTests : TestsBase
             _unitOfWorkMock,
             _azureBlobServiceMock,
             blobStorageOptionsMock,
-            _eventPublisherMock,
+            _integrationEventPublisherMock,
             Substitute.For<ILogger<AttachmentService>>());
     }
 
@@ -106,7 +106,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<string>(),
             Arg.Any<Stream>(),
             Arg.Any<bool>());
-       await _eventPublisherMock.Received(0)
+       await _integrationEventPublisherMock.Received(0)
            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
        await _unitOfWorkMock.Received(0).SetAuditDataAsync();
        await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -162,7 +162,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentCreatedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -190,7 +190,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -201,14 +201,14 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Attachment {_attachmentAddedToRepository.FileName} uploaded", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_attachmentAddedToRepository.Guid, historyEvent.Guid);
-        Assert.AreEqual(_attachmentAddedToRepository.ParentGuid, historyEvent.ParentGuid);
-        Assert.AreEqual(_attachmentAddedToRepository.CreatedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_attachmentAddedToRepository.CreatedBy.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_attachmentAddedToRepository.CreatedBy.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryCreatedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Attachment {_attachmentAddedToRepository.FileName} uploaded",
+            _attachmentAddedToRepository.ParentGuid,
+            _attachmentAddedToRepository,
+            _attachmentAddedToRepository);
+
         Assert.AreEqual(1, historyEvent.Properties.Count);
         AssertProperty(
             historyEvent.Properties
@@ -232,7 +232,7 @@ public class AttachmentServiceTests : TestsBase
     }
     #endregion
 
-    #region UploadOverwrite
+    #region UploadOverwriteAsync
     [TestMethod]
     public async Task UploadOverwriteAsync_ShouldThrowException_AndNotPerformAnything_WhenAttachmentNotExist()
     {
@@ -251,7 +251,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<string>(),
             Arg.Any<Stream>(),
             Arg.Any<bool>());
-        await _eventPublisherMock.Received(0)
+        await _integrationEventPublisherMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
         await _unitOfWorkMock.Received(0).SetAuditDataAsync();
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -295,7 +295,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -325,7 +325,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var oldRevisionNumber = _existingAttachment.RevisionNumber;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -336,13 +336,12 @@ public class AttachmentServiceTests : TestsBase
         await _dut.UploadOverwriteAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _rowVersion, default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Attachment {_existingAttachment.FileName} uploaded again", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_existingAttachment.Guid, historyEvent.Guid);
-        Assert.AreEqual(_existingAttachment.ModifiedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryUpdatedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Attachment {_existingAttachment.FileName} uploaded again",
+            _existingAttachment,
+            _existingAttachment);
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties
@@ -445,7 +444,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentDeletedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -474,7 +473,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         HistoryDeletedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -485,20 +484,17 @@ public class AttachmentServiceTests : TestsBase
         await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Attachment {_existingAttachment.FileName} deleted", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_existingAttachment.Guid, historyEvent.Guid);
-
-        // Our entities don't have DeletedByOid / DeletedAtUtc ...
-        // ... use ModifiedBy/ModifiedAtUtc which is set when saving a deletion
-        Assert.AreEqual(_existingAttachment.ModifiedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryDeletedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Attachment {_existingAttachment.FileName} deleted",
+            _existingAttachment.ParentGuid,
+            _attachmentAddedToRepository,
+            _attachmentAddedToRepository);
     }
     #endregion
 
-    #region Update
+    #region UpdateAsync
     [TestMethod]
     public async Task UpdateAsync_ShouldUpdateDescription()
     {
@@ -549,7 +545,7 @@ public class AttachmentServiceTests : TestsBase
             default);
 
         // Assert
-        await _eventPublisherMock.Received(0)
+        await _integrationEventPublisherMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -559,7 +555,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var newTitle = Guid.NewGuid().ToString();
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -594,7 +590,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var oldDescription = _existingAttachment.Description;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -610,13 +606,13 @@ public class AttachmentServiceTests : TestsBase
             default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Attachment {_existingAttachment.FileName} updated", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_existingAttachment.Guid, historyEvent.Guid);
-        Assert.AreEqual(_existingAttachment.ModifiedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_existingAttachment.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryUpdatedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Attachment {_existingAttachment.FileName} updated",
+            _existingAttachment,
+            _existingAttachment);
+
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties

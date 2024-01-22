@@ -20,20 +20,20 @@ public class LinkService : ILinkService
     private readonly ILinkRepository _linkRepository;
     private readonly IPlantProvider _plantProvider;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _eventPublisher;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<LinkService> _logger;
 
     public LinkService(
         ILinkRepository linkRepository,
         IPlantProvider plantProvider,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher eventPublisher,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<LinkService> logger)
     {
         _linkRepository = linkRepository;
         _plantProvider = plantProvider;
         _unitOfWork = unitOfWork;
-        _eventPublisher = eventPublisher;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
@@ -134,7 +134,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkCreatedIntegrationEvent(link, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var properties = new List<IProperty>
         {
@@ -149,7 +149,7 @@ public class LinkService : ILinkService
             new User(link.CreatedBy.Guid, link.CreatedBy.GetFullName()),
             link.CreatedAtUtc,
             properties);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -162,7 +162,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkUpdatedIntegrationEvent(link, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
         _plantProvider.Plant,
@@ -171,7 +171,7 @@ public class LinkService : ILinkService
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
             link.ModifiedAtUtc!.Value,
             changes);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -181,7 +181,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkDeletedIntegrationEvent(link, _plantProvider.Plant);
-        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             _plantProvider.Plant,
@@ -192,7 +192,7 @@ public class LinkService : ILinkService
             // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
             link.ModifiedAtUtc!.Value);
-        await _eventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 

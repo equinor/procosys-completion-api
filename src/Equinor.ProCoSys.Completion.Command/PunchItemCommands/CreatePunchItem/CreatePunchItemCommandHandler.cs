@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -15,6 +14,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
@@ -35,8 +35,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPunchEventPublisher _punchEventPublisher;
-    private readonly IHistoryEventPublisher _historyEventPublisher;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<CreatePunchItemCommandHandler> _logger;
 
     public CreatePunchItemCommandHandler(
@@ -50,8 +49,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IPunchEventPublisher punchEventPublisher,
-        IHistoryEventPublisher historyEventPublisher,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
         _plantProvider = plantProvider;
@@ -64,8 +62,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _punchEventPublisher = punchEventPublisher;
-        _historyEventPublisher = historyEventPublisher;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
@@ -121,17 +118,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             // Add property for ItemNo first in list, since it is an "important" property
             properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo));
 
-            var integrationEvent = await _punchEventPublisher.PublishCreatedEventAsync(punchItem, cancellationToken);
-
-            await _historyEventPublisher.PublishCreatedEventAsync(
-                punchItem.Plant,
-                $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
-                punchItem.Guid,
-                punchItem.CheckListGuid,
-                new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
-                punchItem.CreatedAtUtc,
-                properties,
-                cancellationToken);
+            var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -150,6 +137,27 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
+        PunchItem punchItem,
+        List<IProperty> properties,
+        CancellationToken cancellationToken)
+    {
+        var integrationEvent = new PunchItemCreatedIntegrationEvent(punchItem);
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+
+        var historyEvent = new HistoryCreatedIntegrationEvent(
+            punchItem.Plant,
+            $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
+            punchItem.Guid,
+            punchItem.CheckListGuid,
+            new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
+            punchItem.CreatedAtUtc,
+            properties);
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+
+        return integrationEvent;
     }
 
     private List<IProperty> GetRequiredProperties(PunchItem punchItem)

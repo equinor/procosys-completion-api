@@ -22,7 +22,7 @@ public class LinkServiceTests : TestsBase
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly Guid _parentGuid = Guid.NewGuid();
     private ILinkRepository _linkRepositoryMock;
-    private IIntegrationEventPublisher _eventPublisherMock;
+    private IIntegrationEventPublisher _integrationEventPublisherMock;
     private LinkService _dut;
     private Link _linkAddedToRepository;
     private Link _existingLink;
@@ -44,13 +44,13 @@ public class LinkServiceTests : TestsBase
         _linkRepositoryMock.GetAsync(_existingLink.Guid, default)
             .Returns(_existingLink);
 
-        _eventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+        _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
 
         _dut = new LinkService(
             _linkRepositoryMock,
             _plantProviderMock,
             _unitOfWorkMock,
-            _eventPublisherMock,
+            _integrationEventPublisherMock,
             Substitute.For<ILogger<LinkService>>());
     }
 
@@ -98,7 +98,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         LinkCreatedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<LinkCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -126,7 +126,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -137,14 +137,14 @@ public class LinkServiceTests : TestsBase
         await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Link {_linkAddedToRepository.Title} created", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_linkAddedToRepository.Guid, historyEvent.Guid);
-        Assert.AreEqual(_linkAddedToRepository.ParentGuid, historyEvent.ParentGuid);
-        Assert.AreEqual(_linkAddedToRepository.CreatedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_linkAddedToRepository.CreatedBy.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_linkAddedToRepository.CreatedBy.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryCreatedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Link {_linkAddedToRepository.Title} created",
+            _linkAddedToRepository.ParentGuid,
+            _linkAddedToRepository,
+            _linkAddedToRepository);
+
         Assert.AreEqual(2, historyEvent.Properties.Count);
         AssertProperty(
             historyEvent.Properties
@@ -220,45 +220,6 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldAddCorrectLinkUpdatedEvent_WhenChanges()
-    {
-        // Arrange
-        var oldUrl = _existingLink.Url;
-        var oldTitle = _existingLink.Title;
-        var newUrl = Guid.NewGuid().ToString();
-        var newTitle = Guid.NewGuid().ToString();
-        HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
-            .Do(Callback.First(callbackInfo =>
-            {
-                historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
-            }));
-
-        // Act
-        await _dut.UpdateAsync(_existingLink.Guid, newTitle, newUrl, _rowVersion, default);
-
-        // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_existingLink.Guid, historyEvent.Guid);
-        Assert.AreEqual(_existingLink.ModifiedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_existingLink.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_existingLink.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
-        Assert.AreEqual(2, historyEvent.ChangedProperties.Count);
-        AssertChange(
-            historyEvent.ChangedProperties
-                .SingleOrDefault(c => c.Name == nameof(Link.Url)),
-            oldUrl,
-            newUrl);
-        AssertChange(
-            historyEvent.ChangedProperties
-                .SingleOrDefault(c => c.Name == nameof(Link.Title)),
-            oldTitle,
-            newTitle);
-    }
-
-    [TestMethod]
     public async Task UpdateAsync_ShouldNotPublishAnyIntegrationEvents_WhenNoChanges()
     {
         // Act
@@ -270,7 +231,7 @@ public class LinkServiceTests : TestsBase
             default);
 
         // Assert
-        await _eventPublisherMock.Received(0)
+        await _integrationEventPublisherMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -281,7 +242,7 @@ public class LinkServiceTests : TestsBase
         var newTitle = Guid.NewGuid().ToString();
         var newUrl = Guid.NewGuid().ToString();
         LinkUpdatedIntegrationEvent integrationEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<LinkUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -316,7 +277,7 @@ public class LinkServiceTests : TestsBase
         var oldTitle = _existingLink.Title;
         var oldUrl = _existingLink.Url;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _eventPublisherMock
+        _integrationEventPublisherMock
             .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -332,13 +293,12 @@ public class LinkServiceTests : TestsBase
             default);
 
         // Assert
-        Assert.IsNotNull(historyEvent);
-        Assert.AreEqual($"Link {_existingLink.Title} updated", historyEvent.DisplayName);
-        Assert.AreEqual(TestPlantA, historyEvent.Plant);
-        Assert.AreEqual(_existingLink.Guid, historyEvent.Guid);
-        Assert.AreEqual(_existingLink.ModifiedAtUtc, historyEvent.EventAtUtc);
-        Assert.AreEqual(_existingLink.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
-        Assert.AreEqual(_existingLink.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
+        AssertHistoryUpdatedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Link {_existingLink.Title} updated",
+            _existingLink,
+            _existingLink);
         Assert.AreEqual(2, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties
@@ -397,6 +357,31 @@ public class LinkServiceTests : TestsBase
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_rowVersion, _existingLink.RowVersion.ConvertToString());
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldPublishHistoryDeletedIntegrationEvent()
+    {
+        // Arrange
+        HistoryDeletedIntegrationEvent historyEvent = null!;
+        _integrationEventPublisherMock
+            .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                historyEvent = callbackInfo.Arg<HistoryDeletedIntegrationEvent>();
+            }));
+
+        // Act
+        await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+
+        // Assert
+        AssertHistoryDeletedIntegrationEvent(
+            historyEvent,
+            _plantProviderMock.Plant,
+            $"Link {_existingLink.Title} deleted",
+            _existingLink.ParentGuid,
+            _existingLink,
+            _existingLink);
     }
     #endregion
 }
