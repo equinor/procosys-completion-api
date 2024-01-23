@@ -17,11 +17,10 @@ public static class TIEPCSCommonConverters
     /// <param name="tieAttributes">TI Attributes of incoming TIE object</param>
     /// <param name="disabledFieldLookup">lookup for disabled fields</param>
     /// <returns>Potential additional fields from the Tie attributes not found as Property nor Field of the ImpExp object</returns>
-    public static List<AdditionalFieldForImport> UpdatePcsObjectFromTieAttributes(IPcsObject pcsObject, IEnumerable<TIAttribute> tieAttributes)
+    public static void UpdatePcsObjectFromTieAttributes(IPcsObject pcsObject, IEnumerable<TIAttribute> tieAttributes)
     {
         //GENERAL IMPORT WORKER for any Pcs  class. Assigns values to the PCS object using input from the TIE object
         //Run reflection match towards the incoming attribute names (case insensitive) versus fields/properties
-        var llistAdditionalFieldsReturned = new List<AdditionalFieldForImport>();
         var pcsObjectType = pcsObject.GetType();
 
         foreach (var currTieAtt in tieAttributes)
@@ -96,51 +95,9 @@ public static class TIEPCSCommonConverters
                             $"Failed to cast to '{pcsProperty.PropertyType}' given value '{currTieAtt.Value}' in field {currTieAtt.Name}", e);
                     }
                 }
-                continue; //Found as native property, so go to next attribute on Tie Object
             }
 
-            //***ADDITIONAL FIELD assumed
-            //Nope, not found, we must assume that this is a ProCoSys additional field. (As agreed with Trym per August 2012)
-            //Trym mht inside ProCoSys for NUMBER and DATE datatypes:
-            //Date valideres slik:
-            //Convert.ToDateTime(value, CultureInfo.InvariantCulture);
-            //Number valideres slik:
-            //Convert.ToDecimal(value, CultureInfo.InvariantCulture.NumberFormat);
-
-            //2014-Feb-04:[KRS]Previously we honored an incoming null value on the TIE object and shipped that further on as a blank for blanking
-            //According new TIE details, these should be skipped. A special blanking signal has been introduced: the string '{NULL}'
-            if (string.IsNullOrWhiteSpace(currTieAtt.Value) || string.IsNullOrWhiteSpace(currTieAtt.Name))
-            {
-                continue; //skip it
-            }
-            var addnField = currTieAtt.Value.Equals("{NULL}", StringComparison.InvariantCultureIgnoreCase)
-                ? new AdditionalFieldForImport { ColumnName = currTieAtt.Name, Value = "" }
-                : new AdditionalFieldForImport { ColumnName = currTieAtt.Name, Value = currTieAtt.Value.Trim() };
-
-            fnAddToListOfAdditionalFieldsUniquely(llistAdditionalFieldsReturned, addnField);
-        }
-        return llistAdditionalFieldsReturned;
-    }
-
-    private static void fnAddToListOfAdditionalFieldsUniquely(List<AdditionalFieldForImport> listOfAddnFields, AdditionalFieldForImport addnField)
-    {
-        if (addnField is null) return;
-        if (listOfAddnFields is null)
-        {
-            listOfAddnFields = new List<AdditionalFieldForImport>();
-            listOfAddnFields.Add(addnField);
-        }
-        else
-        {
-            //make sure not there from before of same name
-            if (!string.IsNullOrWhiteSpace(addnField.ColumnName))
-            {
-                if (!listOfAddnFields.Exists(a =>
-                    a.ColumnName.Equals(addnField.ColumnName, StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    listOfAddnFields.Add(addnField);
-                }
-            }
+            //TODO: 109798 Additional Field
         }
     }
 }
