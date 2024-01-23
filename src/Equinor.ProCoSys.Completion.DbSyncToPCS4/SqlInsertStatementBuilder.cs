@@ -54,6 +54,5 @@ public class SqlInsertStatementBuilder(IPcs4Repository pcs4Repository)
             $"( {string.Join(", ", parameterValuesForInsert)} )";
 
         return (insertStatement, sqlParameters);
-
     }
 }
