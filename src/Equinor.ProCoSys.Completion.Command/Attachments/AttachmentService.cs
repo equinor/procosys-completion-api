@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.AttachmentDomainEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -38,22 +43,22 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<AttachmentDto> UploadNewAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
         if (attachment is not null)
         {
-            throw new Exception($"{sourceType} {sourceGuid} already has an attachment with filename {fileName}");
+            throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
         }
 
         attachment = new Attachment(
-            sourceType,
-            sourceGuid,
+            parentType,
+            parentGuid,
             _plantProvider.Plant,
             fileName);
         _attachmentRepository.Add(attachment);
@@ -67,18 +72,18 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<string> UploadOverwriteAsync(
-        string sourceType,
-        Guid sourceGuid,
+        string parentType,
+        Guid parentGuid,
         string fileName,
         Stream content,
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
         if (attachment is null)
         {
-            throw new Exception($"{sourceType} {sourceGuid} don't have an attachment with filename {fileName}");
+            throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
         }
 
         attachment.IncreaseRevisionNumber();
@@ -93,9 +98,9 @@ public class AttachmentService : IAttachmentService
         return attachment.RowVersion.ConvertToString();
     }
 
-    public async Task<bool> FileNameExistsForSourceAsync(Guid sourceGuid, string fileName)
+    public async Task<bool> FileNameExistsForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForSourceAsync(sourceGuid, fileName);
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
         return attachment is not null;
     }
 
@@ -104,12 +109,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
-
-        if (attachment is null)
-        {
-            throw new Exception($"Attachment with guid {guid} not found when updating");
-        }
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
 
         var fullBlobPath = attachment.GetFullBlobPath();
         await _azureBlobService.DeleteAsync(
@@ -119,17 +119,59 @@ public class AttachmentService : IAttachmentService
 
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency
-        // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
+        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
         attachment.SetRowVersion(rowVersion);
         _attachmentRepository.Remove(attachment);
         attachment.AddDomainEvent(new AttachmentDeletedDomainEvent(attachment));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentSourceGuid}",
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
             attachment.FileName, 
             attachment.Guid, 
-            attachment.SourceGuid);
+            attachment.ParentGuid);
+    }
+
+    public async Task<bool> ExistsAsync(Guid guid,
+        CancellationToken cancellationToken)
+        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
+
+    public async Task<string> UpdateAsync(
+        Guid guid,
+        string description,
+        IEnumerable<Label> labels,
+        string rowVersion,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+        attachment.UpdateLabels(labels.ToList());
+
+        var changes = UpdateAttachment(attachment, description);
+        if (changes.Any())
+        {
+            attachment.AddDomainEvent(new AttachmentUpdatedDomainEvent(attachment, changes));
+        }
+        attachment.SetRowVersion(rowVersion);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return attachment.RowVersion.ConvertToString();
+    }
+
+    private List<IChangedProperty> UpdateAttachment(Attachment attachment, string description)
+    {
+        var changes = new List<IChangedProperty>();
+
+        if (attachment.Description != description)
+        {
+            changes.Add(new ChangedProperty<string>(
+                nameof(Attachment.Description),
+                attachment.Description,
+                description));
+            attachment.Description = description;
+        }
+
+        return changes;
     }
 
     private async Task UploadAsync(
@@ -146,15 +188,9 @@ public class AttachmentService : IAttachmentService
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentSourceGuid}", 
-            attachment.FileName, 
-            attachment.Guid, 
-            attachment.SourceGuid);
-    }
-
-    public async Task<bool> ExistsAsync(Guid guid)
-    {
-        var attachment = await _attachmentRepository.GetByGuidAsync(guid);
-        return attachment is not null;
+        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}",
+            attachment.FileName,
+            attachment.Guid,
+            attachment.ParentGuid);
     }
 }

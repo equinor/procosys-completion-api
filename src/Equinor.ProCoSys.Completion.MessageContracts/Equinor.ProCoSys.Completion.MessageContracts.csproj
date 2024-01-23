@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
       <VersionPrefix>1.0.0</VersionPrefix>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>true</WarningsAsErrors>
         <RootNamespace>Equinor.ProCoSys.Completion.MessageContracts</RootNamespace>

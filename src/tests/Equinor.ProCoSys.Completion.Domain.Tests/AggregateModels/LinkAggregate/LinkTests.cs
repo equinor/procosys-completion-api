@@ -9,8 +9,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.LinkAggregate
 public class LinkTests : IModificationAuditableTests
 {
     private Link _dut;
-    private readonly string _sourceType = "X";
-    private readonly Guid _sourceGuid = Guid.NewGuid();
+    private readonly string _parentType = "X";
+    private readonly Guid _parentGuid = Guid.NewGuid();
     private readonly string _title = "A";
     private readonly string _url = "Desc A";
 
@@ -18,16 +18,16 @@ public class LinkTests : IModificationAuditableTests
     protected override IModificationAuditable GetModificationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Link(_sourceType, _sourceGuid, _title, _url);
+    public void Setup() => _dut = new Link(_parentType, _parentGuid, _title, _url);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()
     {
         Assert.AreEqual(_title, _dut.Title);
         Assert.AreEqual(_url, _dut.Url);
-        Assert.AreEqual(_sourceType, _dut.SourceType);
-        Assert.AreEqual(_sourceGuid, _dut.SourceGuid);
-        Assert.AreNotEqual(_sourceGuid, _dut.Guid);
+        Assert.AreEqual(_parentType, _dut.ParentType);
+        Assert.AreEqual(_parentGuid, _dut.ParentGuid);
+        Assert.AreNotEqual(_parentGuid, _dut.Guid);
         Assert.AreNotEqual(Guid.Empty, _dut.Guid);
     }
 

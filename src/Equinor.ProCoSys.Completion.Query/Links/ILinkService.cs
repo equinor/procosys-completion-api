@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.Links;
 
 public interface ILinkService
 {
-    Task<IEnumerable<LinkDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    Task<IEnumerable<LinkDto>> GetAllForParentAsync(
+        Guid parentGuid,
         CancellationToken cancellationToken);
 }

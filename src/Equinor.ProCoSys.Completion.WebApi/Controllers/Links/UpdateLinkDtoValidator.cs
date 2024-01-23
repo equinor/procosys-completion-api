@@ -4,7 +4,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Links;
 
 public class UpdateLinkDtoValidator : AbstractValidator<UpdateLinkDto>
 {
-    public UpdateLinkDtoValidator(IRowVersionValidator rowVersionValidator)
+    public UpdateLinkDtoValidator(IRowVersionInputValidator rowVersionValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -13,10 +13,12 @@ public class UpdateLinkDtoValidator : AbstractValidator<UpdateLinkDto>
 
         RuleFor(dto => dto.Title)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.LinkAggregate.Link.TitleLengthMax);
 
         RuleFor(dto => dto.Url)
             .NotNull()
+            .MinimumLength(1)
             .MaximumLength(Domain.AggregateModels.LinkAggregate.Link.UrlLengthMax);
 
         RuleFor(dto => dto.RowVersion)

@@ -28,6 +28,8 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             Guid.NewGuid(),
             "full/path",
             "F.txt",
+            "Desc",
+            new List<string>{"A"},
             new PersonDto(Guid.NewGuid(), "First1", "Last1", "UN1", "Email1"),
             new DateTime(2023, 6, 11, 1, 2, 3),
             new PersonDto(Guid.NewGuid(), "First2", "Last2", "UN2", "Email2"),
@@ -38,7 +40,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             _attachmentDto
         };
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
-        _attachmentServiceMock.GetAllForSourceAsync(_query.PunchItemGuid, default)
+        _attachmentServiceMock.GetAllForParentAsync(_query.PunchItemGuid, default)
             .Returns(attachmentDtos);
 
         _dut = new GetPunchItemAttachmentsQueryHandler(_attachmentServiceMock);
@@ -53,9 +55,15 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         // Assert
         Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<AttachmentDto>));
         var attachment = result.Data.Single();
-        Assert.AreEqual(_attachmentDto.SourceGuid, attachment.SourceGuid);
+        Assert.AreEqual(_attachmentDto.ParentGuid, attachment.ParentGuid);
         Assert.AreEqual(_attachmentDto.Guid, attachment.Guid);
         Assert.AreEqual(_attachmentDto.FileName, attachment.FileName);
+        Assert.AreEqual(_attachmentDto.Description, attachment.Description);
+        Assert.AreEqual(_attachmentDto.Labels.Count, attachment.Labels.Count);
+        foreach (var labelText in _attachmentDto.Labels)
+        {
+            Assert.IsTrue(attachment.Labels.Any(l => l == labelText));
+        }
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
         Assert.AreEqual(_attachmentDto.RowVersion, attachment.RowVersion);
 
@@ -80,13 +88,13 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
     }
 
     [TestMethod]
-    public async Task HandlingQuery_Should_CallGetAllForSource_OnAttachmentService()
+    public async Task HandlingQuery_Should_CallGetAllForParent_OnAttachmentService()
     {
         // Act
         await _dut.Handle(_query, default);
 
         // Assert
-        await _attachmentServiceMock.Received(1).GetAllForSourceAsync(
+        await _attachmentServiceMock.Received(1).GetAllForParentAsync(
             _query.PunchItemGuid,
             default);
     }

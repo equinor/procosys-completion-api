@@ -14,13 +14,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attachment>
 {
-    private new AttachmentRepository _dut;
     private const string KnownFileName = "a.txt";
-    private readonly Guid _knownSourceGuid = Guid.NewGuid();
+    private readonly Guid _knownParentGuid = Guid.NewGuid();
+
+    protected override EntityWithGuidRepository<Attachment> GetDut()
+        => new AttachmentRepository(_contextHelper.ContextMock);
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var attachment = new Attachment("Whatever", _knownSourceGuid, TestPlant, KnownFileName);
+        var attachment = new Attachment("Whatever", _knownParentGuid, TestPlant, KnownFileName);
         _knownGuid = attachment.Guid;
         attachment.SetProtectedIdForTesting(_knownId);
 
@@ -32,35 +34,47 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
             .ContextMock
             .Attachments
             .Returns(_dbSetMock);
-
-        _dut = new AttachmentRepository(_contextHelper.ContextMock);
-        base._dut = _dut;
     }
 
     protected override Attachment GetNewEntity() => new("Whatever", Guid.NewGuid(), TestPlant, "new-file.txt");
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_KnownFileName_ShouldReturnAttachment()
+    public async Task GetAttachmentWithFileNameForParent_KnownFileName_ShouldReturnAttachment()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, KnownFileName);
+        // Arrange
+        var dut = new AttachmentRepository(_contextHelper.ContextMock);
 
+        // Act
+        var result = await dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, KnownFileName, default);
+
+        // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(KnownFileName, result.FileName);
     }
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_UnknownFileName_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForParent_UnknownFileName_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(_knownSourceGuid, "abc.pdf");
+        // Arrange
+        var dut = new AttachmentRepository(_contextHelper.ContextMock);
 
+        // Act
+        var result = await dut.GetAttachmentWithFileNameForParentAsync(_knownParentGuid, "abc.pdf", default);
+
+        // Assert
         Assert.IsNull(result);
     }
 
     [TestMethod]
-    public async Task GetAttachmentWithFileNameForSource_UnknownSource_ShouldReturnNull()
+    public async Task GetAttachmentWithFileNameForParent_UnknownParent_ShouldReturnNull()
     {
-        var result = await _dut.GetAttachmentWithFileNameForSourceAsync(Guid.NewGuid(), KnownFileName);
+        // Arrange
+        var dut = new AttachmentRepository(_contextHelper.ContextMock);
 
+        // Act
+        var result = await dut.GetAttachmentWithFileNameForParentAsync(Guid.NewGuid(), KnownFileName, default);
+
+        // Assert
         Assert.IsNull(result);
     }
 }

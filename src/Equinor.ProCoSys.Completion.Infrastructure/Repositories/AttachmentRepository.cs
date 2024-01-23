@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,8 @@ public class AttachmentRepository : EntityWithGuidRepository<Attachment>, IAttac
     {
     }
 
-    public Task<Attachment?> GetAttachmentWithFileNameForSourceAsync(Guid sourceGuid, string fileName)
-        => DefaultQuery.SingleOrDefaultAsync(a => a.SourceGuid == sourceGuid && a.FileName == fileName);
+    public Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
+        => DefaultQuery.SingleOrDefaultAsync(
+            a => a.ParentGuid == parentGuid && a.FileName == fileName,
+            cancellationToken);
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
@@ -28,10 +29,11 @@ public class LibraryItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        CancellationToken cancellationToken,
         [Required]
-        [FromQuery] LibraryType type)
+        [FromQuery] LibraryType libraryType)
     {
-        var result = await _mediator.Send(new GetLibraryItemsQuery(type));
+        var result = await _mediator.Send(new GetLibraryItemsQuery(libraryType), cancellationToken);
         return this.FromResult(result);
     }
 }

@@ -11,7 +11,7 @@ public interface ICreationAuditable
 {
     DateTime CreatedAtUtc { get; }
     int CreatedById { get; }
-    Guid CreatedByOid { get; }
+    Person CreatedBy { get; }
 
     /// <summary>
     /// Method to set creation data on an entity.

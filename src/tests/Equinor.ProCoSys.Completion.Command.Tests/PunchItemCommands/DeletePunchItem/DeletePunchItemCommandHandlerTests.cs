@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -12,6 +14,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
     [TestClass]
     public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
     {
+        private readonly string _testPlant = TestPlantA;
         private DeletePunchItemCommand _command;
         private DeletePunchItemCommandHandler _dut;
         private ILogger<DeletePunchItemCommandHandler> _logger;
@@ -19,13 +22,16 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         [TestInitialize]
         public void Setup()
         {
-            _command = new DeletePunchItemCommand(_existingPunchItem.Guid, RowVersion);
+            _command = new DeletePunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
 
             _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
-            
+
             _dut = new DeletePunchItemCommandHandler(
                 _punchItemRepositoryMock,
+                _syncToPCS4ServiceMock,
                 _unitOfWorkMock,
+                _punchEventPublisherMock,
+                _historyEventPublisherMock,
                 _logger);
         }
 
@@ -36,7 +42,17 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             await _dut.Handle(_command, default);
 
             // Assert
-            _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem);
+            _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem[_testPlant]);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldSetAuditData()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _unitOfWorkMock.Received(1).SetAuditDataAsync();
         }
 
         [TestMethod]
@@ -46,7 +62,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             await _dut.Handle(_command, default);
 
             // Assert
-            await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+            await _unitOfWorkMock.Received(1).SaveChangesAsync();
         }
 
         [TestMethod]
@@ -58,17 +74,69 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             // Assert
             // In real life EF Core will create a new RowVersion when save.
             // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-            Assert.AreEqual(RowVersion, _existingPunchItem.RowVersion.ConvertToString());
+            Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldAddPunchItemDeletedEvent()
+        public async Task HandlingCommand_ShouldSyncWithPcs4()
+        {
+            // Arrange
+            var integrationEvent = Substitute.For<IPunchItemDeletedV1>();
+            _punchEventPublisherMock
+                .PublishDeletedEventAsync(_existingPunchItem[_testPlant], default)
+                .Returns(integrationEvent);
+
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync("PunchItem", integrationEvent, _testPlant, default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldPublishDeletedEvent()
         {
             // Act
             await _dut.Handle(_command, default);
 
             // Assert
-            Assert.IsInstanceOfType(_existingPunchItem.DomainEvents.Last(), typeof(PunchItemDeletedDomainEvent));
+            await _punchEventPublisherMock.Received(1).PublishDeletedEventAsync(_existingPunchItem[_testPlant], default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldPublishDeleteToHistory()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            await _historyEventPublisherMock.Received(1).PublishDeletedEventAsync(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<Guid>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<User>(),
+                Arg.Any<DateTime>(),
+                default);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+        {
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
+            Assert.AreEqual(
+                $"Punch item {_existingPunchItem[_testPlant].Category} {_existingPunchItem[_testPlant].ItemNo} deleted", 
+                _displayNamePublishedToHistory);
+            Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
+            Assert.AreEqual(_existingPunchItem[_testPlant].CheckListGuid, _parentGuidPublishedToHistory);
+            Assert.IsNotNull(_userPublishedToHistory);
+            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
+            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
+            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
         }
     }
 }

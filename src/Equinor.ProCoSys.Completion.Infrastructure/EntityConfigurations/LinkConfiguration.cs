@@ -18,10 +18,8 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
             .HasIndex(x => x.Guid)
             .IsUnique();
 
-        builder.ToTable(t => t.IsTemporal());
-
-        builder.Property(x => x.SourceType)
-            .HasMaxLength(Link.SourceTypeLengthMax)
+        builder.Property(x => x.ParentType)
+            .HasMaxLength(Link.ParentTypeLengthMax)
             .IsRequired();
 
         builder.Property(x => x.Title)
@@ -33,8 +31,8 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
             .IsRequired();
 
         builder
-            .HasIndex(x => x.SourceGuid)
-            .HasDatabaseName("IX_Links_SourceGuid")
+            .HasIndex(x => x.ParentGuid)
+            .HasDatabaseName("IX_Links_ParentGuid")
             .IncludeProperties(x => new
             {
                 x.Guid,

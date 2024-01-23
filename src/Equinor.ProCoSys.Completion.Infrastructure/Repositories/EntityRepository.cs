@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Microsoft.EntityFrameworkCore;
@@ -28,17 +29,17 @@ public abstract class EntityRepository<TEntity> : Domain.IRepository<TEntity> wh
     public virtual void Add(TEntity entity) =>
         Set.Add(entity);
 
-    public Task<bool> Exists(int id) =>
-        DefaultQuery.AnyAsync(x => x.Id == id);
+    public Task<bool> Exists(int id, CancellationToken cancellationToken) =>
+        DefaultQuery.AnyAsync(x => x.Id == id, cancellationToken);
 
-    public virtual Task<List<TEntity>> GetAllAsync() =>
-        DefaultQuery.ToListAsync();
+    public virtual Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken) =>
+        DefaultQuery.ToListAsync(cancellationToken);
 
-    public virtual Task<TEntity?> GetByIdAsync(int id) =>
-        DefaultQuery.SingleOrDefaultAsync(x => x.Id == id);
+    public virtual Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
+        DefaultQuery.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> ids) =>
-        DefaultQuery.Where(x => ids.Contains(x.Id)).ToListAsync();
+    public Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken) =>
+        DefaultQuery.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
 
     public virtual void Remove(TEntity entity)
     {

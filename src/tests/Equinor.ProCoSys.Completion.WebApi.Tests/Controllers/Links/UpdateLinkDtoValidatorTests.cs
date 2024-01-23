@@ -11,13 +11,13 @@ public class UpdateLinkDtoValidatorTests
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
-    private UpdateLinkDtoValidator _dut;
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private UpdateLinkDtoValidator _dut = null!;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
         _dut = new UpdateLinkDtoValidator(_rowVersionValidatorMock);
@@ -52,6 +52,21 @@ public class UpdateLinkDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTitleIsEmpty()
+    {
+        // Arrange
+        var dto = new UpdateLinkDto(string.Empty, "U", _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Title' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTitleIsTooLongAsync()
     {
         // Arrange
@@ -82,6 +97,21 @@ public class UpdateLinkDtoValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Url' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenUrlIsEmpty()
+    {
+        // Arrange
+        var dto = new UpdateLinkDto("New title", string.Empty, _rowVersion);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Url' must be at least"));
     }
 
     [TestMethod]

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Command.Validators.PunchItemValidators;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -26,9 +26,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(true);
         _dut = new OverwriteExistingPunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
@@ -95,9 +96,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_AttachmentWithFileNameNotExists()
     {
         // Arrange
-        _attachmentServiceMock.FileNameExistsForSourceAsync(
+        _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid,
-                _command.FileName)
+                _command.FileName,
+                default)
             .Returns(false);
 
         // Act
@@ -107,5 +109,38 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith($"Punch item don't have an attachment with filename {_command.FileName}!"));
+    }
+
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_PunchItemIsVerified_AndCurrentUserIsNotVerifier()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item attachments can't be changed. The punch item is verified!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldBeValid_When_PunchItemIsVerified_AndCurrentUserIsVerifier()
+    {
+        // Arrange
+        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+        _punchItemValidatorMock.CurrentUserIsVerifierAsync(_command.PunchItemGuid, default)
+            .Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
     }
 }

@@ -10,13 +10,13 @@ public class RowVersionDtoValidatorTests
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
 
-    private RowVersionDtoValidator _dut;
-    private IRowVersionValidator _rowVersionValidatorMock;
+    private RowVersionDtoValidator _dut = null!;
+    private IRowVersionInputValidator _rowVersionValidatorMock = null!;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _rowVersionValidatorMock = Substitute.For<IRowVersionValidator>();
+        _rowVersionValidatorMock = Substitute.For<IRowVersionInputValidator>();
         _rowVersionValidatorMock.IsValid(_rowVersion).Returns(true);
 
         _dut = new RowVersionDtoValidator(_rowVersionValidatorMock);

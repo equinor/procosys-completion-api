@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 
 public class OverwriteAttachmentDtoValidator : UploadBaseDtoValidator<OverwriteAttachmentDto>
 {
-    public OverwriteAttachmentDtoValidator(IRowVersionValidator rowVersionValidator,
+    public OverwriteAttachmentDtoValidator(IRowVersionInputValidator rowVersionValidator,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions)
         : base(blobStorageOptions)
     {

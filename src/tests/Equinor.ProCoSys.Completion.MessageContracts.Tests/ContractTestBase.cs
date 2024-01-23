@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests;
 
 public abstract class ContractTestBase<TContract> where TContract: IIntegrationEvent
 {
-    private const string ExpectedNameSpace = "Equinor.ProCoSys.Completion.MessageContracts";
-
     [TestMethod]
     public abstract void Contract_Interface_DoNotChange();
     [TestMethod]
@@ -24,27 +23,19 @@ public abstract class ContractTestBase<TContract> where TContract: IIntegrationE
     {
         var actualProperties = GetAllProperties();
 
-        CollectionAssert.AreEquivalent(expectedProperties.Keys, actualProperties.Keys,
-            "The number expected properties does not match number of interface properties, " +
-            "test needs to be updated if the change is non breaking(non required property added)");
-
-        foreach (var expectedProperty in expectedProperties)
-        {
-            Assert.AreEqual(expectedProperty.Value, actualProperties[expectedProperty.Key], "Property type mismatch. " +
-                "Consider creating a new version instead of modifying the existing one.");
-        }
+        TestHelper.AssertPropertiesNotChanged(expectedProperties, actualProperties);
     }
 
     /**
-     * If this test fails, its mostly because the namespace of contract is other than Equinor.ProCoSys.Completion.MessageContracts
-     * See adr 0004
+     * If this test fails, its mostly because the namespace of versioning contract had been moved.
+     * This is a breaking change for message receiver, since full namespace are used when subscribing with mass transit
      */
-    protected void AssertNamespaceNotChanged()
+    protected void AssertNamespaceNotChanged(string expectedNameSpace)
     {
         var contractToTestType = typeof(TContract);
 
         // Assert 
-        Assert.AreEqual(ExpectedNameSpace, contractToTestType.Namespace);
+        Assert.AreEqual(expectedNameSpace, contractToTestType.Namespace);
     }
 
     private static Dictionary<string, Type> GetAllProperties()

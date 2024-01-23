@@ -13,6 +13,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Tests.Repositories;
 [TestClass]
 public class CommentRepositoryTests : EntityWithGuidRepositoryTestBase<Comment>
 {
+    protected override EntityWithGuidRepository<Comment> GetDut() => new CommentRepository(_contextHelper.ContextMock);
+
     protected override void SetupRepositoryWithOneKnownItem()
     {
         var comment = new Comment("Whatever", Guid.NewGuid(), "T");
@@ -26,8 +28,6 @@ public class CommentRepositoryTests : EntityWithGuidRepositoryTestBase<Comment>
             .ContextMock
             .Comments
             .Returns(_dbSetMock);
-
-        _dut = new CommentRepository(_contextHelper.ContextMock);
     }
 
     protected override Comment GetNewEntity() => new("Whatever", Guid.NewGuid(), "New comment");

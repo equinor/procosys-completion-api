@@ -7,11 +7,15 @@ namespace Equinor.ProCoSys.Completion.Query.Attachments;
 
 public interface IAttachmentService
 {
-    Task<IEnumerable<AttachmentDto>> GetAllForSourceAsync(
-        Guid sourceGuid,
+    Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
+        Guid parent,
         CancellationToken cancellationToken);
 
     Task<Uri?> GetDownloadUriAsync(
+        Guid guid,
+        CancellationToken cancellationToken);
+
+    Task<bool> ExistsAsync(
         Guid guid,
         CancellationToken cancellationToken);
 }

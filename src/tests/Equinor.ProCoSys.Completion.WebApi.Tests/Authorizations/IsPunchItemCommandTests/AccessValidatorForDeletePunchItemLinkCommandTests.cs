@@ -7,8 +7,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 [TestClass]
 public class AccessValidatorForDeletePunchItemLinkCommandTests : AccessValidatorForIIsPunchItemCommandTests<DeletePunchItemLinkCommand>
 {
-    protected override DeletePunchItemLinkCommand GetPunchItemCommandWithAccessToProject()
-        => new(PunchItemGuidWithAccessToProject, Guid.Empty, null!);
+    protected override DeletePunchItemLinkCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+        => new(PunchItemGuidWithAccessToProjectAndContent, Guid.Empty, null!);
+
+    protected override DeletePunchItemLinkCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+        => new(PunchItemGuidWithAccessToProjectButNotContent, Guid.Empty, null!);
 
     protected override DeletePunchItemLinkCommand GetPunchItemCommandWithoutAccessToProject()
         => new(PunchItemGuidWithoutAccessToProject, Guid.Empty, null!);
