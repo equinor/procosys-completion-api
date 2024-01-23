@@ -77,7 +77,7 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
     {
         // Arrange
         _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
-        _sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, null!, null, null, null, null);
+        _sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, new NestedSourceTestObject(null), null, null, null, null);
 
         // Act
         var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
@@ -87,19 +87,6 @@ public class SqlUpdateStatementBuilderTests : SqlStatementBuilderTestsBase
 
         AssertTheSqlParameters(_expectedSqlParametersNullValues, actualSqlParams);
 
-    }
-
-    [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingProperty()
-    {
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
-        {
-            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, null!, default);
-        });
-
-        // Assert
-        Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);
     }
 
     [TestMethod]

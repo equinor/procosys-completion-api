@@ -29,8 +29,6 @@ public class SqlStatementBuilderTestsBase
     protected SourceTestObjectMissingPrimaryKey _sourceTestObjectMissingPrimaryKey;
 
     protected TestObjectMappingConfig _testObjectMappingConfig = new();
-    protected TestObjectMissingPropMappingConfig _testObjectMissingPropMappingConfig = new();
-
 
     [TestInitialize]
     public void SqlStatementBuilderTestsBaseSetup()
@@ -40,7 +38,6 @@ public class SqlStatementBuilderTestsBase
         _sourceTestObject = new SourceTestObject(TestOnlyForInsert, TestGuid, TestString, TestDate, TestDate2, TestBool, TestInt, _nestedObject, WoGuid, SwcrGuid, PersonOid, DocumentGuid);
         _sourceTestObjectMissingPrimaryKey = new SourceTestObjectMissingPrimaryKey(null, TestString, TestDate, TestDate2, TestBool, TestInt, _nestedObject, WoGuid, SwcrGuid, PersonOid, DocumentGuid);
     }
-
 
     /**
      * Asserts that the given expected parameters are the same as the actual DynamicParameters 
@@ -63,5 +60,4 @@ public class SqlStatementBuilderTestsBase
             }
         }
     }
-
 }

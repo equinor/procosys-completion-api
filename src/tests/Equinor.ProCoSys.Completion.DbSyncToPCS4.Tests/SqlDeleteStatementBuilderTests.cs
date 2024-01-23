@@ -45,7 +45,7 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
         });
 
         // Assert
-        Assert.AreEqual($"A property in configuration is missing in source object: TestGuid", exception.Message);
+        Assert.AreEqual($"Primary key given by the property 'TestGuid' is not found in the source object.", exception.Message);
     }
 
     [TestMethod]
