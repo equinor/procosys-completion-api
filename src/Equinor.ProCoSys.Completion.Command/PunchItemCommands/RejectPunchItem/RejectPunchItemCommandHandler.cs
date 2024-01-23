@@ -112,7 +112,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
     {
         var context = GetEmailContext(punchItem, comment);
-        var eMailCode = "PUNCH_REJECTED";
+        var eMailCode = EmailTemplateCode.PunchRejected;
         var eMailAddresses = mentions.Select(m => m.Email).ToList();
 
         await _completionMailService.SendEMailAsync(eMailCode, eMailAddresses, context, cancellationToken);
@@ -123,7 +123,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         dynamic context = new ExpandoObject();
         
         context.PunchItem = punchItem;
-        context.Commant = comment;
+        context.Comment = comment;
 
         return context;
     }

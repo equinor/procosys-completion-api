@@ -5,5 +5,5 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggrega
 
 public interface IMailTemplateRepository : IRepository<MailTemplate>
 {
-    Task<MailTemplate> GetByCodeAsync(string code, CancellationToken cancellationToken);
+    Task<MailTemplate> GetByCodeAsync(string plant, string code, CancellationToken cancellationToken);
 }

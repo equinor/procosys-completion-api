@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
@@ -14,11 +15,13 @@ public class MailTemplateRepository : EntityRepository<MailTemplate>, IMailTempl
     }
 
     // todo unit test
-    public async Task<MailTemplate> GetByCodeAsync(string code, CancellationToken cancellationToken)
+    public async Task<MailTemplate> GetByCodeAsync(string plant, string code, CancellationToken cancellationToken)
     {
-        var mailTemplate = await DefaultQuery.SingleOrDefaultAsync(
-            x => x.Code == code,
-            cancellationToken);
+        var mailTemplates = await DefaultQuery
+            .Where(mt => mt.Code == code && (mt.Plant == plant || mt.Plant == null))
+            .ToListAsync(cancellationToken);
+        var mailTemplate = mailTemplates.SingleOrDefault(mt => mt.Plant == plant) ?? 
+                           mailTemplates.SingleOrDefault(mt => mt.Plant == null);
         if (mailTemplate is null)
         {
             throw new EntityNotFoundException($"Could not find {nameof(MailTemplate)} with code {code}. Must be configured ...");

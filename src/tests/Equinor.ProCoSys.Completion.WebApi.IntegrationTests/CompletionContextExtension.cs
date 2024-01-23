@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -75,10 +76,16 @@ public static class CompletionContextExtension
     {
         var mailTemplateA = new MailTemplate(KnownData.MailTemplateA, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
         var mailTemplateB = new MailTemplate(KnownData.MailTemplateB, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
+        var punchRejectedMailTemplate = new MailTemplate(
+            EmailTemplateCode.PunchRejected,
+            "Punch {{PunchItem.ItemNo}} rejected",
+            "Punch {{PunchItem.ItemNo}} rejected by {{PunchItem.RejectedBy.FirstName}} {{PunchItem.RejectedBy.LastName}}." +
+            "<br> Reject reason: {{Comment}}");
 
         var mailTemplateRepository = new MailTemplateRepository(dbContext);
         mailTemplateRepository.Add(mailTemplateA);
         mailTemplateRepository.Add(mailTemplateB);
+        mailTemplateRepository.Add(punchRejectedMailTemplate);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 

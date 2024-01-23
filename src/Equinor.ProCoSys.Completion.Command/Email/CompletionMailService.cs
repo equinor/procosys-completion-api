@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Email;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.TemplateTransforming;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
@@ -14,6 +15,7 @@ namespace Equinor.ProCoSys.Completion.Command.Email;
 
 public class CompletionMailService : ICompletionMailService
 {
+    private readonly IPlantProvider _plantProvider;
     private readonly IPersonRepository _personRepository;
     private readonly IMailTemplateRepository _mailTemplateRepository;
     private readonly ITemplateTransformer _templateTransformer;
@@ -23,6 +25,7 @@ public class CompletionMailService : ICompletionMailService
 
     // todo unit tests
     public CompletionMailService(
+        IPlantProvider plantProvider,
         IPersonRepository personRepository,
         IMailTemplateRepository mailTemplateRepository,
         ITemplateTransformer templateTransformer,
@@ -30,6 +33,7 @@ public class CompletionMailService : ICompletionMailService
         ILogger<CompletionMailService> logger,
         IOptionsMonitor<ApplicationOptions> options)
     {
+        _plantProvider = plantProvider;
         _personRepository = personRepository;
         _mailTemplateRepository = mailTemplateRepository;
         _templateTransformer = templateTransformer;
@@ -49,15 +53,15 @@ public class CompletionMailService : ICompletionMailService
             return;
         }
 
-        var mailTemplate = await _mailTemplateRepository.GetByCodeAsync(eMailCode, cancellationToken);
+        var mailTemplate = await _mailTemplateRepository.GetByCodeAsync(_plantProvider.Plant, eMailCode, cancellationToken);
 
         var subject = _templateTransformer.Transform(mailTemplate.Subject, context);
         var body = _templateTransformer.Transform(mailTemplate.Body, context);
 
         if (_fakeEmail)
         {
-            var fakeBody = "This email is sent to you only since fake email is enabled." +
-                           "Without fake email enabled, this mail would have been sent to" +
+            var fakeBody = "This email is sent to you only since fake email is enabled. " +
+                           "Without fake email enabled, this mail would have been sent to " +
                            string.Join(",", eMailAddresses) + "<br>---<br>" +
                            body;
             var fakeSubject = subject + " (fake email)";
