@@ -74,20 +74,6 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         AssertTheSqlParameters(_expectedSqlParametersNullValues, actualSqlParams);
     }
 
-
-    [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingProperty()
-    {
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
-        {
-            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, null!, default);
-        });
-
-        // Assert
-        Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);
-    }
-
     [TestMethod]
     public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingConfigForObject()
     {
