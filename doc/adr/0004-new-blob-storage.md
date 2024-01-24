@@ -14,7 +14,7 @@ To add a new blob, we use Oracle SEQUENCE to find the next id. This id is used t
 There have been incidents in the system causing two attachments pointing to the same blob. This is a known bug with Sequence in Oracle.
 
 For IPO and Preservation we have used a simpler structure, where we use Guid instead of id, and without needing to calculate the folder based on an id.  
-There we have the following structure:  \<container\>/\<plant\>/\<objecttype\>/\<guid\>/bilde.jpg.
+There we have the following structure:  \<container\>/\<plant\>/\<objecttype\>/\<guid\>/\<name on file\>.
 
 By having the same solution for PCS 4 and PCS 5, it will simply the overall solution. 
 
@@ -32,3 +32,4 @@ We will not synchronize changes from new to old storage container. We will inste
 
 Before deploying changes on use of storage container to PCS 4, we will synchronize all blobs. The system need to be taken down, to ensure that we can copy over any last minute blob changes. 
 
+	
