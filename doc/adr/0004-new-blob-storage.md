@@ -9,12 +9,12 @@ Accepted
 
 In PCS 4 we store attachments as blobs in an Azure storage container with the following file structure: 
 \<container\>/\<plant\>/\<Trunc(\<file_id\>/1000)*1000/\<file_id\>.jpg. 
-The structure is based on how things where stored earlier, when the files where stored in folders, with 1000 files in each folder (based on a limit for folders).  
+The structure is based on how things where stored earlier, when the files where stored in folders, with 1000 files in each folder (based on a limit in the operation system).  
 To add a new blob, we use Oracle SEQUENCE to find the next id. This id is used to calculate what folder to use and the name on the file. 
 There have been incidents in the system causing two attachments pointing to the same blob. This is a known bug with Sequence in Oracle.
 
 For IPO and Preservation we have used a simpler structure, where we use Guid instead of id, and without needing to calculate the folder based on an id.  
-There we have the following structure:  \<container\>/\<plant\>/\<objekttype\>/\<guid\>/bilde.jpg.
+There we have the following structure:  \<container\>/\<plant\>/\<objecttype\>/\<guid\>/bilde.jpg.
 
 By having the same solution for PCS 4 and PCS 5, it will simply the overall solution. 
 
