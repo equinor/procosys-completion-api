@@ -5,7 +5,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
 [TestClass]
-public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
+public class SqlDeleteStatementBuilderTests : TestsBase
 {
     private SqlDeleteStatementBuilder _dut;
 
@@ -17,13 +17,13 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
     };
 
     [TestInitialize]
-    public void Setup() => _dut = new SqlDeleteStatementBuilder(_pcs4Repository);
+    public void Setup() => _dut = new SqlDeleteStatementBuilder(_pcs4RepositoryMock);
 
     [TestMethod]
     public async Task BuildSqlDeleteStatement_ShouldReturnSqlStatement_WhenInputIsCorrect()
     {
         // Arrange
-        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4RepositoryMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         // Act
         var (actualSqlUpdateStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
@@ -34,9 +34,8 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
         AssertTheSqlParameters(_expectedSqlParameters, actualSqlParams);
     }
 
-
     [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingPrimarykey()
+    public async Task BuildAsync_ShouldThrowException_WhenMissingPrimaryKey()
     {
         // Act
         var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -45,22 +44,6 @@ public class SqlDeleteStatementBuilderTests : SqlStatementBuilderTestsBase
         });
 
         // Assert
-        Assert.AreEqual($"Primary key given by the property 'TestGuid' is not found in the source object.", exception.Message);
-    }
-
-    [TestMethod]
-    public async Task BuildSqlUpdateStatement_ShouldThrowException_WhenMissingConfigForObject()
-    {
-        // Arrange
-        var syncService = new SyncToPCS4Service(_pcs4Repository);
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
-        {
-            await syncService.SyncObjectUpdateAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
-        });
-
-        // Assert
-        Assert.AreEqual($"Mapping is not implemented for source object with name '{SourceObjectNameMissingConfig}'.", exception.Message);
+        Assert.AreEqual("Primary key given by the property 'TestGuid' is not found in the source object.", exception.Message);
     }
 }
