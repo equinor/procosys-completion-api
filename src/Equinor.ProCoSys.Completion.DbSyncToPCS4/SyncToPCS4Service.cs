@@ -12,10 +12,6 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     private readonly IPcs4Repository _pcs4Repository;
     private readonly IOptionsMonitor<SyncToPCS4Options> _options;
 
-    /**
- * This class provide an interface to the operations for synchronizing data to ProCoSys 4. 
- * The class should only be used as a singleton (through dependency injection). 
- */
     public SyncToPCS4Service(IPcs4Repository pcs4Repository, IOptionsMonitor<SyncToPCS4Options> options)
     {
         _pcs4Repository = pcs4Repository;
