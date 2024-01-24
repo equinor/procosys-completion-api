@@ -65,11 +65,7 @@ public class ImportHandler : IImportHandler
         {
             foreach (var tiObject in message.Objects)
             {
-                LogImportStarting(tiObject);
-
                 ImportObject(message, tiObject);
-
-                LogImportIsDone(tiObject);
             }
         }
         catch (Exception ex) //TODO: 109642 SetFailed result
@@ -136,15 +132,5 @@ public class ImportHandler : IImportHandler
             tiMessageResult.ExternalReference = message.ExternalReference;
             response.Results.Add(tiMessageResult);
         }
-    }
-
-    private void LogImportStarting(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Starting import of object.");
-
-    private void LogImportIsDone(TIObject tiObject) => _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import done.");
-
-    private void LogImportResultUnsuccessful(TIObject tiObject)
-    {
-        _logger.LogInformation(tiObject.GetLogFriendlyString() + ": Import of object unsuccessful.");
-        _logger.LogInformation("Error is causing rest of message to be dropped.");
     }
 }
