@@ -1,13 +1,5 @@
-﻿using System.Reflection;
-using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.TieImport.CommonLib;
-using Equinor.ProCoSys.Completion.TieImport.Converters;
+﻿using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
-using Equinor.ProCoSys.Completion.TieImport.Infrastructure;
-using Equinor.ProCoSys.Completion.TieImport.Infrastructure.Pcs;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
@@ -108,117 +100,21 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106691 SiteSpecificHandler
 
-        var proCoSysImportObject = CreateProCoSysImportObject(tiObject);
-
         //TODO: 109642 ImportResultHasError
 
         //TODO: 109739 _messageInspector.UpdateImportOptions(proCoSysImportObject, message);
 
-        EnsureObjectNameHasValue(tiObject, proCoSysImportObject);
-
         //TODO: 106692 CustomImport
-
-        var incomingObjectType = proCoSysImportObject.GetType();
 
         //TODO: 106693 NCR special handling
 
-        var command = CreateCommand(incomingObjectType, proCoSysImportObject);
+        //TODO: 107052 Create command and send to command handler
 
         //TODO: 106687 CommandFailureHandler;
 
         //TODO: 109642 return ImportResult.Ok();
     }
 
-    private static void EnsureObjectNameHasValue(TIObject tiObject, IPcsObjectIn pcsObject)
-    {
-        if (string.IsNullOrWhiteSpace(tiObject.ObjectName))
-        {
-            tiObject.ObjectName = ((PcsaObjectIn) pcsObject).Name;
-        }
-    }
-    private IIsProjectCommand CreateCommand(Type incomingObjectType, IPcsObjectIn pcsObjectIn)
-    {
-        //Always return a CreatePunchItemCommand for now
-        var punchItemIn = pcsObjectIn as PcsPunchItemIn;
-        if (punchItemIn is null)
-        {
-            throw new InvalidCastException($"Not able to cast {incomingObjectType} to {nameof(PcsPunchItemIn)}");
-        }
-
-        var createPunchCommand = new CreatePunchItemCommand(Category.PA, punchItemIn.Description, new Guid(), new Guid(), new Guid(),
-            new Guid(), new Guid(), null, null, null, null, null, null, null, null, null, null, false, null, null);
-        return createPunchCommand;
-    }
-
-    private IPcsObjectIn? CreateProCoSysImportObject(TIObject tieObject)
-    {
-        var pcsObject = PcsFromTie(tieObject);
-
-        if (pcsObject != null)
-        {
-            SetPlantIdFromTieObject(tieObject, pcsObject);
-
-            var tieClassificationInfo = "";
-            if (!string.IsNullOrWhiteSpace(tieObject.Classification))
-            {
-                tieClassificationInfo = $"({tieObject.Classification.ToUpper()})";
-            }
-
-            var debugInfo =
-                $"Made ready for import: Site: {tieObject.Site}, {tieObject.ObjectClass.ToUpper()} {tieClassificationInfo} {pcsObject.Name}";
-            _logger.LogDebug(debugInfo);
-
-            return pcsObject;
-        }
-
-        var message = $"Import of Class {tieObject.ObjectClass}";
-        if (!string.IsNullOrWhiteSpace(tieObject.Classification))
-        {
-            message += $", Classification {tieObject.Classification}";
-        }
-
-        message += " is not supported.";
-        _logger.LogError(message);
-
-        //TODO: 109642 ImportResult.SingleError(message);
-        return null;
-    }
-
-    private IPcsObjectIn? PcsFromTie(TIObject tieObject)
-    {
-        switch (tieObject.ObjectClass.ToUpper())
-        {
-            case "PUNCHITEM":
-                return TIE2PCSPunchItemConverter.PopulateProCoSysPunchItemImportObject(tieObject);
-            default:
-                return null;
-        }
-    }
-    private void SetPlantIdFromTieObject(TIObject tieObject, IPcsObjectIn pcsObject)
-    {
-        if (tieObject.Site is null)
-        {
-            return;
-        }
-
-        var pcsObjectType = pcsObject.GetType();
-        var pcsProperty = pcsObjectType.GetProperty(
-            "PlantId",
-            BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-
-        if (pcsProperty != null)
-        {
-            pcsProperty.SetValue(pcsObject, tieObject.Site, null);
-        }
-
-        //TODO: 106693 NCR special handling
-    }
-
-    private static bool SetFailed(TIMessageResult result)
-    {
-        result.Result = MessageResults.Failed;
-        return false;
-    }
 
     private TIMessageResult? HandleExceptionFromImportOperation(TIInterfaceMessage message, Exception e)
     {
