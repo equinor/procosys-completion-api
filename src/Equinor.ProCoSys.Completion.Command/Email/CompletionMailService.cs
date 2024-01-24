@@ -21,11 +21,9 @@ public class CompletionMailService : ICompletionMailService
     private readonly ITemplateTransformer _templateTransformer;
     private readonly IEmailService _emailService;
     private readonly ILogger<CompletionMailService> _logger;
-    private readonly bool _fakeEmail;
+    private readonly IOptionsMonitor<ApplicationOptions> _options;
 
-    // todo unit tests
-    public CompletionMailService(
-        IPlantProvider plantProvider,
+    public CompletionMailService(IPlantProvider plantProvider,
         IPersonRepository personRepository,
         IMailTemplateRepository mailTemplateRepository,
         ITemplateTransformer templateTransformer,
@@ -39,13 +37,13 @@ public class CompletionMailService : ICompletionMailService
         _templateTransformer = templateTransformer;
         _emailService = emailService;
         _logger = logger;
-        _fakeEmail = options.CurrentValue.FakeEMail;
+        _options = options;
     }
 
-    public async Task SendEMailAsync(
+    public async Task SendEmailAsync(
+        dynamic context,
         string eMailCode, 
         List<string> eMailAddresses, 
-        dynamic context, 
         CancellationToken cancellationToken)
     {
         if (!eMailAddresses.Any())
@@ -58,7 +56,7 @@ public class CompletionMailService : ICompletionMailService
         var subject = _templateTransformer.Transform(mailTemplate.Subject, context);
         var body = _templateTransformer.Transform(mailTemplate.Body, context);
 
-        if (_fakeEmail)
+        if (_options.CurrentValue.FakeEmail)
         {
             var fakeBody = "This email is sent to you only since fake email is enabled. " +
                            "Without fake email enabled, this mail would have been sent to " +

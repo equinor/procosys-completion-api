@@ -14,7 +14,6 @@ public class MailTemplateRepository : EntityRepository<MailTemplate>, IMailTempl
     {
     }
 
-    // todo unit test
     public async Task<MailTemplate> GetByCodeAsync(string plant, string code, CancellationToken cancellationToken)
     {
         var mailTemplates = await DefaultQuery

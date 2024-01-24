@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.Command.Email;
 
 public interface ICompletionMailService
 {
-    Task SendEMailAsync(string eMailCode, List<string> eMailAddresses, dynamic context, CancellationToken cancellationToken);
+    Task SendEmailAsync(dynamic context, string eMailCode, List<string> eMailAddresses, CancellationToken cancellationToken);
 }
