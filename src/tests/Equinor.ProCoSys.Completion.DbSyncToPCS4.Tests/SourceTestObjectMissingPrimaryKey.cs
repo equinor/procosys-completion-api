@@ -11,7 +11,7 @@ public record SourceTestObjectMissingPrimaryKey(
     NestedSourceTestObject NestedObject,
     Guid? WoGuid,
     Guid? SwcrGuid,
-    Guid? PersonOID,
+    Guid? PersonOid,
     Guid? DocumentGuid)
 {
     public string? TestOnlyForInsert { get; } = TestOnlyForInsert;
@@ -23,6 +23,6 @@ public record SourceTestObjectMissingPrimaryKey(
     public NestedSourceTestObject NestedObject { get; } = NestedObject;
     public Guid? WoGuid { get; } = WoGuid;
     public Guid? SwcrGuid { get; } = SwcrGuid;
-    public Guid? PersonOID { get; } = PersonOID;
+    public Guid? PersonOid { get; } = PersonOid;
     public Guid? DocumentGuid { get; } = DocumentGuid;
 }

@@ -10,38 +10,52 @@ public class PropertyMappingTests
     private SourceTestObject _testObject;
     private readonly string _expectedPropertyInTheObject = "TestGuid";
     private readonly string _expectedNestedPropertyInTheObject = "NestedObject.Guid";
+    private readonly string _nestedPropertyMoreThanOneLevel = "NestedObject.NestedNestedObject.Guid";
     private readonly string _expectedNonExistingProperty = "NonExistingProperty";
 
     [TestInitialize]
     public void Setup() => _testObject = new SourceTestObject(null, _expectedGuid1Value, null, null, null, true, null, new NestedSourceTestObject(_expectedGuid2Value), null, null, null, null);
 
     [TestMethod]
-    public void GetSourcePropertyValue_ShouldReturnCorrectValue_WhenPropertyExist()
+    public void GetSourceProperty_ShouldReturnProperty_WhenPropertyExist()
     {
         // Act
-        var actualValue = PropertyMapping.GetSourcePropertyValue(_expectedPropertyInTheObject, _testObject);
+        var (actualValue, propertyExists) = PropertyMapping.GetSourcePropertyValue(_expectedPropertyInTheObject, _testObject);
 
         // Assert
         Assert.AreEqual(_expectedGuid1Value, actualValue);
+        Assert.AreEqual(true, propertyExists);
     }
 
     [TestMethod]
-    public void GetSourcePropertyValue_ShouldReturnCorrectNestedValue_WhenPropertyExist()
+    public void GetSourceProperty_ShouldReturnNestedProperty_WhenPropertyExist()
     {
         // Act
-        var actualValue = PropertyMapping.GetSourcePropertyValue(_expectedNestedPropertyInTheObject, _testObject);
+        var (actualValue, propertyValueExists) = PropertyMapping.GetSourcePropertyValue(_expectedNestedPropertyInTheObject, _testObject);
 
         // Assert
         Assert.AreEqual(_expectedGuid2Value, actualValue);
+        Assert.IsTrue(propertyValueExists);
     }
 
     [TestMethod]
-    public void GetSourcePropertyValue_ShouldReturnException_WhenPropertyDoesNotExist()
+    public void GetSourcePropertyValue_ShouldReturnNullAndFalse_WhenPropertyDoesNotExist()
     {
         //Act 
-        var exception = Assert.ThrowsException<Exception>(() => PropertyMapping.GetSourcePropertyValue(_expectedNonExistingProperty, _testObject));
+        var (actualValue, propertyExists) = PropertyMapping.GetSourcePropertyValue(_expectedNonExistingProperty, _testObject);
 
         // Assert
-        Assert.AreEqual($"A property in configuration is missing in source object: {_expectedNonExistingProperty}", exception.Message);
+        Assert.IsNull(actualValue);
+        Assert.IsFalse(propertyExists);
+    }
+
+    [TestMethod]
+    public void GetSourceProperty_ShouldReturnException_WhenNestedMoreThanOneLevel()
+    {
+        //Act 
+        var exception = Assert.ThrowsException<Exception>(() => PropertyMapping.GetSourcePropertyValue(_nestedPropertyMoreThanOneLevel, _testObject));
+
+        // Assert
+        Assert.AreEqual($"Only one nested level is supported for entities, so {_nestedPropertyMoreThanOneLevel} is not supported.", exception.Message);
     }
 }

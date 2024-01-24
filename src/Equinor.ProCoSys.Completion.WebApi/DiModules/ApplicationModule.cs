@@ -53,7 +53,7 @@ public static class ApplicationModule
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
         services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
-        services.Configure<OracleDBConnectionOptions>(configuration.GetSection("OracleDBConnection"));
+        services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
         services.Configure<GraphOptions>(configuration.GetSection("Graph"));
 

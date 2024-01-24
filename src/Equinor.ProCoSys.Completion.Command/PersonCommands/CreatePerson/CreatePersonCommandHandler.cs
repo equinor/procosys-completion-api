@@ -16,8 +16,8 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
     private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IOptionsMonitor<ApplicationOptions> _options;
     private readonly ILogger<CreatePersonCommandHandler> _logger;
+    private string _servicePrincipalMail;
 
     public CreatePersonCommandHandler(
         IPersonCache personCache,
@@ -29,7 +29,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
         _personCache = personCache;
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
-        _options = options;
+        _servicePrincipalMail = options.CurrentValue.ServicePrincipalMail;
         _logger = logger;
     }
 
@@ -68,7 +68,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
                 pcsPerson.FirstName,
                 pcsPerson.LastName,
                 pcsPerson.UserName,
-                _options.CurrentValue.ServicePrincipalMail,
+                _servicePrincipalMail,
                 pcsPerson.Super);
             type = "ServicePrincipal";
         }

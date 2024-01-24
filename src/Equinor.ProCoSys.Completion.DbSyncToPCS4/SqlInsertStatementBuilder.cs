@@ -21,7 +21,12 @@ public class SqlInsertStatementBuilder(IPcs4Repository pcs4Repository)
             if (propertyMapping.TargetFixedValue is null)
             {
                 //Regular column
-                var sourcePropertyValue = PropertyMapping.GetSourcePropertyValue(propertyMapping.SourcePropertyName, sourceObject);
+                var (sourcePropertyValue, sourcePropertyExists) = PropertyMapping.GetSourcePropertyValue(propertyMapping.SourcePropertyName, sourceObject);
+
+                if (!sourcePropertyExists)
+                {
+                    continue; //If source object does not contain a configured property, we skip it.
+                }
 
                 var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(sourcePropertyValue,
                                                                                                                 propertyMapping,
@@ -49,6 +54,5 @@ public class SqlInsertStatementBuilder(IPcs4Repository pcs4Repository)
             $"( {string.Join(", ", parameterValuesForInsert)} )";
 
         return (insertStatement, sqlParameters);
-
     }
 }

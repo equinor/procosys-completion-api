@@ -93,7 +93,6 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 
-            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
