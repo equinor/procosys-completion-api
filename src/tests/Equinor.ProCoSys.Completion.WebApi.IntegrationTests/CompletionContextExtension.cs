@@ -77,7 +77,7 @@ public static class CompletionContextExtension
         var mailTemplateA = new MailTemplate(KnownData.MailTemplateA, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
         var mailTemplateB = new MailTemplate(KnownData.MailTemplateB, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
         var punchRejectedMailTemplate = new MailTemplate(
-            EmailTemplateCode.PunchRejected,
+            MailTemplateCode.PunchRejected,
             "Punch {{PunchItem.ItemNo}} rejected",
             "Punch {{PunchItem.ItemNo}} rejected by {{PunchItem.RejectedBy.FirstName}} {{PunchItem.RejectedBy.LastName}}." +
             "<br> Reject reason: {{Comment}}");

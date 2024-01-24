@@ -30,7 +30,7 @@ public class CompletionMailServiceTests
     
     private readonly object _context = new Whatever();
     private readonly string _code = "A";
-    private readonly List<string> _eMailAddresses = ["a@pcs.no", "b@pcs.no"];
+    private readonly List<string> _emailAddresses = ["a@pcs.no", "b@pcs.no"];
     private readonly string _plant = "P";
     private readonly string _transformedSubject = "S";
     private readonly string _transformedBody = "B";
@@ -68,14 +68,28 @@ public class CompletionMailServiceTests
     }
 
     [TestMethod]
+    public async Task SendEmailAsync_ShouldNotSendAnyMail_WhenNoEmailAddresses()
+    {
+        // Act
+        await _dut.SendEmailAsync(_code, _context, [], CancellationToken.None);
+
+        // Assert
+        await _emailServiceMock.Received(0).SendEmailsAsync(
+            Arg.Any<List<string>>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
     public async Task SendEmailAsync_ShouldSendTransformedMailToMailAddresses()
     {
         // Act
-        await _dut.SendEmailAsync(_context, _code, _eMailAddresses, CancellationToken.None);
+        await _dut.SendEmailAsync(_code, _context, _emailAddresses, CancellationToken.None);
 
         // Assert
         await _emailServiceMock.Received(1).SendEmailsAsync(
-            _eMailAddresses, 
+            _emailAddresses, 
             _transformedSubject, 
             _transformedBody, 
             Arg.Any<CancellationToken>());
@@ -106,7 +120,7 @@ public class CompletionMailServiceTests
             .Returns(currentPerson);
         
         // Act
-        await _dut.SendEmailAsync(_context, _code, _eMailAddresses, CancellationToken.None);
+        await _dut.SendEmailAsync(_code, _context, _emailAddresses, CancellationToken.None);
 
         // Assert
         await _emailServiceMock.Received(1).SendEmailsAsync(

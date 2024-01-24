@@ -1,6 +1,6 @@
 ﻿namespace Equinor.ProCoSys.Completion.Domain;
 
-public static class EmailTemplateCode
+public static class MailTemplateCode
 {
     // keep these constants in alphabetic order
     public const string PunchCommented = "PUNCH_COMMENTED";

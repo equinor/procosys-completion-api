@@ -41,37 +41,37 @@ public class CompletionMailService : ICompletionMailService
     }
 
     public async Task SendEmailAsync(
-        dynamic context,
-        string eMailCode, 
-        List<string> eMailAddresses, 
+        string templateCode,
+        dynamic emailContext,
+        List<string> emailAddresses, 
         CancellationToken cancellationToken)
     {
-        if (!eMailAddresses.Any())
+        if (!emailAddresses.Any())
         {
             return;
         }
 
-        var mailTemplate = await _mailTemplateRepository.GetByCodeAsync(_plantProvider.Plant, eMailCode, cancellationToken);
+        var mailTemplate = await _mailTemplateRepository.GetByCodeAsync(_plantProvider.Plant, templateCode, cancellationToken);
 
-        var subject = _templateTransformer.Transform(mailTemplate.Subject, context);
-        var body = _templateTransformer.Transform(mailTemplate.Body, context);
+        var subject = _templateTransformer.Transform(mailTemplate.Subject, emailContext);
+        var body = _templateTransformer.Transform(mailTemplate.Body, emailContext);
 
         if (_options.CurrentValue.FakeEmail)
         {
             var fakeBody = "This email is sent to you only since fake email is enabled. " +
                            "Without fake email enabled, this mail would have been sent to " +
-                           string.Join(",", eMailAddresses) + "<br>---<br>" +
+                           string.Join(",", emailAddresses) + "<br>---<br>" + 
                            body;
-            var fakeSubject = subject + " (fake email)";
+            var fakeSubject = $"{subject} (fake email)";
             var currentUser = await _personRepository.GetCurrentPersonAsync(cancellationToken);
             List<string> currentUserEmail = [currentUser.Email];
 
             await _emailService.SendEmailsAsync(currentUserEmail, fakeSubject, fakeBody, cancellationToken);
-            _logger.LogInformation("Fake email sent. Code='{Code}'. To='{To}'", eMailCode, currentUser.Email);
+            _logger.LogInformation("Fake email sent. Code='{Code}'. To='{To}'", templateCode, currentUser.Email);
             return;
         }
 
-        await _emailService.SendEmailsAsync(eMailAddresses, subject, body, cancellationToken);
-        _logger.LogInformation("Email sent. Code='{Code}'. To='{To}'", eMailCode, string.Join(",", eMailAddresses));
+        await _emailService.SendEmailsAsync(emailAddresses, subject, body, cancellationToken);
+        _logger.LogInformation("Email sent. Code='{Code}'. To='{To}'", templateCode, string.Join(",", emailAddresses));
     }
 }

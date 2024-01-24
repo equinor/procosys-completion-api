@@ -26,5 +26,9 @@ public interface ICompletionMailService
         ITemplateTransformer.Transform(mailTemplate, context) will return:
         "Hi John Doe, status of your order 101 is 'Your order is sent'."
     */
-    Task SendEmailAsync(dynamic context, string eMailCode, List<string> eMailAddresses, CancellationToken cancellationToken);
+    Task SendEmailAsync(
+        string templateCode,
+        dynamic emailContext,
+        List<string> emailAddresses, 
+        CancellationToken cancellationToken);
 }

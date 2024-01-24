@@ -109,21 +109,22 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
     {
-        var context = GetEmailContext(punchItem, comment);
-        var eMailAddresses = mentions.Select(m => m.Email).ToList();
+        var emailContext = GetEmailContext(punchItem, comment);
+        var emailAddresses = mentions.Select(m => m.Email).ToList();
 
-        await _completionMailService.SendEmailAsync(context, EmailTemplateCode.PunchRejected, eMailAddresses, cancellationToken);
+        await _completionMailService.SendEmailAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
     }
 
     private dynamic GetEmailContext(PunchItem punchItem, string comment)
     {
-        dynamic context = new ExpandoObject();
+        dynamic emailContext = new ExpandoObject();
         
-        context.PunchItem = punchItem;
-        context.Comment = comment;
-        context.Url = _options.CurrentValue.BaseUrl;
+        emailContext.PunchItem = punchItem;
+        emailContext.Comment = comment;
+        // todo 109830 Deep link to the punch item
+        emailContext.Url = _options.CurrentValue.BaseUrl;
 
-        return context;
+        return emailContext;
     }
 
     private async Task<IChangedProperty> RejectAsync(

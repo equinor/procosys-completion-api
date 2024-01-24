@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -218,8 +217,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         List<string> emailSentTo = null;
         _completionMailServiceMock
             .When(x => x.SendEmailAsync(
-                Arg.Any<dynamic>(),
                 Arg.Any<string>(),
+                Arg.Any<dynamic>(),
                 Arg.Any<List<string>>(),
                 Arg.Any<CancellationToken>()))
             .Do(callInfo =>
@@ -233,8 +232,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         _completionMailServiceMock.Received(1)
             .SendEmailAsync(
+                MailTemplateCode.PunchRejected,
                 Arg.Any<dynamic>(),
-                EmailTemplateCode.PunchRejected,
                 Arg.Any<List<string>>(),
                 Arg.Any<CancellationToken>());
         Assert.AreEqual(1, emailSentTo.Count);
