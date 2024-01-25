@@ -10,7 +10,7 @@ public class MappingResult
 
     public bool Success => Message != null;
 
-    public MappingResult(TIInterfaceMessage message) => Message = message;
+    public MappingResult(TIInterfaceMessage? message) => Message = message;
 
-    public MappingResult(TIMessageResult errorResult) => ErrorResult = errorResult;
+    public MappingResult(TIMessageResult? errorResult) => ErrorResult = errorResult;
 }

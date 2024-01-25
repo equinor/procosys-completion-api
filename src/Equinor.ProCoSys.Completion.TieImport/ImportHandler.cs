@@ -70,7 +70,7 @@ public class ImportHandler : IImportHandler
         }
         catch (Exception ex) //TODO: 109642 SetFailed result
         {
-            _logger.LogError($"Exception: {ex.Message}, InnerException {ex.InnerException?.Message}");
+            _logger.LogError($"Failed to import message with GUID={message.Guid} Exception: {ex.Message}, InnerException {ex.InnerException?.Message}");
         }
         finally
         {

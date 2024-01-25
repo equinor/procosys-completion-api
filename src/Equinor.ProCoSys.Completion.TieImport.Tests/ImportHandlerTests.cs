@@ -1,0 +1,40 @@
+﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Statoil.TI.InterfaceServices.Message;
+
+namespace Equinor.ProCoSys.Completion.TieImport.Tests;
+
+[TestClass]
+public class ImportHandlerTests
+{
+    IImportSchemaMapper _importSchemaMapperMock;
+    ILogger<ImportHandler> _loggerMock;
+    ImportHandler _dut;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _importSchemaMapperMock = Substitute.For<IImportSchemaMapper>();
+        _loggerMock = Substitute.For<ILogger<ImportHandler>>();
+        _dut = new ImportHandler(_importSchemaMapperMock, _loggerMock);
+
+    }
+
+    [TestMethod]
+    public void Handle_ShouldReturnErrorResultIfMapperFails()
+    {
+        // Arrange
+        var mappingResultNotSuccess = new MappingResult(new TIMessageResult{ErrorMessage = "Mapping failed"});
+
+        _importSchemaMapperMock.Map(Arg.Any<TIInterfaceMessage>()).Returns(mappingResultNotSuccess);
+
+        //Act
+        var result = _dut.Handle(new TIInterfaceMessage());
+
+        //Assert
+        Assert.AreEqual(MessageResults.Failed, result.Results[0].Result);
+        Assert.AreEqual("Mapping failed", result.Results[0].ErrorMessage);
+    }
+}
