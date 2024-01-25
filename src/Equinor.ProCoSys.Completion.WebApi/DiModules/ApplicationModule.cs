@@ -6,6 +6,8 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Telemetry;
+using Equinor.ProCoSys.Common.TemplateTransforming;
+using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.Command.Validators;
@@ -18,6 +20,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -51,6 +54,8 @@ public static class ApplicationModule
         services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
+        services.Configure<EmailOptions>(configuration.GetSection("Email"));
+        services.Configure<GraphOptions>(configuration.GetSection("Graph"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -155,6 +160,7 @@ public static class ApplicationModule
         services.AddScoped<ISWCRRepository, SWCRRepository>();
         services.AddScoped<ILabelRepository, LabelRepository>();
         services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
+        services.AddScoped<IMailTemplateRepository, MailTemplateRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
@@ -176,11 +182,12 @@ public static class ApplicationModule
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
         services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
-
         services.AddScoped<IAzureBlobService, AzureBlobService>();
+        services.AddScoped<ITemplateTransformer, TemplateTransformer>();
+        services.AddScoped<ICompletionMailService, CompletionMailService>();
+        services.AddScoped<IEmailService, EmailService>();
 
         // Singleton - Created the first time they are requested
-        services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<IPcs4Repository, Pcs4Repository>();
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
     }

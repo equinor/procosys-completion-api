@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
+using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
@@ -27,10 +31,11 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly ICommentService _commentService;
     private readonly IPersonRepository _personRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICompletionMailService _completionMailService;
     private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RejectPunchItemCommandHandler> _logger;
-    private readonly string _rejectLabelText;
+    private readonly IOptionsMonitor<ApplicationOptions> _options;
 
     public RejectPunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
@@ -38,8 +43,9 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         ICommentService commentService,
         IPersonRepository personRepository,
         ISyncToPCS4Service syncToPCS4Service,
-        IUnitOfWork unitOfWork,
+        ICompletionMailService completionMailService,
         IIntegrationEventPublisher integrationEventPublisher,
+        IUnitOfWork unitOfWork,
         ILogger<RejectPunchItemCommandHandler> logger,
         IOptionsMonitor<ApplicationOptions> options)
     {
@@ -48,10 +54,11 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _commentService = commentService;
         _personRepository = personRepository;
         _syncToPCS4Service = syncToPCS4Service;
-        _unitOfWork = unitOfWork;
+        _completionMailService = completionMailService;
         _integrationEventPublisher = integrationEventPublisher;
+        _unitOfWork = unitOfWork;
         _logger = logger;
-        _rejectLabelText = options.CurrentValue.RejectLabel;
+        _options = options;
     }
 
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
@@ -60,7 +67,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
         try
         {
-            var rejectLabel = await _labelRepository.GetByTextAsync(_rejectLabelText, cancellationToken);
+            var rejectLabel = await _labelRepository.GetByTextAsync(_options.CurrentValue.RejectLabel, cancellationToken);
             var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
             var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
@@ -84,6 +91,8 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
 
+            await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
+
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
@@ -96,6 +105,26 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
+    {
+        var emailContext = GetEmailContext(punchItem, comment);
+        var emailAddresses = mentions.Select(m => m.Email).ToList();
+
+        await _completionMailService.SendEmailAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
+    }
+
+    private dynamic GetEmailContext(PunchItem punchItem, string comment)
+    {
+        dynamic emailContext = new ExpandoObject();
+        
+        emailContext.PunchItem = punchItem;
+        emailContext.Comment = comment;
+        // todo 109830 Deep link to the punch item
+        emailContext.Url = _options.CurrentValue.BaseUrl;
+
+        return emailContext;
     }
 
     private async Task<IChangedProperty> RejectAsync(
