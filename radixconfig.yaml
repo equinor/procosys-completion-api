@@ -4,20 +4,20 @@ metadata:
   name: procosys-completion-api
 spec:
   environments:
-    - name: dev
-    - name: test
-    #- name: prod
+  - name: dev
+  - name: test
+  #- name: prod
 
   components:
-    - name: backend
-      image: procosys.azurecr.io/completion/api:{imageTagName}
-      ports:
-      - name: http
-        port: 5000
-      publicPort: http
-      secrets: 
-      - CONNECTIONSTRINGS__APPCONFIG
-  environmentConfig:
+  - name: backend
+    image: procosys.azurecr.io/completion/api:{imageTagName}
+    ports:
+    - name: http
+    port: 5000
+    publicPort: http
+    secrets: 
+    - CONNECTIONSTRINGS__APPCONFIG
+    environmentConfig:
     # Development environment
     - environment: dev
       identity:
