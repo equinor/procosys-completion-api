@@ -24,7 +24,7 @@ public class ImportHandlerTests
     public void Handle_ShouldReturnErrorResultIfMapperFails()
     {
         // Arrange
-        var mappingResultNotSuccess = new MappingResult(new TIMessageResult{ErrorMessage = "Mapping failed"});
+        var mappingResultNotSuccess = new MappingResult(new TIMessageResult{ErrorMessage = "Mapping failed", Result = MessageResults.Failed});
 
         _importSchemaMapperMock.Map(Arg.Any<TIInterfaceMessage>()).Returns(mappingResultNotSuccess);
 
