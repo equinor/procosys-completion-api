@@ -18,8 +18,6 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
             .HasIndex(x => x.Guid)
             .IsUnique();
 
-        builder.ToTable(t => t.IsTemporal());
-
         builder.Property(x => x.ParentType)
             .HasMaxLength(Link.ParentTypeLengthMax)
             .IsRequired();

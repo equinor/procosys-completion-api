@@ -31,6 +31,5 @@ public class PunchItemHelper : IPunchItemHelper
             select pi).SingleOrDefaultAsync();
 
         return punchItem?.CheckListGuid;
-
     }
 }

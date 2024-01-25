@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,7 +15,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldBeValid_WhenOkState()
     {
         // Arrange
-        var dto = new CreateCommentDto("New text");
+        var dto = new CreateCommentDto("New text", new List<string>(), new List<Guid>());
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -26,7 +28,7 @@ public class CreateCommentDtoValidatorTests
     public async Task Validate_ShouldFail_WhenTextNotGiven()
     {
         // Arrange
-        var dto = new CreateCommentDto(null!);
+        var dto = new CreateCommentDto(null!, new List<string>(), new List<Guid>());
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -38,10 +40,28 @@ public class CreateCommentDtoValidatorTests
     }
 
     [TestMethod]
+    public async Task Validate_ShouldFail_WhenTextIsEmpty()
+    {
+        // Arrange
+        var dto = new CreateCommentDto(string.Empty, new List<string>(), new List<Guid>());
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Text' must be at least"));
+    }
+
+    [TestMethod]
     public async Task Validate_ShouldFail_WhenTextIsTooLongAsync()
     {
         // Arrange
-        var dto = new CreateCommentDto(new string('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1));
+        var dto = new CreateCommentDto(
+            new string('x', Domain.AggregateModels.CommentAggregate.Comment.TextLengthMax + 1), 
+            new List<string>(), 
+            new List<Guid>());
 
         // Act
         var result = await _dut.ValidateAsync(dto);
@@ -50,5 +70,90 @@ public class CreateCommentDtoValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("The length of 'Text' must be"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenListOfLabelsNotGiven()
+    {
+        // Arrange
+        var dto = new CreateCommentDto("New text", null!, new List<Guid>());
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Labels' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenListOfMentionsNotGiven()
+    {
+        // Arrange
+        var dto = new CreateCommentDto("New text", new List<string>(), null!);
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Mentions' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenALabelIsNull()
+    {
+        // Arrange
+        var dto = new CreateCommentDto(
+            "New test",
+            new List<string> { "a", null! }, 
+            new List<Guid>());
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("'Labels' must not be empty."));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenALabelNotUnique()
+    {
+        // Arrange
+        var dto = new CreateCommentDto(
+            "New test",
+            new List<string> { "a", "a" }, 
+            new List<Guid>());
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Labels must be unique!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_WhenAMentionNotUnique()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var dto = new CreateCommentDto(
+            "New test",
+            new List<string>(),
+            new List<Guid>{guid, guid});
+
+        // Act
+        var result = await _dut.ValidateAsync(dto);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Mentions must be unique!"));
     }
 }

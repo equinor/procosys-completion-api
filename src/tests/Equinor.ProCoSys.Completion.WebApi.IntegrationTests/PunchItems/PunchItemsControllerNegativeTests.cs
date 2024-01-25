@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ public class PunchItemsControllerNegativeTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemGuid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
         _linkGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].LinkInPunchItemAGuid;
         _attachmentGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].AttachmentInPunchItemAGuid;
 
@@ -204,6 +205,20 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             expectedStatusCode: HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+        => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            "PunchItem1",
+            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest: "Project with this guid does not exist");
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -406,7 +421,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -498,7 +513,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             "PA",
             Guid.NewGuid().ToString(),
             TestFactory.ProjectGuidWithAccess, 
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(guidAndRowVersion.RowVersion, TestFactory.WrongButValidRowVersion);
@@ -834,6 +849,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -843,6 +860,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -853,6 +872,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -863,6 +884,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -872,6 +895,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -881,6 +906,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             Guid.NewGuid(), 
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
 
@@ -891,6 +918,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
             "T",
+            new List<string>(),
+            new List<Guid>(),
             HttpStatusCode.Forbidden);
     #endregion
 
@@ -1011,6 +1040,108 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
             new TestFile("T", "F"),
+            HttpStatusCode.Forbidden);
+    #endregion
+
+    #region UpdatePunchItemAttachment
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsWriter_ShouldReturnBadRequest_WhenUnknownAttachment()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            Guid.NewGuid(),
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            "Attachment with this guid does not exist");
+
+    [TestMethod]
+    public async Task UpdatePunchItemAttachment_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
+        => await PunchItemsControllerTestsHelper.UpdatePunchItemAttachmentAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            _attachmentGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            new List<string>(),
+            TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
     #endregion
 
@@ -1485,7 +1616,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1508,6 +1639,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Anonymous,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Unauthorized);
 
@@ -1517,6 +1650,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -1527,6 +1662,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
@@ -1537,6 +1674,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1546,6 +1685,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1555,6 +1696,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(), 
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
@@ -1565,6 +1708,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.AValidRowVersion,
             HttpStatusCode.Forbidden);
 
@@ -1576,7 +1721,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1586,6 +1731,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             guid,
+            Guid.NewGuid().ToString(),
+            [],
             TestFactory.WrongButValidRowVersion,
             HttpStatusCode.Conflict);
     }
@@ -1667,7 +1814,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterClear, TestFactory.WrongButValidRowVersion);
@@ -1758,7 +1905,7 @@ public class PunchItemsControllerNegativeTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             TestFactory.ProjectGuidWithAccess,
-            TestFactory.CheckListGuid,
+            TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
         Assert.AreNotEqual(rowVersionAfterVerify, TestFactory.WrongButValidRowVersion);

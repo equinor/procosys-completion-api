@@ -23,7 +23,11 @@ public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractVali
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => HaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName, cancellationToken))
-            .WithMessage(command => $"Punch item don't have an attachment with filename {command.FileName}!");
+            .WithMessage(command => $"Punch item don't have an attachment with filename {command.FileName}!")
+            .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}")
+            .UnlessAsync((command, cancellationToken)
+                => CurrentUserIsVerifier(command.PunchItemGuid, cancellationToken), ApplyConditionTo.CurrentValidator);
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -36,5 +40,11 @@ public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractVali
 
         async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName, CancellationToken cancellationToken)
             => await attachmentService.FileNameExistsForParentAsync(punchItemGuid, fileName, cancellationToken);
+
+        async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
+
+        async Task<bool> CurrentUserIsVerifier(Guid punchItemGuid, CancellationToken cancellationToken)
+            => await punchItemValidator.CurrentUserIsVerifierAsync(punchItemGuid, cancellationToken);
     }
 }

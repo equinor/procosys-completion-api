@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Seeding;
-using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
@@ -25,8 +24,10 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
-using Equinor.ProCoSys.PcsServiceBus;
-using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
+using Equinor.ProCoSys.Completion.WebApi.Swagger;
+using Swashbuckle.AspNetCore.Filters;
+using System.IO;
+using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -54,6 +55,7 @@ public class Startup
                 services.AddHostedService<DatabaseMigrator>();
             }
         }
+
         if (_environment.IsDevelopment())
         {
             DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
@@ -110,6 +112,8 @@ public class Startup
         });
 
         var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+        services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
@@ -140,8 +144,11 @@ public class Startup
                 }
             });
 
+            c.ExampleFilters();
             c.OperationFilter<AddRoleDocumentation>();
-
+            c.OperationFilter<SwaggerPatchDocumentation>();
+            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+            c.IncludeXmlComments(filePath);
         });
 
         services.ConfigureSwaggerGen(options =>
@@ -165,38 +172,9 @@ public class Startup
         services.AddMediatrModules();
         services.AddApplicationModules(Configuration);
 
-        var serviceBusEnabled = Configuration.GetValue<bool>("ServiceBus:Enable") &&
-                                (!_environment.IsDevelopment() || Configuration.GetValue<bool>("ServiceBus:EnableInDevelopment"));
-        if (serviceBusEnabled)
-        {
-            // Env variable used in kubernetes. Configuration is added for easier use locally
-            var leaderElectorUrlPart =
-                Environment.GetEnvironmentVariable("LEADERELECTOR_SERVICE")
-                ?? Configuration.GetRequiredConfiguration("ServiceBus:LeaderElectorUrl");
-
-            var leaderElectorRenewLeaseInterval = Configuration.GetRequiredIntConfiguration("ServiceBus:LeaderElectorRenewLeaseInterval");
-
-            services.AddPcsServiceBusIntegration(options => options
-                .UseBusConnection(Configuration.GetRequiredConnectionString("ServiceBus"))
-                .WithLeaderElector("http://" + leaderElectorUrlPart + ":3003")
-                .WithRenewLeaseInterval(leaderElectorRenewLeaseInterval)
-                .WithSubscription("Project", "completion_project")
-                //THIS METHOD SHOULD BE FALSE IN NORMAL OPERATION.
-                //ONLY SET TO TRUE WHEN A LARGE NUMBER OF MESSAGES HAVE FAILED AND ARE COPIED TO DEAD LETTER.
-                //WHEN SET TO TRUE, MESSAGES ARE READ FROM DEAD LETTER QUEUE INSTEAD OF NORMAL QUEUE
-                .WithReadFromDeadLetterQueue(Configuration.GetValue("ServiceBus:ReadFromDeadLetterQueue", defaultValue: false)));
-
-            var topics = Configuration["ServiceBus:TopicNames"];
-            if (topics is not null)
-            {
-                services.AddTopicClients(Configuration.GetRequiredConnectionString("ServiceBus"), topics);
-            }
-        }
-        else
-        {
-            services.AddSingleton<IPcsBusSender>(new DisabledServiceBusSender());
-        }
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
+        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
+        services.AddHostedService<ConfigureRequiredLabels>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,45 +1,95 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Events.DomainEvents.PunchItemDomainEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
+using User = Equinor.ProCoSys.Completion.MessageContracts.User;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 
 public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemCommand, Result<Unit>>
 {
     private readonly IPunchItemRepository _punchItemRepository;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<DeletePunchItemCommandHandler> _logger;
 
     public DeletePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
+        ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<DeletePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
+        _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        // Setting RowVersion before delete has 2 missions:
-        // 1) Set correct Concurrency
-        // 2) Trigger the update of modifiedBy / modifiedAt to be able to log who performed the deletion
-        punchItem.SetRowVersion(request.RowVersion);
-        _punchItemRepository.Remove(punchItem);
-        punchItem.AddDomainEvent(new PunchItemDeletedDomainEvent(punchItem));
+        try
+        {
+            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Setting RowVersion before delete has 2 missions:
+            // 1) Set correct Concurrency
+            // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+            punchItem.SetRowVersion(request.RowVersion);
+            _punchItemRepository.Remove(punchItem);
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
+            // AuditData must be set before publishing events due to use of Created- and Modified-properties
+            await _unitOfWork.SetAuditDataAsync();
 
-        return new SuccessResult<Unit>(Unit.Value);
+            var integrationEvent = await PublishPunchItemDeletedIntegrationEventsAsync(punchItem, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
+
+            return new SuccessResult<Unit>(Unit.Value);
+        }
+        catch (Exception)
+        {
+            _logger.LogError("Error occurred on deletion of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+
+    }
+
+    private async Task<PunchItemDeletedIntegrationEvent> PublishPunchItemDeletedIntegrationEventsAsync(PunchItem punchItem, CancellationToken cancellationToken)
+    {
+        var integrationEvent = new PunchItemDeletedIntegrationEvent(punchItem);
+
+        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+
+        var historyEvent = new HistoryDeletedIntegrationEvent(
+            punchItem.Plant,
+            $"Punch item {punchItem.Category} {punchItem.ItemNo} deleted",
+            punchItem.Guid,
+            punchItem.CheckListGuid,
+            new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
+            punchItem.ModifiedAtUtc!.Value);
+
+        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+
+        return integrationEvent;
     }
 }

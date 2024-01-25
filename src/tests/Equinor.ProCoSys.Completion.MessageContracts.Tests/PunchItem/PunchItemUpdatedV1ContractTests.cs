@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,7 +14,7 @@ public class PunchItemUpdatedV1ContractTests : ContractTestBase<IPunchItemUpdate
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ProjectGuid", typeof(Guid) },
             { "CheckListGuid", typeof(Guid) },
@@ -25,10 +24,15 @@ public class PunchItemUpdatedV1ContractTests : ContractTestBase<IPunchItemUpdate
             { "ItemNo", typeof(int) },
             { "Description", typeof(string) },
             { "RaisedByOrgCode", typeof(string) },
+            { "RaisedByOrgGuid", typeof(Guid) },
             { "ClearingByOrgCode", typeof(string) },
+            { "ClearingByOrgGuid", typeof(Guid) },
             { "SortingCode", typeof(string) },
+            { "SortingGuid", typeof(Guid?) },
             { "TypeCode", typeof(string) },
+            { "TypeGuid", typeof(Guid?) },
             { "PriorityCode", typeof(string) },
+            { "PriorityGuid", typeof(Guid?) },
             { "DueTimeUtc", typeof(DateTime?) },
             { "Estimate", typeof(int?) },
             { "ExternalItemNo", typeof(string) },
@@ -36,21 +40,24 @@ public class PunchItemUpdatedV1ContractTests : ContractTestBase<IPunchItemUpdate
             { "MaterialETAUtc", typeof(DateTime?) },
             { "MaterialExternalNo", typeof(string) },
             { "WorkOrderNo", typeof(string) },
+            { "WorkOrderGuid", typeof(Guid?) },
             { "OriginalWorkOrderNo", typeof(string) },
+            { "OriginalWorkOrderGuid", typeof(Guid?) },
             { "DocumentNo", typeof(string) },
+            { "DocumentGuid", typeof(Guid?) },
             { "SWCRNo", typeof(int?) },
-            { "ActionBy", typeof(IUser) },
-            { "ClearedBy", typeof(IUser) },
+            { "SWCRGuid", typeof(Guid?) },
+            { "ActionBy", typeof(User) },
+            { "ClearedBy", typeof(User) },
             { "ClearedAtUtc", typeof(DateTime?) },
-            { "RejectedBy", typeof(IUser) },
+            { "RejectedBy", typeof(User) },
             { "RejectedAtUtc", typeof(DateTime?) },
-            { "VerifiedBy", typeof(IUser) },
+            { "VerifiedBy", typeof(User) },
             { "VerifiedAtUtc", typeof(DateTime?) },
-            { "CreatedBy", typeof(IUser) },
+            { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) },
-            { "ModifiedBy", typeof(IUser) },
-            { "ModifiedAtUtc", typeof(DateTime) },
-            { "Changes", typeof(List<IProperty>) }
+            { "ModifiedBy", typeof(User) },
+            { "ModifiedAtUtc", typeof(DateTime) }
         };
 
         // Act

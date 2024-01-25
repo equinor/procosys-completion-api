@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Microsoft.EntityFrameworkCore;
-using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Query.Attachments;
@@ -36,37 +35,40 @@ public class AttachmentService : IAttachmentService
     {
         var attachments =
             await (from a in _context.QuerySet<Attachment>()
-                    join createdByUser in _context.QuerySet<Person>()
-                        on a.CreatedById equals createdByUser.Id
-                    from modifiedByUser in _context.QuerySet<Person>()
-                        .Where(p => p.Id == a.ModifiedById).DefaultIfEmpty() //left join!
+                    .Include(a => a.Labels.Where(l => !l.IsVoided))
+                    .Include(a => a.CreatedBy)
+                    .Include(a => a.ModifiedBy)
                    where a.ParentGuid == parent
-                   select new AttachmentDto(
-                       a.ParentGuid,
-                       a.Guid,
-                       a.GetFullBlobPath(),
-                       a.FileName,
-                       new PersonDto(
-                           createdByUser.Guid,
-                           createdByUser.FirstName,
-                           createdByUser.LastName,
-                           createdByUser.UserName,
-                           createdByUser.Email),
-                       a.CreatedAtUtc,
-                       modifiedByUser != null ? 
-                           new PersonDto(
-                               modifiedByUser.Guid,
-                               modifiedByUser.FirstName,
-                               modifiedByUser.LastName,
-                               modifiedByUser.UserName,
-                               modifiedByUser.Email) : null, 
-                       a.ModifiedAtUtc,
-                       a.RowVersion.ConvertToString()
-               ))
+                   select a)
                 .TagWith($"{nameof(AttachmentService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
-        return attachments;
+        var attachmentsDtos = 
+                attachments.Select(a => new AttachmentDto(
+                    a.ParentGuid,
+                    a.Guid,
+                    a.GetFullBlobPath(),
+                    a.FileName,
+                    a.Description,
+                    a.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
+                    new PersonDto(
+                        a.CreatedBy.Guid,
+                        a.CreatedBy.FirstName,
+                        a.CreatedBy.LastName,
+                        a.CreatedBy.UserName,
+                        a.CreatedBy.Email),
+                    a.CreatedAtUtc,
+                    a.ModifiedBy != null ?
+                        new PersonDto(
+                            a.ModifiedBy.Guid,
+                            a.ModifiedBy.FirstName,
+                            a.ModifiedBy.LastName,
+                            a.ModifiedBy.UserName,
+                            a.ModifiedBy.Email) : null,
+                    a.ModifiedAtUtc,
+                    a.RowVersion.ConvertToString()
+                ));
+        return attachmentsDtos;
     }
 
     public async Task<Uri?> GetDownloadUriAsync(Guid guid, CancellationToken cancellationToken)

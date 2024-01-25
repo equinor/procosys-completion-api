@@ -14,13 +14,13 @@ public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCrea
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "CreatedBy", typeof(IUser) },
+            { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

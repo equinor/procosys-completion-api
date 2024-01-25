@@ -14,13 +14,13 @@ public class LinkCreatedV1ContractTests : ContractTestBase<ILinkCreatedV1>
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },
             { "Title", typeof(string) },
             { "Url", typeof(string) },
-            { "CreatedBy", typeof(IUser) },
+            { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) }
         };
 

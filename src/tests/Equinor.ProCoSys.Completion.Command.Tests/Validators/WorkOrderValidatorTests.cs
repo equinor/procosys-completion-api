@@ -12,16 +12,17 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Validators;
 [TestClass]
 public class WorkOrderValidatorTests : ReadOnlyTestsBase
 {
+    private readonly string _testPlant = TestPlantA;
     private WorkOrder _knownWorkOrder = null!;
     private WorkOrder _openWorkOrder = null!;
     private WorkOrder _closedWorkOrder = null!;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        _knownWorkOrder = _openWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 1");
-        _closedWorkOrder = new WorkOrder(TestPlantA, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
+        _knownWorkOrder = _openWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 1");
+        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
         context.WorkOrders.Add(_openWorkOrder);
         context.WorkOrders.Add(_closedWorkOrder);
 
@@ -33,7 +34,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenWorkOrderExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new WorkOrderValidator(context);
 
         // Act
@@ -47,7 +48,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnFalse_WhenWorkOrderNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);    
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);    
         var dut = new WorkOrderValidator(context);
 
         // Act
@@ -63,7 +64,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnTrue_WhenWorkOrderIsClosed()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new WorkOrderValidator(context);
 
         // Act
@@ -77,7 +78,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnFalse_WhenWorkOrderIsOpen()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new WorkOrderValidator(context);
 
         // Act
@@ -91,7 +92,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
     public async Task IsClosed_ShouldReturnFalse_WhenWorkOrderNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMockObject, _eventDispatcherMockObject, _currentUserProviderMockObject);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         var dut = new WorkOrderValidator(context);
 
         // Act

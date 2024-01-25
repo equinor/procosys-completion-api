@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

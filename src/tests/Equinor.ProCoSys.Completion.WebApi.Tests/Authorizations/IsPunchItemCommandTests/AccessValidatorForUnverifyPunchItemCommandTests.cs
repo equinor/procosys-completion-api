@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;

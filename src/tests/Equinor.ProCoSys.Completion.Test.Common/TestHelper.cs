@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -54,15 +55,12 @@ public static class TestHelper
 
     public static List<Type> GetTestsWhichInheritsBaseClass(Assembly assembly, Type baseClass)
     {
-        var baseClassFullName = baseClass.FullName;
-        Assert.IsNotNull(baseClassFullName);
-
         var accessValidatorForIPunchItemQueryTestClasses =
             assembly.GetTypes()
                 .Where(t =>
                     IsAEquinorType(t) &&
                     IsATestClass(t) &&
-                    HasBaseClassOfType(t, baseClassFullName))
+                    t.HasBaseClassOfType(baseClass))
                 .ToList();
         return accessValidatorForIPunchItemQueryTestClasses;
     }
@@ -73,16 +71,6 @@ public static class TestHelper
             type.FullName is not null &&
             type.FullName.Contains("Equinor.");
         return isAEquinorClass;
-    }
-
-    public static bool HasBaseClassOfType(Type type, string baseClassFullName)
-    {
-        var hasBaseClassOfType =
-            type.BaseType is not null &&
-            type.BaseType.FullName is not null &&
-            type.BaseType.FullName.StartsWith(baseClassFullName);
-
-        return hasBaseClassOfType;
     }
 
     public static bool IsATestClass(Type type)

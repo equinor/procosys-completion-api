@@ -14,10 +14,10 @@ public class LinkDeletedV1ContractTests : ContractTestBase<ILinkDeletedV1>
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
-            { "DeletedBy", typeof(IUser) },
+            { "DeletedBy", typeof(User) },
             { "DeletedAtUtc", typeof(DateTime) }
         };
 

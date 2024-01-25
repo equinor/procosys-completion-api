@@ -158,12 +158,16 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         Guid guid,
         string text,
+        List<string> labels,
+        List<Guid> mentions,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
         var bodyPayload = new
         {
-            text
+            text,
+            labels,
+            mentions
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);
@@ -233,6 +237,11 @@ public static class PunchItemsControllerTestsHelper
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
 
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
         var jsonString = await response.Content.ReadAsStringAsync();
         return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
     }
@@ -250,6 +259,11 @@ public static class PunchItemsControllerTestsHelper
         httpContent.Add(new StringContent(rowVersion), nameof(rowVersion));
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Attachments", httpContent);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
 
         return await response.Content.ReadAsStringAsync();
     }
@@ -275,6 +289,36 @@ public static class PunchItemsControllerTestsHelper
 
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).SendAsync(request);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+    }
+
+    public static async Task<string> UpdatePunchItemAttachmentAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        Guid attachmentGuid,
+        string description,
+        List<string> labels,
+        string rowVersion,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            description,
+            labels,
+            rowVersion
+        };
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Attachments/{attachmentGuid}", content);
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
     }
 
     public static async Task<string> UpdatePunchItemAsync(
@@ -369,16 +413,32 @@ public static class PunchItemsControllerTestsHelper
         UserType userType,
         string plant,
         Guid guid,
+        string comment,
+        List<Guid> mentions,
         string rowVersion,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
-        => await PostAsync(
-            userType,
-            plant,
-            $"{Route}/{guid}/Reject",
-            rowVersion,
-            expectedStatusCode,
-            expectedMessageOnBadRequest);
+    {
+        var bodyPayload = new
+        {
+            comment,
+            mentions,
+            rowVersion
+        };
+
+        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Reject", content);
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
 
     public static async Task<string> VerifyPunchItemAsync(
         UserType userType,

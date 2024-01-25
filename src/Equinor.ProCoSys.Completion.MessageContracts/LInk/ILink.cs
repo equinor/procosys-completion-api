@@ -4,6 +4,7 @@ namespace Equinor.ProCoSys.Completion.MessageContracts.Link;
 
 public interface ILink
 {
+    string Plant { get; }
     // Guid of the entity owning the Link
     Guid ParentGuid { get; }
     // Type of the entity owning the Link

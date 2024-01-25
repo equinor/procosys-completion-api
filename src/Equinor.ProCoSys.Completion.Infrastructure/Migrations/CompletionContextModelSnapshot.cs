@@ -17,10 +17,118 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AttachmentLabel", b =>
+                {
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LabelsId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.HasKey("AttachmentId", "LabelsId");
+
+                    b.HasIndex("LabelsId");
+
+                    b.ToTable("AttachmentLabel");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("AttachmentLabelHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
+            modelBuilder.Entity("CommentLabel", b =>
+                {
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LabelsId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.HasKey("CommentId", "LabelsId");
+
+                    b.HasIndex("LabelsId");
+
+                    b.ToTable("CommentLabel");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CommentLabelHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
+            modelBuilder.Entity("CommentPerson", b =>
+                {
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MentionsId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.HasKey("CommentId", "MentionsId");
+
+                    b.HasIndex("MentionsId");
+
+                    b.ToTable("CommentPerson");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CommentPersonHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
 
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate.Attachment", b =>
                 {
@@ -40,6 +148,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -320,7 +433,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
-            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", b =>
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -333,6 +446,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValue("PunchPicture");
 
                     b.Property<DateTime?>("ModifiedAtUtc")
                         .HasColumnType("datetime2");
@@ -355,29 +474,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValue("GeneralPicture");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("ModifiedById");
-
-                    b.HasIndex("Type")
+                    b.HasIndex("EntityType")
                         .IsUnique();
 
-                    b.ToTable("LabelHost", t =>
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("LabelEntities", t =>
                         {
-                            t.HasCheckConstraint("host_type_valid_type", "Type in ('GeneralPicture','GeneralComment','PunchPicture','PunchComment')");
+                            t.HasCheckConstraint("valid_entity_type", "EntityType in ('PunchPicture','PunchComment')");
                         });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("LabelHostHistory");
+                                ttb.UseHistoryTable("LabelEntitiesHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -434,7 +547,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnName("PeriodStart");
 
                     b.Property<string>("Plant")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -556,6 +671,90 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate.MailTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodEnd");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PeriodStart");
+
+                    b.Property<string>("Plant")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.HasIndex("Code", "Plant")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MailTemplates_Code")
+                        .HasFilter("[Plant] IS NOT NULL");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Code", "Plant"), new[] { "Subject", "Body", "IsVoided" });
+
+                    b.ToTable("MailTemplates");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MailTemplatesHistory");
+                                ttb
+                                    .HasPeriodStart("PeriodStart")
+                                    .HasColumnName("PeriodStart");
+                                ttb
+                                    .HasPeriodEnd("PeriodEnd")
+                                    .HasColumnName("PeriodEnd");
+                            }));
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", b =>
                 {
                     b.Property<int>("Id")
@@ -598,10 +797,16 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("PeriodStart");
 
+                    b.Property<DateTime>("ProCoSys4LastUpdated")
+                        .HasColumnType("datetime2");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<bool>("Superuser")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -682,6 +887,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("ProCoSys4LastUpdated")
+                        .HasColumnType("datetime2");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1056,9 +1264,9 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                             }));
                 });
 
-            modelBuilder.Entity("LabelLabelHost", b =>
+            modelBuilder.Entity("LabelLabelEntity", b =>
                 {
-                    b.Property<int>("HostsId")
+                    b.Property<int>("AvailableForId")
                         .HasColumnType("int");
 
                     b.Property<int>("LabelsId")
@@ -1074,15 +1282,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("PeriodStart");
 
-                    b.HasKey("HostsId", "LabelsId");
+                    b.HasKey("AvailableForId", "LabelsId");
 
                     b.HasIndex("LabelsId");
 
-                    b.ToTable("LabelLabelHost");
+                    b.ToTable("LabelLabelEntity");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("LabelLabelHostHistory");
+                                ttb.UseHistoryTable("LabelLabelEntityHistory");
                                 ttb
                                     .HasPeriodStart("PeriodStart")
                                     .HasColumnName("PeriodStart");
@@ -1193,6 +1401,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<Guid>("MessageId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("OutboxId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1260,6 +1472,51 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.ToTable("OutboxState");
                 });
 
+            modelBuilder.Entity("AttachmentLabel", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate.Attachment", null)
+                        .WithMany()
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label", null)
+                        .WithMany()
+                        .HasForeignKey("LabelsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CommentLabel", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate.Comment", null)
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label", null)
+                        .WithMany()
+                        .HasForeignKey("LabelsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CommentPerson", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate.Comment", null)
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", null)
+                        .WithMany()
+                        .HasForeignKey("MentionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate.Attachment", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
@@ -1320,7 +1577,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
-            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", b =>
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
                         .WithMany()
@@ -1355,6 +1612,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate.Link", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate.MailTemplate", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
                         .WithMany()
@@ -1550,11 +1824,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
-            modelBuilder.Entity("LabelLabelHost", b =>
+            modelBuilder.Entity("LabelLabelEntity", b =>
                 {
-                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelHostAggregate.LabelHost", null)
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate.LabelEntity", null)
                         .WithMany()
-                        .HasForeignKey("HostsId")
+                        .HasForeignKey("AvailableForId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -24,7 +24,9 @@ public class DeletePunchItemLinkCommandValidator : AbstractValidator<DeletePunch
             .MustAsync((command, cancellationToken) => BeAnExistingLink(command.LinkGuid, cancellationToken))
             .WithMessage(command => $"Link with this guid does not exist! Guid={command.LinkGuid}")
             .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage("Tag owning punch item is voided!");
+            .WithMessage("Tag owning punch item is voided!")
+            .MustAsync((command, cancellationToken) => NotBeClearedAsync(command.PunchItemGuid, cancellationToken))
+            .WithMessage(command => $"Punch item is cleared! Guid={command.PunchItemGuid}");
 
         async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
             => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
@@ -37,5 +39,8 @@ public class DeletePunchItemLinkCommandValidator : AbstractValidator<DeletePunch
 
         async Task<bool> BeAnExistingLink(Guid linkGuid, CancellationToken cancellationToken)
             => await linkService.ExistsAsync(linkGuid, cancellationToken);
+
+        async Task<bool> NotBeClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+            => !await punchItemValidator.IsClearedAsync(punchItemGuid, cancellationToken);
     }
 }

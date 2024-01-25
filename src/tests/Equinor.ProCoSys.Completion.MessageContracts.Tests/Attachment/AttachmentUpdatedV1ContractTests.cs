@@ -14,13 +14,16 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "DisplayName", typeof(string) },
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },
             { "FileName", typeof(string) },
+            { "Description", typeof(string) },
             { "BlobPath", typeof(string) },
-            { "ModifiedBy", typeof(IUser) },
+            { "RevisionNumber", typeof(int) },
+            { "Labels", typeof(List<string>) },
+            { "ModifiedBy", typeof(User) },
             { "ModifiedAtUtc", typeof(DateTime) }
         };
 

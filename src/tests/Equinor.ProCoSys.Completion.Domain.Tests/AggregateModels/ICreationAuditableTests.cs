@@ -20,7 +20,7 @@ public abstract class ICreationAuditableTests
     public void SetupCreationAuditableTests()
     {
         TimeService.SetProvider(new ManualTimeProvider(_now));
-        _person = new Person(Guid.NewGuid(), null!, null!, null!, null!);
+        _person = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
         _person.SetProtectedIdForTesting(3);
     }
 
