@@ -8,9 +8,9 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 [TestClass]
 public class ImportHandlerTests
 {
-    IImportSchemaMapper _importSchemaMapperMock = null!;
-    ILogger<ImportHandler> _loggerMock = null!;
-    ImportHandler _dut = null!;
+    IImportSchemaMapper _importSchemaMapperMock;
+    ILogger<ImportHandler> _loggerMock;
+    private ImportHandler _dut;
 
     [TestInitialize]
     public void Setup()
