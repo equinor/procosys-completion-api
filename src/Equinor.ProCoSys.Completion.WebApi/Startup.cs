@@ -176,14 +176,14 @@ public class Startup
         services.AddApplicationModules(Configuration);
 
         services.AddHostedService<VerifyApplicationExistsAsPerson>();
+        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
+        services.AddHostedService<ConfigureRequiredLabels>();
 
         var startTieImport = Configuration.GetValue<bool>("StartTieImport");
         if (startTieImport)
         {
             services.AddTieImportModule(Configuration);
         }
-        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
-        services.AddHostedService<ConfigureRequiredLabels>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
