@@ -1,0 +1,89 @@
+variables:
+  # Common variables
+  
+  # Enabling System Debug for Azure DevOps Pipeline
+  - name: 'System.Debug'
+    value: 'true'
+
+  # Enabling Agent Diagnostic for Azure DevOps Pipeline
+  - name: 'Agent.Diagnostic'
+    value: 'true'
+
+  - name: 'fullAppName'
+    value: 'completion'
+  
+  - name: 'shortAppName'
+    value: 'completion'
+
+  - name: 'databaseName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
+
+  - name: 'kvName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-kv'
+
+  - name: 'appInsightsName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-ai'
+
+  - name: 'appConfigName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-config'
+
+  - name: 'envRgName'
+    value: '$(globalPrefix)-$(fullAppName)-$(envName)-rg'
+
+  - name: 'apiWebAppName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-api'
+
+  # equinor-procosys-completion Client ID  TODO: dette må fikses!
+  - name: 'kvClientIdName'
+    value: 'cb7afa3f-d2ff-401b-83b6-f02cce85ce30'
+
+  - name: 'kvClientSecretName'
+    value: 'equinor-procosys-$(shortAppName)-service-principal'
+
+  - name: 'kvTenantIdSecret'
+    value: 'TenantId'
+
+  - name: 'kvConnStringsSecret'
+    value: 'ConnectionStrings-AppConfig'
+
+  - name: 'vnetRg'
+    value: 'pcs-common-rg'
+
+  - name: 'commonRgName'
+    value: 'pcs-common-rg'
+
+  - name: 'vnetName'
+    value: 'procosys-infra-vnet'
+
+  - name: 'nonProdAKSsubnet'
+    value: 'aks-test-snet'
+
+  - name: 'prodAKSsubnet'
+    value: 'aks-prod-snet'
+
+  - name: 'sqlDatabaseName'
+    value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
+  
+  - name: 'sqlDatabaseNameIpo'
+    value: '$(globalPrefix)-$(shortAppName)-$(env)-db'
+
+  - name: 'sqlServerNameIpo'
+    value: '$(globalPrefix)-$(env)-sqlserver'
+
+  - name: 'commonKeyVault'
+    value: '$(globalPrefix)-common-kv'
+
+  - name: 'aksRgName'
+    value: 'pcs-hosting-rg'
+
+  - name: 'aksTestName'
+    value: 'pcs-aks-test'
+
+  - name: 'aksProdName'
+    value: 'pcs-aks-prod'
+
+  # Dev variables
+
+  # Test variables
+
+  # Prod variables
