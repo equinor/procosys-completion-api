@@ -64,10 +64,10 @@ variables:
   - name: 'sqlDatabaseName'
     value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
   
-  - name: 'sqlDatabaseNameIpo'
+  - name: 'sqlDatabaseNameCompletion'
     value: '$(globalPrefix)-$(shortAppName)-$(env)-db'
 
-  - name: 'sqlServerNameIpo'
+  - name: 'sqlServerNameCompletion'
     value: '$(globalPrefix)-$(env)-sqlserver'
 
   - name: 'commonKeyVault'
