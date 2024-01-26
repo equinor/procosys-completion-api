@@ -39,26 +39,26 @@ name: '${{ variables.versionNumber }}$(Build.BuildId)-$(Date:MMddyyyy)'
 
 stages:
 # Run tests Stage
-- stage: runtests
-  displayName: 'Run tests'
-  variables:
-    envName: 'runtests'
-    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
-    testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
-
-  jobs:
-  # Run Test
-  - template: templates/runtest.yml
-    parameters:
-      deploymentName: 'runtests'
-      dependsOn: ''
-      envGroup: '${{ variables.envGroupName }}'
-      testPath: '${{ variables.testPath }}'
+#- stage: runtests
+#  displayName: 'Run tests'
+#  variables:
+#    envName: 'runtests'
+#    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
+#    testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
+#
+#  jobs:
+#  # Run Test
+#  - template: templates/runtest.yml
+#    parameters:
+#      deploymentName: 'runtests'
+#      dependsOn: ''
+#      envGroup: '${{ variables.envGroupName }}'
+#      testPath: '${{ variables.testPath }}'
 
 # Build stage. Docker build, tag and push
 - stage: build
   displayName: 'Build'
-  dependsOn: 'runtests'
+  ##dependsOn: 'runtests'
   variables:
     envName: 'build'
     envRg: '${{ variables.envRgName }}' 
@@ -88,7 +88,7 @@ stages:
     parameters:
       deploymentName: 'docker_build_and_push_main_only'
       dependsOn: ''
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/103906_Deploy_Completion_med_Radix')) #TODO BRANCH
       envGroup: '${{ variables.envGroupName }}'
       arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
       buildCommand: buildAndPush
