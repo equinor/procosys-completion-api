@@ -65,7 +65,7 @@ public static class TieImportModule
             )
             .WithConfigModifier(config =>
             {
-                config.TieErrorShouldBeThrown = (c, ex) => true;
+                config.TieErrorShouldBeThrown = (_, _) => true;
                 config.Tie1Info.TokenProvider =
                     new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
             })
@@ -115,7 +115,7 @@ public static class TieImportModule
 
             ActionOnReadError = ex =>
             {
-                //TODO: JSOI - Figure out how to get logger object
+                //TODO: 109877 - Figure out how to get logger object
                 //_logger.LogInformation($"Certificate error: {ex.Message}");
                 return Task.CompletedTask;
             }

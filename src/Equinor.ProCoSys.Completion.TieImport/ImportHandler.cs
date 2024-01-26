@@ -59,7 +59,7 @@ public class ImportHandler : IImportHandler
 
     private TIMessageResult ImportMessage(TIInterfaceMessage message)
     {
-        _logger.LogInformation($"To import message GUID={message.Guid} with {message.Objects.Count} object(s)");
+        _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
         //TODO: 109642 Collect errors and warnings
         try
         {
@@ -70,7 +70,8 @@ public class ImportHandler : IImportHandler
         }
         catch (Exception ex) //TODO: 109642 SetFailed result
         {
-            _logger.LogError($"Failed to import message with GUID={message.Guid} Exception: {ex.Message}, InnerException {ex.InnerException?.Message}");
+            _logger.LogError("Failed to import message with GUID={MessageGuid} Exception: {ExceptionMessage}, InnerException {InnerExceptionMessage}", 
+                message.Guid, ex.Message, ex.InnerException?.Message);
         }
         finally
         {
@@ -112,11 +113,11 @@ public class ImportHandler : IImportHandler
     }
 
 
-    private TIMessageResult? HandleExceptionFromImportOperation(TIInterfaceMessage message, Exception e)
+    private TIMessageResult HandleExceptionFromImportOperation(TIInterfaceMessage message, Exception e)
     {
         var tiMessageResult = e.ToMessageResult();
         _logger.LogError(
-            $"Error when committing message. Exception: {e.Message} Stacktrace: {e.StackTrace} TIEMessage: {message}",
+            "Error when committing message. Exception: {ExceptionMessage} Stacktrace: {StackTrace} TIEMessage: {TieMessage}",
             e.Message, e.StackTrace, message);
 
         return tiMessageResult;
@@ -125,7 +126,7 @@ public class ImportHandler : IImportHandler
     private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message, TIMessageResult? tiMessageResult,
         TIResponseFrame response)
     {
-        if (tiMessageResult != null)
+        if (tiMessageResult is not null)
         {
             // Observe: The ExternalReference is copied over to the result; this is where we keep/pass back the ReceiptID.
             tiMessageResult.Guid = message.Guid;

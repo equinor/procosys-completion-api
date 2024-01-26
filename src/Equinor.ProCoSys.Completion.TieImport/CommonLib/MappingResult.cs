@@ -8,7 +8,7 @@ public class MappingResult
 
     public TIMessageResult? ErrorResult { get; }
 
-    public bool Success => Message != null;
+    public bool Success => Message is not null;
 
     public MappingResult(TIInterfaceMessage? message) => Message = message;
 
