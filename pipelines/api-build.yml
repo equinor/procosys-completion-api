@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - main
+      - pbi/103906_Deploy_Completion_med_Radix
 
 resources:
   repositories:
