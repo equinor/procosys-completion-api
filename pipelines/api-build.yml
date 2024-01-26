@@ -65,7 +65,7 @@ stages:
     containerRegistry: '${{ variables.containerRegistryName }}'
     envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.env }}'
     dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnectionName }}'
-    dockerfilePath: '$(Build.SourcesDirectory)/src/Equinor.ProCoSys.Completion.WebApi/Dockerfile'
+    dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
 
   jobs:
   # Docker Build
