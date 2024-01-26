@@ -207,7 +207,6 @@ public class CommentServiceTests : TestsBase
     {
         public Guid Guid { get; } = Guid.NewGuid();
         public string GetContextType() => nameof(TestableEntity);
-
         public dynamic GetEmailContext() => new ExpandoObject();
     }
 }
