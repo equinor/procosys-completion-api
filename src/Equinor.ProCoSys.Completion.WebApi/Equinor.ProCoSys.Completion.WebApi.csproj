@@ -64,9 +64,4 @@
       <Link>.dockerignore</Link>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TieImport\" />
-  </ItemGroup>
-
 </Project>

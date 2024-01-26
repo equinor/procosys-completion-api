@@ -9,13 +9,11 @@ namespace Equinor.ProCoSys.Completion.TieImport.Adapter;
 public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPartitionConfig, Tie1Message, Tie1Receipt>
 {
     private readonly ILogger<Tie1MessageHandler> _logger;
-    private readonly IImportSchemaMapper _commonLibMapper;
     private readonly IImportHandler _importHandler;
 
-    public Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImportSchemaMapper commonLibMapper, IImportHandler importHandler)
+    public Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImportHandler importHandler)
     {
         _logger = logger;
-        _commonLibMapper = commonLibMapper;
         _importHandler = importHandler;
     }
 

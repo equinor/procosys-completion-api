@@ -9,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 public class ImportHandlerTests
 {
     IImportSchemaMapper _importSchemaMapperMock;
-    private ImportHandler _dut;
+    ImportHandler _dut;
 
     [TestInitialize]
     public void Setup()
@@ -38,5 +38,27 @@ public class ImportHandlerTests
         //Assert
         Assert.AreEqual(MessageResults.Failed, result.Results[0].Result);
         Assert.AreEqual("Mapping failed", result.Results[0].ErrorMessage);
+    }
+
+    [TestMethod]
+    public void Handle_ShouldReturnSuccessResultIfMapperSucceeds()
+    {
+        // Arrange
+        var mappingResultIsSuccess = new MappingResult(
+            new TIMessageResult
+            {
+                ErrorMessage = null,
+                Result = MessageResults.Successful
+            }
+        );
+
+        _importSchemaMapperMock.Map(Arg.Any<TIInterfaceMessage>()).Returns(mappingResultIsSuccess);
+
+        //Act
+        var result = _dut.Handle(new TIInterfaceMessage());
+
+        //Assert
+        Assert.AreEqual(MessageResults.Successful, result.Results[0].Result);
+        Assert.IsNull(result.Results[0].ErrorMessage);
     }
 }
