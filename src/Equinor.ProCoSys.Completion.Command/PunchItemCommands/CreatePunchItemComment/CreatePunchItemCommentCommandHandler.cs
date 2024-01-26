@@ -13,20 +13,17 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemC
 public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchItemCommentCommand, Result<GuidAndRowVersion>>
 {
     private readonly ICommentService _commentService;
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILabelRepository _labelRepository;
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreatePunchItemCommentCommandHandler(
         ICommentService commentService,
-        IPunchItemRepository punchItemRepository,
         ILabelRepository labelRepository,
         IPersonRepository personRepository,
         IUnitOfWork unitOfWork)
     {
         _commentService = commentService;
-        _punchItemRepository = punchItemRepository;
         _labelRepository = labelRepository;
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
@@ -36,17 +33,16 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         CreatePunchItemCommentCommand request,
         CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
         var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
         var commentDto = await _commentService.AddAndSaveAsync(
             _unitOfWork,
-            punchItem,
+            nameof(PunchItem),
+            request.PunchItemGuid,
             request.Text,
             labels,
             mentions,
-            MailTemplateCode.PunchCommented,
             cancellationToken);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(commentDto.Guid, commentDto.RowVersion));

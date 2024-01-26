@@ -186,7 +186,6 @@ public static class ApplicationModule
         services.AddScoped<ITemplateTransformer, TemplateTransformer>();
         services.AddScoped<ICompletionMailService, CompletionMailService>();
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<IPcs4Repository, Pcs4Repository>();

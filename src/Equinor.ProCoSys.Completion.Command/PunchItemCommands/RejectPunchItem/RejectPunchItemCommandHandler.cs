@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,6 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly IPersonRepository _personRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly ICompletionMailService _completionMailService;
-    private readonly IDeepLinkUtility _deepLinkUtility;
     private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RejectPunchItemCommandHandler> _logger;
@@ -44,7 +44,6 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         IPersonRepository personRepository,
         ISyncToPCS4Service syncToPCS4Service,
         ICompletionMailService completionMailService,
-        IDeepLinkUtility deepLinkUtility,
         IIntegrationEventPublisher integrationEventPublisher,
         IUnitOfWork unitOfWork,
         ILogger<RejectPunchItemCommandHandler> logger,
@@ -56,7 +55,6 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _personRepository = personRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _completionMailService = completionMailService;
-        _deepLinkUtility = deepLinkUtility;
         _integrationEventPublisher = integrationEventPublisher;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -86,7 +84,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
                 [change],
                 cancellationToken);
 
-            _commentService.Add(punchItem, request.Comment, [rejectLabel], mentions);
+            _commentService.Add(nameof(PunchItem), request.PunchItemGuid, request.Comment, [rejectLabel], mentions);
 
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -119,10 +117,12 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     private dynamic GetEmailContext(PunchItem punchItem, string comment)
     {
-        var emailContext = punchItem.GetEmailContext();
+        dynamic emailContext = new ExpandoObject();
         
+        emailContext.PunchItem = punchItem;
         emailContext.Comment = comment;
-        emailContext.Url = _deepLinkUtility.CreateUrl(punchItem.GetContextType(), punchItem.Guid);
+        // todo 109830 Deep link to the punch item
+        emailContext.Url = _options.CurrentValue.BaseUrl;
 
         return emailContext;
     }

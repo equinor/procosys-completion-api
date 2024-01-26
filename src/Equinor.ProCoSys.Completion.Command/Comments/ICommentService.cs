@@ -12,20 +12,16 @@ public interface ICommentService
 {
     Task<CommentDto> AddAndSaveAsync(
         IUnitOfWork unitOfWork,
-        IEntityContext parentEntity,
+        string parentType,
+        Guid parentGuid,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions,
-        /*
-         * The emailTemplateCode represent a code matching a MailTemplate in DB
-         * This MailTemplate must have placeholders which match the built email context.
-         * See ICompletionMailService for sample
-         */
-        string emailTemplateCode,
         CancellationToken cancellationToken);
     
     Guid Add(
-        IEntityContext parentEntity,
+        string parentType,
+        Guid parentGuid,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions);
