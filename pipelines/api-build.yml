@@ -6,11 +6,15 @@ trigger:
 resources:
   repositories:
   - repository: self
+  - repository: templates
+    type: github
+    name: equinor/procosys-infra
+    endpoint: 'equinor'
 
 # Global variables for the pipeline
 variables:
+ - template: templates/variables/procosys-global-variables.yml@templates
  - template: completion-variables.yml
- - template: procosys-global-variables.yml
 
  - name: 'repositoryName'
    value: 'completion/api'
