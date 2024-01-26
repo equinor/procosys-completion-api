@@ -123,15 +123,12 @@ public class ImportHandler : IImportHandler
         return tiMessageResult;
     }
 
-    private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message, TIMessageResult? tiMessageResult,
+    private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message, TIMessageResult tiMessageResult,
         TIResponseFrame response)
     {
-        if (tiMessageResult is not null)
-        {
-            // Observe: The ExternalReference is copied over to the result; this is where we keep/pass back the ReceiptID.
-            tiMessageResult.Guid = message.Guid;
-            tiMessageResult.ExternalReference = message.ExternalReference;
-            response.Results.Add(tiMessageResult);
-        }
+        // Observe: The ExternalReference is copied over to the result; this is where we keep/pass back the ReceiptID.
+        tiMessageResult.Guid = message.Guid;
+        tiMessageResult.ExternalReference = message.ExternalReference;
+        response.Results.Add(tiMessageResult);
     }
 }
