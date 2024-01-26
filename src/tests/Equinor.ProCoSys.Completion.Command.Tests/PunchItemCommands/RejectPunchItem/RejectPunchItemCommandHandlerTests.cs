@@ -11,6 +11,7 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private RejectPunchItemCommandHandler _dut;
     private ILabelRepository _labelRepositoryMock;
     private ICommentService _commentServiceMock;
-    private IDeepLinkUtility _deepLinkUtilityMock;
     private ICompletionMailService _completionMailServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
     private Label _rejectedLabel;
@@ -57,8 +57,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
 
-        _deepLinkUtilityMock = Substitute.For<IDeepLinkUtility>();
-
         _optionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
         _optionsMock.CurrentValue.Returns(
             new ApplicationOptions
@@ -76,7 +74,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _completionMailServiceMock,
-            _deepLinkUtilityMock,
             _integrationEventPublisherMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<RejectPunchItemCommandHandler>>(),
@@ -134,7 +131,8 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         List<Label> labelsAdded = null!;
         _commentServiceMock
             .When(x => x.Add(
-                Arg.Any<IEntityContext>(),
+                Arg.Any<string>(),
+                Arg.Any<Guid>(),
                 Arg.Any<string>(),
                 Arg.Any<IEnumerable<Label>>(),
                 Arg.Any<IEnumerable<Person>>()))
@@ -147,10 +145,10 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         _commentServiceMock.Received(1)
             .Add(
-                punchItem,
+                nameof(PunchItem),
+                _command.PunchItemGuid,
                 _command.Comment,
                 Arg.Any<IEnumerable<Label>>(),
                 Arg.Any<IEnumerable<Person>>());
@@ -232,7 +230,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _completionMailServiceMock.Received(1)
+        _completionMailServiceMock.Received(1)
             .SendEmailAsync(
                 MailTemplateCode.PunchRejected,
                 Arg.Any<dynamic>(),
@@ -261,8 +259,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1)
-            .SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
+        await _syncToPCS4ServiceMock.Received(1).SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
     }
 
     [TestMethod]

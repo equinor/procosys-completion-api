@@ -967,29 +967,4 @@ public class PunchItemTests : IModificationAuditableTests
     }
 
     #endregion
-
-    #region GetContextType
-    [TestMethod]
-    public void GetContextType_ShouldReturnNameOfPunchItem()
-    {
-        // Act
-        var contextType = _dut.GetContextType();
-
-        // Assert
-        Assert.AreEqual(nameof(PunchItem), contextType);
-    }
-    #endregion
-
-    #region GetEmailContext
-    [TestMethod]
-    public void GetEmailContext_ShouldReturnDynamicContext_WithThePunchAsEntity()
-    {
-        // Act
-        var emailContext = _dut.GetEmailContext();
-
-        // Assert
-        var entity = emailContext.Entity;
-        Assert.AreEqual(_dut, entity);
-    }
-    #endregion
 }
