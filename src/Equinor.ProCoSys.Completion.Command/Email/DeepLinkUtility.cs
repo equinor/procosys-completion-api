@@ -19,14 +19,14 @@ public class DeepLinkUtility : IDeepLinkUtility
 
     public string CreateUrl(string contextName, Guid guid)
     {
-        var plant = _plantProvider.Plant[4..];
-        switch (contextName)
+        var plant = GetPlantNameWithoutPCSSuffix();
+        return contextName switch
         {
             // todo 109830 Deep link to the punch item
-            case nameof(PunchItem):
-                return $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}";
-            default:
-                throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}");
-        }
+            nameof(PunchItem) => $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}",
+            _ => throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}")
+        };
     }
+
+    private string GetPlantNameWithoutPCSSuffix() => _plantProvider.Plant[4..];
 }
