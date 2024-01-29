@@ -10,6 +10,7 @@ using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using System;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
+using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
@@ -21,19 +22,19 @@ public static class TieImportModule
     public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
     {
         var configOptions = new TieImportOptions();
-        
+
         services.AddOptions<TieImportOptions>()
             .BindConfiguration("TieImport")
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
         configuration.Bind("TieImport", configOptions);
 
         services.AddOptions<CommonLibOptions>()
             .BindConfiguration("CommonLib")
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
+        //TODO: JSOI Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
+        services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
 
         var tiClientOptions = GetTiClientOptions(configOptions);
@@ -64,7 +65,7 @@ public static class TieImportModule
             )
             .WithConfigModifier(config =>
             {
-                config.TieErrorShouldBeThrown = (c, ex) => true;
+                config.TieErrorShouldBeThrown = (_, _) => true;
                 config.Tie1Info.TokenProvider =
                     new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
             })
@@ -114,7 +115,7 @@ public static class TieImportModule
 
             ActionOnReadError = ex =>
             {
-                //TODO: JSOI - Figure out how to get logger object
+                //TODO: 109877 - Figure out how to get logger object
                 //_logger.LogInformation($"Certificate error: {ex.Message}");
                 return Task.CompletedTask;
             }

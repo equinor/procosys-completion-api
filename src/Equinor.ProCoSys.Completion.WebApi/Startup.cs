@@ -25,12 +25,12 @@ using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
-using Swashbuckle.AspNetCore.Filters;
-using System.IO;
-using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Equinor.ProCoSys.Completion.WebApi.DiModules;
 using Equinor.ProCoSys.PcsServiceBus;
 using Equinor.ProCoSys.PcsServiceBus.Sender.Interfaces;
+using Swashbuckle.AspNetCore.Filters;
+using System.IO;
+using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
