@@ -44,7 +44,7 @@ jobs:
                 inlineScript: |
                   # Set user secrets for API project
                   cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\
-                  # dotnet user-secrets set "ConnectionStrings:IPOContext" "dummydata" # Need input
+                  dotnet user-secrets set "ConnectionStrings:CompletionContext" "dummydata" 
 
                   # Create migration script for MyDbContext
                   dotnet ef migrations script `
