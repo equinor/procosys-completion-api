@@ -3,7 +3,7 @@ WORKDIR /src
 
 # Copy project files separately and restore NuGet packages to create layers. Skip test projects!
 COPY ["Equinor.ProCoSys.Completion.WebApi/Equinor.ProCoSys.Completion.WebApi.csproj", "Equinor.ProCoSys.Completion.WebApi/"]
-COPY ["Equinor.ProCoSys.Completion.DbSyncToPC4/Equinor.ProCoSys.Completion.DbSyncToPC4.csproj", "Equinor.ProCoSys.Completion.DbSyncToPCS4/"]
+COPY ["Equinor.ProCoSys.Completion.DbSyncToPCS4/Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "Equinor.ProCoSys.Completion.DbSyncToPCS4/"]
 COPY ["Equinor.ProCoSys.Completion.Command/Equinor.ProCoSys.Completion.Command.csproj", "Equinor.ProCoSys.Completion.Command/"]
 COPY ["Equinor.ProCoSys.Completion.Domain/Equinor.ProCoSys.Completion.Domain.csproj", "Equinor.ProCoSys.Completion.Domain/"]
 COPY ["Equinor.ProCoSys.Completion.MessageContracts/Equinor.ProCoSys.Completion.MessageContracts.csproj", "Equinor.ProCoSys.Completion.MessageContracts/"]
