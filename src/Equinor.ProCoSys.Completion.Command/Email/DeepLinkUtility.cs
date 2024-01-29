@@ -19,7 +19,7 @@ public class DeepLinkUtility : IDeepLinkUtility
 
     public string CreateUrl(string contextName, Guid guid)
     {
-        var plant = GetPlantNameWithoutPCSSuffix();
+        var plant = GetPlantNameWithoutPCSPrefix();
         return contextName switch
         {
             // todo 109830 Deep link to the punch item
@@ -28,5 +28,5 @@ public class DeepLinkUtility : IDeepLinkUtility
         };
     }
 
-    private string GetPlantNameWithoutPCSSuffix() => _plantProvider.Plant[4..];
+    private string GetPlantNameWithoutPCSPrefix() => _plantProvider.Plant[4..];
 }
