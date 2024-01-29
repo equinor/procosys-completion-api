@@ -22,9 +22,9 @@ ARG ENV_TYPE
 ARG FEED_TOKEN
 
 RUN if [ "$ENV_TYPE" = "local" ]; then \
-            FEED_ACCESSTOKEN_DECODED=$FEED_TOKEN; \
+            FEED_ACCESSTOKEN_DECODED=FEED_ACCESSTOKEN; \
         else \
-            FEED_ACCESSTOKEN_DECODED=$(echo $FEED_TOKEN | base64 -d); \
+            FEED_ACCESSTOKEN_DECODED=$(echo FEED_ACCESSTOKEN | base64 -d); \
         fi && \
     export VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN_DECODED}\"}]}" && \
     wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash && \
