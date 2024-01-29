@@ -122,7 +122,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         var emailContext = punchItem.GetEmailContext();
         
         emailContext.Comment = comment;
-        emailContext.Url = _deepLinkUtility.CreateUrl(punchItem.GetContextType(), punchItem.Guid);
+        emailContext.Url = _deepLinkUtility.CreateUrl(punchItem.GetContextName(), punchItem.Guid);
 
         return emailContext;
     }

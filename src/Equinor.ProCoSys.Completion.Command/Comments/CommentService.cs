@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Domain;
@@ -34,7 +35,7 @@ public class CommentService : ICommentService
 
     public async Task<CommentDto> AddAndSaveAsync(
         IUnitOfWork unitOfWork,
-        IEntityContext parentEntity,
+        IHaveGuid parentEntity,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions,
@@ -55,7 +56,7 @@ public class CommentService : ICommentService
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
 
-    public Guid Add(IEntityContext parentEntity, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
+    public Guid Add(IHaveGuid parentEntity, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
     {
         var comment = AddToRepository(parentEntity, text, labels, mentions);
 
@@ -68,12 +69,12 @@ public class CommentService : ICommentService
     }
 
     private Comment AddToRepository(
-        IEntityContext parentEntity,
+        IHaveGuid parentEntity,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions)
     {
-        var comment = new Comment(parentEntity.GetContextType(), parentEntity.Guid, text);
+        var comment = new Comment(parentEntity.GetContextName(), parentEntity.Guid, text);
         comment.UpdateLabels(labels.ToList());
         comment.SetMentions(mentions.ToList());
 
@@ -84,13 +85,13 @@ public class CommentService : ICommentService
 
     private async Task SendEMailAsync(
         string emailTemplateCode,
-        IEntityContext parentEntity,
+        IHaveGuid parentEntity,
         Comment comment, 
         CancellationToken cancellationToken)
     {
         var emailContext = parentEntity.GetEmailContext();
         emailContext.Comment = comment;
-        emailContext.Url = _deepLinkUtility.CreateUrl(parentEntity.GetContextType(), parentEntity.Guid);
+        emailContext.Url = _deepLinkUtility.CreateUrl(parentEntity.GetContextName(), parentEntity.Guid);
         
         var emailAddresses = comment.Mentions.Select(m => m.Email).ToList();
         await _completionMailService.SendEmailAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);

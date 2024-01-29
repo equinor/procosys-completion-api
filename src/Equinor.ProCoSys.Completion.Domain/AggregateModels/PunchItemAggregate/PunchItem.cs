@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Dynamic;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -12,7 +11,7 @@ using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
-public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IEntityContext
+public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
     public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMin = 1;
@@ -350,15 +349,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     {
         ActionBy = null;
         ActionById = null;
-    }
-
-    public string GetContextType() => nameof(PunchItem);
-
-    public dynamic GetEmailContext()
-    {
-        dynamic emailContext = new ExpandoObject();
-        emailContext.Entity = this;
-        return emailContext;
     }
 
     private void SetProject(string plant, Project project)

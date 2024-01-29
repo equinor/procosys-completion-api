@@ -4,5 +4,5 @@ namespace Equinor.ProCoSys.Completion.Command.Email;
 
 public interface IDeepLinkUtility
 {
-    string CreateUrl(string typeName, Guid guid);
+    string CreateUrl(string contextName, Guid guid);
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
@@ -134,7 +135,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         List<Label> labelsAdded = null!;
         _commentServiceMock
             .When(x => x.Add(
-                Arg.Any<IEntityContext>(),
+                Arg.Any<IHaveGuid>(),
                 Arg.Any<string>(),
                 Arg.Any<IEnumerable<Label>>(),
                 Arg.Any<IEnumerable<Person>>()))

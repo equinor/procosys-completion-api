@@ -17,16 +17,16 @@ public class DeepLinkUtility : IDeepLinkUtility
         _options = options;
     }
 
-    public string CreateUrl(string typeName, Guid guid)
+    public string CreateUrl(string contextName, Guid guid)
     {
         var plant = _plantProvider.Plant[4..];
-        switch (typeName)
+        switch (contextName)
         {
             // todo 109830 Deep link to the punch item
             case nameof(PunchItem):
                 return $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}";
             default:
-                throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {typeName}");
+                throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}");
         }
     }
 }
