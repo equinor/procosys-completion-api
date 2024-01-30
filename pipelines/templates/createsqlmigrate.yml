@@ -43,14 +43,18 @@ jobs:
                 scriptLocation: inlineScript
                 inlineScript: |
                   # Set user secrets for API project
-                  cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\
+                  cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\                 
                   dotnet user-secrets set "ConnectionStrings:CompletionContext" "dummydata" 
 
+                  echo ---------test $(Build.SourcesDirectory)
+                  echo ---------test $(Build.ArtifactStagingDirectory)
                   # Create migration script for MyDbContext
                   dotnet ef migrations script `
                     --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent
+
+                  echo ---------test ferdig!
 
             # Save Pipeline Artifact
             - task: PublishPipelineArtifact@1

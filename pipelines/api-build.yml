@@ -109,7 +109,7 @@ stages:
   # Dev deploy stage
 - stage: DeployDev
   displayName: 'Deploy to dev'
-  dependsOn: 'build' 
+  dependsOn: 'asdf' 
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/103906_Deploy_Completion_med_Radix')) # TODO set branch to main
   variables:
     envName: 'dev'
