@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Dynamic;
 using Equinor.ProCoSys.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,7 +7,8 @@ namespace Equinor.ProCoSys.Completion.Domain.Tests;
 [TestClass]
 public class IHaveGuidExtensionTests
 {
-    private readonly TestableEntity _dut = new();
+    private const string _myPropValue = "Test";
+    private readonly TestableEntity _dut = new(_myPropValue);
 
     [TestMethod]
     public void GetContextType_ShouldReturnNameOfTestableEntity()
@@ -28,20 +28,14 @@ public class IHaveGuidExtensionTests
 
         // Assert
         Assert.AreEqual(_dut, emailContext.Entity);
-        Assert.AreEqual("Test", emailContext.MyProp);
+        var testableEntity = emailContext.Entity as TestableEntity;
+        Assert.IsNotNull(testableEntity);
+        Assert.AreEqual(_myPropValue, testableEntity.MyProp);
     }
 
-    private class TestableEntity : IHaveGuid
+    private class TestableEntity(string myProp) : IHaveGuid
     {
         public Guid Guid { get; } = Guid.NewGuid();
-        // ReSharper disable once UnusedMember.Local
-        public string GetContextType() => nameof(TestableEntity);
-        public dynamic GetEmailContext()
-        {
-            dynamic expandoObject = new ExpandoObject();
-            expandoObject.Entity = this;
-            expandoObject.MyProp = "Test";
-            return expandoObject;
-        }
+        public string MyProp { get; } = myProp;
     }
 }
