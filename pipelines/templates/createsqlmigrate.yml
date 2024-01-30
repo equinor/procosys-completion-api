@@ -28,7 +28,7 @@ jobs:
               inputs:
                 command: 'custom'
                 custom: 'tool'
-                arguments: 'install --global dotnet-ef --version 8.0.0'
+                arguments: 'install --global dotnet-ef --version 8.0.1'
 
             - task: NuGetAuthenticate@0
               displayName: 'NuGet Authenticate'
