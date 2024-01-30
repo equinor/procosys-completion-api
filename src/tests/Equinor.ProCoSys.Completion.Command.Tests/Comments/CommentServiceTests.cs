@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -60,7 +60,7 @@ public class CommentServiceTests : TestsBase
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
         Assert.AreEqual(_parent.Guid, _commentAddedToRepository.ParentGuid);
-        Assert.AreEqual(_parent.GetContextType(), _commentAddedToRepository.ParentType);
+        Assert.AreEqual(_parent.GetContextName(), _commentAddedToRepository.ParentType);
         Assert.AreEqual(text, _commentAddedToRepository.Text);
     }
 
@@ -166,7 +166,7 @@ public class CommentServiceTests : TestsBase
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
         Assert.AreEqual(_parent.Guid, _commentAddedToRepository.ParentGuid);
-        Assert.AreEqual(_parent.GetContextType(), _commentAddedToRepository.ParentType);
+        Assert.AreEqual(_parent.GetContextName(), _commentAddedToRepository.ParentType);
         Assert.AreEqual(text, _commentAddedToRepository.Text);
     }
 
@@ -206,7 +206,5 @@ public class CommentServiceTests : TestsBase
     private class TestableEntity : IHaveGuid
     {
         public Guid Guid { get; } = Guid.NewGuid();
-        public string GetContextType() => nameof(TestableEntity);
-        public dynamic GetEmailContext() => new ExpandoObject();
     }
 }
