@@ -54,7 +54,7 @@ jobs:
                   dotnet ef migrations script `
                     --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
-                    --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent
+                    --idempotent
                  
                   echo ---------feridg---$(Build.ArtifactStagingDirectory)
                   dir $(Build.ArtifactStagingDirectory)
