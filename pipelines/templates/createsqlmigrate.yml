@@ -52,7 +52,7 @@ jobs:
                   echo ---------test $(Build.ArtifactStagingDirectory)
                   # Create migration script for MyDbContext
                   dotnet ef migrations script `
-                    --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" `
+                    --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent
                  
