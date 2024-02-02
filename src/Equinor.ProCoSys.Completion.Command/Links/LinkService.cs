@@ -166,6 +166,7 @@ public class LinkService : ILinkService
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             $"Link {link.Title} updated",
             link.Guid,
+            link.ParentGuid,
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
             link.ModifiedAtUtc!.Value,
             changes);

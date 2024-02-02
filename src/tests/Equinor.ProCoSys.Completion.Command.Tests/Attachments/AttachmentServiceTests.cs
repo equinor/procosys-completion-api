@@ -340,7 +340,8 @@ public class AttachmentServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Attachment {_existingAttachment.FileName} uploaded again",
             _existingAttachment,
-            _existingAttachment);
+            _existingAttachment,
+            _existingAttachment.ParentGuid);
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties
@@ -610,7 +611,8 @@ public class AttachmentServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Attachment {_existingAttachment.FileName} updated",
             _existingAttachment,
-            _existingAttachment);
+            _existingAttachment,
+            _existingAttachment.ParentGuid);
 
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(

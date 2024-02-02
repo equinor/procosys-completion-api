@@ -237,11 +237,13 @@ public abstract class TestsBase
         string plant,
         string displayName,
         IHaveGuid guidEntity,
-        IModificationAuditable modificationAuditableEntity)
+        IModificationAuditable modificationAuditableEntity,
+        Guid? parentGuid = null)
     {
         Assert.IsNotNull(historyEvent);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
+        Assert.AreEqual(parentGuid, historyEvent.ParentGuid);
         Assert.AreEqual(modificationAuditableEntity.ModifiedAtUtc, historyEvent.EventAtUtc);
         Assert.AreEqual(modificationAuditableEntity.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
         Assert.AreEqual(modificationAuditableEntity.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);

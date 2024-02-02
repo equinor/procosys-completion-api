@@ -260,6 +260,7 @@ public class AttachmentService : IAttachmentService
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             displayName,
             attachment.Guid,
+            attachment.ParentGuid,
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value,
             changes);

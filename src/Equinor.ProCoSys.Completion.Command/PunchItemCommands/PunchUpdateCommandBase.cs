@@ -25,6 +25,10 @@ public abstract class PunchUpdateCommandBase
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             historyDisplayName,
             punchItem.Guid,
+            // a checklist is parent of the punch. Setting null for parent here, will cause that
+            // punch updates will not be shown in checklist history. For now we assume that
+            // creation and deletion of punch are sufficient in checklist history
+            null,
             new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
             punchItem.ModifiedAtUtc!.Value,
             changedProperties);

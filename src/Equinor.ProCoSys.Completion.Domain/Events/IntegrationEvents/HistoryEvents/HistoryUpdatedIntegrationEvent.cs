@@ -8,6 +8,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEve
 public record HistoryUpdatedIntegrationEvent(
     string DisplayName,
     Guid Guid,
+    Guid? ParentGuid,
     User EventBy,
     DateTime EventAtUtc,
     List<IChangedProperty> ChangedProperties) : IHistoryItemUpdatedV1;
