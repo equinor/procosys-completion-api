@@ -219,13 +219,11 @@ public abstract class TestsBase
 
     protected void AssertHistoryCreatedIntegrationEvent(
         HistoryCreatedIntegrationEvent historyEvent, 
-        string plant, 
         string displayName,
         Guid parentGuid,
         IHaveGuid guidEntity,
         ICreationAuditable creationAuditableEntity)
     {
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
         Assert.AreEqual(parentGuid, historyEvent.ParentGuid);
@@ -243,7 +241,6 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(historyEvent);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
         Assert.AreEqual(modificationAuditableEntity.ModifiedAtUtc, historyEvent.EventAtUtc);
         Assert.AreEqual(modificationAuditableEntity.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
@@ -260,7 +257,6 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(historyEvent);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...

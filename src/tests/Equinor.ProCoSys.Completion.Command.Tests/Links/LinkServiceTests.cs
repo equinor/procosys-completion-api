@@ -139,7 +139,6 @@ public class LinkServiceTests : TestsBase
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _plantProviderMock.Plant,
             $"Link {_linkAddedToRepository.Title} created",
             _linkAddedToRepository.ParentGuid,
             _linkAddedToRepository,

@@ -222,7 +222,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _punchItemAddedToRepository.Plant,
             $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
             _punchItemAddedToRepository.CheckListGuid,
             _punchItemAddedToRepository,
@@ -352,7 +351,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _punchItemAddedToRepository.Plant,
             $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
             _punchItemAddedToRepository.CheckListGuid,
             _punchItemAddedToRepository,

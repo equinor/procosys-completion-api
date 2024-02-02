@@ -203,7 +203,6 @@ public class AttachmentServiceTests : TestsBase
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _plantProviderMock.Plant,
             $"Attachment {_attachmentAddedToRepository.FileName} uploaded",
             _attachmentAddedToRepository.ParentGuid,
             _attachmentAddedToRepository,
