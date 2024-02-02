@@ -147,7 +147,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            punchItem.Plant,
             $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
             punchItem.Guid,
             punchItem.CheckListGuid,

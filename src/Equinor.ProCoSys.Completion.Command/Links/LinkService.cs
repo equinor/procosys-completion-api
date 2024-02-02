@@ -142,7 +142,6 @@ public class LinkService : ILinkService
             new Property(nameof(Link.Url), link.Url)
         };
         var historyEvent = new HistoryCreatedIntegrationEvent(
-        _plantProvider.Plant,
             $"Link {link.Title} created",
             link.Guid,
             link.ParentGuid,
@@ -165,7 +164,6 @@ public class LinkService : ILinkService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
-        _plantProvider.Plant,
             $"Link {link.Title} updated",
             link.Guid,
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
@@ -184,7 +182,6 @@ public class LinkService : ILinkService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
-            _plantProvider.Plant,
             $"Link {link.Title} deleted",
             link.Guid,
             link.ParentGuid,

@@ -23,7 +23,6 @@ public abstract class PunchUpdateCommandBase
         await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
-            punchItem.Plant,
             historyDisplayName,
             punchItem.Guid,
             new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),

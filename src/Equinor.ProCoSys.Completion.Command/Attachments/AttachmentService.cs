@@ -235,7 +235,6 @@ public class AttachmentService : IAttachmentService
             new Property(nameof(Attachment.FileName), attachment.FileName)
         };
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            _plantProvider.Plant,
             $"Attachment {attachment.FileName} uploaded",
             attachment.Guid,
             attachment.ParentGuid,
@@ -259,7 +258,6 @@ public class AttachmentService : IAttachmentService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
-            _plantProvider.Plant,
             displayName,
             attachment.Guid,
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
@@ -278,7 +276,6 @@ public class AttachmentService : IAttachmentService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
-            _plantProvider.Plant,
             $"Attachment {attachment.FileName} deleted",
             attachment.Guid,
             attachment.ParentGuid,

@@ -81,7 +81,6 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
-            punchItem.Plant,
             $"Punch item {punchItem.Category} {punchItem.ItemNo} deleted",
             punchItem.Guid,
             punchItem.CheckListGuid,
