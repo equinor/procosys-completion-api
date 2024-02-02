@@ -1,7 +1,10 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
+using MediatR;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -9,11 +12,13 @@ public class ImportHandler : IImportHandler
 {
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
+    private readonly IMediator _mediator;
 
-    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
+    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger, IMediator mediator)
     {
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
+        _mediator = mediator;
     }
     public TIResponseFrame Handle(TIInterfaceMessage? message)
     {
@@ -79,7 +84,7 @@ public class ImportHandler : IImportHandler
         }
 
         //TODO: 109642 return tiMessageResult;
-        return new TIMessageResult(); //TODO: Dummy for now
+        return new TIMessageResult();
     }
 
     private void ImportObject(TIInterfaceMessage message, TIObject tiObject)
@@ -106,7 +111,24 @@ public class ImportHandler : IImportHandler
         //TODO: 106693 NCR special handling
 
         //TODO: 107052 Create command and send to command handler
+        
+        //TODO: XXXXXX Need validation here
+        var description = tiObject.GetAttributeValueAsString("Description");
+        if (description is null)
+        {
+            throw new ArgumentException("Temp error to be replaced by validation: description is null");
+        }
 
+        var projectGuid = new Guid("EB3821C2-B20F-8683-E053-2910000A2633");
+        var checkListGuid = Guid.NewGuid();
+        var raisedByOrgGuid = new Guid("47757AA3-A9BA-400C-81BC-17284888910E");
+        var clearingByOrgGuid = new Guid("00EA2B8F-8ADA-4A95-AAF6-54141114F1F2");
+
+        var createPunchCommand = new CreatePunchItemCommand(Category.PB, description, projectGuid, checkListGuid,
+            raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
+            null, null, null, null, null, null, 
+            null, false, null, null);
+        _mediator.Send(createPunchCommand);
         //TODO: 106687 CommandFailureHandler;
 
         //TODO: 109642 return ImportResult.Ok();
