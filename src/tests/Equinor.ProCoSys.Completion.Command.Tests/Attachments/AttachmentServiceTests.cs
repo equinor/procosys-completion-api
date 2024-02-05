@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -347,7 +348,8 @@ public class AttachmentServiceTests : TestsBase
             historyEvent.ChangedProperties
                 .SingleOrDefault(c => c.Name == nameof(Attachment.RevisionNumber)),
             oldRevisionNumber,
-            _existingAttachment.RevisionNumber);
+            _existingAttachment.RevisionNumber, 
+            ValueDisplayType.IntAsText);
     }
 
     [TestMethod]

@@ -293,7 +293,7 @@ public class AttachmentService : IAttachmentService
         var changes = new List<IChangedProperty>();
         var oldRevision = attachment.RevisionNumber;
         attachment.IncreaseRevisionNumber();
-        changes.Add(new ChangedProperty<int>(nameof(Attachment.RevisionNumber), oldRevision, attachment.RevisionNumber));
+        changes.Add(new ChangedProperty<int>(nameof(Attachment.RevisionNumber), oldRevision, attachment.RevisionNumber, ValueDisplayType.IntAsText));
         return changes;
     }
 }

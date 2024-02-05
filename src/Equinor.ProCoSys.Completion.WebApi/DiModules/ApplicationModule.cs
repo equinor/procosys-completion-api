@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Auth.Authentication;
+﻿using System.Text.Json.Serialization;
+using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.BlobStorage;
@@ -99,6 +100,7 @@ public static class ApplicationModule
                 cfg.ConfigureJsonSerializerOptions(opts =>
                 {
                     opts.Converters.Add(new OracleGuidConverter());
+                    opts.Converters.Add(new JsonStringEnumConverter());
                     return opts;
                 });
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
