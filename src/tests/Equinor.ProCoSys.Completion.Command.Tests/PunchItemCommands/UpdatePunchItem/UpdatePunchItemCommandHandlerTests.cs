@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -401,12 +402,14 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
             null,
-            _newDueTimeUtc);
+            _newDueTimeUtc,
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
             null,
-            _newEstimate);
+            _newEstimate,
+            ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
@@ -421,7 +424,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             null,
-            _existingSWCR1[_testPlant].No);
+            _existingSWCR1[_testPlant].No,
+            ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
@@ -436,12 +440,14 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
             oldMaterialRequired,
-            _newMaterialRequired);
+            _newMaterialRequired,
+            ValueDisplayType.BoolAsYesNo);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
             null,
-            _newMaterialETAUtc);
+            _newMaterialETAUtc, 
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
@@ -531,12 +537,14 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
             _newDueTimeUtc,
-            null);
+            null,
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
             _newEstimate,
-            null);
+            null,
+            ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
@@ -551,7 +559,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             _existingSWCR1[_testPlant].No,
-            null);
+            null, 
+            ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
@@ -566,7 +575,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
             _newMaterialETAUtc,
-            null);
+            null, 
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),

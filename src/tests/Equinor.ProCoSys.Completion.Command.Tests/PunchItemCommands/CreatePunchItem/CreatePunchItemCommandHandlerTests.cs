@@ -7,6 +7,7 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -222,7 +223,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _punchItemAddedToRepository.Plant,
             $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
             _punchItemAddedToRepository.CheckListGuid,
             _punchItemAddedToRepository,
@@ -234,7 +234,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
-            _punchItemAddedToRepository.ItemNo);
+            _punchItemAddedToRepository.ItemNo,
+            ValueDisplayType.IntAsText);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),
@@ -258,7 +259,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.DueTimeUtc)),
-            _punchItemAddedToRepository.DueTimeUtc);
+            _punchItemAddedToRepository.DueTimeUtc, 
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
@@ -274,7 +276,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
-            _punchItemAddedToRepository.Estimate!.Value);
+            _punchItemAddedToRepository.Estimate!.Value, 
+            ValueDisplayType.IntAsText);
 
         AssertProperty(
             properties
@@ -283,7 +286,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
-            _punchItemAddedToRepository.SWCR!.No);
+            _punchItemAddedToRepository.SWCR!.No, 
+            ValueDisplayType.IntAsText);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
@@ -300,11 +304,13 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
-            _punchItemAddedToRepository.MaterialRequired);
+            _punchItemAddedToRepository.MaterialRequired, 
+            ValueDisplayType.BoolAsYesNo);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialETAUtc)),
-            _punchItemAddedToRepository.MaterialETAUtc!.Value);
+            _punchItemAddedToRepository.MaterialETAUtc!.Value, 
+            ValueDisplayType.DateTimeAsDateOnly);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialExternalNo)),
@@ -352,7 +358,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _punchItemAddedToRepository.Plant,
             $"Punch item {_punchItemAddedToRepository.Category} {_punchItemAddedToRepository.ItemNo} created",
             _punchItemAddedToRepository.CheckListGuid,
             _punchItemAddedToRepository,
@@ -364,7 +369,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
-            _punchItemAddedToRepository.ItemNo);
+            _punchItemAddedToRepository.ItemNo,
+            ValueDisplayType.IntAsText);
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Category)),

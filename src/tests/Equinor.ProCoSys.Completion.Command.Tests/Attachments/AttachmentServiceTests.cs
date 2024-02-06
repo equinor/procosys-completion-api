@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -203,7 +204,6 @@ public class AttachmentServiceTests : TestsBase
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _plantProviderMock.Plant,
             $"Attachment {_attachmentAddedToRepository.FileName} uploaded",
             _attachmentAddedToRepository.ParentGuid,
             _attachmentAddedToRepository,
@@ -341,13 +341,15 @@ public class AttachmentServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Attachment {_existingAttachment.FileName} uploaded again",
             _existingAttachment,
-            _existingAttachment);
+            _existingAttachment,
+            _existingAttachment.ParentGuid);
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties
                 .SingleOrDefault(c => c.Name == nameof(Attachment.RevisionNumber)),
             oldRevisionNumber,
-            _existingAttachment.RevisionNumber);
+            _existingAttachment.RevisionNumber, 
+            ValueDisplayType.IntAsText);
     }
 
     [TestMethod]
@@ -611,7 +613,8 @@ public class AttachmentServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Attachment {_existingAttachment.FileName} updated",
             _existingAttachment,
-            _existingAttachment);
+            _existingAttachment,
+            _existingAttachment.ParentGuid);
 
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         AssertChange(

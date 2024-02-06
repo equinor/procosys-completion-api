@@ -14,7 +14,6 @@ public class HistoryDeletedV1ContractTests : ContractTestBase<IHistoryItemDelete
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "Plant", typeof(string) },
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid?) },

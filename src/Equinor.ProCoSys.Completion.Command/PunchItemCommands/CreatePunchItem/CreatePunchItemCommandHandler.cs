@@ -116,7 +116,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Add property for ItemNo first in list, since it is an "important" property
-            properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo));
+            properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
             var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
 
@@ -147,7 +147,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            punchItem.Plant,
             $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
             punchItem.Guid,
             punchItem.CheckListGuid,
@@ -185,7 +184,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
         punchItem.MaterialETAUtc = materialETAUtc;
-        properties.Add(new Property(nameof(PunchItem.MaterialETAUtc), punchItem.MaterialETAUtc));
+        properties.Add(new Property(nameof(PunchItem.MaterialETAUtc), punchItem.MaterialETAUtc, ValueDisplayType.DateTimeAsDateOnly));
     }
 
     private void SetMaterialRequired(PunchItem punchItem, bool materialRequired, List<IProperty> properties)
@@ -195,7 +194,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
         punchItem.MaterialRequired = materialRequired;
-        properties.Add(new Property(nameof(PunchItem.MaterialRequired), punchItem.MaterialRequired));
+        properties.Add(new Property(nameof(PunchItem.MaterialRequired), punchItem.MaterialRequired, ValueDisplayType.BoolAsYesNo));
     }
 
     private void SetExternalItemNo(PunchItem punchItem, string? externalItemNo, List<IProperty> properties)
@@ -215,7 +214,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         {
             return;
         }
-        properties.Add(new Property(nameof(PunchItem.Estimate), estimate.Value));
+        properties.Add(new Property(nameof(PunchItem.Estimate), estimate.Value, ValueDisplayType.IntAsText));
     }
 
     private void SetDueTime(PunchItem punchItem, DateTime? dueTimeUtc, List<IProperty> properties)
@@ -225,7 +224,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
         punchItem.DueTimeUtc = dueTimeUtc;
-        properties.Add(new Property(nameof(PunchItem.DueTimeUtc), punchItem.DueTimeUtc.Value));
+        properties.Add(new Property(nameof(PunchItem.DueTimeUtc), punchItem.DueTimeUtc.Value, ValueDisplayType.DateTimeAsDateOnly));
     }
 
     private async Task SetDocumentAsync(
@@ -257,7 +256,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         var swcr = await _swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
         punchItem.SetSWCR(swcr);
-        properties.Add(new Property(nameof(PunchItem.SWCR), punchItem.SWCR!.No));
+        properties.Add(new Property(nameof(PunchItem.SWCR), punchItem.SWCR!.No, ValueDisplayType.IntAsText));
     }
 
     private async Task SetOriginalWorkOrderAsync(
@@ -307,7 +306,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         punchItem.SetActionBy(person);
         properties.Add(new Property(
             nameof(PunchItem.ActionBy),
-            new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName())));
+            new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName()),
+            ValueDisplayType.UserAsNameOnly));
     }
 
     private async Task SetLibraryItemAsync(

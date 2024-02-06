@@ -139,7 +139,6 @@ public class LinkServiceTests : TestsBase
         // Assert
         AssertHistoryCreatedIntegrationEvent(
             historyEvent,
-            _plantProviderMock.Plant,
             $"Link {_linkAddedToRepository.Title} created",
             _linkAddedToRepository.ParentGuid,
             _linkAddedToRepository,
@@ -298,7 +297,8 @@ public class LinkServiceTests : TestsBase
             _plantProviderMock.Plant,
             $"Link {_existingLink.Title} updated",
             _existingLink,
-            _existingLink);
+            _existingLink,
+            _existingLink.ParentGuid);
         Assert.AreEqual(2, historyEvent.ChangedProperties.Count);
         AssertChange(
             historyEvent.ChangedProperties

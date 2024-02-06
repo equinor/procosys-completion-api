@@ -235,7 +235,6 @@ public class AttachmentService : IAttachmentService
             new Property(nameof(Attachment.FileName), attachment.FileName)
         };
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            _plantProvider.Plant,
             $"Attachment {attachment.FileName} uploaded",
             attachment.Guid,
             attachment.ParentGuid,
@@ -259,9 +258,9 @@ public class AttachmentService : IAttachmentService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
-            _plantProvider.Plant,
             displayName,
             attachment.Guid,
+            attachment.ParentGuid,
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value,
             changes);
@@ -278,7 +277,6 @@ public class AttachmentService : IAttachmentService
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
-            _plantProvider.Plant,
             $"Attachment {attachment.FileName} deleted",
             attachment.Guid,
             attachment.ParentGuid,
@@ -295,7 +293,7 @@ public class AttachmentService : IAttachmentService
         var changes = new List<IChangedProperty>();
         var oldRevision = attachment.RevisionNumber;
         attachment.IncreaseRevisionNumber();
-        changes.Add(new ChangedProperty<int>(nameof(Attachment.RevisionNumber), oldRevision, attachment.RevisionNumber));
+        changes.Add(new ChangedProperty<int>(nameof(Attachment.RevisionNumber), oldRevision, attachment.RevisionNumber, ValueDisplayType.IntAsText));
         return changes;
     }
 }

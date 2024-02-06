@@ -277,14 +277,16 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             var swcr = await _swcrRepository.GetAsync(patchedPunchItem.SWCRGuid.Value, cancellationToken);
             changes.Add(new ChangedProperty<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
-                swcr.No));
+                swcr.No,
+                ValueDisplayType.IntAsText));
             punchItem.SetSWCR(swcr);
         }
         else
         {
             changes.Add(new ChangedProperty<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
-                null));
+                null,
+                ValueDisplayType.IntAsText));
             punchItem.ClearSWCR();
         }
     }
@@ -333,14 +335,16 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             var person = await _personRepository.GetOrCreateAsync(patchedPunchItem.ActionByPersonOid.Value, cancellationToken);
             changes.Add(new ChangedProperty<User?>(nameof(punchItem.ActionBy),
                 punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
-                new User(person.Guid, person.GetFullName())));
+                new User(person.Guid, person.GetFullName()), 
+                ValueDisplayType.UserAsNameOnly));
             punchItem.SetActionBy(person);
         }
         else
         {
             changes.Add(new ChangedProperty<User?>(nameof(punchItem.ActionBy),
                 new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName()),
-                null));
+                null, 
+                ValueDisplayType.UserAsNameOnly));
             punchItem.ClearActionBy();
         }
     }
@@ -502,7 +506,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
         changes.Add(new ChangedProperty<DateTime?>(nameof(punchItem.DueTimeUtc),
             punchItem.DueTimeUtc,
-            patchedPunchItem.DueTimeUtc));
+            patchedPunchItem.DueTimeUtc, 
+            ValueDisplayType.DateTimeAsDateOnly));
         punchItem.DueTimeUtc = patchedPunchItem.DueTimeUtc;
     }
 
@@ -515,7 +520,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
         changes.Add(new ChangedProperty<int?>(nameof(punchItem.Estimate),
             punchItem.Estimate,
-            patchedPunchItem.Estimate));
+            patchedPunchItem.Estimate, 
+            ValueDisplayType.IntAsText));
         punchItem.Estimate = patchedPunchItem.Estimate;
     }
 
@@ -541,7 +547,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
         changes.Add(new ChangedProperty<bool>(nameof(punchItem.MaterialRequired),
             punchItem.MaterialRequired,
-            patchedPunchItem.MaterialRequired));
+            patchedPunchItem.MaterialRequired,
+            ValueDisplayType.BoolAsYesNo));
         punchItem.MaterialRequired = patchedPunchItem.MaterialRequired;
     }
 
@@ -554,7 +561,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
         changes.Add(new ChangedProperty<DateTime?>(nameof(punchItem.MaterialETAUtc),
             punchItem.MaterialETAUtc,
-            patchedPunchItem.MaterialETAUtc));
+            patchedPunchItem.MaterialETAUtc,
+            ValueDisplayType.DateTimeAsDateOnly));
         punchItem.MaterialETAUtc = patchedPunchItem.MaterialETAUtc;
     }
 
