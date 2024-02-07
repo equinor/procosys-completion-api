@@ -5,9 +5,8 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Tests;
 
 [TestClass]
-public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
+public class SqlInsertStatementBuilderTests : TestsBase
 {
-
     private SqlInsertStatementBuilder _dut;
 
     private readonly string _expectedSqlInsertStatement =
@@ -37,13 +36,13 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     };
 
     [TestInitialize]
-    public void Setup() => _dut = new SqlInsertStatementBuilder(_pcs4Repository);
+    public void Setup() => _dut = new SqlInsertStatementBuilder(_pcs4RepositoryMock);
 
     [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatement_WhenInputIsCorrect()
+    public async Task BuildAsync_ShouldReturnSqlStatement_WhenInputIsCorrect()
     {
         // Arrange
-        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4RepositoryMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         // Act
         var (actualSqlInsertStatement, actualSqlParams) = await _dut.BuildAsync(_testObjectMappingConfig, _sourceTestObject, null!, default);
@@ -55,12 +54,12 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
     }
 
     [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldReturnSqlStatement_WhenSourceObjectHasNullValues()
+    public async Task BuildAsync_ShouldReturnSqlStatement_WhenSourceObjectHasNullValues()
     {
         // Arrange
         var sourceTestObject = new SourceTestObject(null, TestGuid, null, null, null, false, null, null!, null, null, null, null);
 
-        _pcs4Repository.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
+        _pcs4RepositoryMock.ValueLookupNumberAsync(Arg.Any<string>(), Arg.Any<DynamicParameters>(), default).Returns(123456789);
 
         var expectedSqlInsertStatement = "insert into TestTargetTable ( TestFixedValue, TestGuid, TestBool ) " +
             "values ( 'Fixed value', :TestGuid, :TestBool )";
@@ -72,36 +71,5 @@ public class SqlInsertStatementBuilderTests : SqlStatementBuilderTestsBase
         Assert.AreEqual(expectedSqlInsertStatement, actualSqlInsertStatement);
 
         AssertTheSqlParameters(_expectedSqlParametersNullValues, actualSqlParams);
-    }
-
-
-    [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingProperty()
-    {
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(async () =>
-        {
-            await _dut.BuildAsync(_testObjectMissingPropMappingConfig, _sourceTestObject, null!, default);
-        });
-
-        // Assert
-        Assert.AreEqual($"A property in configuration is missing in source object: PropMissing", exception.Message);
-    }
-
-    [TestMethod]
-    public async Task BuildSqlInsertStatement_ShouldThrowException_WhenMissingConfigForObject()
-    {
-        // Arrange 
-        var syncService = new SyncToPCS4Service(_pcs4Repository);
-        var sourceObjectNameMissingConfig = "NotInConfiguration";
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
-        {
-            await syncService.SyncNewObjectAsync(sourceObjectNameMissingConfig, _sourceTestObject, null!, default);
-        });
-
-        // Assert
-        Assert.AreEqual($"Mapping is not implemented for source object with name '{sourceObjectNameMissingConfig}'.", exception.Message);
     }
 }

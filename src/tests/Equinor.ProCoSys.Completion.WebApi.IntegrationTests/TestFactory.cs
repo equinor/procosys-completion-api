@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
+using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
@@ -37,6 +38,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
+    private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -153,6 +155,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _pcs4RepositoryMock);
+            services.AddScoped(_ => _emailServiceMock);
         });
 
         builder.ConfigureServices(services =>
@@ -392,20 +395,17 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         FirstName = "Ralf",
                         LastName = "Read",
                         UserName = "RR",
-                        Email = "rr@pcs.com",
+                        Email = "ralf@pcs.com",
                         Oid = "00000000-0000-0000-0000-000000000003"
                     },
                 AccessablePlants = commonAccessablePlants,
-                Permissions = new List<string>
-                {
+                Permissions =
+                [
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ
-                },
+                ],
                 AccessableProjects = accessableProjects,
-                Restrictions = new List<string>
-                {
-                    ClaimsTransformation.NoRestrictions
-                }
+                Restrictions = [ClaimsTransformation.NoRestrictions]
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
@@ -423,13 +423,13 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         FirstName = "Werner",
                         LastName = "Write",
                         UserName = "WW",
-                        Email = "ww@pcs.com",
+                        Email = "werner@pcs.com",
                         Oid = "00000000-0000-0000-0000-000000000001",
                         Superuser = true
                     },
                 AccessablePlants = accessablePlants,
-                Permissions = new List<string>
-                {
+                Permissions =
+                [
                     Permissions.PUNCHITEM_CREATE,
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
@@ -439,12 +439,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ
-                },
+                ],
                 AccessableProjects = accessableProjects,
-                Restrictions = new List<string>
-                {
-                    ClaimsTransformation.NoRestrictions
-                }
+                Restrictions = [ClaimsTransformation.NoRestrictions]
             });
 
     // Authenticated client with necessary roles to Create and Update a PunchItem
@@ -461,12 +458,12 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                         FirstName = "Reidar",
                         LastName = "Resttricted",
                         UserName = "RR",
-                        Email = "rr@pcs.com",
+                        Email = "reidar@pcs.com",
                         Oid = "00000000-0000-0000-0000-000000000009"
                     },
                 AccessablePlants = accessablePlants,
-                Permissions = new List<string>
-                {
+                Permissions =
+                [
                     Permissions.PUNCHITEM_CREATE,
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
@@ -476,12 +473,9 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ
-                },
+                ],
                 AccessableProjects = accessableProjects,
-                Restrictions = new List<string>
-                {
-                    ResponsibleCodeWithAccess
-                }
+                Restrictions = [ResponsibleCodeWithAccess]
             });
 
     private void SetupAnonymousUser() => _testUsers.Add(UserType.Anonymous, new TestUser());

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts;
-using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -30,8 +31,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
                 _punchItemRepositoryMock,
                 _syncToPCS4ServiceMock,
                 _unitOfWorkMock,
-                _punchEventPublisherMock,
-                _historyEventPublisherMock,
+                _integrationEventPublisherMock,
                 _logger);
         }
 
@@ -77,66 +77,117 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
         }
 
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldPublishPunchItemDeletedIntegrationEvent()
+        {
+            // Arrange
+            PunchItemDeletedIntegrationEvent integrationEvent = null!;
+            _integrationEventPublisherMock
+                .When(x => x.PublishAsync(Arg.Any<PunchItemDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+                .Do(Callback.First(callbackInfo =>
+                {
+                    integrationEvent = callbackInfo.Arg<PunchItemDeletedIntegrationEvent>();
+                }));
+
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            var punchItem = _existingPunchItem[_testPlant];
+            Assert.AreEqual(punchItem.Plant, integrationEvent.Plant);
+            Assert.AreEqual(punchItem.Guid, integrationEvent.Guid);
+            Assert.AreEqual(punchItem.CheckListGuid, integrationEvent.ParentGuid);
+            Assert.AreEqual(punchItem.ModifiedAtUtc, integrationEvent.DeletedAtUtc);
+            Assert.AreEqual(punchItem.ModifiedBy!.Guid, integrationEvent.DeletedBy.Oid);
+            Assert.AreEqual(punchItem.ModifiedBy!.GetFullName(), integrationEvent.DeletedBy.FullName);
+        }
+
+        [TestMethod]
+        public async Task HandlingCommand_ShouldPublishHistoryDeletedIntegrationEvent()
+        {
+            // Arrange
+            HistoryDeletedIntegrationEvent historyEvent = null!;
+            _integrationEventPublisherMock
+                .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+                .Do(Callback.First(callbackInfo =>
+                {
+                    historyEvent = callbackInfo.Arg<HistoryDeletedIntegrationEvent>();
+                }));
+
+            // Act
+            await _dut.Handle(_command, default);
+
+            // Assert
+            AssertHistoryDeletedIntegrationEvent(
+                historyEvent,
+                _plantProviderMock.Plant,
+                $"Punch item {_existingPunchItem[_testPlant].Category} {_existingPunchItem[_testPlant].ItemNo} deleted",
+                _existingPunchItem[_testPlant].CheckListGuid,
+                _existingPunchItem[_testPlant],
+                _existingPunchItem[_testPlant]);
+        }
+
+        #region Unit Tests which can be removed when no longer sync to pcs4
         [TestMethod]
         public async Task HandlingCommand_ShouldSyncWithPcs4()
         {
             // Arrange
-            var integrationEvent = Substitute.For<IPunchItemDeletedV1>();
-            _punchEventPublisherMock
-                .PublishDeletedEventAsync(_existingPunchItem[_testPlant], default)
-                .Returns(integrationEvent);
+            PunchItemDeletedIntegrationEvent integrationEvent = null!;
+
+            _integrationEventPublisherMock
+                .When(x => x.PublishAsync(
+                    Arg.Any<PunchItemDeletedIntegrationEvent>(),
+                    default))
+                .Do(info =>
+                {
+                    integrationEvent = info.Arg<PunchItemDeletedIntegrationEvent>();
+                });
 
             // Act
             await _dut.Handle(_command, default);
 
             // Assert
-            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync("PunchItem", integrationEvent, _testPlant, default);
+            await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync(SyncToPCS4Service.PunchItem, integrationEvent, _testPlant, default);
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldPublishDeletedEvent()
+        public async Task HandlingCommand_ShouldBeginTransaction()
         {
             // Act
             await _dut.Handle(_command, default);
 
             // Assert
-            await _punchEventPublisherMock.Received(1).PublishDeletedEventAsync(_existingPunchItem[_testPlant], default);
+            await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldPublishDeleteToHistory()
+        public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
         {
             // Act
             await _dut.Handle(_command, default);
 
             // Assert
-            await _historyEventPublisherMock.Received(1).PublishDeletedEventAsync(
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<Guid>(),
-                Arg.Any<Guid?>(),
-                Arg.Any<User>(),
-                Arg.Any<DateTime>(),
-                default);
+            await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+            await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldPublishCorrectHistoryEvent()
+        public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
         {
+            // Arrange
+            _unitOfWorkMock
+                .When(u => u.SaveChangesAsync())
+                .Do(_ => throw new Exception());
+
             // Act
-            await _dut.Handle(_command, default);
+            var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
 
             // Assert
-            Assert.AreEqual(_existingPunchItem[_testPlant].Plant, _plantPublishedToHistory);
-            Assert.AreEqual(
-                $"Punch item {_existingPunchItem[_testPlant].Category} {_existingPunchItem[_testPlant].ItemNo} deleted", 
-                _displayNamePublishedToHistory);
-            Assert.AreEqual(_existingPunchItem[_testPlant].Guid, _guidPublishedToHistory);
-            Assert.AreEqual(_existingPunchItem[_testPlant].CheckListGuid, _parentGuidPublishedToHistory);
-            Assert.IsNotNull(_userPublishedToHistory);
-            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.Guid, _userPublishedToHistory.Oid);
-            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedBy!.GetFullName(), _userPublishedToHistory.FullName);
-            Assert.AreEqual(_existingPunchItem[_testPlant].ModifiedAtUtc, _dateTimePublishedToHistory);
+            await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+            await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+            Assert.IsInstanceOfType(exception, typeof(Exception));
         }
+        #endregion
     }
 }

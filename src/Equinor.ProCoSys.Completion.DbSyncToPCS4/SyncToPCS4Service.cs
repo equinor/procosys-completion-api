@@ -1,4 +1,5 @@
 ﻿using Equinor.ProCoSys.Completion.DbSyncToPCS4.MappingConfig;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -6,8 +7,17 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
  * This class provide an interface to the operations for synchronizing data to ProCoSys 4. 
  * The class should only be used as a singleton (through dependency injection). 
  */
-public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Service
+public class SyncToPCS4Service : ISyncToPCS4Service
 {
+    private readonly IPcs4Repository _pcs4Repository;
+    private readonly IOptionsMonitor<SyncToPCS4Options> _options;
+
+    public SyncToPCS4Service(IPcs4Repository pcs4Repository, IOptionsMonitor<SyncToPCS4Options> options)
+    {
+        _pcs4Repository = pcs4Repository;
+        _options = options;
+    }
+
     public const string PunchItem = "PunchItem";
 
     /**
@@ -16,16 +26,20 @@ public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Serv
      */
     public async Task SyncNewObjectAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
         var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlInsertStatementBuilder = new SqlInsertStatementBuilder(pcs4Repository);
+        var sqlInsertStatementBuilder = new SqlInsertStatementBuilder(_pcs4Repository);
 
         var (sqlUpdateStatement, sqlParameters) = await sqlInsertStatementBuilder.BuildAsync(sourceObjectMappingConfig,
                                                                                              sourceObject,
                                                                                              plant,
                                                                                              cancellationToken);
 
-        await pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
     }
 
     /**
@@ -34,16 +48,20 @@ public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Serv
      */
     public async Task SyncObjectUpdateAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
         var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlUpdateStatementBuilder = new SqlUpdateStatementBuilder(pcs4Repository);
+        var sqlUpdateStatementBuilder = new SqlUpdateStatementBuilder(_pcs4Repository);
 
         var (sqlUpdateStatement, sqlParameters) = await sqlUpdateStatementBuilder.BuildAsync(sourceObjectMappingConfig,
                                                                                              sourceObject,
                                                                                              plant,
                                                                                              cancellationToken);
 
-        await pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
     }
 
     /**
@@ -52,16 +70,20 @@ public class SyncToPCS4Service(IPcs4Repository pcs4Repository) : ISyncToPCS4Serv
      */
     public async Task SyncObjectDeletionAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
         var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlDeleteStatementBuilder = new SqlDeleteStatementBuilder(pcs4Repository);
+        var sqlDeleteStatementBuilder = new SqlDeleteStatementBuilder(_pcs4Repository);
 
         var (sqlDeleteStatement, sqlParameters) = await sqlDeleteStatementBuilder.BuildAsync(sourceObjectMappingConfig,
                                                                                              sourceObject,
                                                                                              plant,
                                                                                              cancellationToken);
 
-        await pcs4Repository.ExecuteSingleRowOperationAsync(sqlDeleteStatement, sqlParameters, cancellationToken);
+        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlDeleteStatement, sqlParameters, cancellationToken);
     }
 
     /**

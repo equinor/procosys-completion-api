@@ -4,8 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.HistoryEvents;
-using Equinor.ProCoSys.Completion.Command.EventPublishers.PunchItemEvents;
+using Equinor.ProCoSys.Completion.Command.EventPublishers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -26,7 +25,7 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
-public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemCommand, Result<string>>
+public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCommand, Result<string>>
 {
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
@@ -36,8 +35,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPunchEventPublisher _punchEventPublisher;
-    private readonly IHistoryEventPublisher _historyEventPublisher;
+    private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
@@ -49,8 +47,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IPunchEventPublisher punchEventPublisher,
-        IHistoryEventPublisher historyEventPublisher,
+        IIntegrationEventPublisher integrationEventPublisher,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
@@ -61,8 +58,7 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _punchEventPublisher = punchEventPublisher;
-        _historyEventPublisher = historyEventPublisher;
+        _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
     }
 
@@ -82,13 +78,10 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             IPunchItemUpdatedV1 integrationEvent = null!;
             if (changes.Any())
             {
-                integrationEvent = await _punchEventPublisher.PublishUpdatedEventAsync(punchItem, cancellationToken);
-                await _historyEventPublisher.PublishUpdatedEventAsync(
-                    punchItem.Plant,
+                integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+                    _integrationEventPublisher,
+                    punchItem,
                     "Punch item updated",
-                    punchItem.Guid,
-                    new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
-                    punchItem.ModifiedAtUtc!.Value,
                     changes,
                     cancellationToken);
             }
@@ -101,7 +94,6 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
                 await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
             }
 
-            // todo 109356 add unit tests
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated", punchItem.ItemNo, punchItem.Guid);
@@ -285,14 +277,16 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             var swcr = await _swcrRepository.GetAsync(patchedPunchItem.SWCRGuid.Value, cancellationToken);
             changes.Add(new ChangedProperty<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
-                swcr.No));
+                swcr.No,
+                ValueDisplayType.IntAsText));
             punchItem.SetSWCR(swcr);
         }
         else
         {
             changes.Add(new ChangedProperty<int?>(nameof(punchItem.SWCR),
                 punchItem.SWCR?.No,
-                null));
+                null,
+                ValueDisplayType.IntAsText));
             punchItem.ClearSWCR();
         }
     }
@@ -341,14 +335,16 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
             var person = await _personRepository.GetOrCreateAsync(patchedPunchItem.ActionByPersonOid.Value, cancellationToken);
             changes.Add(new ChangedProperty<User?>(nameof(punchItem.ActionBy),
                 punchItem.ActionBy is null ? null : new User(punchItem.ActionBy.Guid, punchItem.ActionBy.GetFullName()),
-                new User(person.Guid, person.GetFullName())));
+                new User(person.Guid, person.GetFullName()), 
+                ValueDisplayType.UserAsNameOnly));
             punchItem.SetActionBy(person);
         }
         else
         {
             changes.Add(new ChangedProperty<User?>(nameof(punchItem.ActionBy),
                 new User(punchItem.ActionBy!.Guid, punchItem.ActionBy!.GetFullName()),
-                null));
+                null, 
+                ValueDisplayType.UserAsNameOnly));
             punchItem.ClearActionBy();
         }
     }
@@ -510,7 +506,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         changes.Add(new ChangedProperty<DateTime?>(nameof(punchItem.DueTimeUtc),
             punchItem.DueTimeUtc,
-            patchedPunchItem.DueTimeUtc));
+            patchedPunchItem.DueTimeUtc, 
+            ValueDisplayType.DateTimeAsDateOnly));
         punchItem.DueTimeUtc = patchedPunchItem.DueTimeUtc;
     }
 
@@ -523,7 +520,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         changes.Add(new ChangedProperty<int?>(nameof(punchItem.Estimate),
             punchItem.Estimate,
-            patchedPunchItem.Estimate));
+            patchedPunchItem.Estimate, 
+            ValueDisplayType.IntAsText));
         punchItem.Estimate = patchedPunchItem.Estimate;
     }
 
@@ -549,7 +547,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         changes.Add(new ChangedProperty<bool>(nameof(punchItem.MaterialRequired),
             punchItem.MaterialRequired,
-            patchedPunchItem.MaterialRequired));
+            patchedPunchItem.MaterialRequired,
+            ValueDisplayType.BoolAsYesNo));
         punchItem.MaterialRequired = patchedPunchItem.MaterialRequired;
     }
 
@@ -562,7 +561,8 @@ public class UpdatePunchItemCommandHandler : IRequestHandler<UpdatePunchItemComm
 
         changes.Add(new ChangedProperty<DateTime?>(nameof(punchItem.MaterialETAUtc),
             punchItem.MaterialETAUtc,
-            patchedPunchItem.MaterialETAUtc));
+            patchedPunchItem.MaterialETAUtc,
+            ValueDisplayType.DateTimeAsDateOnly));
         punchItem.MaterialETAUtc = patchedPunchItem.MaterialETAUtc;
     }
 

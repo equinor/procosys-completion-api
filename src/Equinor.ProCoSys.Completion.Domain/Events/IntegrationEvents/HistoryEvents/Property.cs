@@ -2,4 +2,8 @@
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 
-public record Property(string Name, object? Value) : IProperty;
+public record Property(
+    string Name, 
+    object? Value, 
+    ValueDisplayType ValueDisplayType = ValueDisplayType.StringAsText)
+    : IProperty;

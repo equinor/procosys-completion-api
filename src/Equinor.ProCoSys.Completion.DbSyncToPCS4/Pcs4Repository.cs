@@ -12,7 +12,7 @@ public class Pcs4Repository : IPcs4Repository
 {
     private readonly string _dbConnStr;
 
-    public Pcs4Repository(IOptionsMonitor<OracleDBConnectionOptions> options)
+    public Pcs4Repository(IOptionsMonitor<SyncToPCS4Options> options)
     {
         _dbConnStr = options.CurrentValue.ConnectionString;
 

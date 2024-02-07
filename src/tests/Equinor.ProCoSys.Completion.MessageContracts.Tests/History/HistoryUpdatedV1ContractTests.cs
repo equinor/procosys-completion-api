@@ -14,9 +14,9 @@ public class HistoryUpdatedV1ContractTests : ContractTestBase<IHistoryItemUpdate
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
-            { "Plant", typeof(string) },
             { "DisplayName", typeof(string) },
             { "Guid", typeof(Guid) },
+            { "ParentGuid", typeof(Guid?) },
             { "EventBy", typeof(User) },
             { "EventAtUtc", typeof(DateTime) },
             { "ChangedProperties", typeof(List<IChangedProperty>) }

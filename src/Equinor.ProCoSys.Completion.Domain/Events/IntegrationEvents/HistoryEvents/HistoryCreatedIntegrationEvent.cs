@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.MessageContracts.History;
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 
 public record HistoryCreatedIntegrationEvent(
-    string Plant,
     string DisplayName,
     Guid Guid,
     Guid? ParentGuid,

@@ -32,8 +32,9 @@ public class PropertyMapping(
     /**
     * Helper method to find the value of a configured property in an object. 
     * This value might be in a nested property (e.g ActionBy.Oid)
+    * Return value of the property, and a bool telling if the property exists in the source object (the property can exist even if the value is null).
     */
-    public static object? GetSourcePropertyValue(string configuredPropertyName, object sourceObject)
+    public static (object?, bool) GetSourcePropertyValue(string configuredPropertyName, object sourceObject)
     {
         var sourcePropertyNameParts = configuredPropertyName.Split('.');
         if (sourcePropertyNameParts.Length > 2)
@@ -46,24 +47,29 @@ public class PropertyMapping(
 
         if (sourceProperty is null)
         {
-            throw new Exception($"A property in configuration is missing in source object: {configuredPropertyName}");
+            return (null, false);
         }
 
         var sourcePropertyValue = sourceProperty.GetValue(sourceObject);
 
-        if (sourcePropertyValue is not null && sourcePropertyNameParts.Length > 1)
+        if (sourcePropertyNameParts.Length > 1)
         {
             //We must find the nested property
+            if (sourcePropertyValue is null)
+            {
+                return (null, false);
+            }
+
             sourceProperty = sourcePropertyValue.GetType().GetProperty(sourcePropertyNameParts[1]);
 
             if (sourceProperty is null)
             {
-                throw new Exception($"A nested property in configuration is missing in source object: {configuredPropertyName}");
+                return (null, false);
             }
 
             sourcePropertyValue = sourceProperty.GetValue(sourcePropertyValue);
         }
 
-        return sourcePropertyValue;
+        return (sourcePropertyValue, true);
     }
 }
