@@ -1,24 +1,29 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public class ImportHandler : IImportHandler
 {
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
-    private readonly IMediator _mediator;
+    //private readonly IMediator _mediator;
 
-    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger, IMediator mediator)
+    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
     {
+        _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
-        _mediator = mediator;
+        //_mediator = mediator;
     }
     public TIResponseFrame Handle(TIInterfaceMessage? message)
     {
@@ -111,15 +116,27 @@ public class ImportHandler : IImportHandler
         //TODO: 106693 NCR special handling
 
         //TODO: 107052 Create command and send to command handler
-        
+
         //TODO: XXXXXX Need validation here
+
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IReadOnlyContext>();
+        var project = context.QuerySet<Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate.Project>().FirstOrDefault();
+        var label = context.QuerySet<Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label>().FirstOrDefault();
+        var projectFromGuid = (from p in context.QuerySet<Domain.AggregateModels.ProjectAggregate.Project> ()
+            where p.Guid == new Guid("EB3821C2-B20F-8683-E053-2910000A2633")
+                     select p).FirstOrDefault();
+        var mediator =
+            scope.ServiceProvider
+                .GetRequiredService<IMediator>();
         var description = tiObject.GetAttributeValueAsString("Description");
         if (description is null)
         {
             throw new ArgumentException("Temp error to be replaced by validation: description is null");
         }
 
-        var projectGuid = new Guid("EB3821C2-B20F-8683-E053-2910000A2633");
+        var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
         var checkListGuid = Guid.NewGuid();
         var raisedByOrgGuid = new Guid("47757AA3-A9BA-400C-81BC-17284888910E");
         var clearingByOrgGuid = new Guid("00EA2B8F-8ADA-4A95-AAF6-54141114F1F2");
@@ -128,7 +145,9 @@ public class ImportHandler : IImportHandler
             raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
             null, null, null, null, null, null, 
             null, false, null, null);
-        _mediator.Send(createPunchCommand);
+        var result = mediator.Send(createPunchCommand).GetAwaiter().GetResult();
+        //var result = mediator.Send(new CreateLabelCommand("JSOI2")).GetAwaiter().GetResult();
+
         //TODO: 106687 CommandFailureHandler;
 
         //TODO: 109642 return ImportResult.Ok();
