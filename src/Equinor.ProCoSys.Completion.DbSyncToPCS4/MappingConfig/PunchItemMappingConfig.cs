@@ -13,6 +13,7 @@ public class PunchItemMappingConfig : ISourceObjectMappingConfig
             new ("Guid",                   PropertyType.Guid,        "Procosys_guid",            null,                                   null,                          true),
             new ("CheckListGuid",          PropertyType.Guid,        "TagCheck_id",              ValueConversion.GuidToTagCheckId,       null,                          true),
             new ("CreatedBy.Oid",          PropertyType.Guid,        "CreatedBy_id",             ValueConversion.OidToPersonId,          null,                          true),
+            new ("CreatedAtUtc",           PropertyType.DateTime,    "CreatedAt",                null,                                   null,                          true),
             new ("Category",               PropertyType.String,      "Status_id",                ValueConversion.PunchCategoryToLibId,   null,                          false),
             new ("Description",            PropertyType.String,      "Description",              null,                                   null,                          false),
             new ("RaisedByOrgGuid",        PropertyType.Guid,        "RaisedByOrg_id",           ValueConversion.GuidToLibId,            null,                          false),
@@ -31,7 +32,14 @@ public class PunchItemMappingConfig : ISourceObjectMappingConfig
             new ("MaterialRequired",       PropertyType.Bool,        "IsMaterialRequired",       null,                                   null,                          false),
             new ("MaterialETAUtc",         PropertyType.DateTime,    "Material_ETA",             null,                                   null,                          false),
             new ("MaterialExternalNo",     PropertyType.String,      "MaterialNo",               null,                                   null,                          false),
-
+            new ("ClearedBy.Oid",          PropertyType.Guid,        "ClearedBY_id",             ValueConversion.OidToPersonId,          null,                          false),
+            new ("ClearedAtUtc",           PropertyType.DateTime,    "ClearedAt",                null,                                   null,                          false),
+            new ("RejectedBy.Oid",         PropertyType.Guid,        "RejectedBY_id",            ValueConversion.OidToPersonId,          null,                          false),
+            new ("RejectedAtUtc",          PropertyType.DateTime,    "RejectedAt",               null,                                   null,                          false),
+            new ("VerifiedBy.Oid",         PropertyType.Guid,        "VerifiedBy_id",            ValueConversion.OidToPersonId,          null,                          false),
+            new ("VerifiedAtUtc",          PropertyType.DateTime,    "VerifiedAt",               null,                                   null,                          false),
+            new ("ModifiedBy.Oid",         PropertyType.Guid,        "UpdatedBy_id",             ValueConversion.OidToPersonId,          null,                          false),
+            new ("ModifiedAtUtc",          PropertyType.DateTime,    "UpdatedAt",                null,                                   null,                          false),
         };
 
     public List<PropertyMapping> PropertyMappings { get; }

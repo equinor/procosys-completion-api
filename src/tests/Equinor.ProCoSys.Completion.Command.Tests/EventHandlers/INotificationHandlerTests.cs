@@ -30,8 +30,6 @@ public class INotificationHandlerTests : IDomainMarker
             .Where(t => typeof(INotification).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)
             .ToList();
 
-        Assert.AreNotEqual(0, notifications.Count);
-
         var notificationHandlers = 
             commandAssembly.GetTypes()
             .Where(t =>

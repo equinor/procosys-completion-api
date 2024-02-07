@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
@@ -15,28 +17,36 @@ namespace Equinor.ProCoSys.Completion.Command.Comments;
 public class CommentService : ICommentService
 {
     private readonly ICommentRepository _commentRepository;
+    private readonly ICompletionMailService _completionMailService;
+    private readonly IDeepLinkUtility _deepLinkUtility;
     private readonly ILogger<CommentService> _logger;
 
     public CommentService(
         ICommentRepository commentRepository,
+        ICompletionMailService completionMailService,
+        IDeepLinkUtility deepLinkUtility,
         ILogger<CommentService> logger)
     {
         _commentRepository = commentRepository;
+        _completionMailService = completionMailService;
+        _deepLinkUtility = deepLinkUtility;
         _logger = logger;
     }
 
     public async Task<CommentDto> AddAndSaveAsync(
         IUnitOfWork unitOfWork,
-        string parentType,
-        Guid parentGuid,
+        IHaveGuid parentEntity,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions,
+        string emailTemplateCode,
         CancellationToken cancellationToken)
     {
-        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
+        var comment = AddToRepository(parentEntity, text, labels, mentions);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
 
         _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
             comment.Guid,
@@ -46,9 +56,9 @@ public class CommentService : ICommentService
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
 
-    public Guid Add(string parentType, Guid parentGuid, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
+    public Guid Add(IHaveGuid parentEntity, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions)
     {
-        var comment = AddToRepository(parentType, parentGuid, text, labels, mentions);
+        var comment = AddToRepository(parentEntity, text, labels, mentions);
 
         _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
             comment.Guid,
@@ -59,18 +69,31 @@ public class CommentService : ICommentService
     }
 
     private Comment AddToRepository(
-        string parentType,
-        Guid parentGuid,
+        IHaveGuid parentEntity,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions)
     {
-        var comment = new Comment(parentType, parentGuid, text);
+        var comment = new Comment(parentEntity.GetContextName(), parentEntity.Guid, text);
         comment.UpdateLabels(labels.ToList());
         comment.SetMentions(mentions.ToList());
 
         _commentRepository.Add(comment);
 
         return comment;
+    }
+
+    private async Task SendEMailAsync(
+        string emailTemplateCode,
+        IHaveGuid parentEntity,
+        Comment comment, 
+        CancellationToken cancellationToken)
+    {
+        var emailContext = parentEntity.GetEmailContext();
+        emailContext.Comment = comment;
+        emailContext.Url = _deepLinkUtility.CreateUrl(parentEntity.GetContextName(), parentEntity.Guid);
+        
+        var emailAddresses = comment.Mentions.Select(m => m.Email).ToList();
+        await _completionMailService.SendEmailAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);
     }
 }

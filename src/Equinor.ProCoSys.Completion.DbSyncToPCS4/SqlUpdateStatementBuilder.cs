@@ -39,7 +39,12 @@ public class SqlUpdateStatementBuilder(IPcs4Repository pcs4Repository)
                 continue;
             }
 
-            var sourcePropertyValue = PropertyMapping.GetSourcePropertyValue(propertyMapping.SourcePropertyName, sourceObject);
+            var (sourcePropertyValue, sourcePropertyExists) = PropertyMapping.GetSourcePropertyValue(propertyMapping.SourcePropertyName, sourceObject);
+
+            if (!sourcePropertyExists)
+            {
+                continue; //If source object does not contain a configured property, we skip it.
+            }
 
             var targetColumnValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(sourcePropertyValue,
                                                                                                             propertyMapping,
@@ -68,7 +73,12 @@ public class SqlUpdateStatementBuilder(IPcs4Repository pcs4Repository)
                                       DynamicParameters sqlParameters,
                                       CancellationToken cancellationToken)
     {
-        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
+        var (primaryKeyValue, primaryKeyExists) = PropertyMapping.GetSourcePropertyValue(sourceObjectMappingConfig.PrimaryKey.SourcePropertyName, sourceObject);
+
+        if (!primaryKeyExists)
+        {
+            throw new Exception($"Primary key given by the property '{sourceObjectMappingConfig.PrimaryKey.SourcePropertyName}' is not found in the source object.");
+        }
 
         var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(primaryKeyValue,
                                                                                                             sourceObjectMappingConfig.PrimaryKey,
@@ -76,9 +86,9 @@ public class SqlUpdateStatementBuilder(IPcs4Repository pcs4Repository)
                                                                                                             pcs4Repository,
                                                                                                             cancellationToken);
 
-        if (primaryKeyValue is null || primaryKeyTargetValue is null)
+        if (primaryKeyTargetValue is null)
         {
-            throw new Exception("Not able to build update statement. Primary key value or primary key target value is null.");
+            throw new Exception("Not able to build update statement. Primary key target value is null.");
         }
 
         var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;

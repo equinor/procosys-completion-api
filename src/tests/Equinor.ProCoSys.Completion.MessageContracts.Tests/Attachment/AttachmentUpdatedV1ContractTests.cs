@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.Attachment;
@@ -15,6 +14,7 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
         // Arrange
         var expectedProperties = new Dictionary<string, Type>
         {
+            { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid) },
             { "ParentType", typeof(string) },
@@ -24,8 +24,7 @@ public class AttachmentUpdatedV1ContractTests : ContractTestBase<IAttachmentUpda
             { "RevisionNumber", typeof(int) },
             { "Labels", typeof(List<string>) },
             { "ModifiedBy", typeof(User) },
-            { "ModifiedAtUtc", typeof(DateTime) },
-            { "Changes", typeof(List<IChangedProperty>) }
+            { "ModifiedAtUtc", typeof(DateTime) }
         };
 
         // Act

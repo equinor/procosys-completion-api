@@ -16,9 +16,14 @@ public class SqlDeleteStatementBuilder(IPcs4Repository pcs4Repository)
     {
         var deleteStatement = new StringBuilder($"delete from {sourceObjectMappingConfig.TargetTable} ");
 
-        var primaryKeyValue = PropertyMapping.GetSourcePropertyValue(
+        var (primaryKeyValue, primaryKeyExists) = PropertyMapping.GetSourcePropertyValue(
             sourceObjectMappingConfig.PrimaryKey.SourcePropertyName,
             sourceObject);
+
+        if (!primaryKeyExists)
+        {
+            throw new Exception($"Primary key given by the property '{sourceObjectMappingConfig.PrimaryKey.SourcePropertyName}' is not found in the source object.");
+        }
 
         var primaryKeyTargetValue = await SqlParameterConversionHelper.ConvertSourceValueToTargetValueAsync(
             primaryKeyValue,
@@ -27,9 +32,9 @@ public class SqlDeleteStatementBuilder(IPcs4Repository pcs4Repository)
             pcs4Repository,
             cancellationToken);
 
-        if (primaryKeyValue is null || primaryKeyTargetValue is null)
+        if (primaryKeyTargetValue is null)
         {
-            throw new Exception("Not able to build update statement. Primary key value or primary key target value is null.");
+            throw new Exception("Not able to build update statement. Primary key target value is null.");
         }
 
         var primaryKeyName = sourceObjectMappingConfig.PrimaryKey.TargetColumnName;
