@@ -44,30 +44,47 @@ public abstract class TestsBase
         TimeService.SetProvider(_timeProvider);
     }
 
-    protected void AssertPerson(IProperty property, User value)
+    protected void AssertPerson(
+        IProperty property,
+        User value,
+        ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(property);
         var user = property.Value as User;
         Assert.IsNotNull(user);
         Assert.AreEqual(value.Oid, user.Oid);
         Assert.AreEqual(value.FullName, user.FullName);
+        Assert.AreEqual(valueDisplayType, property.ValueDisplayType);
     }
 
-    protected void AssertProperty(IProperty property, object value)
+    protected void AssertProperty(
+        IProperty property,
+        object value,
+        ValueDisplayType valueDisplayType = ValueDisplayType.StringAsText)
     {
         Assert.IsNotNull(property);
         Assert.IsNotNull(value);
         Assert.AreEqual(value, property.Value);
+        Assert.AreEqual(valueDisplayType, property.ValueDisplayType);
     }
 
-    protected void AssertChange(IChangedProperty change, object oldValue, object newValue)
+    protected void AssertChange(
+        IChangedProperty change,
+        object oldValue,
+        object newValue,
+        ValueDisplayType valueDisplayType = ValueDisplayType.StringAsText)
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
         Assert.AreEqual(newValue, change.NewValue);
+        Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
-    protected void AssertPersonChange(IChangedProperty change, User oldValue, User newValue)
+    protected void AssertPersonChange(
+        IChangedProperty change,
+        User oldValue,
+        User newValue,
+        ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(change);
         if (change.OldValue is null)
@@ -92,6 +109,7 @@ public abstract class TestsBase
             Assert.AreEqual(newValue.Oid, user.Oid);
             Assert.AreEqual(newValue.FullName, user.FullName);
         }
+        Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
     protected void AssertRequiredProperties(PunchItem punchItem, IPunchItem integrationEvent)
@@ -219,13 +237,11 @@ public abstract class TestsBase
 
     protected void AssertHistoryCreatedIntegrationEvent(
         HistoryCreatedIntegrationEvent historyEvent, 
-        string plant, 
         string displayName,
         Guid parentGuid,
         IHaveGuid guidEntity,
         ICreationAuditable creationAuditableEntity)
     {
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
         Assert.AreEqual(parentGuid, historyEvent.ParentGuid);
@@ -239,12 +255,13 @@ public abstract class TestsBase
         string plant,
         string displayName,
         IHaveGuid guidEntity,
-        IModificationAuditable modificationAuditableEntity)
+        IModificationAuditable modificationAuditableEntity,
+        Guid? parentGuid = null)
     {
         Assert.IsNotNull(historyEvent);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
+        Assert.AreEqual(parentGuid, historyEvent.ParentGuid);
         Assert.AreEqual(modificationAuditableEntity.ModifiedAtUtc, historyEvent.EventAtUtc);
         Assert.AreEqual(modificationAuditableEntity.ModifiedBy!.Guid, historyEvent.EventBy.Oid);
         Assert.AreEqual(modificationAuditableEntity.ModifiedBy!.GetFullName(), historyEvent.EventBy.FullName);
@@ -260,7 +277,6 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(historyEvent);
         Assert.AreEqual(displayName, historyEvent.DisplayName);
-        Assert.AreEqual(plant, historyEvent.Plant);
         Assert.AreEqual(guidEntity.Guid, historyEvent.Guid);
 
         // Our entities don't have DeletedByOid / DeletedAtUtc ...
