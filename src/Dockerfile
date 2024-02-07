@@ -34,13 +34,6 @@ RUN dotnet publish "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /ap
 
 # Define the image used for the final result
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-#WORKDIR /app
-#EXPOSE 80
-#EXPOSE 443
-
-#FROM base AS final
-#WORKDIR /app
-#COPY --from=publish /app/publish .
 
 # Create non-root user. Set ui to 9999 to avoid conflicts with host OS just in case
 RUN adduser --disabled-password --uid 9999 --gecos "" apprunner
@@ -50,16 +43,6 @@ RUN mkdir /app && chown apprunner.apprunner /app
 
 # Change the user from root to non-root- From now on, all Docker commands are run as non-root user (except for COPY)
 USER 9999
-
-
-#RUN adduser \
-#    --uid 1001 \
-#    --home /app \
-#    --gecos '' app \
-#    --disabled-password \
-#    && chown -R app /app
-
-#USER 1001
 
 ENV ASPNETCORE_URLS http://+:5000
 EXPOSE 5000
