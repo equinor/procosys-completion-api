@@ -2,9 +2,6 @@
 
 // this enum describe both the data type of the value (int, bool, DateTime), and how it should
 // be displayed to end users
-// todo Add unit test to test that these values do not change, as it will be a contract change.
-// Should be allowed to add values, but not rename or remove
-
 public enum ValueDisplayType
 {
     StringAsText,
