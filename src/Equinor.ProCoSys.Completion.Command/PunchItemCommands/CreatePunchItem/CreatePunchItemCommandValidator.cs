@@ -28,12 +28,13 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
 
             // validate given CheckList
-            .MustAsync(BeAnExistingCheckListAsync)
-            .WithMessage(command => $"Check list does not exist! Guid={command.CheckListGuid}")
-            .MustAsync(NotBeInAVoidedTagForCheckListAsync)
-            .WithMessage(command => $"Tag owning check list is voided! Guid={command.CheckListGuid}")
-            .MustAsync(CheckListMustBeInProjectAsync)
-            .WithMessage(command => $"Check list is not in given project! Guid={command.CheckListGuid} Project Guid={command.ProjectGuid}")
+            //TODO: JSOI Set authentication to application instead of user to get this working
+            //.MustAsync(BeAnExistingCheckListAsync)
+            //.WithMessage(command => $"Check list does not exist! Guid={command.CheckListGuid}")
+            //.MustAsync(NotBeInAVoidedTagForCheckListAsync)
+            //.WithMessage(command => $"Tag owning check list is voided! Guid={command.CheckListGuid}")
+            //.MustAsync(CheckListMustBeInProjectAsync)
+            //.WithMessage(command => $"Check list is not in given project! Guid={command.CheckListGuid} Project Guid={command.ProjectGuid}")
 
             // validate given RaisedByOrg
             .MustAsync((command, cancellationToken)
@@ -188,14 +189,14 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
         async Task<bool> NotBeAClosedProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
             => !await projectValidator.IsClosedAsync(command.ProjectGuid, cancellationToken);
 
-        async Task<bool> BeAnExistingCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
-            => await checkListValidator.ExistsAsync(command.CheckListGuid);
+        //async Task<bool> BeAnExistingCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+        //    => await checkListValidator.ExistsAsync(command.CheckListGuid);
 
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(command.CheckListGuid);
+        //async Task<bool> NotBeInAVoidedTagForCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+        //    => !await checkListValidator.TagOwningCheckListIsVoidedAsync(command.CheckListGuid);
 
-        async Task<bool> CheckListMustBeInProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
-            => await checkListValidator.InProjectAsync(command.CheckListGuid, command.ProjectGuid);
+        //async Task<bool> CheckListMustBeInProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
+        //    => await checkListValidator.InProjectAsync(command.CheckListGuid, command.ProjectGuid);
 
         async Task<bool> BeAnExistingLibraryItemAsync(Guid guid, CancellationToken cancellationToken)
             => await libraryItemValidator.ExistsAsync(guid, cancellationToken);

@@ -8,6 +8,7 @@ using Statoil.TI.InterfaceServices.Message;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Common.Misc;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -121,15 +122,15 @@ public class ImportHandler : IImportHandler
 
 
         using var scope = _serviceScopeFactory.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<IReadOnlyContext>();
-        var project = context.QuerySet<Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate.Project>().FirstOrDefault();
-        var label = context.QuerySet<Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate.Label>().FirstOrDefault();
-        var projectFromGuid = (from p in context.QuerySet<Domain.AggregateModels.ProjectAggregate.Project> ()
-            where p.Guid == new Guid("EB3821C2-B20F-8683-E053-2910000A2633")
-                     select p).FirstOrDefault();
-        var mediator =
-            scope.ServiceProvider
-                .GetRequiredService<IMediator>();
+        
+        var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
+        plantSetter.SetPlant("PCS$OSEBERG_C");
+
+        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
+        currentUserSetter.SetCurrentUserOid(new Guid("53731422-9D09-4871-BC8A-9E487B3CF89D"));
+
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
         var description = tiObject.GetAttributeValueAsString("Description");
         if (description is null)
         {
@@ -137,16 +138,17 @@ public class ImportHandler : IImportHandler
         }
 
         var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
-        var checkListGuid = Guid.NewGuid();
-        var raisedByOrgGuid = new Guid("47757AA3-A9BA-400C-81BC-17284888910E");
-        var clearingByOrgGuid = new Guid("00EA2B8F-8ADA-4A95-AAF6-54141114F1F2");
+        var checkListGuid = new Guid("EB38CCBC-C659-D926-E053-2810000AC5B2");
+        var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
+        var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
 
         var createPunchCommand = new CreatePunchItemCommand(Category.PB, description, projectGuid, checkListGuid,
             raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
             null, null, null, null, null, null, 
             null, false, null, null);
+        
+        //TODO: JSOI Make method async
         var result = mediator.Send(createPunchCommand).GetAwaiter().GetResult();
-        //var result = mediator.Send(new CreateLabelCommand("JSOI2")).GetAwaiter().GetResult();
 
         //TODO: 106687 CommandFailureHandler;
 

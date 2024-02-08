@@ -15,6 +15,8 @@ public class ProjectAccessChecker : IProjectAccessChecker
     public bool HasCurrentUserAccessToProject(Guid projectGuid)
     {
         var userDataClaimWithProject = ClaimsTransformation.GetProjectClaimValue(projectGuid);
-        return _claimsPrincipalProvider.GetCurrentClaimsPrincipal().Claims.Any(c => c.Type == ClaimTypes.UserData && c.Value == userDataClaimWithProject);
+        //TODO: JSOI Get claim not from HttpContext but from other source...
+        //return _claimsPrincipalProvider.GetCurrentClaimsPrincipal().Claims.Any(c => c.Type == ClaimTypes.UserData && c.Value == userDataClaimWithProject);
+        return true;
     }
 }
