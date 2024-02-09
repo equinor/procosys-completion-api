@@ -46,44 +46,41 @@ stages:
   displayName: 'Build'
 #  dependsOn: 'runtests'
   dependsOn: ''
-#  variables:
-#    envName: 'build'
-#    containerRegistry: '${{ variables.containerRegistryName }}'
-#    environment: '$(globalPrefix)-$(fullAppName)-api-build'
-    #dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnectionName }}'
-    #dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
+  variables:
+# todo should be '$(globalPrefix)-$(fullAppName)-api-build'
+    environment: '$(globalPrefix)-$(fullAppName)-api-'
+    arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
+    dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
+    buildContext: '$(Build.SourcesDirectory)/src'
+    repository: '${{ variables.repositoryName }}'
 
   jobs:
   # Docker Build
   - template: templates/dockerbuild.yml
     parameters:
       deployment: 'docker_build'
-      dependsOn: ''
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
-      # todo should be '$(globalPrefix)-$(fullAppName)-api-build'
-      environment: '$(globalPrefix)-$(fullAppName)-api-'
+      environment: ${{ variables.environment }}
       buildCommand: build
       versionNumber: ${{ variables.versionNumber }}
-      arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
-      dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
-      buildContext: '$(Build.SourcesDirectory)/src'
-      repository: '${{ variables.repositoryName }}'
+      arguments: ${{ variables.arguments }}
+      dockerfilePath: ${{ variables.dockerfilePath }}
+      buildContext: ${{ variables.buildContext }}
+      repository: ${{ variables.repository }}
       dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnection }}'
 
   # Docker Build (Main Only)
   - template: templates/dockerbuild.yml
     parameters:
       deployment: 'docker_build_and_push_main_only'
-      dependsOn: ''
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/main')) 
-      # todo should be '$(globalPrefix)-$(fullAppName)-api-build'
-      environment: '$(globalPrefix)-$(fullAppName)-api-'
-      arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
+      environment: ${{ variables.environment }}
       buildCommand: buildAndPush
       versionNumber: ${{ variables.versionNumber }}
-      dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
-      buildContext: '$(Build.SourcesDirectory)/src'
-      repository: '${{ variables.repositoryName }}'
+      arguments: ${{ variables.arguments }}
+      dockerfilePath: ${{ variables.dockerfilePath }}
+      buildContext: ${{ variables.buildContext }}
+      repository: ${{ variables.repository }}
       dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnection }}'
 
   # Create Migration Script
