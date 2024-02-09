@@ -60,7 +60,8 @@ stages:
       deployment: 'docker_build'
       dependsOn: ''
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
-      environment: '$(globalPrefix)-$(fullAppName)-api-build'
+      # todo should be '$(globalPrefix)-$(fullAppName)-api-build'
+      environment: '$(globalPrefix)-$(fullAppName)-api-'
       buildCommand: build
       versionNumber: ${{ variables.versionNumber }}
       arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
@@ -75,7 +76,8 @@ stages:
       deployment: 'docker_build_and_push_main_only'
       dependsOn: ''
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/main')) 
-      environment: '$(globalPrefix)-$(fullAppName)-api-build'
+      # todo should be '$(globalPrefix)-$(fullAppName)-api-build'
+      environment: '$(globalPrefix)-$(fullAppName)-api-'
       arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
       buildCommand: buildAndPush
       versionNumber: ${{ variables.versionNumber }}
