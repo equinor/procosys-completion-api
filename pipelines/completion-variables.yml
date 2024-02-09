@@ -1,13 +1,33 @@
 variables:
-  # Common variables
-  
-  # Enabling System Debug for Azure DevOps Pipeline
   - name: 'System.Debug'
     value: 'true'
 
-  # Enabling Agent Diagnostic for Azure DevOps Pipeline
   - name: 'Agent.Diagnostic'
     value: 'true'
+
+  # - name: 'vmImageName'
+  #   value: 'ubuntu-latest'
+
+  - name: 'globalPrefix'
+    value: 'pcs'
+
+  - name: 'dockerRegistryServiceConnectionName'
+    value: 'procosys - acr'
+
+  - name: 'nonProdServiceConnection'
+    value: 'procosys - non-prod'
+
+  - name: 'prodServiceConnection'
+    value: 'procosys - prod'
+
+  # - name: 'ServiceConnectionSpObjectId'
+  #   value: '957e43cf-f08c-4154-aa55-c8fc3aa57930'
+
+  # - name: 'prodServiceConnectionSpObjectId'
+  #   value: '85d5d8ff-ad65-4d53-a794-7a9974129518'
+    
+  - name: 'containerRegistryName'
+    value: 'procosys'
 
   - name: 'fullAppName'
     value: 'completion'
@@ -15,75 +35,81 @@ variables:
   - name: 'shortAppName'
     value: 'completion'
 
+  - name: 'sqlAdminUserName'
+    value: 'sqladminlogin'
+
+  - name: 'sqlServerName'
+    value: 'sql-pcs5-completion-dev'
+
   - name: 'databaseName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
+    value: 'sqldb-pcs5-completion-dev'
 
   - name: 'kvName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-kv'
+    value: 'kv-pcs5-completion-dev'
 
   - name: 'appInsightsName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-ai'
+    value: 'appi-pcs5-completion-dev'
 
-  - name: 'appConfigName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-config'
+  # - name: 'appConfigName'
+  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-config'
 
-  - name: 'envRgName'
-    value: '$(globalPrefix)-$(fullAppName)-$(envName)-rg'
+  # - name: 'envRgName'
+  #   value: '$(globalPrefix)-$(fullAppName)-$(envName)-rg'
 
-  - name: 'apiWebAppName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-api'
+  # - name: 'apiWebAppName'
+  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-api'
 
-  # equinor-procosys-completion Client ID  TODO: dette må fikses!
-  - name: 'kvClientIdName'
-    value: 'cb7afa3f-d2ff-401b-83b6-f02cce85ce30'
+  # equinor-procosys-completion Client ID  TODO: Har benyttet equinor-procosys-preservation
+  # - name: 'kvClientIdName'
+  #   value: 'cb7afa3f-d2ff-401b-83b6-f02cce85ce30'
 
-  - name: 'kvClientSecretName'
-    value: 'equinor-procosys-$(shortAppName)-service-principal'
+  # - name: 'kvClientSecretName'
+  #   value: 'equinor-procosys-$(shortAppName)-service-principal'
 
-  - name: 'kvTenantIdSecret'
-    value: 'TenantId'
+  # - name: 'kvTenantIdSecret'
+  #   value: 'TenantId'
 
-  - name: 'kvConnStringsSecret'
-    value: 'ConnectionStrings-AppConfig'
+  # - name: 'kvConnStringsSecret'
+  #   value: 'ConnectionStrings-AppConfig'
 
-  - name: 'vnetRg'
-    value: 'pcs-common-rg'
+  # - name: 'vnetRg'
+  #   value: 'pcs-common-rg'
 
-  - name: 'commonRgName'
-    value: 'pcs-common-rg'
+  # - name: 'commonRgName'
+  #   value: 'pcs-common-rg'
 
-  - name: 'vnetName'
-    value: 'procosys-infra-vnet'
+  # - name: 'vnetName'
+  #   value: 'procosys-infra-vnet'
 
-  - name: 'nonProdAKSsubnet'
-    value: 'aks-test-snet'
+  # - name: 'nonProdAKSsubnet'
+  #   value: 'aks-test-snet'
 
-  - name: 'prodAKSsubnet'
-    value: 'aks-prod-snet'
+  # - name: 'prodAKSsubnet'
+  #   value: 'aks-prod-snet'
 
-  - name: 'sqlDatabaseName'
-    value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
+  # - name: 'sqlDatabaseName'
+  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
   
-  - name: 'sqlDatabaseNameCompletion'
-    value: '$(globalPrefix)-$(shortAppName)-$(env)-db'
+  # - name: 'sqlDatabaseNameCompletion'
+  #   value: '$(globalPrefix)-$(shortAppName)-$(env)-db'
 
-  - name: 'sqlServerNameCompletion'
-    value: '$(globalPrefix)-$(env)-sqlserver'
+  # - name: 'sqlServerNameCompletion'
+  #   value: '$(globalPrefix)-$(env)-sqlserver'
 
-  - name: 'commonKeyVault'
-    value: '$(globalPrefix)-common-kv'
+  # - name: 'commonKeyVault'
+  #   value: '$(globalPrefix)-common-kv'
 
-  - name: 'aksRgName'
-    value: 'pcs-hosting-rg'
+  # - name: 'aksRgName'
+  #   value: 'pcs-hosting-rg'
 
-  - name: 'aksTestName'
-    value: 'pcs-aks-test'
+  # - name: 'aksTestName'
+  #   value: 'pcs-aks-test'
 
-  - name: 'aksProdName'
-    value: 'pcs-aks-prod'
+  # - name: 'aksProdName'
+  #   value: 'pcs-aks-prod'
 
-  # Dev variables
+  # # Dev variables
 
-  # Test variables
+  # # Test variables
 
-  # Prod variables
+  # # Prod variables

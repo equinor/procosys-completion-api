@@ -6,15 +6,15 @@ trigger:
 resources:
   repositories:
   - repository: self
-  - repository: templates
-    type: github
-    name: equinor/procosys-infra
-    endpoint: 'equinor'
+  # - repository: templates
+  #   type: github
+  #   name: equinor/procosys-infra
+  #   endpoint: 'equinor'
 
 
 # Global variables for the pipeline
 variables:
- - template: templates/variables/procosys-global-variables.yml@templates
+# - template: templates/variables/procosys-global-variables.yml@templates
  - template: completion-variables.yml
 
  - name: 'repositoryName'
@@ -45,7 +45,7 @@ stages:
   - template: templates/runtest.yml
     parameters:
       deployment: 'runtests'
-      environment: 'runtests'
+      environment: '$(globalPrefix)-$(fullAppName)-api-runtests'
 #      dependsOn: ''
 #      envGroup: '${{ variables.envGroupName }}'
 #      testPath: '${{ variables.testPath }}'
@@ -57,7 +57,6 @@ stages:
   dependsOn: 'runtests'
   variables:
     envName: 'build'
-    envRg: '${{ variables.envRgName }}' 
     containerRegistry: '${{ variables.containerRegistryName }}'
     envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.env }}'
     dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnectionName }}'
