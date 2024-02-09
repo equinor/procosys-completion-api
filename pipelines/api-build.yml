@@ -88,7 +88,8 @@ stages:
     parameters:
       dependsOn: ''
       deploymentName: 'create_migration_script'
-      envGroup: '${{ variables.envGroupName }}'
+      # todo rename to environment
+      envGroup: '${{ variables.environment }}'
       serviceConnection: '${{ variables.nonProdServiceConnection }}'
 
   # Dev deploy stage
