@@ -11,10 +11,8 @@ resources:
   #   name: equinor/procosys-infra
   #   endpoint: 'equinor'
 
-
 # Global variables for the pipeline
 variables:
-# - template: templates/variables/procosys-global-variables.yml@templates
  - template: completion-variables.yml
 
  - name: 'repositoryName'
@@ -33,47 +31,40 @@ name: '${{ variables.versionNumber }}$(Build.BuildId)-$(Date:MMddyyyy)'
 
 stages:
 # Run tests Stage
-- stage: runtests
-  displayName: 'Run tests'
-#  variables:
-#    envName: 'runtests'
-#    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
-#    testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
+# - stage: runtests
+#   displayName: 'Run tests'
 
-  jobs:
-  # Run Test
-  - template: templates/runtest.yml
-    parameters:
-      deployment: 'runtests'
-      environment: '$(globalPrefix)-$(fullAppName)-api-runtests'
-#      dependsOn: ''
-#      envGroup: '${{ variables.envGroupName }}'
-#      testPath: '${{ variables.testPath }}'
-      testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
+#   jobs:
+#   - template: templates/runtest.yml
+#     parameters:
+#       deployment: 'runtests'
+#       environment: '$(globalPrefix)-$(fullAppName)-api-runtests'
+#       testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
 
 # Build stage. Docker build, tag and push
 - stage: build
   displayName: 'Build'
-  dependsOn: 'runtests'
-  variables:
-    envName: 'build'
-    containerRegistry: '${{ variables.containerRegistryName }}'
-    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.env }}'
-    dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnectionName }}'
-    dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
+#  dependsOn: 'runtests'
+  dependsOn: ''
+#  variables:
+#    envName: 'build'
+#    containerRegistry: '${{ variables.containerRegistryName }}'
+#    environment: '$(globalPrefix)-$(fullAppName)-api-build'
+    #dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnectionName }}'
+    #dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
 
   jobs:
   # Docker Build
   - template: templates/dockerbuild.yml
     parameters:
-      deploymentName: 'docker_build'
+      deployment: 'docker_build'
       dependsOn: ''
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
-      envGroup: '${{ variables.envGroupName }}'
+      environment: '$(globalPrefix)-$(fullAppName)-api-build'
       buildCommand: build
       versionNumber: ${{ variables.versionNumber }}
       arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
-      dockerfilePath: '${{ variables.dockerfilePath }}'
+      dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
       buildContext: '$(Build.SourcesDirectory)/src'
       repository: '${{ variables.repositoryName }}'
       dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnection }}'
@@ -81,14 +72,14 @@ stages:
   # Docker Build (Main Only)
   - template: templates/dockerbuild.yml
     parameters:
-      deploymentName: 'docker_build_and_push_main_only'
+      deployment: 'docker_build_and_push_main_only'
       dependsOn: ''
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/main')) 
-      envGroup: '${{ variables.envGroupName }}'
+      environment: '$(globalPrefix)-$(fullAppName)-api-build'
       arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
       buildCommand: buildAndPush
       versionNumber: ${{ variables.versionNumber }}
-      dockerfilePath: '${{ variables.dockerfilePath }}'
+      dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
       buildContext: '$(Build.SourcesDirectory)/src'
       repository: '${{ variables.repositoryName }}'
       dockerRegistryServiceConnection: '${{ variables.dockerRegistryServiceConnection }}'

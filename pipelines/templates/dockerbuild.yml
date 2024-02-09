@@ -1,5 +1,5 @@
 parameters:
-  deploymentName: ''
+  deployment: ''
   dependsOn: ''
   condition: ''
   buildCommand: ''
@@ -7,18 +7,18 @@ parameters:
   dockerfilePath: ''
   buildContext: ''
   repository: ''
-  envGroup: ''
+  environment: ''
   dockerRegistryServiceConnection: ''
   arguments: ''
   tag: ''
 
 jobs:
-  - deployment: '${{ parameters.deploymentName }}'
+  - deployment: '${{ parameters.deployment }}'
     dependsOn: '${{ parameters.dependsOn }}'
     condition: ${{ parameters.condition }}
     pool: 
       vmImage: 'ubuntu-latest'
-    environment: '${{ parameters.envGroup }}'
+    environment: '${{ parameters.environment }}'
     strategy:
       runOnce:
         deploy:

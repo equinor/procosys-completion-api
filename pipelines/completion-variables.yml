@@ -11,7 +11,7 @@ variables:
   - name: 'globalPrefix'
     value: 'pcs'
 
-  - name: 'dockerRegistryServiceConnectionName'
+  - name: 'dockerRegistryServiceConnection'
     value: 'procosys - acr'
 
   - name: 'nonProdServiceConnection'
@@ -26,8 +26,8 @@ variables:
   # - name: 'prodServiceConnectionSpObjectId'
   #   value: '85d5d8ff-ad65-4d53-a794-7a9974129518'
     
-  - name: 'containerRegistryName'
-    value: 'procosys'
+  # - name: 'containerRegistryName'
+  #   value: 'procosys'
 
   - name: 'fullAppName'
     value: 'completion'
