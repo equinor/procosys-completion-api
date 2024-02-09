@@ -1,17 +1,17 @@
 parameters:
-  deploymentName: ''
+  deployment: ''
   dependsOn: ''
   condition: ''
-#  env: ''
+  environment: ''
   testPath: ''
 
 jobs:
-  - deployment: '${{ parameters.deploymentName }}'
+  - deployment: '${{ parameters.deployment }}'
     dependsOn: '${{ parameters.dependsOn }}'
     condition: ${{ parameters.condition }}
     pool: 
       vmImage: 'windows-latest'
-#    environment: '${{ parameters.envGroup }}'
+    environment: '${{ parameters.environment }}'
     strategy:
       runOnce:
         deploy:

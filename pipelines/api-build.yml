@@ -44,7 +44,8 @@ stages:
   # Run Test
   - template: templates/runtest.yml
     parameters:
-      deploymentName: 'runtests'
+      deployment: 'runtests'
+      environment: 'runtests'
 #      dependsOn: ''
 #      envGroup: '${{ variables.envGroupName }}'
 #      testPath: '${{ variables.testPath }}'
