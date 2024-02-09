@@ -35,19 +35,20 @@ stages:
 # Run tests Stage
 - stage: runtests
   displayName: 'Run tests'
-  variables:
-    envName: 'runtests'
-    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
-    testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
+#  variables:
+#    envName: 'runtests'
+#    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
+#    testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
 
   jobs:
   # Run Test
   - template: templates/runtest.yml
     parameters:
       deploymentName: 'runtests'
-      dependsOn: ''
-      envGroup: '${{ variables.envGroupName }}'
-      testPath: '${{ variables.testPath }}'
+#      dependsOn: ''
+#      envGroup: '${{ variables.envGroupName }}'
+#      testPath: '${{ variables.testPath }}'
+      testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
 
 # Build stage. Docker build, tag and push
 - stage: build
