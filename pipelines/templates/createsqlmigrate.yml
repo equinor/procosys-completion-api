@@ -44,7 +44,6 @@ jobs:
                 inlineScript: |
                   cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\            
                   # show working directory
-                  cd
                   dir
                   echo "--------- Set dummy connectionstring in secrets.json"
                   dotnet user-secrets set "ConnectionStrings:CompletionContext" "dummydata" 
