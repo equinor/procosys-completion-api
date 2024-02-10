@@ -40,6 +40,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     // an instance of the context without parameters.
     public CompletionContext()
     {
+        _plantProvider = null!;
+        _eventDispatcher = null!;
+        _currentUserProvider = null!;
     }
 
     public CompletionContext(
