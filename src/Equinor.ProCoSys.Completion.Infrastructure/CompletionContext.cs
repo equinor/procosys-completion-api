@@ -35,6 +35,13 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     private readonly IEventDispatcher _eventDispatcher;
     private readonly ICurrentUserProvider _currentUserProvider;
 
+    // The design-time tools used by the Entity Framework creating migrations 
+    // need parameterless constructor be able to create 
+    // an instance of the context without parameters.
+    public CompletionContext()
+    {
+    }
+
     public CompletionContext(
         DbContextOptions<CompletionContext> options,
         IPlantProvider plantProvider,
