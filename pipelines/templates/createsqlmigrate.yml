@@ -42,24 +42,23 @@ jobs:
                 ScriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  # Set user secrets for API project
                   cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\            
-                  dir 
-                  echo ---------test hallo
+                  # show working directory
+                  cd
+                  dir
+                  echo "--------- Set dummy connectionstring in secrets.json"
                   dotnet user-secrets set "ConnectionStrings:CompletionContext" "dummydata" 
-                  
-                  echo ---------test $(Build.SourcesDirectory)
-                  echo ---------test $(Build.ArtifactStagingDirectory)
-                  # Create migration script for MyDbContext
+                  echo "--------- Build.SourcesDirectory: $(Build.SourcesDirectory)"
+                  echo "--------- Build.ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)"
+                  echo "--------- Creating idempotent migration script for CompletionContext"
                   dotnet ef migrations script `
                     --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent
                  
-                  echo ---------feridg---$(Build.ArtifactStagingDirectory)
-                  dir $(Build.ArtifactStagingDirectory)
-                  echo ---------feridg--2
-                  
+                  echo "--------- Idempotent migration script created"
+                  cd $(Build.ArtifactStagingDirectory)
+                  dir
 
             # Save Pipeline Artifact
             - task: PublishPipelineArtifact@1
