@@ -48,7 +48,7 @@ stages:
   dependsOn: ''
   variables:
 # todo should be '$(globalPrefix)-$(fullAppName)-api-build'
-    environment: '$(globalPrefix)-$(fullAppName)-api-'
+    environment: '$(globalPrefix)-$(fullAppName)-api-build'
     arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
     dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
     buildContext: '$(Build.SourcesDirectory)/src'

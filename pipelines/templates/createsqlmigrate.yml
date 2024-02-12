@@ -47,9 +47,9 @@ jobs:
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent --verbose
                  
-                  cd $(Build.ArtifactStagingDirectory)
-                  dir
-                  type SQLMigrations\migration.sql
+                  cd $(Build.ArtifactStagingDirectory)\SQLMigrations
+                  dir 
+                  type migration.sql
 
             # Save Pipeline Artifact
             - task: PublishPipelineArtifact@1
