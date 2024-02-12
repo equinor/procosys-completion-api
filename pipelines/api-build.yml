@@ -97,7 +97,7 @@ stages:
   jobs:
     - deployment: Deploy
       displayName: Migrate DB & deploy
-      environment: '$(globalPrefix)-$(fullAppName)-api-dev'
+      environment: '$(globalPrefix)-$(fullAppName)-api-$(envName)'
       pool:
         vmImage: 'windows-latest'
       strategy:

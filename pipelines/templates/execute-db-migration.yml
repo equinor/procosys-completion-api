@@ -40,15 +40,15 @@ steps:
         path: $(System.DefaultWorkingDirectory)
 
     # Deploy Script
-  # - task: SqlAzureDacpacDeployment@1
-  #   displayName: 'Execute idempotent migration script'
-  #   inputs:
-  #       azureSubscription: '${{ parameters.serviceConnection }}'
-  #       AuthenticationType: 'server'
-  #       ServerName: '${{ parameters.serverName }}'
-  #       DatabaseName: '${{ parameters.databaseName }}'
-  #       SqlUsername: '${{ parameters.sqlAdminUserName }}'
-  #       SqlPassword: '$(kvoSecret)'
-  #       deployType: 'SqlTask'
-  #       SqlFile: '$(System.DefaultWorkingDirectory)/migration.sql'
-  #       IpDetectionMethod: 'AutoDetect'
+  - task: SqlAzureDacpacDeployment@1
+    displayName: 'Execute idempotent migration script'
+    inputs:
+        azureSubscription: '${{ parameters.serviceConnection }}'
+        AuthenticationType: 'server'
+        ServerName: '${{ parameters.serverName }}'
+        DatabaseName: '${{ parameters.databaseName }}'
+        SqlUsername: '${{ parameters.sqlAdminUserName }}'
+        SqlPassword: '$(kvoSecret)'
+        deployType: 'SqlTask'
+        SqlFile: '$(System.DefaultWorkingDirectory)/migration.sql'
+        IpDetectionMethod: 'AutoDetect'
