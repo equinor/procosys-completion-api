@@ -1,12 +1,9 @@
 parameters:
-  dependsOn: ''
-  deploymentName: ''
   serviceConnection: ''
-  envGroup: ''
-  connectionString: ''
   kvName: ''
   kvRgName: ''
-  kvSecret: ''
+  kvSecretName: ''
+  sqlAdminUserName: ''
   serverName: ''
   databaseName: ''
 
@@ -21,12 +18,12 @@ steps:
         Inline: |
             # Variables
             $kvName = "${{ parameters.kvName }}"
-            $kvSecret = "${{ parameters.kvSecret }}"
+            $kvSecretName = "${{ parameters.kvSecretName }}"
             $rgName = "${{ parameters.kvRgName }}"
                         
             # Temporarily disable firewall for Key Vault
             Update-AzKeyVaultNetworkRuleSet -VaultName $kvName -ResourceGroupName $rgName -DefaultAction Allow
-            $secretName = Get-AzKeyVaultSecret -VaultName $kvName -Name $kvSecret
+            $secretName = Get-AzKeyVaultSecret -VaultName $kvName -Name $kvSecretName
             $secretNamePlainText = ConvertFrom-SecureString -SecureString $secretName.SecretValue -AsPlainText
                         
             # Create reusable variable for env task with $(kvoSecret)
@@ -48,7 +45,7 @@ steps:
         AuthenticationType: 'server'
         ServerName: '${{ parameters.serverName }}'
         DatabaseName: '${{ parameters.databaseName }}'
-        SqlUsername: 'pcssqladmin'
+        SqlUsername: '${{ parameters.sqlAdminUserName }}'
         SqlPassword: '$(kvoSecret)'
         deployType: 'SqlTask'
         SqlFile: '$(System.DefaultWorkingDirectory)/migration.sql'

@@ -20,6 +20,12 @@ variables:
   - name: 'prodServiceConnection'
     value: 'procosys - prod'
 
+  - name: 'commonKvName'
+    value: '$(globalPrefix)-common-kv'
+
+  - name: 'commonRgName'
+    value: '$(globalPrefix)-common-rg'
+
   # - name: 'ServiceConnectionSpObjectId'
   #   value: '957e43cf-f08c-4154-aa55-c8fc3aa57930'
 
@@ -75,9 +81,6 @@ variables:
   # - name: 'vnetRg'
   #   value: 'pcs-common-rg'
 
-  # - name: 'commonRgName'
-  #   value: 'pcs-common-rg'
-
   # - name: 'vnetName'
   #   value: 'procosys-infra-vnet'
 
@@ -95,9 +98,6 @@ variables:
 
   # - name: 'sqlServerNameCompletion'
   #   value: '$(globalPrefix)-$(env)-sqlserver'
-
-  # - name: 'commonKeyVault'
-  #   value: '$(globalPrefix)-common-kv'
 
   # - name: 'aksRgName'
   #   value: 'pcs-hosting-rg'

@@ -43,7 +43,6 @@ stages:
 #  dependsOn: 'runtests'
   dependsOn: ''
   variables:
-# todo should be '$(globalPrefix)-$(fullAppName)-api-build'
     environment: '$(globalPrefix)-$(fullAppName)-api-build'
     arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
     dockerfilePath: '$(Build.SourcesDirectory)/src/Dockerfile'
@@ -84,7 +83,6 @@ stages:
     parameters:
       dependsOn: ''
       deploymentName: 'create_migration_script'
-      # todo rename to environment
       envGroup: '${{ variables.environment }}'
       serviceConnection: '${{ variables.nonProdServiceConnection }}'
 
@@ -92,16 +90,12 @@ stages:
 - stage: DeployDev
   displayName: 'Deploy to dev'
   dependsOn: 'build' 
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
-  variables:
-    envName: 'dev'
-    envGroupName: '$(globalPrefix)-$(fullAppName)-api-${{ variables.envName }}'
-    serviceConnection: '${{ variables.nonProdServiceConnection }}'
+#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
     
   jobs:
     - deployment: Deploy
       displayName: Migrate DB & deploy
-      environment: '${{ variables.envGroupName }}'
+      environment: '$(globalPrefix)-$(fullAppName)-api-dev'
       pool:
         vmImage: 'windows-latest'
       strategy:
@@ -109,17 +103,15 @@ stages:
           deploy:
             steps:
                # Run Migration Script (Predeploy)
-#              - template: templates/execute-db-migration.yml
-#                parameters:
-#                  dependsOn: ''      
-#                  deploymentName: 'run_migration_script'
-#                  envGroup: '${{ variables.envGroupName }}'
-#                  serviceConnection: '${{ variables.serviceConnection }}'
-#                  kvName: '${{ variables.commonKeyVault }}'
-#                  kvRgName: 'pcs-common-rg'
-#                  kvSecret: '${{ variables.sqlAdminUserName }}-${{ variables.envName }}'
-#                  serverName: '${{ variables.sqlServerName }}.database.windows.net'
-#                  databaseName: '${{ variables.sqlDatabaseName }}'      
+              - template: templates/execute-db-migration.yml
+                parameters:
+                  serviceConnection: '${{ variables.nonProdServiceConnection }}'
+                  kvName: '${{ variables.commonKvName }}'
+                  kvRgName: '${{ variables.commonRgName }}'
+                  kvSecretName: '${{ variables.sqlAdminUserName }}-dev'
+                  sqlAdminUserName: '${{ variables.sqlAdminUserName }}'
+                  serverName: '${{ variables.sqlServerName }}.database.windows.net'
+                  databaseName: '${{ variables.sqlDatabaseName }}'      
 
               # Deploy to Radix
               - template: templates/radix-deploy.yml
@@ -156,8 +148,8 @@ stages:
 #                  deploymentName: 'run_migration_script'
 #                  envGroup: '${{ variables.envGroupName }}'
 #                  serviceConnection: '${{ variables.serviceConnection }}'
-#                  kvName: '${{ variables.commonKeyVault }}'
-#                  kvRgName: 'pcs-common-rg'
+#                  kvName: '${{ variables.commonKvName }}'
+#                  kvRgName: '${{ variables.commonRgName }}'
 #                  kvSecret: '${{ variables.sqlAdminUserName }}-${{ variables.envName }}'
 #                  serverName: '${{ variables.sqlServerName }}.database.windows.net'
 #                  databaseName: '${{ variables.sqlDatabaseName }}'      
@@ -198,8 +190,8 @@ stages:
  #                 deploymentName: 'run_migration_script'
  #                 envGroup: '${{ variables.envGroupName }}'
  #                 serviceConnection: '${{ variables.serviceConnection }}'
- #                 kvName: '${{ variables.commonKeyVault }}'
- #                 kvRgName: 'pcs-common-rg'
+ #                 kvName: '${{ variables.commonKvName }}'
+ #                 kvRgName: '${{ variables.commonRgName }}'
  #                 kvSecret: '${{ variables.sqlAdminUserName }}-${{ variables.envName }}'
  #                 serverName: '${{ variables.sqlServerName }}.database.windows.net'
  #                 databaseName: '${{ variables.sqlDatabaseName }}'      
