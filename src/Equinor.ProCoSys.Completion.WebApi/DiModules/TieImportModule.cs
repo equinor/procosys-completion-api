@@ -33,8 +33,8 @@ public static class TieImportModule
             .ValidateDataAnnotations();
 
         //TODO: JSOI Scoped or Singleton or Transient?
-        services.AddSingleton<IImportSchemaMapper, ImportSchemaMapper>();
-        services.AddSingleton<IImportHandler, ImportHandler>();
+        services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
+        services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
 
         var tiClientOptions = GetTiClientOptions(configOptions);
