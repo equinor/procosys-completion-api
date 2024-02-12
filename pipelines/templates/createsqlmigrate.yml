@@ -2,13 +2,13 @@ parameters:
   dependsOn: ''
   deploymentName: ''
   serviceConnection: ''
-  envGroup: ''
+  environment: ''
 
 jobs:
   - deployment: '${{ parameters.deploymentName }}'
     dependsOn: '${{ parameters.dependsOn }}'
     displayName: '${{ parameters.deploymentName }}'
-    environment: '${{ parameters.envGroup }}'
+    environment: '${{ parameters.environment }}'
     pool:
       vmImage: 'windows-latest'
     strategy:

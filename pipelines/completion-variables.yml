@@ -21,7 +21,7 @@ variables:
     value: 'procosys - prod'
 
   - name: 'commonKvName'
-    value: '$(globalPrefix)-common-kv'
+    value: '$(globalPrefix)-cert-kv'
 
   - name: 'commonRgName'
     value: '$(globalPrefix)-common-rg'
@@ -44,17 +44,21 @@ variables:
   - name: 'sqlAdminUserName'
     value: 'sqladminlogin'
 
+    # Key in $(commonKvName) to get password for $(sqlAdminUserName)
+  - name: 'sqlAdminPasswordKvKey'
+    value: 'pcs5-sqladminlogin-$(envName)'
+
   - name: 'sqlServerName'
-    value: 'sql-pcs5-completion-dev'
+    value: 'sql-pcs5-completion-$(envName)'
 
   - name: 'databaseName'
-    value: 'sqldb-pcs5-completion-dev'
+    value: 'sqldb-pcs5-completion-$(envName)'
 
   - name: 'kvName'
-    value: 'kv-pcs5-completion-dev'
+    value: 'kv-pcs5-completion-$(envName)'
 
   - name: 'appInsightsName'
-    value: 'appi-pcs5-completion-dev'
+    value: 'appi-pcs5-completion-$(envName)'
 
   # - name: 'appConfigName'
   #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-config'
@@ -89,15 +93,6 @@ variables:
 
   # - name: 'prodAKSsubnet'
   #   value: 'aks-prod-snet'
-
-  # - name: 'sqlDatabaseName'
-  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-db'
-  
-  # - name: 'sqlDatabaseNameCompletion'
-  #   value: '$(globalPrefix)-$(shortAppName)-$(env)-db'
-
-  # - name: 'sqlServerNameCompletion'
-  #   value: '$(globalPrefix)-$(env)-sqlserver'
 
   # - name: 'aksRgName'
   #   value: 'pcs-hosting-rg'

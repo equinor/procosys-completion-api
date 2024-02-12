@@ -2,7 +2,7 @@ parameters:
   serviceConnection: ''
   kvName: ''
   kvRgName: ''
-  kvSecretName: ''
+  sqlAdminPasswordKvKey: ''
   sqlAdminUserName: ''
   serverName: ''
   databaseName: ''
@@ -18,12 +18,12 @@ steps:
         Inline: |
             # Variables
             $kvName = "${{ parameters.kvName }}"
-            $kvSecretName = "${{ parameters.kvSecretName }}"
+            $sqlAdminPasswordKvKey = "${{ parameters.sqlAdminPasswordKvKey }}"
             $rgName = "${{ parameters.kvRgName }}"
                         
             # Temporarily disable firewall for Key Vault
             Update-AzKeyVaultNetworkRuleSet -VaultName $kvName -ResourceGroupName $rgName -DefaultAction Allow
-            $secretName = Get-AzKeyVaultSecret -VaultName $kvName -Name $kvSecretName
+            $secretName = Get-AzKeyVaultSecret -VaultName $kvName -Name $sqlAdminPasswordKvKey
             $secretNamePlainText = ConvertFrom-SecureString -SecureString $secretName.SecretValue -AsPlainText
                         
             # Create reusable variable for env task with $(kvoSecret)
@@ -34,19 +34,21 @@ steps:
 
     # Download Pipeline Artifact
   - task: DownloadPipelineArtifact@2
+    displayName: 'Download idempotent migration script'
     inputs:
         artifact: 'SQLMigration'
         path: $(System.DefaultWorkingDirectory)
 
     # Deploy Script
-  - task: SqlAzureDacpacDeployment@1
-    inputs:
-        azureSubscription: '${{ parameters.serviceConnection }}'
-        AuthenticationType: 'server'
-        ServerName: '${{ parameters.serverName }}'
-        DatabaseName: '${{ parameters.databaseName }}'
-        SqlUsername: '${{ parameters.sqlAdminUserName }}'
-        SqlPassword: '$(kvoSecret)'
-        deployType: 'SqlTask'
-        SqlFile: '$(System.DefaultWorkingDirectory)/migration.sql'
-        IpDetectionMethod: 'AutoDetect'
+  # - task: SqlAzureDacpacDeployment@1
+  #   displayName: 'Execute idempotent migration script'
+  #   inputs:
+  #       azureSubscription: '${{ parameters.serviceConnection }}'
+  #       AuthenticationType: 'server'
+  #       ServerName: '${{ parameters.serverName }}'
+  #       DatabaseName: '${{ parameters.databaseName }}'
+  #       SqlUsername: '${{ parameters.sqlAdminUserName }}'
+  #       SqlPassword: '$(kvoSecret)'
+  #       deployType: 'SqlTask'
+  #       SqlFile: '$(System.DefaultWorkingDirectory)/migration.sql'
+  #       IpDetectionMethod: 'AutoDetect'

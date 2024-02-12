@@ -83,7 +83,7 @@ stages:
     parameters:
       dependsOn: ''
       deploymentName: 'create_migration_script'
-      envGroup: '${{ variables.environment }}'
+      environment: '${{ variables.environment }}'
       serviceConnection: '${{ variables.nonProdServiceConnection }}'
 
   # Dev deploy stage
@@ -91,6 +91,8 @@ stages:
   displayName: 'Deploy to dev'
   dependsOn: 'build' 
 #  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
+  variables:
+    envName: 'dev'
     
   jobs:
     - deployment: Deploy
@@ -108,10 +110,10 @@ stages:
                   serviceConnection: '${{ variables.nonProdServiceConnection }}'
                   kvName: '${{ variables.commonKvName }}'
                   kvRgName: '${{ variables.commonRgName }}'
-                  kvSecretName: '${{ variables.sqlAdminUserName }}-dev'
+                  sqlAdminPasswordKvKey: '${{ variables.sqlAdminPasswordKvKey }}'
                   sqlAdminUserName: '${{ variables.sqlAdminUserName }}'
                   serverName: '${{ variables.sqlServerName }}.database.windows.net'
-                  databaseName: '${{ variables.sqlDatabaseName }}'      
+                  databaseName: '${{ variables.databaseName }}'      
 
               # Deploy to Radix
               - template: templates/radix-deploy.yml
@@ -152,7 +154,7 @@ stages:
 #                  kvRgName: '${{ variables.commonRgName }}'
 #                  kvSecret: '${{ variables.sqlAdminUserName }}-${{ variables.envName }}'
 #                  serverName: '${{ variables.sqlServerName }}.database.windows.net'
-#                  databaseName: '${{ variables.sqlDatabaseName }}'      
+#                  databaseName: '${{ variables.databaseName }}'      
 #              # Promote to test
 #              - template: templates/radix-promote-env.yml
 #                parameters:
@@ -194,7 +196,7 @@ stages:
  #                 kvRgName: '${{ variables.commonRgName }}'
  #                 kvSecret: '${{ variables.sqlAdminUserName }}-${{ variables.envName }}'
  #                 serverName: '${{ variables.sqlServerName }}.database.windows.net'
- #                 databaseName: '${{ variables.sqlDatabaseName }}'      
+ #                 databaseName: '${{ variables.databaseName }}'      
 
               # Promote to prod
   #            - template: templates/radix-promote-env.yml
