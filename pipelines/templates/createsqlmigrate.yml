@@ -36,27 +36,20 @@ jobs:
                 forceReinstallCredentialProvider: true
 
             - task: AzureCLI@2
-              displayName: 'Migration Script'
+              displayName: 'Create idempotent migration script'
               inputs:
                 azureSubscription: '${{ parameters.serviceConnection }}'
                 ScriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  echo "--------- Build.SourcesDirectory: $(Build.SourcesDirectory)"
-                  cd $(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\            
-                  # show working directory
-                  dir
-                  echo "--------- Set dummy connectionstring in secrets.json"
-                  dotnet user-secrets set "ConnectionStrings:CompletionContext" "dummydata" 
-                  echo "--------- Creating idempotent migration script for CompletionContext"
                   dotnet ef migrations script `
                     --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
                     --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent --verbose
                  
-                  echo "--------- Build.ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)"
                   cd $(Build.ArtifactStagingDirectory)
                   dir
+                  type SQLMigrations\migration.sql
 
             # Save Pipeline Artifact
             - task: PublishPipelineArtifact@1
