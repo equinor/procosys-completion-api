@@ -9,6 +9,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Auth.Authentication;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -54,7 +55,7 @@ public class ImportHandler : IImportHandler
 
             //TODO: 106685 PostMapperFixer;
 
-            tiMessageResult = ImportMessage(message);
+            tiMessageResult = ImportMessage(mapped.Message!);
         }
         catch (Exception e)
         {
@@ -124,21 +125,30 @@ public class ImportHandler : IImportHandler
         using var scope = _serviceScopeFactory.CreateScope();
         
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
-        plantSetter.SetPlant("PCS$OSEBERG_C");
+        plantSetter.SetPlant(message.Site);
 
         var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-        currentUserSetter.SetCurrentUserOid(new Guid("53731422-9D09-4871-BC8A-9E487B3CF89D"));
+        //currentUserSetter.SetCurrentUserOid(new Guid("53731422-9D09-4871-BC8A-9E487B3CF89D"));
+
+        var ipoDevClientId = new Guid("2e1868db-3024-45a9-b3f1-568e85586244");
+        currentUserSetter.SetCurrentUserOid(ipoDevClientId);
+
+        var authenticatorOptions = scope.ServiceProvider.GetRequiredService<IAuthenticatorOptions>();
+
+        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
+        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
+        //TODO: JSOI move to constant
         var description = tiObject.GetAttributeValueAsString("Description");
         if (description is null)
         {
             throw new ArgumentException("Temp error to be replaced by validation: description is null");
         }
 
-        var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
         var checkListGuid = new Guid("EB38CCBC-C659-D926-E053-2810000AC5B2");
+        var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
         var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
         var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
 

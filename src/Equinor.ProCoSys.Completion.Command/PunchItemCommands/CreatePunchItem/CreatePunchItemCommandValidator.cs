@@ -28,7 +28,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
 
             // validate given CheckList
-            //TODO: JSOI Set authentication to application instead of user to get this working
+            //TODO: 110317 Import - Authenticate and authorize against MainAPI
             //.MustAsync(BeAnExistingCheckListAsync)
             //.WithMessage(command => $"Check list does not exist! Guid={command.CheckListGuid}")
             //.MustAsync(NotBeInAVoidedTagForCheckListAsync)
