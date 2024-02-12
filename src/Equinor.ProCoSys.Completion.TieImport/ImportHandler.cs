@@ -18,16 +18,15 @@ public class ImportHandler : IImportHandler
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
-    //private readonly IMediator _mediator;
 
     public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
-        //_mediator = mediator;
     }
-    public TIResponseFrame Handle(TIInterfaceMessage? message)
+
+    public async Task<TIResponseFrame> Handle(TIInterfaceMessage? message)
     {
         var response = new TIResponseFrame();
         if (message is null)
@@ -55,7 +54,7 @@ public class ImportHandler : IImportHandler
 
             //TODO: 106685 PostMapperFixer;
 
-            tiMessageResult = ImportMessage(mapped.Message!);
+            tiMessageResult = await ImportMessage(mapped.Message!);
         }
         catch (Exception e)
         {
@@ -69,7 +68,7 @@ public class ImportHandler : IImportHandler
         return response;
     }
 
-    private TIMessageResult ImportMessage(TIInterfaceMessage message)
+    private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
         //TODO: 109642 Collect errors and warnings
@@ -77,7 +76,7 @@ public class ImportHandler : IImportHandler
         {
             foreach (var tiObject in message.Objects)
             {
-                ImportObject(message, tiObject);
+                await ImportObject(message, tiObject);
             }
         }
         catch (Exception ex) //TODO: 109642 SetFailed result
@@ -94,7 +93,7 @@ public class ImportHandler : IImportHandler
         return new TIMessageResult();
     }
 
-    private void ImportObject(TIInterfaceMessage message, TIObject tiObject)
+    private async Task ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
         //TODO: 105834 CollectWarnings
 
@@ -117,48 +116,36 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106693 NCR special handling
 
-        //TODO: 107052 Create command and send to command handler
-
-        //TODO: XXXXXX Need validation here
-
-
         using var scope = _serviceScopeFactory.CreateScope();
         
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
         plantSetter.SetPlant(message.Site);
 
         var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-        //currentUserSetter.SetCurrentUserOid(new Guid("53731422-9D09-4871-BC8A-9E487B3CF89D"));
 
-        var ipoDevClientId = new Guid("2e1868db-3024-45a9-b3f1-568e85586244");
+        //TODO: 110317 Import - Authenticate and authorize against MainAPI
+        var ipoDevClientId = new Guid("2E1868DB-3024-45A9-B3F1-568E85586244");
         currentUserSetter.SetCurrentUserOid(ipoDevClientId);
-
-        var authenticatorOptions = scope.ServiceProvider.GetRequiredService<IAuthenticatorOptions>();
 
         var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        //TODO: JSOI move to constant
         var description = tiObject.GetAttributeValueAsString("Description");
-        if (description is null)
-        {
-            throw new ArgumentException("Temp error to be replaced by validation: description is null");
-        }
 
+        //TODO: Hardcoded for minimum viable product / proof of concept
         var checkListGuid = new Guid("EB38CCBC-C659-D926-E053-2810000AC5B2");
         var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
         var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
         var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
 
-        var createPunchCommand = new CreatePunchItemCommand(Category.PB, description, projectGuid, checkListGuid,
+        var createPunchCommand = new CreatePunchItemCommand(Category.PB, description!, projectGuid, checkListGuid,
             raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
             null, null, null, null, null, null, 
             null, false, null, null);
         
-        //TODO: JSOI Make method async
-        var result = mediator.Send(createPunchCommand).GetAwaiter().GetResult();
+        await mediator.Send(createPunchCommand);
 
         //TODO: 106687 CommandFailureHandler;
 
