@@ -6,10 +6,6 @@ trigger:
 resources:
   repositories:
   - repository: self
-  # - repository: templates
-  #   type: github
-  #   name: equinor/procosys-infra
-  #   endpoint: 'equinor'
 
 # Global variables for the pipeline
 variables:
