@@ -30,7 +30,7 @@ jobs:
                 custom: 'tool'
                 arguments: 'install --global dotnet-ef --version 8.0.1'
 
-            - task: NuGetAuthenticate@0
+            - task: NuGetAuthenticate@1
               displayName: 'NuGet Authenticate'
               inputs:
                 forceReinstallCredentialProvider: true
