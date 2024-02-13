@@ -1,10 +1,10 @@
 parameters:
+  toEnvironment: ''
   radixResource: ''
   radixApplication: ''
   radixUrl: ''
   serviceConnection: ''
   imageTagNameBackend: ''
-  imageTagNameLeaderElector: ''
 
 steps:
 - task: AzureCLI@2
@@ -21,8 +21,8 @@ steps:
 
       ## Get current branch
       $body = ConvertTo-Json @{ 
-        imageTagNames = @{ 'backend'='${{ parameters.imageTagNameBackend }}'; 'leader-elector'='${{ parameters.imageTagNameLeaderElector }}' }  
-        toEnvironment = 'dev'     
+        imageTagNames = @{ 'backend'='${{ parameters.imageTagNameBackend }}'}  
+        toEnvironment = '${{ parameters.toEnvironment }}'     
         triggeredBy = 'Azure-Devops ($(Build.RequestedFor))'
       } 
 

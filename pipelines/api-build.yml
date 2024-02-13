@@ -44,8 +44,8 @@ stages:
       deployment: 'docker_build'
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
       environment: ${{ variables.environment }}
-      #buildCommand: build
-      buildCommand: buildAndPush
+      #buildCommand: 'build'
+      buildCommand: 'buildAndPush'
       versionNumber: ${{ variables.versionNumber }}
       arguments: ${{ variables.arguments }}
       dockerfilePath: ${{ variables.dockerfilePath }}
@@ -59,7 +59,7 @@ stages:
       deployment: 'docker_build_and_push_main_only'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
       environment: ${{ variables.environment }}
-      buildCommand: buildAndPush
+      buildCommand: 'buildAndPush'
       versionNumber: ${{ variables.versionNumber }}
       arguments: ${{ variables.arguments }}
       dockerfilePath: ${{ variables.dockerfilePath }}
@@ -106,21 +106,21 @@ stages:
               # Deploy to Radix
               - template: templates/radix-deploy.yml
                 parameters:
+                  toEnvironment: $(envName)
                   radixResource: '${{ variables.radixResource }}'
                   radixApplication: '${{ variables.radixApplication }}'
                   radixUrl: '${{ variables.radixUrl }}'
                   serviceConnection: '${{ variables.nonProdServiceConnection }}'
                   imageTagNameBackend: '${{ variables.versionNumber }}$(Build.BuildId)'
-                  #imageTagNameLeaderElector: ${{ variables.leaderElectorDockerImageTagName }}
 
 # Test deploy stage
 - stage: DeployTest
-  displayName: 'Deploy to test'
+  displayName: 'Promote to test'
   dependsOn: 'DeployDev'
 #  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
   variables:
-    envName: 'test'
     fromEnv: 'dev'
+    envName: 'test'
     # radixJobName must have been set by previous step
     radixJobName: $[ stageDependencies.DeployDev.Deploy.outputs['Deploy.RADIXJOB.radixJobName'] ]
 
@@ -158,12 +158,12 @@ stages:
 
 # Prod deploy stage
 - stage: DeployProd
-  displayName: 'Deploy to prod'
+  displayName: 'Promote to prod'
   dependsOn: 'DeployTest'
 #  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
   variables:
-    envName: 'prod'
     fromEnv: 'test'
+    envName: 'prod'
     # This variable must have been set by previous step
     radixJobName: $[ stageDependencies.DeployTest.Deploy.outputs['Deploy.RADIXJOB.radixJobName'] ] 
 
