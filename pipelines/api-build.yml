@@ -44,7 +44,8 @@ stages:
       deployment: 'docker_build'
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
       environment: ${{ variables.environment }}
-      buildCommand: build
+      #buildCommand: build
+      buildCommand: buildAndPush
       versionNumber: ${{ variables.versionNumber }}
       arguments: ${{ variables.arguments }}
       dockerfilePath: ${{ variables.dockerfilePath }}
@@ -56,7 +57,7 @@ stages:
   - template: templates/dockerbuild.yml
     parameters:
       deployment: 'docker_build_and_push_main_only'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/pbi/main')) 
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
       environment: ${{ variables.environment }}
       buildCommand: buildAndPush
       versionNumber: ${{ variables.versionNumber }}

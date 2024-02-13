@@ -6,7 +6,7 @@ spec:
   environments:
   - name: dev
   - name: test
-  #- name: prod
+  - name: prod
 
   components:
   - name: backend
@@ -22,6 +22,7 @@ spec:
     - environment: dev
       identity:
         azure:
+        # todo correct dev client id for Comletion API
           clientId: 67b2f053-30bf-4ffc-9206-ef57f631efcb
       imageTagName: latest
       variables:
@@ -39,6 +40,7 @@ spec:
     - environment: test
       identity:
         azure:
+        # todo correct test client id for Comletion API
           clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
       variables:
         ASPNETCORE_ENVIRONMENT: 'Test'
@@ -53,26 +55,28 @@ spec:
           memory: '256Mi'
           cpu: '250m'
     # Prod environment
-    #- environment: prod
-    #  identity:
-    #    azure:
-    #      clientId: 6263b7e6-155f-411b-9503-c5c841a601e0
-    #  variables:
-    #    ASPNETCORE_ENVIRONMENT: 'Production'
-    #    UseAzureAppConfiguration: 'true'
-    #  monitoring: false
-    #  replicas: 3
-    #  resources:
-    #    requests:
-    #      memory: '256Mi'
-    #      cpu: '200m'
-    #    limits:
-    #      memory: '256Mi'
-    #      cpu: '500m' 
+    - environment: prod
+      identity:
+        azure:
+        # todo correct prod client id for Comletion API
+          clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
+      variables:
+        ASPNETCORE_ENVIRONMENT: 'Production'
+        UseAzureAppConfiguration: 'true'
+      monitoring: false
+      replicas: 3
+      resources:
+        requests:
+          memory: '256Mi'
+          cpu: '200m'
+        limits:
+          memory: '256Mi'
+          cpu: '500m' 
   #--------------------------------
   # External docker image registry
   #--------------------------------
   privateImageHubs:
     procosys.azurecr.io:
+      # todo what is this guid
       username: 9d3898e4-730f-4fb5-8ddf-a5de51537896
       email: arbje@equinor.com
