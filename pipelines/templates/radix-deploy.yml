@@ -21,7 +21,7 @@ steps:
 
       ## Get current branch
       $body = ConvertTo-Json @{ 
-        imageTagNames = @{ 'backend'='${{ parameters.imageTagNameBackend }}'}  
+        imageTagNames = @{ 'backend'='${{ parameters.imageTagNameBackend }}' }  
         toEnvironment = '${{ parameters.toEnvironment }}'     
         triggeredBy = 'Azure-Devops ($(Build.RequestedFor))'
       } 
