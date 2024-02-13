@@ -1,12 +1,32 @@
 variables:
+  - name: 'repositoryName'
+    value: 'completion/api'
+
+  - name: 'versionNumber'
+    value: '1.000.0.'
+
+  - name: NUGET.PLUGIN.HANDSHAKE.TIMEOUT.IN.SECONDS
+    value: 40
+  
+  - name: NUGET.PLUGIN.REQUEST.TIMEOUT.IN.SECONDS
+    value: 40
+
   - name: 'System.Debug'
     value: 'true'
 
   - name: 'Agent.Diagnostic'
     value: 'true'
 
-  # - name: 'vmImageName'
-  #   value: 'ubuntu-latest'
+    # Azure Kubernetes Service AAD Server
+  - name: radixResource
+    value: '6dae42f8-4368-4678-94ff-3960e28e3630'
+
+  - name: radixApplication
+    value: 'procosys-completion-api'
+
+    # Host of radix api, including version 
+  - name: radixUrl
+    value: 'https://api.radix.equinor.com/api/v1'
 
   - name: 'globalPrefix'
     value: 'pcs'

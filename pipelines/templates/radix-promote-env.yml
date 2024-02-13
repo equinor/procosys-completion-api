@@ -1,4 +1,3 @@
-
 ##
 ## The template wraps api calls to the radix platform to promote a deploment from one environment to another.
 ## As the radix jobs are async, the template will wait for a successfull or failed status by polling the api.
@@ -13,31 +12,13 @@
 ## 
 
 parameters:
-- name: serviceConnection
-  default: 'procosys - non-prod'
-  displayName: 'Service Connection'
-    
-- name: fromEnvironment
-  type: string
-  displayName: RADIX environment to promote artifact from
-
-- name: toEnvironment
-  type: string
-  displayName: RADIX environment to promote artifact to
-
-- name: deploymentName
-  type: string
-  displayName: The deployment job name from the previous stage
-
-- name: radixResource
-  default: 6dae42f8-4368-4678-94ff-3960e28e3630 
-
-- name: radixApplication
-  default: procosys-completion-api
-
-- name: radixUrl
-  default: https://api.radix.equinor.com/api/v1
-
+  fromEnvironment: ''
+  toEnvironment: ''
+  radixResource: ''
+  radixApplication: ''
+  radixUrl: ''
+  serviceConnection: ''
+  deploymentName: ''
 
 steps:
 - task: AzureCLI@2

@@ -1,25 +1,10 @@
 parameters:
-  - name: radixResource
-    default: 6dae42f8-4368-4678-94ff-3960e28e3630 # Azure Kubernetes Service AAD Server - Samme for alle miljø?
-
-  - name: radixApplication
-    default: procosys-completion-api
-
-  - name: radixUrl
-    default: https://api.radix.equinor.com/api/v1
-    displayName: Host of radix api, including version 
-
-  - name: serviceConnection
-    default: 'procosys - non-prod'
-    displayName: 'Service Connection'
-
-  - name: imageTagNameBackend
-    type: string
-    displayName: 'Image tag name for backend'
-
-  - name: imageTagNameLeaderElector
-    type: string 
-    displayName: 'Image tag name for leader elector'
+  radixResource: ''
+  radixApplication: ''
+  radixUrl: ''
+  serviceConnection: ''
+  imageTagNameBackend: ''
+  imageTagNameLeaderElector: ''
 
 steps:
 - task: AzureCLI@2
