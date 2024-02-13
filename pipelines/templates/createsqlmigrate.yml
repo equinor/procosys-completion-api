@@ -1,0 +1,59 @@
+parameters:
+  dependsOn: ''
+  deploymentName: ''
+  serviceConnection: ''
+  environment: ''
+
+jobs:
+  - deployment: '${{ parameters.deploymentName }}'
+    dependsOn: '${{ parameters.dependsOn }}'
+    displayName: '${{ parameters.deploymentName }}'
+    environment: '${{ parameters.environment }}'
+    pool:
+      vmImage: 'windows-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+              displayName: 'Checkout source code'
+
+            - task: UseDotNet@2
+              displayName: 'Use .NET Core sdk'
+              inputs:
+                version: 8.x
+
+            - task: DotNetCoreCLI@2
+              displayName: 'Install dotnet-ef'
+              inputs:
+                command: 'custom'
+                custom: 'tool'
+                arguments: 'install --global dotnet-ef --version 8.0.1'
+
+            - task: NuGetAuthenticate@1
+              displayName: 'NuGet Authenticate'
+              inputs:
+                forceReinstallCredentialProvider: true
+
+            - task: AzureCLI@2
+              displayName: 'Create idempotent migration script'
+              inputs:
+                azureSubscription: '${{ parameters.serviceConnection }}'
+                ScriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  dotnet ef migrations script `
+                    --project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
+                    --startup-project "$(Build.SourcesDirectory)\src\Equinor.ProCoSys.Completion.WebApi\Equinor.ProCoSys.Completion.WebApi.csproj" `
+                    --output $(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql --idempotent --verbose
+                 
+                  cd $(Build.ArtifactStagingDirectory)\SQLMigrations
+                  dir 
+                  type migration.sql
+
+            # Save Pipeline Artifact
+            - task: PublishPipelineArtifact@1
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)\SQLMigrations\migration.sql'
+                artifactName: 'SQLMigration'
+                

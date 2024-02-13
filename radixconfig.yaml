@@ -1,52 +1,83 @@
-#file: noinspection KubernetesUnknownResourcesInspection
 apiVersion: radix.equinor.com/v1
 kind: RadixApplication
 metadata:
   name: procosys-completion-api
 spec:
-  build:
-    secrets:
-      - FEED_TOKEN
   environments:
-    - name: dev
-      build:
-        from: radix
-#    - name: feature
-#      build:
-#        from: feature/* # Any repo named feature/*whatever* will trigger this build
-    - name: test
-      build:
-        from: main
+  - name: dev
+  - name: test
+  - name: prod
+
   components:
-    - name: webapi
-      src: ./src # Dockerfile location
-#      secrets:
-#        - ConnectionStrings__ServiceBus
-#        - ConnectionStrings__CompletionContext
-#        - Authenticator__CompletionApiSecret
-#        - ApplicationInsights__ConnectionString
-#        - BlobStorage__ConnectionString
+  - name: backend
+    image: procosys.azurecr.io/completion/api:{imageTagName}
+    ports:
+    - name: http
+      port: 5000
+    publicPort: http
+    secrets: 
+    - CONNECTIONSTRINGS__APPCONFIG
+    environmentConfig:
+    # Development environment
+    - environment: dev
+      identity:
+        azure:
+        # todo correct dev client id for Comletion API
+          clientId: 67b2f053-30bf-4ffc-9206-ef57f631efcb
+      imageTagName: latest
       variables:
-        UseAzureAppConfiguration: false
-        ASPNETCORE_URLS: "http://*:5000"
-        Swagger__ClientId: ""
-        Swagger__AuthorizationUrl: ""  
-        ApplicationInsights__ConnectionString: ""
-        ConnectionStrings__AppConfig: ""
-        SeedDummyData: ""
-        MigrateDatabase: ""
-        MainApi__BaseAddress: ""
-        MainApi__ApiVersion: ""
-        DebugEntityFrameworkInDevelopment: ""
-        Authenticator__MainApiScope: ""
-        Authenticator__Instance: ""
-        Authenticator__DisableProjectUserDataClaims: true
-        Authenticator__DisableRestrictionRoleUserDataClaims: false
-        Authenticator__CompletionApiClientId: ""
-        Authenticator__CompletionApiObjectId: ""
-        API__Authority:  "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/"
-        API__Audience: ""
-      ports:
-        - name: http
-          port: 5000
-      publicPort: http
+        ASPNETCORE_ENVIRONMENT: 'Development'
+        UseAzureAppConfiguration: 'true'
+      monitoring: true
+      resources:
+        requests:
+          memory: '256Mi'
+          cpu: '100m'
+        limits:
+          memory: '256Mi'
+          cpu: '250m'
+    # Test environment
+    - environment: test
+      identity:
+        azure:
+        # todo correct test client id for Comletion API
+          clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
+      variables:
+        ASPNETCORE_ENVIRONMENT: 'Test'
+        UseAzureAppConfiguration: 'true'
+      monitoring: true
+      replicas: 2
+      resources:
+        requests:
+          memory: '256Mi'
+          cpu: '100m'
+        limits:
+          memory: '256Mi'
+          cpu: '250m'
+    # Prod environment
+    - environment: prod
+      identity:
+        azure:
+        # todo correct prod client id for Comletion API
+          clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
+      variables:
+        ASPNETCORE_ENVIRONMENT: 'Production'
+        UseAzureAppConfiguration: 'true'
+      monitoring: false
+      replicas: 3
+      resources:
+        requests:
+          memory: '256Mi'
+          cpu: '200m'
+        limits:
+          memory: '256Mi'
+          cpu: '500m' 
+  #--------------------------------
+  # External docker image registry
+  #--------------------------------
+  privateImageHubs:
+    procosys.azurecr.io:
+      # client id of app equinor-procosys-devops-docker-registry ...
+      # ...with permission to puch to procosys.azurecr.io container registry
+      username: 9d3898e4-730f-4fb5-8ddf-a5de51537896
+      #email: arbje@equinor.com

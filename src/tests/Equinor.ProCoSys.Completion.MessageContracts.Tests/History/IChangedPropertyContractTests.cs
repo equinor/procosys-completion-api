@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.MessageContracts.Tests.History;
 
 [TestClass]
-public class INewPropertyContractTests
+public class IChangedPropertyContractTests
 {
     [TestMethod]
     public void IProperty_Interface_DoNotChange()
@@ -17,9 +17,11 @@ public class INewPropertyContractTests
         var expectedProperties = new Dictionary<string, Type>
         {
             { "Name", typeof(string) },
-            { "Value", typeof(object) }
+            { "OldValue", typeof(object) },
+            { "NewValue", typeof(object) },
+            { "ValueDisplayType", typeof(ValueDisplayType) }
         };
-        var actualProperties = typeof(IProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
+        var actualProperties = typeof(IChangedProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
         // Act
         TestHelper.AssertPropertiesNotChanged(expectedProperties, actualProperties);
