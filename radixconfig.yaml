@@ -72,12 +72,14 @@ spec:
         limits:
           memory: '256Mi'
           cpu: '500m' 
-  #--------------------------------
+  #-------------------------------------------------------
   # External docker image registry
-  #--------------------------------
+  #
+  # username below is client id of app ...
+  # ...equinor-procosys-devops-docker-registry with ...
+  # ...permission to puch to procosys.azurecr.io container registry
+  #-------------------------------------------------------
   privateImageHubs:
     procosys.azurecr.io:
-      # client id of app equinor-procosys-devops-docker-registry ...
-      # ...with permission to puch to procosys.azurecr.io container registry
       username: 9d3898e4-730f-4fb5-8ddf-a5de51537896
       email: arbje@equinor.com
