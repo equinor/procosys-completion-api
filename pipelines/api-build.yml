@@ -15,21 +15,19 @@ name: '${{ variables.versionNumber }}$(Build.BuildId)-$(Date:MMddyyyy)'
 
 stages:
 # Run tests Stage
-# - stage: runtests
-#   displayName: 'Run tests'
-
-#   jobs:
-#   - template: templates/runtest.yml
-#     parameters:
-#       deployment: 'runtests'
-#       environment: '$(globalPrefix)-$(fullAppName)-api-runtests'
-#       testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
+- stage: runtests
+  displayName: 'Run tests'
+  jobs:
+  - template: templates/runtest.yml
+    parameters:
+      deployment: 'runtests'
+      environment: '$(globalPrefix)-$(fullAppName)-api-runtests'
+      testPath: '$(Build.SourcesDirectory)/src/Equinor.Procosys.Completion.sln'
 
 # Build stage. Docker build, tag and push
 - stage: build
   displayName: 'Build'
-#  dependsOn: 'runtests'
-  dependsOn: ''
+  dependsOn: 'runtests'
   variables:
     environment: '$(globalPrefix)-$(fullAppName)-api-build'
     arguments: '--build-arg FEED_ACCESSTOKEN=$(VSS_NUGET_ACCESSTOKEN)'
@@ -44,8 +42,7 @@ stages:
       deployment: 'docker_build'
       condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
       environment: ${{ variables.environment }}
-      #buildCommand: 'build'
-      buildCommand: 'buildAndPush'
+      buildCommand: 'build'
       versionNumber: ${{ variables.versionNumber }}
       arguments: ${{ variables.arguments }}
       dockerfilePath: ${{ variables.dockerfilePath }}
@@ -78,7 +75,7 @@ stages:
 - stage: DeployDev
   displayName: 'Deploy to dev'
   dependsOn: 'build' 
-#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
   variables:
     envName: 'dev'
 
@@ -117,7 +114,7 @@ stages:
 - stage: DeployTest
   displayName: 'Promote to test'
   dependsOn: 'DeployDev'
-#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main')) 
   variables:
     fromEnv: 'dev'
     envName: 'test'
@@ -196,5 +193,5 @@ stages:
                   radixResource: '${{ variables.radixResource }}'
                   radixApplication: '${{ variables.radixApplication }}'
                   radixUrl: '${{ variables.radixUrl }}'
-                  serviceConnection: '${{ variables.nonProdServiceConnection }}'
+                  serviceConnection: '${{ variables.prodServiceConnection }}'
                   deploymentName: $(radixJobName)

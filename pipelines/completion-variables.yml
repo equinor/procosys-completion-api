@@ -46,15 +46,6 @@ variables:
   - name: 'commonRgName'
     value: '$(globalPrefix)-common-rg'
 
-  # - name: 'ServiceConnectionSpObjectId'
-  #   value: '957e43cf-f08c-4154-aa55-c8fc3aa57930'
-
-  # - name: 'prodServiceConnectionSpObjectId'
-  #   value: '85d5d8ff-ad65-4d53-a794-7a9974129518'
-    
-  # - name: 'containerRegistryName'
-  #   value: 'procosys'
-
   - name: 'fullAppName'
     value: 'completion'
   
@@ -79,52 +70,3 @@ variables:
 
   - name: 'appInsightsName'
     value: 'appi-pcs5-completion-$(envName)'
-
-  # - name: 'appConfigName'
-  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-config'
-
-  # - name: 'envRgName'
-  #   value: '$(globalPrefix)-$(fullAppName)-$(envName)-rg'
-
-  # - name: 'apiWebAppName'
-  #   value: '$(globalPrefix)-$(shortAppName)-$(envName)-api'
-
-  # equinor-procosys-completion Client ID  TODO: Har benyttet equinor-procosys-preservation
-  # - name: 'kvClientIdName'
-  #   value: 'cb7afa3f-d2ff-401b-83b6-f02cce85ce30'
-
-  # - name: 'kvClientSecretName'
-  #   value: 'equinor-procosys-$(shortAppName)-service-principal'
-
-  # - name: 'kvTenantIdSecret'
-  #   value: 'TenantId'
-
-  # - name: 'kvConnStringsSecret'
-  #   value: 'ConnectionStrings-AppConfig'
-
-  # - name: 'vnetRg'
-  #   value: 'pcs-common-rg'
-
-  # - name: 'vnetName'
-  #   value: 'procosys-infra-vnet'
-
-  # - name: 'nonProdAKSsubnet'
-  #   value: 'aks-test-snet'
-
-  # - name: 'prodAKSsubnet'
-  #   value: 'aks-prod-snet'
-
-  # - name: 'aksRgName'
-  #   value: 'pcs-hosting-rg'
-
-  # - name: 'aksTestName'
-  #   value: 'pcs-aks-test'
-
-  # - name: 'aksProdName'
-  #   value: 'pcs-aks-prod'
-
-  # # Dev variables
-
-  # # Test variables
-
-  # # Prod variables
