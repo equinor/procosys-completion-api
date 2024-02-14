@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Authentication;
 

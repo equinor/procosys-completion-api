@@ -4,10 +4,8 @@ using Statoil.TI.InterfaceServices.Message;
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 
 [TestClass]
-
 public class TIObjectExtensionTests
 {
-
     [TestMethod]
     public void GetAttributeValueAsString_ShouldReturn_WhenAnyAttributeNameCaseUsed()
     {

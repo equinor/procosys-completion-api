@@ -4,10 +4,8 @@ using Statoil.TI.InterfaceServices.Message;
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 
 [TestClass]
-
 public class TIAttributeExtensionTests
 {
-
     [TestMethod]
     public void GetValueAsString_ShouldReturnNull_WhenValueIsNull()
     {
