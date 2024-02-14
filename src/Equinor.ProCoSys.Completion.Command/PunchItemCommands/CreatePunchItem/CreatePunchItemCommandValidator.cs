@@ -28,7 +28,6 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .WithMessage(command => $"Project is closed! Guid={command.ProjectGuid}")
 
             // validate given CheckList
-            //TODO: 110317 Import - Authenticate and authorize against MainAPI
             .MustAsync(BeAnExistingCheckListAsync)
             .WithMessage(command => $"Check list does not exist! Guid={command.CheckListGuid}")
             .MustAsync(NotBeInAVoidedTagForCheckListAsync)
