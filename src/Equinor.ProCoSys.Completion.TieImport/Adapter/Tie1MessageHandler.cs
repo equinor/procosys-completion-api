@@ -22,22 +22,22 @@ public class Tie1MessageHandler : IMessageHandler<TieAdapterConfig, TieAdapterPa
         TieAdapterPartitionConfig partition,
         Tie1Message message,
         CancellationToken stoppingToken)
-        => Task.FromResult(HandleMessage(message));
+        => HandleMessage(message);
 
     public Task<MessageHandleResult<Tie1Receipt>> HandleSingle(
         TieAdapterConfig config,
         Tie1Message message,
         CancellationToken stoppingToken)
-        => Task.FromResult(HandleMessage(message));
+        => HandleMessage(message);
 
     public Task Init(TieAdapterConfig config, TieAdapterPartitionConfig partition) => Task.CompletedTask;
 
-    private MessageHandleResult<Tie1Receipt> HandleMessage(Tie1Message message)
+    private async Task<MessageHandleResult<Tie1Receipt>> HandleMessage(Tie1Message message)
     {
         //TODO: 105593 Add custom application insights tracking 
         _logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid, message.Message.Site);
 
-        _importHandler.Handle(message.Message);
+        await _importHandler.Handle(message.Message);
         
         //TODO: 105593 Add custom application insights tracking 
 

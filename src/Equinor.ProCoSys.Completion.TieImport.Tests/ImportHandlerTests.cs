@@ -1,4 +1,5 @@
 ﻿using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Statoil.TI.InterfaceServices.Message;
@@ -15,11 +16,11 @@ public class ImportHandlerTests
     public void Setup()
     {
         _importSchemaMapperMock = Substitute.For<IImportSchemaMapper>();
-        _dut = new ImportHandler(_importSchemaMapperMock, Substitute.For<ILogger<ImportHandler>>());
+        _dut = new ImportHandler(Substitute.For<IServiceScopeFactory>(), _importSchemaMapperMock, Substitute.For<ILogger<ImportHandler>>());
     }
 
     [TestMethod]
-    public void Handle_ShouldReturnErrorResultIfMapperFails()
+    public async Task Handle_ShouldReturnErrorResultIfMapperFails()
     {
         // Arrange
         var mappingResultNotSuccess = new MappingResult(
@@ -33,7 +34,7 @@ public class ImportHandlerTests
         _importSchemaMapperMock.Map(Arg.Any<TIInterfaceMessage>()).Returns(mappingResultNotSuccess);
 
         //Act
-        var result = _dut.Handle(new TIInterfaceMessage());
+        var result = await _dut.Handle(new TIInterfaceMessage());
 
         //Assert
         Assert.AreEqual(MessageResults.Failed, result.Results[0].Result);
@@ -41,7 +42,7 @@ public class ImportHandlerTests
     }
 
     [TestMethod]
-    public void Handle_ShouldReturnSuccessResultIfMapperSucceeds()
+    public async Task Handle_ShouldReturnSuccessResultIfMapperSucceeds()
     {
         // Arrange
         var mappingResultIsSuccess = new MappingResult(
@@ -55,7 +56,7 @@ public class ImportHandlerTests
         _importSchemaMapperMock.Map(Arg.Any<TIInterfaceMessage>()).Returns(mappingResultIsSuccess);
 
         //Act
-        var result = _dut.Handle(new TIInterfaceMessage());
+        var result = await _dut.Handle(new TIInterfaceMessage());
 
         //Assert
         Assert.AreEqual(MessageResults.Successful, result.Results[0].Result);

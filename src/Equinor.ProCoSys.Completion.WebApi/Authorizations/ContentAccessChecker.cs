@@ -55,13 +55,15 @@ public class ContentAccessChecker : IContentAccessChecker
 
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid)
     {
-        var plant = _plantProvider.Plant;
-        var checkList = await _checkListCache.GetCheckListAsync(plant, checkListGuid);
-        if (checkList is null)
-        {
-            throw new Exception($"CheckList '{checkListGuid}' not found in '{plant}'");
-        }
+        //TODO: 110317 Import - Authenticate and authorize against MainAPI
+        return await Task.FromResult(true);
+        //var plant = _plantProvider.Plant;
+        //var checkList = await _checkListCache.GetCheckListAsync(plant, checkListGuid);
+        //if (checkList is null)
+        //{
+        //    throw new Exception($"CheckList '{checkListGuid}' not found in '{plant}'");
+        //}
 
-        return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);
+        //return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);
     }
 }

@@ -1,21 +1,30 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Auth.Authentication;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public class ImportHandler : IImportHandler
 {
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
 
-    public ImportHandler(IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
+    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
     {
+        _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
         _logger = logger;
     }
-    public TIResponseFrame Handle(TIInterfaceMessage? message)
+
+    public async Task<TIResponseFrame> Handle(TIInterfaceMessage? message)
     {
         var response = new TIResponseFrame();
         if (message is null)
@@ -43,7 +52,7 @@ public class ImportHandler : IImportHandler
 
             //TODO: 106685 PostMapperFixer;
 
-            tiMessageResult = ImportMessage(message);
+            tiMessageResult = await ImportMessage(mapped.Message!);
         }
         catch (Exception e)
         {
@@ -57,7 +66,7 @@ public class ImportHandler : IImportHandler
         return response;
     }
 
-    private TIMessageResult ImportMessage(TIInterfaceMessage message)
+    private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
         //TODO: 109642 Collect errors and warnings
@@ -65,7 +74,7 @@ public class ImportHandler : IImportHandler
         {
             foreach (var tiObject in message.Objects)
             {
-                ImportObject(message, tiObject);
+                await ImportObject(message, tiObject);
             }
         }
         catch (Exception ex) //TODO: 109642 SetFailed result
@@ -79,10 +88,10 @@ public class ImportHandler : IImportHandler
         }
 
         //TODO: 109642 return tiMessageResult;
-        return new TIMessageResult(); //TODO: Dummy for now
+        return new TIMessageResult();
     }
 
-    private void ImportObject(TIInterfaceMessage message, TIObject tiObject)
+    private async Task ImportObject(TIInterfaceMessage message, TIObject tiObject)
     {
         //TODO: 105834 CollectWarnings
 
@@ -105,7 +114,36 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106693 NCR special handling
 
-        //TODO: 107052 Create command and send to command handler
+        using var scope = _serviceScopeFactory.CreateScope();
+        
+        var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
+        plantSetter.SetPlant(message.Site);
+
+        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
+
+        //TODO: 110317 Import - Authenticate and authorize against MainAPI
+        var ipoDevClientId = new Guid("2E1868DB-3024-45A9-B3F1-568E85586244");
+        currentUserSetter.SetCurrentUserOid(ipoDevClientId);
+
+        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
+        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        var description = tiObject.GetAttributeValueAsString("Description");
+
+        //TODO: Hardcoded for minimum viable product / proof of concept
+        var checkListGuid = new Guid("EB38CCBC-C659-D926-E053-2810000AC5B2");
+        var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
+        var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
+        var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
+
+        var createPunchCommand = new CreatePunchItemCommand(Category.PB, description!, projectGuid, checkListGuid,
+            raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
+            null, null, null, null, null, null, 
+            null, false, null, null);
+        
+        await mediator.Send(createPunchCommand);
 
         //TODO: 106687 CommandFailureHandler;
 
