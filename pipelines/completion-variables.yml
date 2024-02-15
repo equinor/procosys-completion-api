@@ -17,7 +17,7 @@ variables:
   - name: 'Agent.Diagnostic'
     value: 'true'
 
-    # Azure Kubernetes Service AAD Server
+    # App ID to the enterprise application 'Azure Kubernetes Service AAD Server'
   - name: radixResource
     value: '6dae42f8-4368-4678-94ff-3960e28e3630'
 
@@ -34,16 +34,19 @@ variables:
   - name: 'dockerRegistryServiceConnection'
     value: 'procosys - acr'
 
+    # DevOps service connection ofg type Azure Resource Manager. Has access to Azure resources
   - name: 'nonProdServiceConnection'
     value: 'procosys - non-prod'
 
+    # DevOps service connection ofg type Azure Resource Manager. Has access to Azure resources
   - name: 'prodServiceConnection'
     value: 'procosys - prod'
 
-  - name: 'commonKvName'
+  - name: 'certKvName'
     value: '$(globalPrefix)-cert-kv'
 
-  - name: 'commonRgName'
+    # resource group for keyvault $(certKvName)
+  - name: 'certRgName'
     value: '$(globalPrefix)-common-rg'
 
   - name: 'fullAppName'
@@ -52,10 +55,11 @@ variables:
   - name: 'shortAppName'
     value: 'completion'
 
+    # SQL DB login, same in each environment. Used in connectionstring
   - name: 'sqlAdminUserName'
     value: 'sqladminlogin'
 
-    # Key in $(commonKvName) to get password for $(sqlAdminUserName)
+    # Key in $(certKvName) to get password for $(sqlAdminUserName)
   - name: 'sqlAdminPasswordKvKey'
     value: 'pcs5-sqladminlogin-$(envName)'
 
@@ -65,8 +69,8 @@ variables:
   - name: 'databaseName'
     value: 'sqldb-pcs5-completion-$(envName)'
 
-  - name: 'kvName'
-    value: 'kv-pcs5-completion-$(envName)'
+  # - name: 'kvName'
+  #   value: 'kv-pcs5-completion-$(envName)'
 
-  - name: 'appInsightsName'
-    value: 'appi-pcs5-completion-$(envName)'
+  # - name: 'appInsightsName'
+  #   value: 'appi-pcs5-completion-$(envName)'

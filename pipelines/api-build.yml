@@ -93,8 +93,8 @@ stages:
               - template: templates/execute-db-migration.yml
                 parameters:
                   serviceConnection: '${{ variables.nonProdServiceConnection }}'
-                  kvName: '${{ variables.commonKvName }}'
-                  kvRgName: '${{ variables.commonRgName }}'
+                  kvName: '${{ variables.certKvName }}'
+                  kvRgName: '${{ variables.certRgName }}'
                   sqlAdminPasswordKvKey: '${{ variables.sqlAdminPasswordKvKey }}'
                   sqlAdminUserName: '${{ variables.sqlAdminUserName }}'
                   serverName: '${{ variables.sqlServerName }}.database.windows.net'
@@ -135,8 +135,8 @@ stages:
               - template: templates/execute-db-migration.yml
                 parameters:
                   serviceConnection: '${{ variables.nonProdServiceConnection }}'
-                  kvName: '${{ variables.commonKvName }}'
-                  kvRgName: '${{ variables.commonRgName }}'
+                  kvName: '${{ variables.certKvName }}'
+                  kvRgName: '${{ variables.certRgName }}'
                   sqlAdminPasswordKvKey: '${{ variables.sqlAdminPasswordKvKey }}'
                   sqlAdminUserName: '${{ variables.sqlAdminUserName }}'
                   serverName: '${{ variables.sqlServerName }}.database.windows.net'
@@ -178,8 +178,8 @@ stages:
               - template: templates/execute-db-migration.yml
                 parameters:
                   serviceConnection: '${{ variables.prodServiceConnection }}'
-                  kvName: '${{ variables.commonKvName }}'
-                  kvRgName: '${{ variables.commonRgName }}'
+                  kvName: '${{ variables.certKvName }}'
+                  kvRgName: '${{ variables.certRgName }}'
                   sqlAdminPasswordKvKey: '${{ variables.sqlAdminPasswordKvKey }}'
                   sqlAdminUserName: '${{ variables.sqlAdminUserName }}'
                   serverName: '${{ variables.sqlServerName }}.database.windows.net'
