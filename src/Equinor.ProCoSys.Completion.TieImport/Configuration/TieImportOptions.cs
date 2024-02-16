@@ -80,9 +80,6 @@ public class TieImportOptions
 
     public int TestFileChunkSize { get; set; }
 
-    [Required]
-    public Guid CompletionApiObjectId { get; set; }
-
     public override string ToString()
     {
         var newLine = Environment.NewLine;

@@ -21,15 +21,13 @@ public class ImportHandler : IImportHandler
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IImportSchemaMapper _importSchemaMapper;
-    private readonly IOptionsMonitor<TieImportOptions> _tieImportOptions;
     private readonly ILogger<ImportHandler> _logger;
 
     public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, 
-            IOptionsMonitor<TieImportOptions> tieImportOptions, ILogger<ImportHandler> logger)
+             ILogger<ImportHandler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
-        _tieImportOptions = tieImportOptions;
         _logger = logger;
     }
 
@@ -132,19 +130,25 @@ public class ImportHandler : IImportHandler
         var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
         var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
         var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
-
+        var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
+        
         if (claimsTransformation is null)
         {
             throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
+        }
+
+        if (authenticatorOptions is null)
+        {
+            throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
         }
 
         plantSetter.SetPlant(message.Site);
 
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        currentUserSetter.SetCurrentUserOid(_tieImportOptions.CurrentValue.CompletionApiObjectId);
+        currentUserSetter.SetCurrentUserOid(authenticatorOptions.ObjectId);
 
-        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation);
+        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, authenticatorOptions.ObjectId);
 
         var createPunchCommand = GetCreatePunchItemCommand(tiObject);
 
@@ -171,11 +175,11 @@ public class ImportHandler : IImportHandler
             null, false, null, null);
     }
 
-    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider, IClaimsTransformation claimsTransformation)
+    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider, IClaimsTransformation claimsTransformation, Guid oid)
     {
         var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, _tieImportOptions.CurrentValue.CompletionApiObjectId.ToString()));
+        claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
         currentUser.AddIdentity(claimsIdentity);
 
         await claimsTransformation.TransformAsync(currentUser);
