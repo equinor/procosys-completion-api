@@ -55,8 +55,6 @@ public class ContentAccessChecker : IContentAccessChecker
 
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid)
     {
-        //TODO: 110317 Import - Authenticate and authorize against MainAPI
-        //return await Task.FromResult(true);
         var plant = _plantProvider.Plant;
         var checkList = await _checkListCache.GetCheckListAsync(plant, checkListGuid);
         if (checkList is null)
