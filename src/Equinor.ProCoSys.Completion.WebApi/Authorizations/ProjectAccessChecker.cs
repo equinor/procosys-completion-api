@@ -16,7 +16,7 @@ public class ProjectAccessChecker : IProjectAccessChecker
     {
         var userDataClaimWithProject = ClaimsTransformation.GetProjectClaimValue(projectGuid);
         //TODO: 110317 Import - Authenticate and authorize against MainAPI
-        //return _claimsPrincipalProvider.GetCurrentClaimsPrincipal().Claims.Any(c => c.Type == ClaimTypes.UserData && c.Value == userDataClaimWithProject);
-        return true;
+        return _claimsPrincipalProvider.GetCurrentClaimsPrincipal().Claims.Any(c => c.Type == ClaimTypes.UserData && c.Value == userDataClaimWithProject);
+        //return true;
     }
 }

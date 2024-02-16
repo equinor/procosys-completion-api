@@ -8,6 +8,10 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Authentication;
+using Equinor.ProCoSys.Auth.Authorization;
+using System.Security.Claims;
+using Equinor.ProCoSys.Auth.Misc;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -122,11 +126,25 @@ public class ImportHandler : IImportHandler
         var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
 
         //TODO: 110317 Import - Authenticate and authorize against MainAPI
-        var ipoDevClientId = new Guid("2E1868DB-3024-45A9-B3F1-568E85586244");
-        currentUserSetter.SetCurrentUserOid(ipoDevClientId);
-
         var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+
+        var ipoOid = new Guid("D675F4CF-4C71-4E33-AA61-900404864819"); //IPO Object ID
+        
+        currentUserSetter.SetCurrentUserOid(ipoOid);
+
+        var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
+        var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
+        var claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, ipoOid.ToString()));
+        currentUser.AddIdentity(claimsIdentity);
+
+        var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
+        if (claimsTransformation is null)
+        {
+            throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
+        }
+        await claimsTransformation.TransformAsync(currentUser);
 
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
