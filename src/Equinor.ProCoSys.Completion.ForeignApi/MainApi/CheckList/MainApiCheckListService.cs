@@ -27,10 +27,6 @@ public class MainApiCheckListService : ICheckListApiService
                   $"&proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        //return await _mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
-
-        //TODO: 110317 Import - Authenticate and authorize against MainAPI
-        var checkList = new ProCoSys4CheckList("COM", false, new Guid("EB38367C-37DE-DD39-E053-2810000A174A"));
-        return await Task.FromResult(checkList);
+        return await _mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
     }
 }

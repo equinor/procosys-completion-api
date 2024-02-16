@@ -8,6 +8,12 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Authentication;
+using Equinor.ProCoSys.Auth.Authorization;
+using System.Security.Claims;
+using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.TieImport.Configuration;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -17,7 +23,8 @@ public class ImportHandler : IImportHandler
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
 
-    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, ILogger<ImportHandler> logger)
+    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, 
+             ILogger<ImportHandler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
@@ -114,22 +121,46 @@ public class ImportHandler : IImportHandler
 
         //TODO: 106693 NCR special handling
 
+        //Import module is running as a background service which is lifetime singleton.
+        //A singleton service cannot retrieve scoped services via constructor.
         using var scope = _serviceScopeFactory.CreateScope();
-        
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
+        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
+        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
+        var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
+        var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
+        var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
+        
+        if (claimsTransformation is null)
+        {
+            throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
+        }
+
+        if (authenticatorOptions is null)
+        {
+            throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
+        }
+
         plantSetter.SetPlant(message.Site);
 
-        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-
-        //TODO: 110317 Import - Authenticate and authorize against MainAPI
-        var ipoDevClientId = new Guid("2E1868DB-3024-45A9-B3F1-568E85586244");
-        currentUserSetter.SetCurrentUserOid(ipoDevClientId);
-
-        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        currentUserSetter.SetCurrentUserOid(authenticatorOptions.ObjectId);
 
+        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, authenticatorOptions.ObjectId);
+
+        var createPunchCommand = GetCreatePunchItemCommand(tiObject);
+
+        await mediator.Send(createPunchCommand);
+
+        //TODO: 106687 CommandFailureHandler;
+
+        //TODO: 109642 return ImportResult.Ok();
+    }
+
+    private CreatePunchItemCommand GetCreatePunchItemCommand(TIObject tiObject)
+    {
         var description = tiObject.GetAttributeValueAsString("Description");
 
         //TODO: Hardcoded for minimum viable product / proof of concept
@@ -138,16 +169,20 @@ public class ImportHandler : IImportHandler
         var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
         var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
 
-        var createPunchCommand = new CreatePunchItemCommand(Category.PB, description!, projectGuid, checkListGuid,
+        return new CreatePunchItemCommand(Category.PB, description!, projectGuid, checkListGuid,
             raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
             null, null, null, null, null, null, 
             null, false, null, null);
-        
-        await mediator.Send(createPunchCommand);
+    }
 
-        //TODO: 106687 CommandFailureHandler;
+    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider, IClaimsTransformation claimsTransformation, Guid oid)
+    {
+        var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
+        var claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
+        currentUser.AddIdentity(claimsIdentity);
 
-        //TODO: 109642 return ImportResult.Ok();
+        await claimsTransformation.TransformAsync(currentUser);
     }
 
 
