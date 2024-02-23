@@ -22,8 +22,7 @@ spec:
     - environment: dev
       identity:
         azure:
-        # todo correct dev client id for Comletion API
-          clientId: 67b2f053-30bf-4ffc-9206-ef57f631efcb
+          clientId: e8c158a9-a200-4897-9d5f-660e377bddc1
       imageTagName: latest
       variables:
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -40,8 +39,7 @@ spec:
     - environment: test
       identity:
         azure:
-        # todo correct test client id for Comletion API
-          clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
+          clientId: cf2e4cc0-39fe-4604-ad64-98e392987821
       variables:
         ASPNETCORE_ENVIRONMENT: 'Test'
         UseAzureAppConfiguration: 'true'
@@ -58,8 +56,7 @@ spec:
     - environment: prod
       identity:
         azure:
-        # todo correct prod client id for Comletion API
-          clientId: f23bcde6-d6a4-42d5-94fa-96b184968cf7
+          clientId: dee65816-6e0b-4816-bafe-ebd7179d5933
       variables:
         ASPNETCORE_ENVIRONMENT: 'Production'
         UseAzureAppConfiguration: 'true'
