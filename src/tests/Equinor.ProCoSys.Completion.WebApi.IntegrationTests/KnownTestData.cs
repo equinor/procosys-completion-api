@@ -9,7 +9,7 @@ public class KnownTestData
     public KnownTestData(string plant)
     {
         Plant = plant;
-        PunchSortingLibraryGuids = new List<Guid>();
+        PunchLibraryItemGuids = new List<Guid>();
     }
 
     public string Plant { get; }
@@ -18,5 +18,5 @@ public class KnownTestData
     public Guid CommentInPunchItemAGuid { get; set; }
     public Guid AttachmentInPunchItemAGuid { get; set; }
 
-    public List<Guid> PunchSortingLibraryGuids { get; }
+    public List<Guid> PunchLibraryItemGuids { get; }
 }
