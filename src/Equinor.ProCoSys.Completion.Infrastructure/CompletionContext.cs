@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -21,6 +22,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using MassTransit;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ConcurrencyException = Equinor.ProCoSys.Common.Misc.ConcurrencyException;
 using IDomainMarker = Equinor.ProCoSys.Completion.Domain.IDomainMarker;
@@ -39,12 +41,16 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         DbContextOptions<CompletionContext> options,
         IPlantProvider plantProvider,
         IEventDispatcher eventDispatcher,
-        ICurrentUserProvider currentUserProvider)
+        ICurrentUserProvider currentUserProvider,
+        TokenCredential credential)
         : base(options)
     {
         _plantProvider = plantProvider;
         _eventDispatcher = eventDispatcher;
         _currentUserProvider = currentUserProvider;
+        var connection = Database.GetDbConnection() as SqlConnection;
+        if (connection != null)
+            connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;
     }
        
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

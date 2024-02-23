@@ -28,6 +28,8 @@ using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
+using Azure.Core;
+using Azure.Identity;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -65,6 +67,18 @@ public class Startup
                 services.AddHostedService<Seeder>();
             }
         }
+
+        TokenCredential credential = _environment.IsDevelopment() switch
+        {
+            true
+                => new ChainedTokenCredential(
+                    new AzureCliCredential(),
+                    new VisualStudioCredential(),
+                    new DefaultAzureCredential()
+                ),
+            false => new DefaultAzureCredential()
+        };
+        services.AddSingleton(credential);
 
         services.AddControllers().AddNewtonsoftJson();
 
