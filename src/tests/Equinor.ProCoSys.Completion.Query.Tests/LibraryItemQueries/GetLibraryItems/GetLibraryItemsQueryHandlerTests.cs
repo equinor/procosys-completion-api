@@ -35,7 +35,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_TYPE);
+        var query = new GetLibraryItemsQuery([LibraryType.PUNCHLIST_TYPE]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -54,7 +54,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         AddLibraryDataToPlant(context);
 
-        var query = new GetLibraryItemsQuery(_sortingType);
+        var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -73,7 +73,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         AddLibraryDataToPlant(context);
 
-        var query = new GetLibraryItemsQuery(_sortingType);
+        var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act

@@ -127,7 +127,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
     private LibraryItemDto? MapToLibraryItemDto(LibraryItem? libraryItem)
         => libraryItem is null
             ? null
-            : new LibraryItemDto(libraryItem.Guid, libraryItem.Code, libraryItem.Description);
+            : new LibraryItemDto(libraryItem.Guid, libraryItem.Code, libraryItem.Description, libraryItem.Type.ToString());
 
     private static PersonDto? MapToPersonDto(Person? person)
         => person is null

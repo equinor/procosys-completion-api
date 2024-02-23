@@ -20,11 +20,12 @@ public class GetLibraryItemsQueryHandler : IRequestHandler<GetLibraryItemsQuery,
     {
         var libraryItems =
             await (from libraryItem in _context.QuerySet<LibraryItem>()
-                   where libraryItem.Type == request.LibraryType
+                   where request.LibraryTypes.Contains(libraryItem.Type)
                    select new LibraryItemDto(
                        libraryItem.Guid,
                        libraryItem.Code,
-                       libraryItem.Description)
+                       libraryItem.Description,
+                       libraryItem.Type.ToString())
                 )
                 .TagWith($"{nameof(GetLibraryItemsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
