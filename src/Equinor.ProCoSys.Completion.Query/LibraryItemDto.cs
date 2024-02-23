@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 
 namespace Equinor.ProCoSys.Completion.Query;
 

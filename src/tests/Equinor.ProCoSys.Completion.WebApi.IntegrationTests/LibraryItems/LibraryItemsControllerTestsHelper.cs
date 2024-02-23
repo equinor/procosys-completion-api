@@ -19,7 +19,7 @@ public static class LibraryItemsControllerTestsHelper
     {
         var parameters = new ParameterCollection
         {
-            { "libraryType", libraryType.ToString() }
+            { "libraryTypes", libraryType.ToString() }
         };
         var url = $"{Route}{parameters}";
 
