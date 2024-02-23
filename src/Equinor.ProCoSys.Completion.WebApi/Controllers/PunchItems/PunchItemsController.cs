@@ -506,7 +506,7 @@ public class PunchItemsController : ControllerBase
 
     #region Attachments
     /// <summary>
-    /// Add (upload) an new attachment/picture to a PunchItem
+    /// Add (upload) a new attachment/picture to a PunchItem
     /// </summary>
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
@@ -545,7 +545,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="dto"></param>
     /// <returns>New RowVersion of attachment/picture</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
-    /// <remarks>Will give validation error if attachment with same filename don't exists. Use POST endpoint if uploading new attachment is intended</remarks>
+    /// <remarks>Will give validation error if attachment with same filename don't exist. Use POST endpoint if uploading new attachment is intended</remarks>
     [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Attachments")]
     public async Task<ActionResult<string>> OverwriteExistingPunchItemAttachment(
