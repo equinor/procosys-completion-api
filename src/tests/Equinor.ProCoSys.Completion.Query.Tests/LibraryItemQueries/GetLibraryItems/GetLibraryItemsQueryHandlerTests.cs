@@ -20,11 +20,13 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
     private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
     private readonly LibraryType _otherThanSortingType = LibraryType.PUNCHLIST_PRIORITY;
+    private readonly LibraryType _typeType = LibraryType.PUNCHLIST_TYPE;
 
     private LibraryItem _punchListSortingLibraryItemA;
     private LibraryItem _punchListSortingLibraryItemB;
     private LibraryItem _punchListSortingLibraryItemC;
     private LibraryItem _punchListPriorityLibraryItem;
+    private LibraryItem _punchListTypeLibraryItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
         => _plantProviderMock.Plant.Returns(_testPlant);
@@ -35,7 +37,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
 
-        var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_TYPE);
+        var query = new GetLibraryItemsQuery([LibraryType.PUNCHLIST_TYPE]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -48,13 +50,13 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems()
+    public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems_WhenQueryingSingleType()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         AddLibraryDataToPlant(context);
 
-        var query = new GetLibraryItemsQuery(_sortingType);
+        var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -67,13 +69,32 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
+    public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems_WhenQueryingMultipleTypes()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        AddLibraryDataToPlant(context);
+
+        var query = new GetLibraryItemsQuery([_sortingType, _typeType]);
+        var dut = new GetLibraryItemsQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.AreEqual(4, result.Data.Count());
+    }
+
+    [TestMethod]
     public async Task Handler_ShouldReturnCorrectOrderedLibraryItems()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
         AddLibraryDataToPlant(context);
 
-        var query = new GetLibraryItemsQuery(_sortingType);
+        var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
 
         // Act
@@ -100,11 +121,13 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         _punchListSortingLibraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", _sortingType);
         _punchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", _sortingType);
         _punchListPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "O", "O Desc", _otherThanSortingType);
+        _punchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "T", "T Desc", _typeType);
 
         context.Library.Add(_punchListSortingLibraryItemC);
         context.Library.Add(_punchListSortingLibraryItemA);
         context.Library.Add(_punchListSortingLibraryItemB);
         context.Library.Add(_punchListPriorityLibraryItem);
+        context.Library.Add(_punchListTypeLibraryItem);
 
         context.SaveChangesAsync().Wait();
     }
