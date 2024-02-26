@@ -33,7 +33,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnEmptyList_IfNoneFound()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetLibraryItemsQuery(LibraryType.PUNCHLIST_TYPE);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -51,7 +51,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         AddLibraryDataToPlant(context);
 
         var query = new GetLibraryItemsQuery(_sortingType);
@@ -70,7 +70,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectOrderedLibraryItems()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         AddLibraryDataToPlant(context);
 
         var query = new GetLibraryItemsQuery(_sortingType);

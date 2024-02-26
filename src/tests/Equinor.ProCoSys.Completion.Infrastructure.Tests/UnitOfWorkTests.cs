@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
@@ -24,6 +26,7 @@ public class UnitOfWorkTests
     private IPlantProvider _plantProviderMock;
     private IEventDispatcher _eventDispatcherMock;
     private ICurrentUserProvider _currentUserProviderMock;
+    private TokenCredential _tokenCredentialsMock;
     private ManualTimeProvider _timeProvider;
     private Person _currentUser;
 
@@ -42,10 +45,15 @@ public class UnitOfWorkTests
 
         _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
 
+        var fakeToken = new AccessToken("FakeToken", DateTimeOffset.MaxValue);
+        _tokenCredentialsMock = Substitute.For<TokenCredential>();
+        _tokenCredentialsMock.GetTokenAsync(Arg.Any<TokenRequestContext>(), Arg.Any<CancellationToken>())
+                   .Returns(fakeToken);
+
         _timeProvider = new ManualTimeProvider(_currentTime);
         TimeService.SetProvider(_timeProvider);
 
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _currentUser = new Person(_currentUserOid, "Current", "User", "cu", "cu@pcs.pcs", false);
         dut.Persons.Add(_currentUser);
@@ -59,7 +67,7 @@ public class UnitOfWorkTests
     public async Task SetAuditDataAsync_ShouldSetCreatedProperties_WhenCreated()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
         dut.Library.Add(libraryItem);
@@ -76,7 +84,7 @@ public class UnitOfWorkTests
     public async Task SaveChangesAsync_ShouldSetCreatedProperties_WhenCreated()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
         dut.Library.Add(libraryItem);
@@ -93,7 +101,7 @@ public class UnitOfWorkTests
     public async Task SetAuditDataAsync_ShouldSetModifiedProperties_WhenModified()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
         dut.Library.Add(libraryItem);
@@ -115,7 +123,7 @@ public class UnitOfWorkTests
     public async Task SaveChangesAsync_ShouldSetModifiedProperties_WhenModified()
     {
         // Arrange
-        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
         dut.Library.Add(libraryItem);

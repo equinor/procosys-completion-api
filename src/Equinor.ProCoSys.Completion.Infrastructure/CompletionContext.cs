@@ -48,6 +48,10 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         _plantProvider = plantProvider;
         _eventDispatcher = eventDispatcher;
         _currentUserProvider = currentUserProvider;
+
+        if (Database?.ProviderName != "Microsoft.EntityFrameworkCore.SqlServer")
+            return;
+
         var connection = Database.GetDbConnection() as SqlConnection;
         if (connection != null)
             connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;

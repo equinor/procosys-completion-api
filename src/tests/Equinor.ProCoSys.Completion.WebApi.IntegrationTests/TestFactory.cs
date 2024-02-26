@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
@@ -39,6 +40,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
+    private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -156,6 +158,7 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _pcs4RepositoryMock);
             services.AddScoped(_ => _emailServiceMock);
+            services.AddScoped(_ => _tokenCredentialsMock);
         });
 
         builder.ConfigureServices(services =>

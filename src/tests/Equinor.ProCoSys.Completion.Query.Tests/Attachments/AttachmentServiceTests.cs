@@ -30,7 +30,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         Add4UnorderedLabelsInclusiveAVoidedLabel(context);
 
@@ -69,7 +69,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetAllForParentAsync_ShouldReturnCorrect_CreatedDtos()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -100,7 +100,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         var uri = new Uri("http://blah.blah.com");
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
         var p = _createdAttachment.GetFullBlobPath();
         _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, p, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>()).Returns(uri);
@@ -117,7 +117,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task GetDownloadUriAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -136,7 +136,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenKnownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
@@ -150,7 +150,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnNull_WhenUnknownAttachment()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock);
 
         // Act
