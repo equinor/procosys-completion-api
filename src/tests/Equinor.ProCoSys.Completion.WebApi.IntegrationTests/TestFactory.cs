@@ -158,12 +158,13 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _pcs4RepositoryMock);
             services.AddScoped(_ => _emailServiceMock);
-            services.AddScoped(_ => _tokenCredentialsMock);
         });
 
         builder.ConfigureServices(services =>
         {
             ReplaceRealDbContextWithTestDbContext(services);
+
+            ReplaceRealTokenCredentialsWithTestCredentials(services);
                 
             CreateSeededTestDatabase(services);
                 
@@ -183,6 +184,18 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         services.AddDbContext<CompletionContext>(options 
             => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+    }
+
+    private void ReplaceRealTokenCredentialsWithTestCredentials(IServiceCollection services)
+    {
+        var descriptor = services.SingleOrDefault
+            (d => d.ServiceType == typeof(TokenCredential));
+
+        if (descriptor is not null)
+        {
+            services.Remove(descriptor);
+        }
+        services.AddSingleton(_tokenCredentialsMock);
     }
 
     private void CreateSeededTestDatabase(IServiceCollection services)
