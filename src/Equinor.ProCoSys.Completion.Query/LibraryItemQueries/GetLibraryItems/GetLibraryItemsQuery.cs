@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 
 public class GetLibraryItemsQuery : IRequest<Result<IEnumerable<LibraryItemDto>>>
 {
-    public GetLibraryItemsQuery(LibraryType libraryType) => LibraryType = libraryType;
+    public GetLibraryItemsQuery(LibraryType[] libraryTypes) => LibraryTypes = libraryTypes;
 
-    public LibraryType LibraryType { get; }
+    public LibraryType[] LibraryTypes { get; }
 }

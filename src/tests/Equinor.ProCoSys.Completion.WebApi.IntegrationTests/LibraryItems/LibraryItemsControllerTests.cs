@@ -19,11 +19,11 @@ public class LibraryItemsControllerTests : TestBase
             .GetLibraryItemsAsync(
                 UserType.Reader,
                 testPlant,
-                LibraryType.PUNCHLIST_SORTING);
+                [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY]);
 
         // Assert
         var expectedLibraryItemGuid =
-            TestFactory.Instance.SeededData[testPlant].PunchSortingLibraryGuids;
+            TestFactory.Instance.SeededData[testPlant].PunchLibraryItemGuids;
         Assert.IsNotNull(libraryItems);
         Assert.AreEqual(expectedLibraryItemGuid.Count, libraryItems.Count);
 
