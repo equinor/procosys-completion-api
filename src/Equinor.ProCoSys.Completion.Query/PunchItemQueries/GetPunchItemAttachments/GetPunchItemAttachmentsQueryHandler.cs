@@ -15,7 +15,7 @@ public class GetPunchItemAttachmentsQueryHandler : IRequestHandler<GetPunchItemA
 
     public async Task<Result<IEnumerable<AttachmentDto>>> Handle(GetPunchItemAttachmentsQuery request, CancellationToken cancellationToken)
     {
-        var attachmentDtos = await _attachmentService.GetAllForParentAsync(request.PunchItemGuid, cancellationToken);
+        var attachmentDtos = await _attachmentService.GetAllForParentAsync(request.PunchItemGuid, cancellationToken, request.FromIPAddress, request.ToIPAddress);
         return new SuccessResult<IEnumerable<AttachmentDto>>(attachmentDtos);
     }
 }

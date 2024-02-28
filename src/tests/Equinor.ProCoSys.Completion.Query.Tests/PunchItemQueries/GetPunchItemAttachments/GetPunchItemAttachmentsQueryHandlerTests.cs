@@ -27,6 +27,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             _query.PunchItemGuid,
             Guid.NewGuid(),
             "full/path",
+            "sasURI/uri",
             "F.txt",
             "Desc",
             new List<string>{"A"},

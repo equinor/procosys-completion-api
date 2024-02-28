@@ -31,7 +31,9 @@ public class AttachmentService : IAttachmentService
 
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? fromIPAddress = null,
+        string? toIPAddress = null)
     {
         var attachments =
             await (from a in _context.QuerySet<Attachment>()
@@ -43,11 +45,14 @@ public class AttachmentService : IAttachmentService
                 .TagWith($"{nameof(AttachmentService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
+        var sasUris = GenerateDownloadSasUris(attachments, fromIPAddress, toIPAddress);
+
         var attachmentsDtos = 
                 attachments.Select(a => new AttachmentDto(
                     a.ParentGuid,
                     a.Guid,
                     a.GetFullBlobPath(),
+                    sasUris.GetValueOrDefault(a.Guid)?.ToString(),
                     a.FileName,
                     a.Description,
                     a.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
@@ -80,13 +85,7 @@ public class AttachmentService : IAttachmentService
             return null;
         }
 
-        var now = TimeService.UtcNow;
-        var fullBlobPath = attachment.GetFullBlobPath();
-        var uri = _azureBlobService.GetDownloadSasUri(
-            _blobStorageOptions.Value.BlobContainer,
-            fullBlobPath,
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)));
+        var uri = GetSasUri(attachment);
         return uri;
     }
 
@@ -103,5 +102,29 @@ public class AttachmentService : IAttachmentService
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
         return attachment;
+    }
+
+    private Dictionary<Guid, Uri> GenerateDownloadSasUris(List<Attachment> attachments, string? fromIPAddress = null, string? toIPAddress = null)
+    {
+        return attachments.Select(x =>
+        {
+            return new
+            {
+                uri = GetSasUri(x, fromIPAddress, toIPAddress),
+                guid = x.Guid
+            };
+        }).ToDictionary(item => item.guid, item => item.uri);
+    }
+
+    private Uri GetSasUri(Attachment x, string? fromIPAddress = null, string? toIPAddress = null) {
+        var now = TimeService.UtcNow;
+        return _azureBlobService.GetDownloadSasUri(
+            _blobStorageOptions.Value.BlobContainer
+            , x.GetFullBlobPath()
+            , new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1))
+            , new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes))
+           // , fromIPAddress
+           // , toIPAddress
+        );
     }
 }

@@ -9,7 +9,10 @@ public interface IAttachmentService
 {
     Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
-        CancellationToken cancellationToken);
+        CancellationToken cancellaionToken,
+        string? fromIPAddress = null,
+        string? toIPAddress = null
+        );
 
     Task<Uri?> GetDownloadUriAsync(
         Guid guid,

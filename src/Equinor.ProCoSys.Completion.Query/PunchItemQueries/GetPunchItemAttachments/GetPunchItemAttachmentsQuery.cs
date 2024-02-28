@@ -9,6 +9,9 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachm
 public class GetPunchItemAttachmentsQuery : IRequest<Result<IEnumerable<AttachmentDto>>>, IIsPunchItemQuery
 {
     public GetPunchItemAttachmentsQuery(Guid punchItemGuid) => PunchItemGuid = punchItemGuid;
+    public GetPunchItemAttachmentsQuery(Guid punchItemGuid, string? fromIPAddress, string? toIPAddress) => (PunchItemGuid, FromIPAddress, ToIPAddress) = (punchItemGuid, fromIPAddress, toIPAddress);
 
     public Guid PunchItemGuid { get; }
+    public string? FromIPAddress { get; }
+    public string? ToIPAddress { get; }
 }
