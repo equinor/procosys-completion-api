@@ -49,10 +49,13 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         _eventDispatcher = eventDispatcher;
         _currentUserProvider = currentUserProvider;
 
-        // Should not run during integration tests
-        if (Database is object
-            && Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer"
-            && Database.GetDbConnection() is SqlConnection connection)
+
+        // ReSharper disable once VirtualMemberCallInConstructor
+        var database = Database;
+
+        // Should not run during in memory tests
+        if (database is { ProviderName: "Microsoft.EntityFrameworkCore.SqlServer" }
+            && database.GetDbConnection() is SqlConnection connection)
         {
             connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;
         }
