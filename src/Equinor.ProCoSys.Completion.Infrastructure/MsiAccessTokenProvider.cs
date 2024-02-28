@@ -11,7 +11,9 @@ public static class MsiAccessTokenProvider
     public static async Task<string> GetAccessTokenAsync(TokenCredential credential)
     {
         if (AccessToken.HasValue && AccessToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
+        {
             return AccessToken.Value.Token;
+        }
 
         AccessToken = await credential.GetTokenAsync(
             new TokenRequestContext(scopes: ["https://database.windows.net/.default"]),
