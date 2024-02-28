@@ -33,7 +33,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     {
         _checkListValidatorMock = Substitute.For<ICheckListValidator>();
 
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
         _projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
@@ -65,7 +65,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task Exists_ShouldReturnTrue_WhenPunchItemExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);            
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);            
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -79,7 +79,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task Exists_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);    
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);    
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -95,7 +95,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnTrue_WhenPunchItemIsInClosedProject()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -109,7 +109,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemIsInOpenProject()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -123,7 +123,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task ProjectOwningPunchItemIsClosed_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -140,7 +140,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     {
         // Arrange
         _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(true);
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -155,7 +155,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     {
         // Arrange
         _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(false);
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -170,7 +170,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     {
         // Arrange
         _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(false);
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -186,7 +186,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsCleared_ShouldReturnFalse_WhenNotCleared()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -200,7 +200,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsCleared_ShouldReturnTrue_WhenCleared()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -214,7 +214,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsCleared_ShouldReturnFalse_WhenPunchNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -230,7 +230,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsVerified_ShouldReturnFalse_WhenClearedButNotVerified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -244,7 +244,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsVerified_ShouldReturnTrue_WhenVerified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -258,7 +258,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task IsVerified_ShouldReturnFalse_WhenPunchNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -274,7 +274,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task HasCategory_ShouldReturnTrue_WhenPunchItemHasSameCategory()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -288,7 +288,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task HasCategory_ShouldReturnFalse_WhenPunchItemHasOtherCategory()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -304,7 +304,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task CurrentUserIsVerifier_ShouldReturnFalse_WhenClearedButNotVerified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -318,7 +318,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task CurrentUserIsVerifier_ShouldReturnTrue_WhenVerifiedByCurrentUser()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act
@@ -332,7 +332,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task CurrentUserIsVerifier_ShouldReturnFalse_WhenVerifiedByOtherThanCurrentUser()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
         _currentUserProviderMock.GetCurrentUserOid().Returns(Guid.NewGuid());
 
@@ -347,7 +347,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task CurrentUserIsVerifier_ShouldReturnFalse_WhenPunchNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
         // Act

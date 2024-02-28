@@ -23,7 +23,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnEmptyList_WhenNoMailTemplatesExists()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new GetAllMailTemplatesQueryHandler(context);
 
@@ -40,7 +40,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectNumberOfMailTemplates()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(context);
 
         var dut = new GetAllMailTemplatesQueryHandler(context);
@@ -56,7 +56,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectOrderedMailTemplates()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(context);
 
         var dut = new GetAllMailTemplatesQueryHandler(context);
@@ -78,7 +78,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnBothVoidedAndNonVoidedMailTemplates()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(context);
 
         var dut = new GetAllMailTemplatesQueryHandler(context);
@@ -99,7 +99,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnBothGlobalAndPlantSpecificMailTemplates()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(context);
         Add4UnorderedMailTemplatesForPlantInclusiveAVoidedMailTemplate(context, TestPlantA);
 
@@ -131,7 +131,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldOrderGlobalMailTemplatesBeforePlantSpecificMailTemplates()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedGlobalMailTemplatesInclusiveAVoidedMailTemplate(context);
         Add4UnorderedMailTemplatesForPlantInclusiveAVoidedMailTemplate(context, TestPlantA);
 

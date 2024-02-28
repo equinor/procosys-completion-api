@@ -17,7 +17,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _nonVoidedLabel = new Label("D1");
         _voidedLabel = new Label("D2") { IsVoided = true };
@@ -32,7 +32,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnTrue_WhenLabelExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new LabelValidator(context);
 
         // Act
@@ -46,7 +46,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
     public async Task ExistsAsync_ShouldReturnFalse_WhenLabelNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new LabelValidator(context);
 
         // Act
@@ -62,7 +62,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnTrue_WhenLabelIsVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new LabelValidator(context);
 
         // Act
@@ -76,7 +76,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenLabelIsNotVoided()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new LabelValidator(context);
 
         // Act
@@ -90,7 +90,7 @@ public class LabelValidatorTests : ReadOnlyTestsBase
     public async Task IsVoided_ShouldReturnFalse_WhenLabelNotExist()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new LabelValidator(context);
 
         // Act

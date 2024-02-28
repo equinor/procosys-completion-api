@@ -22,7 +22,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnEmptyList_WhenNoLabelsExists()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new GetAllLabelsQueryHandler(context);
 
@@ -39,7 +39,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectNumberOfLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedLabelsInclusiveAVoidedLabel(context);
 
         var dut = new GetAllLabelsQueryHandler(context);
@@ -57,7 +57,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectOrderedLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedLabelsInclusiveAVoidedLabel(context);
 
         var dut = new GetAllLabelsQueryHandler(context);
@@ -79,7 +79,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnBothVoidedAndNonVoidedLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         Add4UnorderedLabelsInclusiveAVoidedLabel(context);
 
         var dut = new GetAllLabelsQueryHandler(context);

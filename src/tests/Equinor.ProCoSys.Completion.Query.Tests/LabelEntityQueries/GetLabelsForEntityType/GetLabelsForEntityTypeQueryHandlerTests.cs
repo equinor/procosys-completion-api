@@ -20,7 +20,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         Add4UnorderedLabelsInclusiveAVoidedLabel(context);
         var labelA = context.Labels.Single(l => l.Text == LabelTextA);
@@ -45,7 +45,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnEmptyList_WhenEntityHasNoLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetLabelsForEntityTypeQuery(_entityTypeWithoutLabels);
         var dut = new GetLabelsForEntityTypeQueryHandler(context);
@@ -63,7 +63,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectNumberOfLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityTypeQueryHandler(context);
@@ -81,7 +81,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldReturnCorrectOrderedNonVoidedLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityTypeQueryHandler(context);
@@ -102,7 +102,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handler_ShouldNotReturnVoidedLabels()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetLabelsForEntityTypeQuery(_entityTypeWith3NonVoidedLabels);
         var dut = new GetLabelsForEntityTypeQueryHandler(context);

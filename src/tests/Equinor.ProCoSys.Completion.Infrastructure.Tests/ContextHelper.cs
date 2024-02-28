@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Common;
+﻿using Azure.Core;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -13,11 +14,13 @@ public class ContextHelper
         EventDispatcherMock = Substitute.For<IEventDispatcher>();
         PlantProviderMock = Substitute.For<IPlantProvider>();
         CurrentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        TokenCredentialMock = Substitute.For<TokenCredential>();
         ContextMock = Substitute.For<CompletionContext>(
             DbOptions,
             PlantProviderMock,
             EventDispatcherMock,
-            CurrentUserProviderMock);
+            CurrentUserProviderMock,
+            TokenCredentialMock);
     }
 
     private DbContextOptions<CompletionContext> DbOptions { get; }
@@ -25,4 +28,5 @@ public class ContextHelper
     private IPlantProvider PlantProviderMock { get; }
     public CompletionContext ContextMock { get; }
     private ICurrentUserProvider CurrentUserProviderMock { get; }
+    private TokenCredential TokenCredentialMock { get; }
 }

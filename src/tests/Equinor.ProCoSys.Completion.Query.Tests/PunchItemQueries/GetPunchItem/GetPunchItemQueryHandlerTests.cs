@@ -53,7 +53,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _currentPerson = context.Persons.Single(p => p.Guid == CurrentUserOid);
         var projectA = context.Projects.Single(p => p.Id == _projectAId[_testPlant]);
@@ -124,7 +124,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     [TestMethod]
     public async Task Handle_ShouldThrowException_WhenUnknownPunch()
     {
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var query = new GetPunchItemQuery(Guid.Empty);
         var dut = new GetPunchItemQueryHandler(context);
@@ -138,7 +138,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _createdPunchItem;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -173,7 +173,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _modifiedPunchItem;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -207,7 +207,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnCorrectClearedPunchItem_WhenPunchItemCleared()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _clearedPunchItem;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -241,7 +241,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnCorrectVerifiedPunchItem_WhenPunchItemVerified()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _verifiedPunchItem;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -275,7 +275,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnCorrectRejectedPunchItem_WhenPunchItemRejected()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _rejectedPunchItem;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -309,7 +309,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithPriority()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithPriority;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -331,7 +331,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithSorting()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithSorting;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -353,7 +353,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithType()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithType;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -375,7 +375,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithDocument()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithDocument;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -397,7 +397,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithWorkOrder()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithWorkOrder;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -419,7 +419,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithOriginalWorkOrder()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithOriginalWorkOrder;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -441,7 +441,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithSWCR()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithSWCR;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -463,7 +463,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutPriority()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutPriority;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -483,7 +483,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutSorting()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutSorting;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -503,7 +503,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutType()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutType;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -523,7 +523,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutDocument()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutDocument;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -543,7 +543,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutOriginalWorkOrder()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutOriginalWorkOrder;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -563,7 +563,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutSWCR()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutSWCR;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
@@ -583,7 +583,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
     public async Task Handle_ShouldReturnPunchItem_WithoutWorkOrder()
     {
         // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutWorkOrder;
         var query = new GetPunchItemQuery(testPunchItem.Guid);
