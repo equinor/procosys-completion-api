@@ -49,7 +49,6 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         _eventDispatcher = eventDispatcher;
         _currentUserProvider = currentUserProvider;
 
-
         // ReSharper disable once VirtualMemberCallInConstructor
         var database = Database;
 
