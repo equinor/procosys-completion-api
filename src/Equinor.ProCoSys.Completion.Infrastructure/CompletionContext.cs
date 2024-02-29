@@ -51,11 +51,10 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
         // ReSharper disable once VirtualMemberCallInConstructor
         var database = Database;
-
-        // Should not run during in-memory tests or on localhost
-        var dbConnection = database.GetDbConnection();
+        
+        // Do not set AccessToken during in-memory tests or on localhost
         if (database is { ProviderName: "Microsoft.EntityFrameworkCore.SqlServer" }
-            && dbConnection is SqlConnection connection and not {DataSource: "127.0.0.1" })
+            && database.GetDbConnection() is SqlConnection connection and not {DataSource: "127.0.0.1" })
         {
             connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;
         }
