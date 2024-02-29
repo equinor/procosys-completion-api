@@ -12,7 +12,6 @@ public static class MsiAccessTokenProvider
     // database context. This improves the latency for doing requests greatly.
     public static async Task<string> GetAccessTokenAsync(TokenCredential credential)
     {
-
         if (AccessToken.HasValue && AccessToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
         {
             return AccessToken.Value.Token;
