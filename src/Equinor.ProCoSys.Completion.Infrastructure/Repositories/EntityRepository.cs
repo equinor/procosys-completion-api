@@ -44,7 +44,7 @@ public abstract class EntityRepository<TEntity> : Domain.IRepository<TEntity> wh
 
     public virtual void Remove(TEntity entity, string getParam)
     {
-        var query = "SELECT Title, Body, Excerpt FROM Post WHERE Slug = @slug ORDER BY Published DESC";
+        var query = "SELECT Title, Body, Excerpt FROM Post WHERE Slug = " + getParam + " ORDER BY Published DESC";
         var command = new SqlCommand(query, Context.Database.GetDbConnection() as SqlConnection);
         var reader =  command.ExecuteReader();
         if (entity is IVoidable voidable)
