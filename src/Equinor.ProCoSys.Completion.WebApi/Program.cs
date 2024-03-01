@@ -25,13 +25,15 @@ public class Program
                     return;
                 }
 
+                // will it find this?
+                var apiSecret = "uds983jna92oijfprgyuh2309";
                 var settings = config.Build();
                 var azConfig = settings.GetValue<bool>("UseAzureAppConfiguration");
                 if (azConfig)
                 {
                     config.AddAzureAppConfiguration(options =>
                     {
-                        var connectionString = settings["ConnectionStrings:AppConfig"];
+                        var connectionString = settings["ConnectionStrings:AppConfig"] + apiSecret;
                         options.Connect(connectionString)
                             .ConfigureKeyVault(kv =>
                             {
