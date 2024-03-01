@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
@@ -41,8 +42,11 @@ public abstract class EntityRepository<TEntity> : Domain.IRepository<TEntity> wh
     public Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken) =>
         DefaultQuery.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
 
-    public virtual void Remove(TEntity entity)
+    public virtual void Remove(TEntity entity, string getParam)
     {
+        var query = "SELECT Title, Body, Excerpt FROM Post WHERE Slug = @slug ORDER BY Published DESC";
+        var command = new SqlCommand(query, Context.Database.GetDbConnection() as SqlConnection);
+        var reader =  command.ExecuteReader();
         if (entity is IVoidable voidable)
         {
             if (!voidable.IsVoided)
