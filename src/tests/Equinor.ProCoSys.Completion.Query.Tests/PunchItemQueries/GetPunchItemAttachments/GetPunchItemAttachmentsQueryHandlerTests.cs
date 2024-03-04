@@ -66,6 +66,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             Assert.IsTrue(attachment.Labels.Any(l => l == labelText));
         }
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
+        Assert.AreEqual(_attachmentDto.SasUri, attachment.SasUri);
         Assert.AreEqual(_attachmentDto.RowVersion, attachment.RowVersion);
 
         var createdBy = attachment.CreatedBy;
