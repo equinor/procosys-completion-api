@@ -38,12 +38,12 @@ public class Program
                                 kv.SetCredential(new ManagedIdentityCredential());
                             })
                             .Select(KeyFilter.Any)
-                            .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName);
-                            //.ConfigureRefresh(refreshOptions =>
-                            //{
-                            //    refreshOptions.Register("Sentinel", true);
-                            //    refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
-                            //});
+                            .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName)
+                            .ConfigureRefresh(refreshOptions =>
+                            {
+                                refreshOptions.Register("Sentinel", true);
+                                refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
+                            });
                     });
                 }
             })
