@@ -20,7 +20,7 @@ public class AttachmentService : IAttachmentService
     private readonly IReadOnlyContext _context;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private IWebHostEnvironment _environment;
+    private readonly IWebHostEnvironment _environment;
 
     public AttachmentService(
         IReadOnlyContext context,
