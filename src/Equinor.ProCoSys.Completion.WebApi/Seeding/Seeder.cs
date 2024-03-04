@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -42,7 +43,8 @@ public class Seeder : IHostedService
             scope.ServiceProvider.GetRequiredService<DbContextOptions<CompletionContext>>(),
             plantProvider,
             scope.ServiceProvider.GetRequiredService<IEventDispatcher>(),
-            userProvider);
+            userProvider,
+            scope.ServiceProvider.GetRequiredService<TokenCredential>());
         
         // If the seeder user exists in the database, it's already been seeded. Don't seed again.
         if (await dbContext.Persons.AnyAsync(p => p.Guid == s_seederUser.Guid, cancellationToken: cancellationToken))

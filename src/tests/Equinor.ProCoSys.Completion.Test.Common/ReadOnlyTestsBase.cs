@@ -15,6 +15,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using NSubstitute;
+using Azure.Core;
+using System.Threading;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -45,6 +47,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected DbContextOptions<CompletionContext> _dbContextOptions;
     protected ICurrentUserProvider _currentUserProviderMock;
     protected IEventDispatcher _eventDispatcherMock;
+    protected TokenCredential _tokenCredentialsMock;
 
     [TestInitialize]
     public void SetupBase()
@@ -54,11 +57,17 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
         _eventDispatcherMock = Substitute.For<IEventDispatcher>();
 
+        var fakeToken = new AccessToken("FakeToken", DateTimeOffset.MaxValue);
+        _tokenCredentialsMock = Substitute.For<TokenCredential>();
+        _tokenCredentialsMock.GetTokenAsync(Arg.Any<TokenRequestContext>(), Arg.Any<CancellationToken>())
+                   .Returns(fakeToken);
+
         _dbContextOptions = new DbContextOptionsBuilder<CompletionContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
             
         // ensure current user exists in db. Will be used when setting createdby / modifiedby
         if (context.Persons.SingleOrDefault(p => p.Guid == CurrentUserOid) is null)
@@ -136,7 +145,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
     protected Project GetProjectById(int projectId)
     {
-        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock);
+        using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         return context.Projects.Single(x => x.Id == projectId);
     }
 
