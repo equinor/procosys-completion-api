@@ -58,9 +58,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         _modifiedAttachmentGuid = _modifiedAttachment.Guid;
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
-
         _webHostEnvironmentMock = Substitute.For<IWebHostEnvironment>();
-        _webHostEnvironmentMock.EnvironmentName.Returns(Environments.Production);
 
         _blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
         var blobStorageOptions = new BlobStorageOptions

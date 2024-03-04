@@ -7,7 +7,7 @@ public record AttachmentDto(
     Guid ParentGuid,
     Guid Guid,
     string FullBlobPath,
-    string? SasUri,
+    string SasUri,
     string FileName,
     string Description,
     List<string> Labels,
