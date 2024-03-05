@@ -18,7 +18,7 @@ public class GetPunchItemAttachmentsQueryValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid());
+        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid(), null, null);
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_query.PunchItemGuid, default).Returns(true);
 

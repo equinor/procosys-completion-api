@@ -7,6 +7,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,20 +19,25 @@ public class AttachmentService : IAttachmentService
     private readonly IReadOnlyContext _context;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
+    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions;
 
     public AttachmentService(
         IReadOnlyContext context,
         IAzureBlobService azureBlobService,
-        IOptionsSnapshot<BlobStorageOptions> blobStorageOptions)
+        IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
+        IOptionsSnapshot<ApplicationOptions> applicationOptions)
     {
         _context = context;
         _azureBlobService = azureBlobService;
         _blobStorageOptions = blobStorageOptions;
+        _applicationOptions = applicationOptions;
     }
 
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? fromIpAddress = null,
+        string? toIpAddress = null)
     {
         var attachments =
             await (from a in _context.QuerySet<Attachment>()
@@ -43,11 +49,14 @@ public class AttachmentService : IAttachmentService
                 .TagWith($"{nameof(AttachmentService)}.{nameof(GetAllForParentAsync)}")
                 .ToListAsync(cancellationToken);
 
+        var sasUris = GenerateDownloadSasUris(attachments, fromIpAddress, toIpAddress);
+
         var attachmentsDtos = 
                 attachments.Select(a => new AttachmentDto(
                     a.ParentGuid,
                     a.Guid,
                     a.GetFullBlobPath(),
+                    sasUris[a.Guid].ToString(),
                     a.FileName,
                     a.Description,
                     a.GetOrderedNonVoidedLabels().Select(l => l.Text).ToList(),
@@ -80,13 +89,7 @@ public class AttachmentService : IAttachmentService
             return null;
         }
 
-        var now = TimeService.UtcNow;
-        var fullBlobPath = attachment.GetFullBlobPath();
-        var uri = _azureBlobService.GetDownloadSasUri(
-            _blobStorageOptions.Value.BlobContainer,
-            fullBlobPath,
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)));
+        var uri = GetSasUri(attachment);
         return uri;
     }
 
@@ -103,5 +106,28 @@ public class AttachmentService : IAttachmentService
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
         return attachment;
+    }
+
+    private Dictionary<Guid, Uri> GenerateDownloadSasUris(
+        List<Attachment> attachments, 
+        string? fromIpAddress = null, 
+        string? toIpAddress = null) =>
+        attachments.Select(x => new
+        {
+            uri = GetSasUri(x, fromIpAddress, toIpAddress),
+            guid = x.Guid    
+        }).ToDictionary(item => item.guid, item => item.uri);
+
+
+    private Uri GetSasUri(Attachment x, string? fromIpAddress = null, string? toIpAddress = null) {
+        var now = TimeService.UtcNow;
+        return _azureBlobService.GetDownloadSasUri(
+            _blobStorageOptions.Value.BlobContainer,
+            x.GetFullBlobPath(),
+            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
+            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)),
+            _applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
+            _applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
+        );
     }
 }

@@ -512,7 +512,7 @@ public class PunchItemsControllerTests : TestBase
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<DateTimeOffset>())
             .Returns(uri);
-
+ 
         // Act
         var attachmentUrl = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Reader,

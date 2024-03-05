@@ -21,12 +21,13 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid());
+        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid(), null, null);
 
         _attachmentDto = new AttachmentDto(
             _query.PunchItemGuid,
             Guid.NewGuid(),
             "full/path",
+            "sasURI/uri",
             "F.txt",
             "Desc",
             new List<string>{"A"},
@@ -65,6 +66,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
             Assert.IsTrue(attachment.Labels.Any(l => l == labelText));
         }
         Assert.AreEqual(_attachmentDto.FullBlobPath, attachment.FullBlobPath);
+        Assert.AreEqual(_attachmentDto.SasUri, attachment.SasUri);
         Assert.AreEqual(_attachmentDto.RowVersion, attachment.RowVersion);
 
         var createdBy = attachment.CreatedBy;

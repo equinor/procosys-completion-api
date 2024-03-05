@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
@@ -586,7 +587,17 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid), cancellationToken);
+
+        var ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+        // If X-Forwarded-For header is present, use the first IP address
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            // If X-Forwarded-For header is not present, fallback to HttpContext.Connection.RemoteIpAddress
+            ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+        }
+
+        var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
 
