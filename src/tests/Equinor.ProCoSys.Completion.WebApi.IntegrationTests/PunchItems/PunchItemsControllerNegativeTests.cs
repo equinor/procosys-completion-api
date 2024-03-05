@@ -21,6 +21,7 @@ public class PunchItemsControllerNegativeTests : TestBase
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
         _linkGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].LinkInPunchItemAGuid;
         _attachmentGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].AttachmentInPunchItemAGuid;
+        TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
 
         await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }

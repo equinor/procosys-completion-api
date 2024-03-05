@@ -276,6 +276,18 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             .Returns(Task.FromResult(testUser.Restrictions));
     }
 
+    public void SetupBlobStorageMock(Uri uri) 
+    {
+        BlobStorageMock.GetDownloadSasUri(
+            Arg.Any<string>(), 
+            Arg.Any<string>(), 
+            Arg.Any<DateTimeOffset>(), 
+            Arg.Any<DateTimeOffset>(), 
+            Arg.Any<string>(), 
+            Arg.Any<string>())
+            .Returns(uri);
+    }
+
     private void SetupTestUsers()
     {
         var accessablePlants = new List<AccessablePlant>

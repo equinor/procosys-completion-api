@@ -21,7 +21,7 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid());
+        _query = new GetPunchItemAttachmentsQuery(Guid.NewGuid(), null, null);
 
         _attachmentDto = new AttachmentDto(
             _query.PunchItemGuid,
