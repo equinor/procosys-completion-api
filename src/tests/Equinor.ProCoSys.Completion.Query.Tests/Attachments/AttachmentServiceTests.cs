@@ -12,7 +12,6 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using NSubstitute;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
 using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
