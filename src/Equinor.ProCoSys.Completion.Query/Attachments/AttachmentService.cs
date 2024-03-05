@@ -7,6 +7,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,18 +20,18 @@ public class AttachmentService : IAttachmentService
     private readonly IReadOnlyContext _context;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IConfiguration _configuration;
+    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions;
 
     public AttachmentService(
         IReadOnlyContext context,
         IAzureBlobService azureBlobService,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IConfiguration configuration)
+        IOptionsSnapshot<ApplicationOptions> applicationOptions)
     {
         _context = context;
         _azureBlobService = azureBlobService;
         _blobStorageOptions = blobStorageOptions;
-        _configuration = configuration;
+        _applicationOptions = applicationOptions;
     }
 
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
@@ -126,8 +127,8 @@ public class AttachmentService : IAttachmentService
             x.GetFullBlobPath(),
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)),
-            _configuration.GetValue<bool>("DevOnLocalhost") ? null : fromIpAddress,
-            _configuration.GetValue<bool>("DevOnLocalhost") ? null : toIpAddress
+            _applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
+            _applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
         );
     }
 }

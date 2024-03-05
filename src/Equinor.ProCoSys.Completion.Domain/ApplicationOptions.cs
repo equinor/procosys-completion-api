@@ -8,4 +8,5 @@ public class ApplicationOptions
     public string RejectLabel { get; set; }
     public bool SyncChangesWithPcs4 { get; set; }
     public bool FakeEmail { get; set; }
+    public bool DevOnLocalhost { get; set; }
 }

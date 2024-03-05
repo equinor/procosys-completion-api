@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using NSubstitute;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
+using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
 
@@ -28,7 +29,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     private Guid _parentGuid;
     private IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
     private IAzureBlobService _azureBlobServiceMock;
-    private IConfiguration _configuration;
+    private IOptionsSnapshot<ApplicationOptions> _applicationOptionsMock;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -58,12 +59,6 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
 
-        _configuration = new ConfigurationBuilder().AddInMemoryCollection(
-            new Dictionary<string, string> { 
-                {"DevOnLocalhost", "false"}
-            })
-            .Build();
-
         _blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
         var blobStorageOptions = new BlobStorageOptions
         {
@@ -72,6 +67,13 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         _blobStorageOptionsMock
             .Value
             .Returns(blobStorageOptions);
+
+        _applicationOptionsMock = Substitute.For<IOptionsSnapshot<ApplicationOptions>>();
+        var appOptions = new ApplicationOptions
+        {
+            DevOnLocalhost = false,
+        };
+        _applicationOptionsMock.Value.Returns(appOptions);
     }
 
     [TestMethod]
@@ -85,7 +87,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         var p = _createdAttachment.GetFullBlobPath();
         _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), fromIpAddress, toIpAddress).Returns(uri);
 
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _configuration);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.GetAllForParentAsync(_parentGuid, default, fromIpAddress, toIpAddress);
@@ -117,7 +119,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _configuration);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.ExistsAsync(_createdAttachment.Guid, default);
@@ -131,7 +133,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _configuration);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.ExistsAsync(Guid.NewGuid(), default);
