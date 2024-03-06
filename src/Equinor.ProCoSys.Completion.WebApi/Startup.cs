@@ -30,6 +30,7 @@ using System.IO;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -49,30 +50,25 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        if (_environment.IsDevelopment() || _environment.IsTest())
+        var devOnLocalhost = Configuration.GetValue<bool>("Application:DevOnLocalhost");
+
+        if (devOnLocalhost && Configuration.GetValue<bool>("MigrateDatabase"))
         {
-            var migrateDatabase = Configuration.GetValue<bool>("MigrateDatabase");
-            if (migrateDatabase)
-            {
-                services.AddHostedService<DatabaseMigrator>();
-            }
+            services.AddHostedService<DatabaseMigrator>();
+
+            DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
         }
 
-        if (_environment.IsDevelopment())
+        if (!_environment.IsProduction() && Configuration.GetValue<bool>("SeedDummyData"))
         {
-            DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
-
-            if (Configuration.GetValue<bool>("SeedDummyData"))
-            {
-                services.AddHostedService<Seeder>();
-            }
+            services.AddHostedService<Seeder>();
         }
 
         // ChainedTokenCredential iterates through each credential passed to it in order, when running locally
         // DefaultAzureCredential will probably fail locally, so if an instance of Azure Cli is logged in, those credentials will be used
         // If those credentials fail, the next credentials will be those of the current user logged into the local Visual Studio Instance
         // which is also the most likely case
-        TokenCredential credential = _environment.IsDevelopment() switch
+        TokenCredential credential = devOnLocalhost switch
         {
             true
                 => new ChainedTokenCredential(
@@ -183,6 +179,13 @@ public class Startup
 
         services.AddPcsAuthIntegration();
 
+        if (!devOnLocalhost)
+        {
+            services.Configure<TelemetryConfiguration>(config =>
+            {
+                config.SetAzureTokenCredential(credential);
+            });
+        }
         services.AddApplicationInsightsTelemetry(options =>
         {
             options.ConnectionString = Configuration.GetRequiredConfiguration("ApplicationInsights:ConnectionString");
