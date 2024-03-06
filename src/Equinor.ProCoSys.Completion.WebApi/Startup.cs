@@ -30,6 +30,7 @@ using System.IO;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Azure.Core;
 using Azure.Identity;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
@@ -50,7 +51,7 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        var devOnLocalhost = Configuration.GetValue<bool>("Application:DevOnLocalhost");
+        var devOnLocalhost = Configuration.IsDevOnLocalhost();
 
         if (devOnLocalhost && Configuration.GetValue<bool>("MigrateDatabase"))
         {
