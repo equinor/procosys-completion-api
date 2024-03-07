@@ -17,19 +17,19 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptions;
     
     public PersonEventConsumer(ILogger<PersonEventConsumer> logger, 
         IPersonRepository personRepository, 
         IUnitOfWork unitOfWork, 
         ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<CompletionAuthenticatorOptions> options)
+        IOptionsMonitor<AzureAdOptions> azureAdOptions)
     {
         _logger = logger;
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
-        _options = options;
+        _azureAdOptions = azureAdOptions;
     }
 
     public async Task Consume(ConsumeContext<PersonEvent> context)
@@ -68,7 +68,7 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
 
         MapFromEventToPerson(personEvent, person);
 
-        _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
+        _currentUserSetter.SetCurrentUserOid(_azureAdOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",

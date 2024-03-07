@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
@@ -20,19 +19,16 @@ public class PersonEventConsumerTests
     private readonly IPersonRepository _personRepoMock = Substitute.For<IPersonRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly PersonEventConsumer _personEventConsumer;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _optionsMock = Substitute.For<IOptionsMonitor<CompletionAuthenticatorOptions>>();
+    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptionsMock = Substitute.For<IOptionsMonitor<AzureAdOptions>>();
     private readonly ConsumeContext<PersonEvent> _contextMock = Substitute.For<ConsumeContext<PersonEvent>>();
 
     public PersonEventConsumerTests() =>
         _personEventConsumer = new PersonEventConsumer(Substitute.For<ILogger<PersonEventConsumer>>(), _personRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _optionsMock);
+            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _azureAdOptionsMock);
 
     [TestInitialize]
-    public void Setup()
-    {
-        _optionsMock.CurrentValue.Returns(new CompletionAuthenticatorOptions { CompletionApiObjectId = new Guid() });
-    }
-    
+    public void Setup() => _azureAdOptionsMock.CurrentValue.Returns(new AzureAdOptions { ObjectId = new Guid() });
+
     [TestMethod]
     public async Task Consume_ShouldUpdatePerson_WhenPersonExists()
     {
@@ -68,7 +64,7 @@ public class PersonEventConsumerTests
         Assert.AreEqual(guid, personToUpdate.Guid);
         Assert.AreEqual("Average Max", personToUpdate.FirstName);
         Assert.AreEqual(true, personToUpdate.Superuser);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
     
     [TestMethod]
@@ -119,7 +115,7 @@ public class PersonEventConsumerTests
         await _personRepoMock.Received(1).GetAsync(guid, default);
         _personRepoMock.Received(0).Remove(person);
         _personRepoMock.Received(0).Add(person);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -147,7 +143,7 @@ public class PersonEventConsumerTests
         //Assert
         await _personRepoMock.Received(1).ExistsAsync(guid, default);
         await _personRepoMock.Received(0).GetAsync(guid, default);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
     [TestMethod]

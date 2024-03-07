@@ -365,10 +365,10 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
 
         // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
-        var apiObjectId = config["Authenticator:CompletionApiObjectId"];
+        var apiObjectId = config["AzureAd:ObjectId"];
         if (apiObjectId is null)
         {
-            throw new Exception("Config missing: Authenticator:CompletionApiObjectId");
+            throw new Exception("Config missing: AzureAd:ObjectId");
         }
         _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId))
             .Returns(Task.FromResult(new ProCoSysPerson

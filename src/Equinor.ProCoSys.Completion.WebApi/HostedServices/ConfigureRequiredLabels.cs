@@ -25,12 +25,12 @@ public class ConfigureRequiredLabels : IHostedService
     public ConfigureRequiredLabels(
         IServiceScopeFactory serviceScopeFactory,
         IOptionsMonitor<ApplicationOptions> applicationOptions,
-        IOptionsMonitor<CompletionAuthenticatorOptions> completionAuthenticatorOptions,
+        IOptionsMonitor<AzureAdOptions> azureAdOptions,
         ILogger<ConfigureRequiredLabels> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _completionApiObjectId = completionAuthenticatorOptions.CurrentValue.CompletionApiObjectId;
+        _completionApiObjectId = azureAdOptions.CurrentValue.ObjectId;
         _rejectLabelText = applicationOptions.CurrentValue.RejectLabel;
     }
 

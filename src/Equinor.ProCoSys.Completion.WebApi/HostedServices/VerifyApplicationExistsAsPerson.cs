@@ -13,22 +13,22 @@ using Microsoft.Extensions.Options;
 namespace Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 /// <summary>
-/// Ensure that CompletionApiObjectId (i.e the application) exists as Person.
+/// Ensure that ObjectId (i.e. the application) exists as Person.
 /// Needed when application modifies data, setting ModifiedById for changed records
 /// </summary>
 public class VerifyApplicationExistsAsPerson : IHostedService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptions;
     private readonly ILogger<VerifyApplicationExistsAsPerson> _logger;
 
     public VerifyApplicationExistsAsPerson(
         IServiceScopeFactory serviceScopeFactory,
-        IOptionsMonitor<CompletionAuthenticatorOptions> options, 
+        IOptionsMonitor<AzureAdOptions> azureAdOptions, 
         ILogger<VerifyApplicationExistsAsPerson> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _options = options;
+        _azureAdOptions = azureAdOptions;
         _logger = logger;
     }
 
@@ -43,7 +43,7 @@ public class VerifyApplicationExistsAsPerson : IHostedService
             scope.ServiceProvider
                 .GetRequiredService<ICurrentUserSetter>();
 
-        var oid = _options.CurrentValue.CompletionApiObjectId;
+        var oid = _azureAdOptions.CurrentValue.ObjectId;
         _logger.LogInformation("Ensuring {Oid} exists as Person", oid);
         try
         {

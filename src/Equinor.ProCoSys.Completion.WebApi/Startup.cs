@@ -87,7 +87,7 @@ public class Startup
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                Configuration.Bind("API", options); //TODO #104226 "Used standardized config section names for Azure Ad config"
+                Configuration.Bind("AzureAd", options);
             });
 
         services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
@@ -126,7 +126,8 @@ public class Startup
             typeof(Startup).Assembly
         });
 
-        var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+        var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ??
+                     new Dictionary<string, string>();
 
         services.AddSwaggerExamplesFromAssemblyOf<Startup>();
         services.AddSwaggerGen(c =>
@@ -226,7 +227,7 @@ public class Startup
             c.OAuthClientId(Configuration["Swagger:ClientId"]);
             c.OAuthAppName("ProCoSys Completion API V1");
             c.OAuthScopeSeparator(" ");
-            var audience = Configuration.GetRequiredConfiguration("API:Audience");
+            var audience = Configuration.GetRequiredConfiguration("AzureAd:Audience");
             c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "resource", audience } });
         });
 

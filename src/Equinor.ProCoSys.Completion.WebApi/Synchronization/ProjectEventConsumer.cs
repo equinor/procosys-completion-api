@@ -17,19 +17,19 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     private readonly IProjectRepository _projectRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptions;
     
     public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger, 
         IProjectRepository projectRepository, 
         IUnitOfWork unitOfWork, 
         ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<CompletionAuthenticatorOptions> options)
+        IOptionsMonitor<AzureAdOptions> azureAdOptions)
     {
         _logger = logger;
         _projectRepository = projectRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
-        _options = options;
+        _azureAdOptions = azureAdOptions;
     }
 
     public async Task Consume(ConsumeContext<ProjectEvent> context)
@@ -66,7 +66,7 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
             var project = CreateProjectEntity(projectEvent);
             _projectRepository.Add(project);
         }
-        _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
+        _currentUserSetter.SetCurrentUserOid(_azureAdOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
         
         _logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 

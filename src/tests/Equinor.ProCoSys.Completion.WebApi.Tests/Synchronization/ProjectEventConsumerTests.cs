@@ -19,18 +19,18 @@ public class ProjectEventConsumerTests
     private readonly IProjectRepository _projectRepoMock = Substitute.For<IProjectRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly ProjectEventConsumer _projectEventConsumer;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _optionsMock = Substitute.For<IOptionsMonitor<CompletionAuthenticatorOptions>>();
+    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptionsMock = Substitute.For<IOptionsMonitor<AzureAdOptions>>();
     private readonly ConsumeContext<ProjectEvent> _contextMock = Substitute.For<ConsumeContext<ProjectEvent>>();
     private Project? _projectAddedToRepository;
 
     public ProjectEventConsumerTests() =>
         _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _projectRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _optionsMock);
+            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _azureAdOptionsMock);
 
     [TestInitialize]
     public void Setup()
     {
-        _optionsMock.CurrentValue.Returns(new CompletionAuthenticatorOptions { CompletionApiObjectId = new Guid() });
+        _azureAdOptionsMock.CurrentValue.Returns(new AzureAdOptions { ObjectId = new Guid() });
         
         _projectRepoMock
             .When(x => x.Add(Arg.Any<Project>()))
