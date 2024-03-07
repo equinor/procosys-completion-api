@@ -1,6 +1,7 @@
 ﻿using System;
 using Azure.Identity;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
@@ -35,7 +36,14 @@ public class Program
                         options.Connect(connectionString)
                             .ConfigureKeyVault(kv =>
                             {
-                                kv.SetCredential(new ManagedIdentityCredential());
+                                if (settings.IsDevOnLocalhost())
+                                {
+                                    kv.SetCredential(new DefaultAzureCredential());
+                                }
+                                else
+                                {
+                                    kv.SetCredential(new ManagedIdentityCredential());
+                                }
                             })
                             .Select(KeyFilter.Any)
                             .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName)
