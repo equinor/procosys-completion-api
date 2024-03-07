@@ -39,8 +39,6 @@ public class AuthenticatorOptions : IAuthenticatorOptions
            throw new ArgumentNullException(
                $"{nameof(AzureAdOptions)}.{nameof(_azureAdOptions.CurrentValue.ClientSecret)} can't be null. Missing configuration?");
 
-    public Guid ObjectId => _azureAdOptions.CurrentValue.ObjectId;
-
     public bool DisableRestrictionRoleUserDataClaims
         => _azureAdOptions.CurrentValue.DisableRestrictionRoleUserDataClaims;
 

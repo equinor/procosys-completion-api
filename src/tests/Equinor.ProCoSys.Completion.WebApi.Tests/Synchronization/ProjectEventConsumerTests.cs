@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -19,18 +18,18 @@ public class ProjectEventConsumerTests
     private readonly IProjectRepository _projectRepoMock = Substitute.For<IProjectRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly ProjectEventConsumer _projectEventConsumer;
-    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptionsMock = Substitute.For<IOptionsMonitor<AzureAdOptions>>();
+    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<ProjectEvent> _contextMock = Substitute.For<ConsumeContext<ProjectEvent>>();
     private Project? _projectAddedToRepository;
 
     public ProjectEventConsumerTests() =>
         _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _projectRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _azureAdOptionsMock);
+            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
 
     [TestInitialize]
     public void Setup()
     {
-        _azureAdOptionsMock.CurrentValue.Returns(new AzureAdOptions { ObjectId = new Guid() });
+        _applicationOptionsMock.CurrentValue.Returns(new ApplicationOptions { ObjectId = new Guid() });
         
         _projectRepoMock
             .When(x => x.Add(Arg.Any<Project>()))
@@ -65,7 +64,7 @@ public class ProjectEventConsumerTests
         Assert.AreEqual(lastUpdated,_projectAddedToRepository.ProCoSys4LastUpdated);
         Assert.AreEqual(Description,_projectAddedToRepository.Description);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
     
     [TestMethod]
@@ -94,7 +93,7 @@ public class ProjectEventConsumerTests
         Assert.AreEqual(lastUpdated,projectToUpdate.ProCoSys4LastUpdated);
         Assert.AreEqual(Description,projectToUpdate.Description);
         Assert.AreEqual(ProjectName,projectToUpdate.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
     
     [TestMethod]
@@ -115,7 +114,7 @@ public class ProjectEventConsumerTests
         Assert.IsNotNull(_projectAddedToRepository);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Description);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -160,7 +159,7 @@ public class ProjectEventConsumerTests
         
         //Assert
         _projectRepoMock.Received(1).Remove(toDelete);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
         
     [TestMethod]
@@ -184,6 +183,6 @@ public class ProjectEventConsumerTests
         await _projectRepoMock.Received(1).GetAsync(guid, default);
         _projectRepoMock.Received(0).Remove(project);
         _projectRepoMock.Received(0).Add(project);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync(default);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 }

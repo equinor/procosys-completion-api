@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -19,7 +18,7 @@ public class PersonEventConsumerTests
     private readonly IPersonRepository _personRepoMock = Substitute.For<IPersonRepository>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly PersonEventConsumer _personEventConsumer;
-    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptionsMock = Substitute.For<IOptionsMonitor<AzureAdOptions>>();
+    private readonly IOptionsMonitor<ApplicationOptions> _azureAdOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<PersonEvent> _contextMock = Substitute.For<ConsumeContext<PersonEvent>>();
 
     public PersonEventConsumerTests() =>
@@ -27,7 +26,7 @@ public class PersonEventConsumerTests
             _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _azureAdOptionsMock);
 
     [TestInitialize]
-    public void Setup() => _azureAdOptionsMock.CurrentValue.Returns(new AzureAdOptions { ObjectId = new Guid() });
+    public void Setup() => _azureAdOptionsMock.CurrentValue.Returns(new ApplicationOptions { ObjectId = new Guid() });
 
     [TestMethod]
     public async Task Consume_ShouldUpdatePerson_WhenPersonExists()

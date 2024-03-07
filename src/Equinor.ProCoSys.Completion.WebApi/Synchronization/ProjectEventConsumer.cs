@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -17,19 +16,19 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     private readonly IProjectRepository _projectRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptions;
+    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
     
     public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger, 
         IProjectRepository projectRepository, 
         IUnitOfWork unitOfWork, 
         ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<AzureAdOptions> azureAdOptions)
+        IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
         _projectRepository = projectRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
-        _azureAdOptions = azureAdOptions;
+        _applicationOptions = applicationOptions;
     }
 
     public async Task Consume(ConsumeContext<ProjectEvent> context)
@@ -66,7 +65,7 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
             var project = CreateProjectEntity(projectEvent);
             _projectRepository.Add(project);
         }
-        _currentUserSetter.SetCurrentUserOid(_azureAdOptions.CurrentValue.ObjectId);
+        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
         
         _logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 

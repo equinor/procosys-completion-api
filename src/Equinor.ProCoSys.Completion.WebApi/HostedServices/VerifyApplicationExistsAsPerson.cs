@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PersonCommands.CreatePerson;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,16 +19,16 @@ namespace Equinor.ProCoSys.Completion.WebApi.HostedServices;
 public class VerifyApplicationExistsAsPerson : IHostedService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IOptionsMonitor<AzureAdOptions> _azureAdOptions;
+    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
     private readonly ILogger<VerifyApplicationExistsAsPerson> _logger;
 
     public VerifyApplicationExistsAsPerson(
         IServiceScopeFactory serviceScopeFactory,
-        IOptionsMonitor<AzureAdOptions> azureAdOptions, 
+        IOptionsMonitor<ApplicationOptions> applicationOptions, 
         ILogger<VerifyApplicationExistsAsPerson> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _azureAdOptions = azureAdOptions;
+        _applicationOptions = applicationOptions;
         _logger = logger;
     }
 
@@ -43,7 +43,7 @@ public class VerifyApplicationExistsAsPerson : IHostedService
             scope.ServiceProvider
                 .GetRequiredService<ICurrentUserSetter>();
 
-        var oid = _azureAdOptions.CurrentValue.ObjectId;
+        var oid = _applicationOptions.CurrentValue.ObjectId;
         _logger.LogInformation("Ensuring {Oid} exists as Person", oid);
         try
         {

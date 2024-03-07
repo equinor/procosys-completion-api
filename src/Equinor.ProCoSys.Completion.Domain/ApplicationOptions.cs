@@ -1,4 +1,6 @@
 ﻿#pragma warning disable CS8618
+using System;
+
 namespace Equinor.ProCoSys.Completion.Domain;
 
 public class ApplicationOptions
@@ -9,4 +11,5 @@ public class ApplicationOptions
     public bool SyncChangesWithPcs4 { get; set; }
     public bool FakeEmail { get; set; }
     public bool DevOnLocalhost { get; set; }
+    public Guid ObjectId { get; set; }
 }

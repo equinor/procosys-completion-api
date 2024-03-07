@@ -13,7 +13,6 @@ public class AzureAdOptions
 
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
-    public Guid ObjectId { get; set; }
 
     public bool DisableProjectUserDataClaims { get; set; }
     public bool DisableRestrictionRoleUserDataClaims { get; set; }
