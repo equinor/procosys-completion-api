@@ -35,6 +35,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.UtcNow, 
+            null,
+            null,
             null);
         
         // Act
@@ -68,6 +70,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.UtcNow,
+            null,
+            null,
             null);
 
         // Act
@@ -103,6 +107,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.UtcNow,
+            null,
+            null,
             null);
 
         // Act
@@ -137,6 +143,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.UtcNow,
+            null,
+            null,
             null);
 
         // Act
@@ -172,6 +180,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.UtcNow,
+            null,
+            null,
             null);
 
         // Act
@@ -207,6 +217,8 @@ public class CreatePunchItemDtoValidatorTests
             null,
             false,
             DateTime.Now,
+            null,
+            null,
             null);
 
         // Act

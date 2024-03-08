@@ -40,6 +40,21 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
         RevisionNumber = 1;
     }
 
+    public Attachment(string parentType, Guid parentGuid, string plant, string fileName, string description)
+    {
+        ParentType = parentType;
+        ParentGuid = parentGuid;
+        FileName = fileName;
+        Description = description;
+        Guid = MassTransit.NewId.NextGuid();
+        if (plant.Length < 5)
+        {
+            throw new ArgumentException($"{nameof(plant)} must have minimum length 5");
+        }
+        BlobPath = Path.Combine(plant.Substring(4), ParentType, Guid.ToString()).Replace("\\", "/");
+        RevisionNumber = 1;
+    }
+
     public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
     public IOrderedEnumerable<Label> GetOrderedNonVoidedLabels()
         => _labels.Where(l => !l.IsVoided).OrderBy(l => l.Text);

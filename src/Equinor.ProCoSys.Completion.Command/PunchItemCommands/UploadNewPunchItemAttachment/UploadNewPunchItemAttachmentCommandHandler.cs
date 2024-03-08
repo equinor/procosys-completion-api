@@ -20,6 +20,7 @@ public class UploadNewPunchItemAttachmentCommandHandler : IRequestHandler<Upload
             nameof(PunchItem),
             request.PunchItemGuid,
             request.FileName,
+            request.Description,
             request.Content,
             cancellationToken);
 

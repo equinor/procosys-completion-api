@@ -8,4 +8,5 @@ public abstract class UploadBaseDto
 {
     [Required]
     public IFormFile File { get; set; } = null!;
+    public string? Description { get; set; }
 }

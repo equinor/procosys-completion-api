@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
+using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 
@@ -24,4 +27,10 @@ public record CreatePunchItemDto(
     string? ExternalItemNo,
     bool MaterialRequired,
     DateTime? MaterialETAUtc,
-    string? MaterialExternalNo);
+    string? MaterialExternalNo,
+    CreateCommentDto[]? Comments,
+    UploadNewAttachmentDto[]? Attachements
+    );
+
+
+

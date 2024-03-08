@@ -29,6 +29,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.FileName,
+            _command.Description,
             _command.Content,
             default).Returns(new AttachmentDto(_guid, _rowVersion));
 
@@ -58,6 +59,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
             nameof(PunchItem), 
             _command.PunchItemGuid, 
             _command.FileName,
+            _command.Description,
             _command.Content,
             default);
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,8 +120,14 @@ public class PunchItemsController : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         CancellationToken cancellationToken,
-        [FromBody] CreatePunchItemDto dto)
+        [FromForm] CreatePunchItemDto dto
+        )
     {
+        var req = Request.HttpContext;
+        dto.ToString();
+        var cat = dto.Category;
+        
+
         var result = await _mediator.Send(new CreatePunchItemCommand(
             dto.Category,
             dto.Description,
@@ -143,6 +150,30 @@ public class PunchItemsController : ControllerBase
             dto.MaterialETAUtc,
             dto.MaterialExternalNo), 
             cancellationToken);
+
+        if (dto.Attachements != null && dto.Attachements.Length > 0) { 
+        
+            foreach (var att in dto.Attachements) { 
+                if (att != null)
+                {
+                    await using var stream = att.File.OpenReadStream();
+                    await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
+                    result.Data.Guid,
+                    att.File.FileName,
+                    att.Description,
+                    stream),
+                    cancellationToken);
+                }
+            }
+        }
+
+        if (dto?.Comments?.Any() == true) { 
+            foreach(var cmt in dto.Comments.Where(c => c != null)) {
+                await _mediator.Send(
+                    new CreatePunchItemCommentCommand(result.Data.Guid, cmt.Text, cmt.Labels, cmt.Mentions), cancellationToken);
+            }
+        }
+
         return this.FromResult(result);
     }
 
@@ -532,6 +563,7 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
             guid,
             dto.File.FileName,
+            dto.Description,
             stream), 
             cancellationToken);
         return this.FromResult(result);

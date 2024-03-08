@@ -99,7 +99,7 @@ public static class PunchItemsControllerTestsHelper
         var bodyPayload = new
         {
             category,
-            description,
+            description = "TEST",
             projectGuid = projectGuid.ToString(),
             checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),

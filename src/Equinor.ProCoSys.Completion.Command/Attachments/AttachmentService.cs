@@ -51,6 +51,7 @@ public class AttachmentService : IAttachmentService
         string parentType,
         Guid parentGuid,
         string fileName,
+        string? description,
         Stream content,
         CancellationToken cancellationToken)
     {
@@ -65,7 +66,8 @@ public class AttachmentService : IAttachmentService
             parentType,
             parentGuid,
             _plantProvider.Plant,
-            fileName);
+            fileName,
+            description ?? fileName);
         _attachmentRepository.Add(attachment);
 
         await UploadAsync(attachment, content, false, cancellationToken);

@@ -13,6 +13,7 @@ public interface IAttachmentService
         string parentType,
         Guid parentGuid,
         string fileName,
+        string? description,
         Stream content,
         CancellationToken cancellationToken);
 
