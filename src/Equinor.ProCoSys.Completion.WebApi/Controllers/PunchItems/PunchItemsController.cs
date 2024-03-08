@@ -40,6 +40,7 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ServiceResult;
 using ServiceResult.ApiExtensions;
 using Swashbuckle.AspNetCore.Filters;
@@ -54,8 +55,13 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 public class PunchItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<PunchItemsController> _logger;
 
-    public PunchItemsController(IMediator mediator) => _mediator = mediator;
+    public PunchItemsController(IMediator mediator, ILogger<PunchItemsController> logger)
+    {
+        _mediator = mediator;
+        _logger = logger;
+    }
 
     #region PunchItems
     /// <summary>
@@ -589,17 +595,26 @@ public class PunchItemsController : ControllerBase
     {
 
         var ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        _logger.LogInformation("X-Forwarded-For: {XForwardedFor}",  Request.Headers["X-Forwarded-For"].ToString());
 
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            ipAddress = Request.Headers["X-Real-IP"].FirstOrDefault();
+            _logger.LogInformation("X-Real-IP: {XRealIP}",  Request.Headers["X-Real-IP"].ToString());
+        }
+        
         // If X-Forwarded-For header is present, use the first IP address
         if (string.IsNullOrEmpty(ipAddress))
         {
             // If X-Forwarded-For header is not present, fallback to HttpContext.Connection.RemoteIpAddress
             ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            _logger.LogInformation("Connection IP: {ConnectionIp}",  Request.HttpContext.Connection.RemoteIpAddress?.ToString());
         }
 
         var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
+    
 
     /// <summary>
     /// Delete an attachment/picture from a PunchItem
