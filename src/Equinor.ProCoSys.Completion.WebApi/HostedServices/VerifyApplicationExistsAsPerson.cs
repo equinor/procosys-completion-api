@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PersonCommands.CreatePerson;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,22 +13,22 @@ using Microsoft.Extensions.Options;
 namespace Equinor.ProCoSys.Completion.WebApi.HostedServices;
 
 /// <summary>
-/// Ensure that CompletionApiObjectId (i.e the application) exists as Person.
+/// Ensure that ObjectId (i.e. the application) exists as Person.
 /// Needed when application modifies data, setting ModifiedById for changed records
 /// </summary>
 public class VerifyApplicationExistsAsPerson : IHostedService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
     private readonly ILogger<VerifyApplicationExistsAsPerson> _logger;
 
     public VerifyApplicationExistsAsPerson(
         IServiceScopeFactory serviceScopeFactory,
-        IOptionsMonitor<CompletionAuthenticatorOptions> options, 
+        IOptionsMonitor<ApplicationOptions> applicationOptions, 
         ILogger<VerifyApplicationExistsAsPerson> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _options = options;
+        _applicationOptions = applicationOptions;
         _logger = logger;
     }
 
@@ -43,7 +43,7 @@ public class VerifyApplicationExistsAsPerson : IHostedService
             scope.ServiceProvider
                 .GetRequiredService<ICurrentUserSetter>();
 
-        var oid = _options.CurrentValue.CompletionApiObjectId;
+        var oid = _applicationOptions.CurrentValue.ObjectId;
         _logger.LogInformation("Ensuring {Oid} exists as Person", oid);
         try
         {

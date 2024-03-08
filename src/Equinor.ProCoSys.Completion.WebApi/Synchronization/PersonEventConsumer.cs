@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -17,19 +16,19 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
     private readonly IPersonRepository _personRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<CompletionAuthenticatorOptions> _options;
+    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
     
     public PersonEventConsumer(ILogger<PersonEventConsumer> logger, 
         IPersonRepository personRepository, 
         IUnitOfWork unitOfWork, 
         ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<CompletionAuthenticatorOptions> options)
+        IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
         _personRepository = personRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
-        _options = options;
+        _applicationOptions = applicationOptions;
     }
 
     public async Task Consume(ConsumeContext<PersonEvent> context)
@@ -68,7 +67,7 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
 
         MapFromEventToPerson(personEvent, person);
 
-        _currentUserSetter.SetCurrentUserOid(_options.CurrentValue.CompletionApiObjectId);
+        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",

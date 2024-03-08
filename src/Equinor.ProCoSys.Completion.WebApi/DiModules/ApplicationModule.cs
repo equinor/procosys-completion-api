@@ -52,7 +52,7 @@ public static class ApplicationModule
         services.Configure<ApplicationOptions>(configuration.GetSection("Application"));
         services.Configure<MainApiOptions>(configuration.GetSection("MainApi"));
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
-        services.Configure<CompletionAuthenticatorOptions>(configuration.GetSection("Authenticator"));
+        services.Configure<AzureAdOptions>(configuration.GetSection("AzureAd"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));

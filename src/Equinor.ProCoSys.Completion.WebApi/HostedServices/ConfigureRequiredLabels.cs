@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,12 +24,11 @@ public class ConfigureRequiredLabels : IHostedService
     public ConfigureRequiredLabels(
         IServiceScopeFactory serviceScopeFactory,
         IOptionsMonitor<ApplicationOptions> applicationOptions,
-        IOptionsMonitor<CompletionAuthenticatorOptions> completionAuthenticatorOptions,
         ILogger<ConfigureRequiredLabels> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _completionApiObjectId = completionAuthenticatorOptions.CurrentValue.CompletionApiObjectId;
+        _completionApiObjectId = applicationOptions.CurrentValue.ObjectId;
         _rejectLabelText = applicationOptions.CurrentValue.RejectLabel;
     }
 

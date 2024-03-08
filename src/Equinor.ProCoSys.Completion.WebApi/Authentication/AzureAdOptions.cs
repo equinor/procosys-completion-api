@@ -3,16 +3,16 @@
 namespace Equinor.ProCoSys.Completion.WebApi.Authentication;
 
 /// <summary>
-/// Options for Authentication. Read from application configuration via IOptionsMonitor.
+/// Options for Azure authentication and authorization.
+/// Read from application configuration via IOptionsMonitor.
 /// "Mapped" to the generic IAuthenticatorOptions
 /// </summary>
-public class CompletionAuthenticatorOptions
+public class AzureAdOptions
 {
-    public string? Instance { get; set; }
+    public string? Authority { get; set; }
 
-    public string? CompletionApiClientId { get; set; }
-    public string? CompletionApiSecret { get; set; }
-    public Guid CompletionApiObjectId { get; set; }
+    public string? ClientId { get; set; }
+    public string? ClientSecret { get; set; }
 
     public bool DisableProjectUserDataClaims { get; set; }
     public bool DisableRestrictionRoleUserDataClaims { get; set; }
