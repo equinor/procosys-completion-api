@@ -596,11 +596,14 @@ public class PunchItemsController : ControllerBase
 
         var ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
         _logger.LogInformation("X-Forwarded-For: {XForwardedFor}",  Request.Headers["X-Forwarded-For"].ToString());
-
+        _logger.LogInformation("X-Real-IP: {XRealIP}",  Request.Headers["X-Real-IP"].ToString());
+        _logger.LogInformation("X-Forwarded-For-ProCoSys: {XRealIP}",  Request.Headers["X-Forwarded-For-ProCoSys"].ToString());
+        _logger.LogInformation("Connection IP: {ConnectionIp}",  Request.HttpContext.Connection.RemoteIpAddress?.ToString());
+        
         if (string.IsNullOrEmpty(ipAddress))
         {
             ipAddress = Request.Headers["X-Real-IP"].FirstOrDefault();
-            _logger.LogInformation("X-Real-IP: {XRealIP}",  Request.Headers["X-Real-IP"].ToString());
+            
         }
         
         // If X-Forwarded-For header is present, use the first IP address
@@ -608,13 +611,12 @@ public class PunchItemsController : ControllerBase
         {
             // If X-Forwarded-For header is not present, fallback to HttpContext.Connection.RemoteIpAddress
             ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-            _logger.LogInformation("Connection IP: {ConnectionIp}",  Request.HttpContext.Connection.RemoteIpAddress?.ToString());
+            
         }
 
         var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
-    
 
     /// <summary>
     /// Delete an attachment/picture from a PunchItem
