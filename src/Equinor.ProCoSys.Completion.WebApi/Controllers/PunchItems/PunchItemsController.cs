@@ -617,7 +617,6 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
-    
 
     /// <summary>
     /// Delete an attachment/picture from a PunchItem
