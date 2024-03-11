@@ -594,28 +594,43 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid)
     {
 
-        var ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        var ipAddress = GetClientIpAddress();
         _logger.LogInformation("X-Forwarded-For: {XForwardedFor}",  Request.Headers["X-Forwarded-For"].ToString());
         _logger.LogInformation("X-Real-IP: {XRealIP}",  Request.Headers["X-Real-IP"].ToString());
         _logger.LogInformation("X-Forwarded-For-ProCoSys: {XRealIP}",  Request.Headers["X-Forwarded-For-ProCoSys"].ToString());
         _logger.LogInformation("Connection IP: {ConnectionIp}",  Request.HttpContext.Connection.RemoteIpAddress?.ToString());
-        
-        if (string.IsNullOrEmpty(ipAddress))
-        {
-            ipAddress = Request.Headers["X-Real-IP"].FirstOrDefault();
-            
-        }
-        
-        // If X-Forwarded-For header is present, use the first IP address
-        if (string.IsNullOrEmpty(ipAddress))
-        {
-            // If X-Forwarded-For header is not present, fallback to HttpContext.Connection.RemoteIpAddress
-            ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-            
-        }
 
         var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
+    }
+    
+    private string? GetClientIpAddress()
+    {
+        // trying the X-Forwarded-For-ProCoSys header first, it is a custom header set in ProCoSys.
+        // It will not be present if the frontend developers run in developer mode, so we still need to check the other headers.
+        var proCoSysForwardHeader = Request.Headers["X-Forwarded-For-ProCoSys"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(proCoSysForwardHeader))
+        {
+            _logger.LogInformation("Using X-Forwarded-For-ProCoSys value: {IpAddress}", proCoSysForwardHeader);
+            return proCoSysForwardHeader;
+        }
+        
+        var forwardedForHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedForHeader))
+        {
+            _logger.LogInformation("Using X-Forwarded-For value: {IpAddress}", forwardedForHeader);
+            return forwardedForHeader;
+        }
+        
+        var realIpHeader = Request.Headers["X-Real-IP"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(realIpHeader))
+        {
+            _logger.LogInformation("Using X-Real-IP value: {IpAddress}", realIpHeader);
+            return realIpHeader;
+        }
+        
+        _logger.LogInformation("No headers found, using connection: {IpAddress}", Request.HttpContext.Connection.RemoteIpAddress?.ToString());
+        return Request.HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 
     /// <summary>
