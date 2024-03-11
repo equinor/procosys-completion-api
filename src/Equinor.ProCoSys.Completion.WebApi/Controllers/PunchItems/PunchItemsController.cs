@@ -612,6 +612,10 @@ public class PunchItemsController : ControllerBase
         if (!string.IsNullOrEmpty(proCoSysForwardHeader))
         {
             _logger.LogInformation("Using X-Forwarded-For-ProCoSys value: {IpAddress}", proCoSysForwardHeader);
+            if (proCoSysForwardHeader.Contains(':'))
+            {
+                proCoSysForwardHeader = proCoSysForwardHeader.Split(':')[0];
+            }
             return proCoSysForwardHeader;
         }
         
