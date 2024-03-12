@@ -603,15 +603,12 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
-    
-    private string? GetClientIpAddress()
+
+    private string? GetIpAddressFromHeaders()
     {
-        // trying the X-Forwarded-For-ProCoSys header first, it is a custom header set in ProCoSys.
-        // It will not be present if the frontend developers run in developer mode, so we still need to check the other headers.
         var proCoSysForwardHeader = Request.Headers["X-Forwarded-For-ProCoSys"].FirstOrDefault();
         if (!string.IsNullOrEmpty(proCoSysForwardHeader))
         {
-            _logger.LogInformation("Using X-Forwarded-For-ProCoSys value: {IpAddress}", proCoSysForwardHeader);
             return proCoSysForwardHeader;
         }
         
@@ -631,6 +628,32 @@ public class PunchItemsController : ControllerBase
         
         _logger.LogInformation("No headers found, using connection: {IpAddress}", Request.HttpContext.Connection.RemoteIpAddress?.ToString());
         return Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+    }
+    
+    private string? GetClientIpAddress()
+    {
+        var ipAddress = GetIpAddressFromHeaders();
+        
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            _logger.LogWarning("No IP address found");
+            return null;
+        }
+        
+        if (ipAddress.Contains(','))
+        {
+            var ipAddresses = ipAddress.Split(",");
+            ipAddress = ipAddresses[0].Trim();
+        }
+
+        if (ipAddress.Contains(':'))
+        {
+            var ipAddresses = ipAddress.Split(":");
+            ipAddress = ipAddresses[0].Trim();
+        }
+        
+        _logger.LogInformation("Using address: {IpAddress}", ipAddress);
+        return ipAddress;
     }
 
     /// <summary>
