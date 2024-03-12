@@ -656,31 +656,6 @@ public class PunchItemsController : ControllerBase
         return ipAddress;
     }
 
-    private string? GetClientIpAddress()
-    {
-        var ipAddress = GetIpAddressFromHeaders();
-
-        if (string.IsNullOrEmpty(ipAddress))
-        {
-            _logger.LogWarning("No IP address found");
-            return null;
-        }
-
-        if (ipAddress.Contains(','))
-        {
-            var ipAddresses = ipAddress.Split(",");
-            ipAddress = ipAddresses[0].Trim();
-        }
-
-        if (ipAddress.Contains(':'))
-        {
-            var ipAddresses = ipAddress.Split(":");
-            ipAddress = ipAddresses[0].Trim();
-        }
-
-        return ipAddress;
-    }
-
     /// <summary>
     /// Delete an attachment/picture from a PunchItem
     /// </summary>
