@@ -629,6 +629,32 @@ public class PunchItemsController : ControllerBase
             Request.HttpContext.Connection.RemoteIpAddress?.ToString());
         return Request.HttpContext.Connection.RemoteIpAddress?.ToString();
     }
+    
+    private string? GetClientIpAddress()
+    {
+        var ipAddress = GetIpAddressFromHeaders();
+        
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            _logger.LogWarning("No IP address found");
+            return null;
+        }
+        
+        if (ipAddress.Contains(','))
+        {
+            var ipAddresses = ipAddress.Split(",");
+            ipAddress = ipAddresses[0].Trim();
+        }
+
+        if (ipAddress.Contains(':'))
+        {
+            var ipAddresses = ipAddress.Split(":");
+            ipAddress = ipAddresses[0].Trim();
+        }
+        
+        _logger.LogInformation("Using address: {IpAddress}", ipAddress);
+        return ipAddress;
+    }
 
     private string? GetClientIpAddress()
     {
