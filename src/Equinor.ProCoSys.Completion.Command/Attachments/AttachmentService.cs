@@ -166,7 +166,7 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+        var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
         attachment.UpdateLabels(labels.ToList());
 
         var changes = UpdateAttachment(attachment, description);

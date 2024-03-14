@@ -70,6 +70,8 @@ public class AttachmentServiceTests : TestsBase
 
         _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
+        _attachmentRepositoryMock.GetAttachmentWithLabelsAsync(_existingAttachment.Guid, default)
+            .Returns(_existingAttachment);
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
@@ -523,6 +525,21 @@ public class AttachmentServiceTests : TestsBase
         // Assert
         Assert.AreEqual(2, _existingAttachment.Labels.Count);
         Assert.AreEqual(2, _existingAttachment.GetOrderedNonVoidedLabels().Count());
+    }
+    
+    [TestMethod]
+    public async Task UpdateAsync_ShouldUpdateRemoveLabels()
+    {
+        // Arrange 
+        var labelA = new Label("a");
+        var labelB = new Label("b");
+        await _dut.UpdateAsync(_existingAttachment.Guid, "", new List<Label>{labelA, labelB}, _rowVersion, default);
+
+        await _dut.UpdateAsync(_existingAttachment.Guid, "", new List<Label>{labelA}, _rowVersion, default);
+
+        // Assert
+        Assert.AreEqual(1, _existingAttachment.Labels.Count);
+        Assert.AreEqual(1, _existingAttachment.GetOrderedNonVoidedLabels().Count());
     }
 
     [TestMethod]

@@ -11,3 +11,5 @@ public class EntityNotFoundException : Exception
     {
     }
 }
+
+public sealed class EntityNotFoundException<T>(string id) : Exception($"Could not find {typeof(T).Name} with Guid {id}");
