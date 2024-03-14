@@ -12,5 +12,5 @@ public class AttachmentLabelTests : IHaveLabelsTests
     protected override IHaveLabels GetEntityWithLabels() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Attachment("X", Guid.NewGuid(), "PCS$Plant", "a.txt");
+    public void Setup() => _dut = new Attachment("Proj", "X", Guid.NewGuid(), "a.txt");
 }

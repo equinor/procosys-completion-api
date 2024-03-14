@@ -184,7 +184,7 @@ public static class CompletionContextExtension
         var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
         knownTestData.CommentInPunchItemAGuid = comment.Guid;
 
-        var attachment = SeedAttachment(dbContext, plant, nameof(PunchItem), punchItem.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItem.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
 
         SeedWorkOrder(
@@ -314,13 +314,13 @@ public static class CompletionContextExtension
 
     private static Attachment SeedAttachment(
         CompletionContext dbContext,
-        string plant,
+        string project,
         string parentType,
         Guid parentGuid,
         string fileName)
     {
         var attachmentRepository = new AttachmentRepository(dbContext);
-        var attachment = new Attachment(parentType, parentGuid, plant, fileName);
+        var attachment = new Attachment(project, parentType, parentGuid, fileName);
         attachmentRepository.Add(attachment);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return attachment;

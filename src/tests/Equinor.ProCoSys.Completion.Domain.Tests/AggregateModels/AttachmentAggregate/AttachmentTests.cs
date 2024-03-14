@@ -10,6 +10,7 @@ public class AttachmentTests : IModificationAuditableTests
 {
     private Attachment _dut;
     private readonly string _parentType = "X";
+    private readonly string _project = "Pr";
     private readonly Guid _parentGuid = Guid.NewGuid();
     private readonly string _fileName = "a.txt";
 
@@ -18,14 +19,14 @@ public class AttachmentTests : IModificationAuditableTests
     protected override IModificationAuditable GetModificationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Attachment(_parentType, _parentGuid, "PCS$Plant", _fileName);
+    public void Setup() => _dut = new Attachment(_project, _parentType, _parentGuid, _fileName);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()
     {
         Assert.AreEqual(_fileName, _dut.FileName);
         Assert.AreEqual(_fileName, _dut.Description);
-        Assert.AreEqual($"Plant/X/{_dut.Guid}", _dut.BlobPath);
+        Assert.AreEqual($"{_project}/{_parentType}/{_dut.Guid}", _dut.BlobPath);
         Assert.AreEqual(_parentType, _dut.ParentType);
         Assert.AreEqual(_parentGuid, _dut.ParentGuid);
         Assert.AreNotEqual(_parentGuid, _dut.Guid);
