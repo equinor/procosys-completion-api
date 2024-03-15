@@ -19,7 +19,6 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
 [TestClass]
 public class AttachmentServiceTests : ReadOnlyTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private readonly string _blobContainer = "bc";
     private Attachment _createdAttachment;
     private Guid _createdAttachmentGuid;
@@ -42,10 +41,10 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         var voidedLabel = context.Labels.Single(l => l.Text == LabelTextVoided);
 
         _parentGuid = Guid.NewGuid();
-        _createdAttachment = new Attachment("X", _parentGuid, _testPlant, "t1.txt");
+        _createdAttachment = new Attachment("Proj", "X", _parentGuid, "t1.txt");
         // insert labels non-ordered to test ordering
         _createdAttachment.UpdateLabels(new List<Label> { labelB, voidedLabel, labelC, labelA });
-        _modifiedAttachment = new Attachment("X", _parentGuid, _testPlant, "t2.txt");
+        _modifiedAttachment = new Attachment("Proj", "X", _parentGuid, "t2.txt");
 
         context.Attachments.Add(_createdAttachment);
         context.Attachments.Add(_modifiedAttachment);
@@ -83,7 +82,6 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         var toIpAddress = "0.0.0.1";
         var uri = new Uri("http://blah.blah.com");
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var p = _createdAttachment.GetFullBlobPath();
         _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), fromIpAddress, toIpAddress).Returns(uri);
 
         var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);

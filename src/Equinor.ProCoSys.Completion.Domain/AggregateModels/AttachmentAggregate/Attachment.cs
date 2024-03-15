@@ -25,18 +25,14 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     {
     }
 
-    public Attachment(string parentType, Guid parentGuid, string plant, string fileName)
+    public Attachment(string project, string parentType, Guid parentGuid, string fileName)
     {
         ParentType = parentType;
         ParentGuid = parentGuid;
         FileName = fileName;
         Description = fileName;
         Guid = MassTransit.NewId.NextGuid();
-        if (plant.Length < 5)
-        {
-            throw new ArgumentException($"{nameof(plant)} must have minimum length 5");
-        }
-        BlobPath = Path.Combine(plant.Substring(4), ParentType, Guid.ToString()).Replace("\\", "/");
+        BlobPath = Path.Combine(project, ParentType, Guid.ToString()).Replace("\\", "/");
         RevisionNumber = 1;
     }
 

@@ -76,6 +76,7 @@ public class AttachmentService : IAttachmentService
     }
 
     public async Task<AttachmentDto> UploadNewAsync(
+        string project,
         string parentType,
         Guid parentGuid,
         string fileName,
@@ -91,9 +92,9 @@ public class AttachmentService : IAttachmentService
         }
 
         attachment = new Attachment(
+            project,
             parentType,
             parentGuid,
-            _plantProvider.Plant,
             fileName);
         _attachmentRepository.Add(attachment);
 

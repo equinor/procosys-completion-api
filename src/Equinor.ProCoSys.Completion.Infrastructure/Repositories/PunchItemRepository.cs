@@ -1,5 +1,11 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
@@ -22,5 +28,18 @@ public class PunchItemRepository : EntityWithGuidRepository<PunchItem>, IPunchIt
                 .Include(p => p.Sorting)
                 .Include(p => p.Type))
     {
+    }
+
+    public async Task<Project> GetProjectAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    {
+        var punch = await Set.Include(p => p.Project)
+            .SingleOrDefaultAsync(p => p.Guid == punchItemGuid, cancellationToken);
+
+        if (punch is null)
+        {
+            throw new EntityNotFoundException($"Could not find {nameof(PunchItem)} with Guid {punchItemGuid}");
+        }
+
+        return punch.Project;
     }
 }

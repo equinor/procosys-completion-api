@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -79,5 +80,38 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
 
         Assert.IsNotNull(result.Type);
         Assert.AreEqual(_type.Guid, result.Type.Guid);
+    }
+
+    [TestMethod]
+    public async Task GetProjectAsync_KnownPunchItemGuid_ShouldReturnProject()
+    {
+        // Arrange
+        var dut = new PunchItemRepository(_contextHelper.ContextMock);
+
+        // Act
+        var result = await dut.GetProjectAsync(_knownGuid, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(_project.Guid, result.Guid);
+    }
+
+    [TestMethod]
+    public async Task GetProjectAsync_UnknownPunchItemGuid_ShouldThrowException()
+    {
+        // Arrange
+        var dut = new PunchItemRepository(_contextHelper.ContextMock);
+        var guid = Guid.NewGuid();
+
+        // Act
+        var entityNotFoundException =
+            await Assert.ThrowsExceptionAsync<EntityNotFoundException>(() => dut.GetProjectAsync(guid, default));
+
+        // Assert
+        Assert.IsNotNull(entityNotFoundException);
+        Assert.IsNotNull(entityNotFoundException.Message);
+        Assert.IsTrue(entityNotFoundException.Message.Contains(guid.ToString()));
     }
 }
