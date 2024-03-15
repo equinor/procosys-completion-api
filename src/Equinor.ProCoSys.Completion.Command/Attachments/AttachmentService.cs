@@ -29,21 +29,21 @@ public class AttachmentService : IAttachmentService
     private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<AttachmentService> _logger;
 
-    private static readonly Dictionary<string, byte[]> _fileSignature = new Dictionary<string, byte[]>
+    private static readonly Dictionary<string, byte[]> s_fileSignature = new()
     {
-        { ".pdf", new byte[] { 0x25, 0x50, 0x44, 0x46 } }, // %PDF
-        { ".jpg", new byte[] { 0xFF, 0xD8, 0xFF } }, // JPEG image
-        { ".png", new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A } }, // PNG image
-        { ".gif", new byte[] { 0x47, 0x49, 0x46, 0x38 } }, // GIF image
-        { ".bmp", new byte[] { 0x42, 0x4D } }, // BMP image
+        { ".pdf", new byte[] { 0x25, 0x50, 0x44, 0x46 } },
+        { ".jpg", new byte[] { 0xFF, 0xD8, 0xFF } },
+        { ".png", new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A } },
+        { ".gif", new byte[] { 0x47, 0x49, 0x46, 0x38 } },
+        { ".bmp", new byte[] { 0x42, 0x4D } },
         { ".tiff", new byte[] { 0x49, 0x49, 0x2A, 0x00 } }, // TIFF image (little-endian)
         { ".tif", new byte[] { 0x4D, 0x4D, 0x00, 0x2A } }, // TIFF image (big-endian)
-        { ".webp", new byte[] { 0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 } }, // WebP image
+        { ".webp", new byte[] { 0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 } },
         { ".docx", new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00 } }, // DOCX (also valid for other Office Open XML formats like .xlsx and .pptx)
         { ".xlsx", new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00 } } // XLSX (also valid for other Office Open XML formats)
     };
 
-    private static readonly Dictionary <string, string> _contentTypeMappings = new Dictionary<string, string>
+    private static readonly Dictionary <string, string> s_contentTypeMappings = new()
     {
         { ".pdf", "application/pdf" },
         { ".jpg", "image/jpeg" },
@@ -336,7 +336,7 @@ public class AttachmentService : IAttachmentService
     {
         // Verify content type using file extension
         var extension = Path.GetExtension(filename).ToLowerInvariant();
-        if (!_fileSignature.TryGetValue(extension, out var expectedSignature))
+        if (!s_fileSignature.TryGetValue(extension, out var expectedSignature))
         {
             // Extension not supported, return default content type
             return "application/octet-stream";
@@ -346,15 +346,21 @@ public class AttachmentService : IAttachmentService
         if (IsContentTypeMatchingExtension(providedContentType, extension))
         {
             // Reset position to the start of the stream
-            if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+            if (stream.CanSeek)
+            { 
+                stream.Seek(0, SeekOrigin.Begin); 
+            }
 
             var actualSignature = new byte[expectedSignature.Length];
-            int bytesRead = await stream.ReadAsync(actualSignature, 0, actualSignature.Length);
+            var bytesRead = await stream.ReadAsync(actualSignature, 0, actualSignature.Length);
             if (bytesRead == expectedSignature.Length && actualSignature.SequenceEqual(expectedSignature))
             {
                 // Signature matches, consider verified
                 // Reset position again
-                if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+                if (stream.CanSeek)
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                }
                 return providedContentType;
             }
         }
@@ -365,7 +371,7 @@ public class AttachmentService : IAttachmentService
 
     private static bool IsContentTypeMatchingExtension(string contentType, string extension)
     {
-        if (_contentTypeMappings.TryGetValue(extension, out var expectedContentType))
+        if (s_contentTypeMappings.TryGetValue(extension, out var expectedContentType))
         {
             return contentType.Equals(expectedContentType, StringComparison.OrdinalIgnoreCase);
         }

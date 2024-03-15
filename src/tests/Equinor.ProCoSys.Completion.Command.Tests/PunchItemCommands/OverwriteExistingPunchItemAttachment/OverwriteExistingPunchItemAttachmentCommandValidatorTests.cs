@@ -16,13 +16,11 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     private IPunchItemValidator _punchItemValidatorMock;
     private IAttachmentService _attachmentServiceMock;
     private OverwriteExistingPunchItemAttachmentCommand _command;
-    private readonly string _fileName = "a.txt";
-    private readonly string _contentTypeJpeg = "image/jpeg"; 
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), _fileName, "r", new MemoryStream(), _contentTypeJpeg);
+        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "a.jpg", "r", new MemoryStream(), "image/jpeg");
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);
