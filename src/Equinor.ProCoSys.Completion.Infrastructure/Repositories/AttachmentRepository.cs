@@ -19,5 +19,5 @@ public class AttachmentRepository(CompletionContext context)
         => await DefaultQuery
                .Include(a => a.Labels)
                .SingleOrDefaultAsync(a => a.Guid == attachmentGuid, cancellationToken)
-           ?? throw new EntityNotFoundException<Attachment>(attachmentGuid.ToString());
+           ?? throw new EntityNotFoundException<Attachment>(attachmentGuid);
 }

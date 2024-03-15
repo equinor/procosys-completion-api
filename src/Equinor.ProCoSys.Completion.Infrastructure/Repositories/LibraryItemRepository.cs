@@ -20,5 +20,5 @@ public class LibraryItemRepository : EntityWithGuidRepository<LibraryItem>, ILib
         CancellationToken cancellationToken)
         => await DefaultQuery
                .SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type, cancellationToken)
-           ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid.ToString());
+           ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid);
 }

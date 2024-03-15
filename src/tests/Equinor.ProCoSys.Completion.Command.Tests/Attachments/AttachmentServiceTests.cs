@@ -68,8 +68,6 @@ public class AttachmentServiceTests : TestsBase
                 default)
             .Returns(_existingAttachment);
 
-        _attachmentRepositoryMock.GetAsync(_existingAttachment.Guid, default)
-            .Returns(_existingAttachment);
         _attachmentRepositoryMock.GetAttachmentWithLabelsAsync(_existingAttachment.Guid, default)
             .Returns(_existingAttachment);
 

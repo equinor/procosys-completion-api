@@ -29,16 +29,8 @@ public abstract class EntityWithGuidRepositoryTestBase<TEntity> : RepositoryTest
         // Arrange
         var guid = Guid.NewGuid();
         
-        // Act
-        var entityNotFoundException =
-            await Assert.ThrowsExceptionAsync<EntityNotFoundException>(() => GetDut().GetAsync(guid, default));
-
         // Assert
-        Assert.IsNotNull(entityNotFoundException);
-        Assert.IsNotNull(entityNotFoundException.Message);
-        Assert.IsTrue(entityNotFoundException.Message.Contains(guid.ToString()));
-        var typeName = typeof(TEntity).Name;
-        Assert.IsTrue(entityNotFoundException.Message.Contains(typeName));
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException<TEntity>>(() => GetDut().GetAsync(guid, default));
     }
 
     [TestMethod]

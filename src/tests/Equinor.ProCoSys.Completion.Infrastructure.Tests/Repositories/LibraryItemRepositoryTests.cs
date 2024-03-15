@@ -60,7 +60,7 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
         var dut = new LibraryItemRepository(_contextHelper.ContextMock);
 
         // Act and Assert
-        await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException<LibraryItem>>(()
             => dut.GetByGuidAndTypeAsync(Guid.NewGuid(), _knownLibraryType, default));
     }
 
@@ -71,7 +71,7 @@ public class LibraryItemRepositoryTests : EntityWithGuidRepositoryTestBase<Libra
         var dut = new LibraryItemRepository(_contextHelper.ContextMock);
 
         // Act and Assert
-        await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException<LibraryItem>>(()
             => dut.GetByGuidAndTypeAsync(_knownGuid, LibraryType.PUNCHLIST_SORTING, default));
     }
 }

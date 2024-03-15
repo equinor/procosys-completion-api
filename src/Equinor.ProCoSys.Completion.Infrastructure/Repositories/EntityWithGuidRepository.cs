@@ -26,7 +26,7 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
         CancellationToken cancellationToken)
         => await DefaultQuery
                .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken)
-           ?? throw new EntityNotFoundException<TEntity>(guid.ToString());
+           ?? throw new EntityNotFoundException<TEntity>(guid);
 
     public virtual async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
         => await Set.AnyAsync(e => e.Guid == guid, cancellationToken);
