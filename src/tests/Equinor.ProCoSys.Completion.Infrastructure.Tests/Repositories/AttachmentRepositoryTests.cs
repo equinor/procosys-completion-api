@@ -22,7 +22,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
 
     protected override void SetupRepositoryWithOneKnownItem()
     {
-        var attachment = new Attachment("Whatever", _knownParentGuid, TestPlant, KnownFileName);
+        var attachment = new Attachment("Proj", "Whatever", _knownParentGuid, KnownFileName);
         _knownGuid = attachment.Guid;
         attachment.SetProtectedIdForTesting(_knownId);
 
@@ -36,7 +36,7 @@ public class AttachmentRepositoryTests : EntityWithGuidRepositoryTestBase<Attach
             .Returns(_dbSetMock);
     }
 
-    protected override Attachment GetNewEntity() => new("Whatever", Guid.NewGuid(), TestPlant, "new-file.txt");
+    protected override Attachment GetNewEntity() => new("Proj", "Whatever", Guid.NewGuid(), "new-file.txt");
 
     [TestMethod]
     public async Task GetAttachmentWithFileNameForParent_KnownFileName_ShouldReturnAttachment()

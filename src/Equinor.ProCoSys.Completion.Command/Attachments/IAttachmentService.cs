@@ -10,6 +10,7 @@ namespace Equinor.ProCoSys.Completion.Command.Attachments;
 public interface IAttachmentService
 {
     Task<AttachmentDto> UploadNewAsync(
+        string project,
         string parentType,
         Guid parentGuid,
         string fileName,

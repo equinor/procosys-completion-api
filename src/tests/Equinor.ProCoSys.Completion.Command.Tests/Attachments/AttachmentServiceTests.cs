@@ -26,6 +26,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.Attachments;
 public class AttachmentServiceTests : TestsBase
 {
     private readonly string _blobContainer = "bc";
+    private readonly string _project = "Pr2";
     private readonly string _parentType = "Whatever";
     private readonly Guid _parentGuid = Guid.NewGuid();
     private IAttachmentRepository _attachmentRepositoryMock;
@@ -50,7 +51,7 @@ public class AttachmentServiceTests : TestsBase
                 _attachmentAddedToRepository.SetCreated(_person);
             });
 
-        _existingAttachment = new Attachment(_parentType, _parentGuid, TestPlantA, _existingFileName);
+        _existingAttachment = new Attachment(_project, _parentType, _parentGuid, _existingFileName);
         _existingAttachment.SetCreated(_person);
         _existingAttachment.SetModified(_person);
 
@@ -99,7 +100,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.UploadNewAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), default));
+            => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _existingFileName, new MemoryStream(), default));
 
         // Assert
        await _azureBlobServiceMock.Received(0).UploadAsync(
@@ -117,7 +118,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         Assert.IsNotNull(_attachmentAddedToRepository);
@@ -131,7 +132,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WithoutLabels()
     {
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         Assert.IsNotNull(_attachmentAddedToRepository);
@@ -142,7 +143,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldSaveOnce_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         await  _unitOfWorkMock.Received(1).SaveChangesAsync();
@@ -152,7 +153,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldSetAuditDataAsyncOnce_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SetAuditDataAsync();
@@ -171,7 +172,7 @@ public class AttachmentServiceTests : TestsBase
             }));
 
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         Assert.IsNotNull(integrationEvent);
@@ -199,7 +200,7 @@ public class AttachmentServiceTests : TestsBase
             }));
 
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
 
         // Assert
         AssertHistoryCreatedIntegrationEvent(
@@ -223,7 +224,7 @@ public class AttachmentServiceTests : TestsBase
         var stream = new MemoryStream();
         
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, stream, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, stream, default);
 
         // Assert
         var p = _attachmentAddedToRepository.GetFullBlobPath();

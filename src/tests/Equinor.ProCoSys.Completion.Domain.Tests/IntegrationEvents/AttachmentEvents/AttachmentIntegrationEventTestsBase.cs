@@ -16,7 +16,7 @@ public class AttachmentIntegrationEventTestsBase : TestsBase
     [TestInitialize]
     public void SetupBase()
     {
-        _attachment = new Attachment(nameof(PunchItem), Guid.NewGuid(), "PCS$PLANT", "file.txt");
+        _attachment = new Attachment("Proj", nameof(PunchItem), Guid.NewGuid(), "file.txt");
         _attachment.UpdateLabels(new List<Label> { new("A"), new("B") });
         _attachment.SetCreated(_person);
         _attachment.SetModified(_person);
