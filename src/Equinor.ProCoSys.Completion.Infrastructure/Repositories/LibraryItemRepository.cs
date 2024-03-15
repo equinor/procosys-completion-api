@@ -14,16 +14,11 @@ public class LibraryItemRepository : EntityWithGuidRepository<LibraryItem>, ILib
     {
     }
 
-    public async Task<LibraryItem> GetByGuidAndTypeAsync(Guid libraryGuid, LibraryType type, CancellationToken cancellationToken)
-    {
-        var libraryItem = await DefaultQuery.SingleOrDefaultAsync(
-            x => x.Guid == libraryGuid && x.Type == type,
-            cancellationToken);
-        if (libraryItem is null)
-        {
-            throw new EntityNotFoundException(
-                $"Could not find {nameof(LibraryItem)} of type {type} with Guid {libraryGuid}");
-        }
-        return libraryItem;
-    }
+    public async Task<LibraryItem> GetByGuidAndTypeAsync(
+        Guid libraryGuid,
+        LibraryType type,
+        CancellationToken cancellationToken)
+        => await DefaultQuery
+               .SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type, cancellationToken)
+           ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid.ToString());
 }
