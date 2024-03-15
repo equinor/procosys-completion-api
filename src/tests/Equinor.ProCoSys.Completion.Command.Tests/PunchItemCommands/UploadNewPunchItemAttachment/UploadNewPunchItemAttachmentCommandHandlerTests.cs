@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UploadNewPunchItemAttachment;
 
@@ -22,7 +22,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "T", new MemoryStream());
+        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "T", new MemoryStream(), "image/jpeg");
 
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.UploadNewAsync(
@@ -30,6 +30,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
             _command.PunchItemGuid,
             _command.FileName,
             _command.Content,
+            _command.ContentType,
             default).Returns(new AttachmentDto(_guid, _rowVersion));
 
         _dut = new UploadNewPunchItemAttachmentCommandHandler(_attachmentServiceMock);
@@ -59,6 +60,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
             _command.PunchItemGuid, 
             _command.FileName,
             _command.Content,
+            _command.ContentType,
             default);
     }
 }

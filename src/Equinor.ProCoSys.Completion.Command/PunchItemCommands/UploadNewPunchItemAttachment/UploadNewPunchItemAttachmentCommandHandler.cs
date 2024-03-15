@@ -21,6 +21,7 @@ public class UploadNewPunchItemAttachmentCommandHandler : IRequestHandler<Upload
             request.PunchItemGuid,
             request.FileName,
             request.Content,
+            request.ContentType,
             cancellationToken);
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(attachmentDto.Guid, attachmentDto.RowVersion));

@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAt
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UploadNewPunchItemAttachment;
 
@@ -20,7 +20,7 @@ public class UploadNewPunchItemAttachmentCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "f.txt", new MemoryStream());
+        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "f.txt", new MemoryStream(), "image/jpeg");
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
             .Returns(true);

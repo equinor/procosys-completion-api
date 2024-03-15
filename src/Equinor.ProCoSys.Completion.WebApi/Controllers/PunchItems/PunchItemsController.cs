@@ -538,7 +538,8 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
             guid,
             dto.File.FileName,
-            stream), 
+            stream,
+            dto.File.ContentType), 
             cancellationToken);
         return this.FromResult(result);
     }
@@ -570,7 +571,8 @@ public class PunchItemsController : ControllerBase
             guid, 
             dto.File.FileName,
             dto.RowVersion,
-            stream), 
+            stream,
+            dto.File.ContentType), 
             cancellationToken);
         return this.FromResult(result);
     }
