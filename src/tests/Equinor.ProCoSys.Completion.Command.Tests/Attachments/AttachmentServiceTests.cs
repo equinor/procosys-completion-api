@@ -59,7 +59,7 @@ public class AttachmentServiceTests : TestsBase
         _existingAttachment.SetCreated(_person);
         _existingAttachment.SetModified(_person);
 
-        _existingImageAttachment = new Attachment(_parentType, _parentGuid, TestPlantA, _existingJpgFileName);
+        _existingImageAttachment = new Attachment(_project, _parentType, _parentGuid, _existingJpgFileName);
         _existingImageAttachment.SetCreated(_person);
         _existingImageAttachment.SetModified(_person);
 
@@ -112,8 +112,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _existingFileName, new MemoryStream(), default));
-            => _dut.UploadNewAsync(_parentType, _parentGuid, _existingFileName, new MemoryStream(), _contentTypeJpeg, default));
+            => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _existingFileName, new MemoryStream(), _contentTypeJpeg, default));
 
         // Assert
        await _azureBlobServiceMock.Received(0).UploadAsync(
@@ -132,8 +131,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         Assert.IsNotNull(_attachmentAddedToRepository);
@@ -147,8 +145,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldAddNewAttachmentToRepository_WithoutLabels()
     {
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         Assert.IsNotNull(_attachmentAddedToRepository);
@@ -159,8 +156,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldSaveOnce_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         await  _unitOfWorkMock.Received(1).SaveChangesAsync();
@@ -170,8 +166,7 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldSetAuditDataAsyncOnce_WhenFileNameNotExist()
     {
         // Act
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SetAuditDataAsync();
@@ -190,8 +185,7 @@ public class AttachmentServiceTests : TestsBase
             }));
 
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         Assert.IsNotNull(integrationEvent);
@@ -219,8 +213,7 @@ public class AttachmentServiceTests : TestsBase
             }));
 
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, new MemoryStream(), _contentTypeJpeg, default);
 
         // Assert
         AssertHistoryCreatedIntegrationEvent(
@@ -244,8 +237,7 @@ public class AttachmentServiceTests : TestsBase
         var stream = new MemoryStream([0xFF, 0xD8, 0xFF]);
 
         // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newFileName, stream, default);
-        await _dut.UploadNewAsync(_parentType, _parentGuid, _newJpgFileName, stream, _contentTypeJpeg, default);
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, stream, _contentTypeJpeg, default);
 
         // Assert
         var p = _attachmentAddedToRepository.GetFullBlobPath();
