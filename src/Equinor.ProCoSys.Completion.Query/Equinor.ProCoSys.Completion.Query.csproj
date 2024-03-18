@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.8.1" />
     <PackageReference Include="ServiceResult" Version="1.0.1" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.1" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

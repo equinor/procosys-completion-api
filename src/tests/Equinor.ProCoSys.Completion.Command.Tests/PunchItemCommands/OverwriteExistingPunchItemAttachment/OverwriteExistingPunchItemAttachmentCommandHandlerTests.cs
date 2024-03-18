@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
@@ -22,7 +22,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
     public void Setup()
     {
         var oldRowVersion = "AAAAAAAAABA=";
-        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "T", oldRowVersion, new MemoryStream());
+        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "T", oldRowVersion, new MemoryStream(), "image/jpeg");
 
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.UploadOverwriteAsync(
@@ -30,6 +30,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
             _command.PunchItemGuid,
             _command.FileName,
             _command.Content,
+            _command.ContentType,
             _command.RowVersion,
             default).Returns(_newRowVersion);
 
@@ -58,6 +59,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
             _command.PunchItemGuid, 
             _command.FileName,
             _command.Content,
+            _command.ContentType,
             _command.RowVersion,
             default);
     }

@@ -542,9 +542,10 @@ public class PunchItemsController : ControllerBase
         await using var stream = dto.File.OpenReadStream();
 
         var result = await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
-                guid,
-                dto.File.FileName,
-                stream),
+            guid,
+            dto.File.FileName,
+            stream,
+            dto.File.ContentType), 
             cancellationToken);
         return this.FromResult(result);
     }
@@ -573,10 +574,11 @@ public class PunchItemsController : ControllerBase
         await using var stream = dto.File.OpenReadStream();
 
         var result = await _mediator.Send(new OverwriteExistingPunchItemAttachmentCommand(
-                guid,
-                dto.File.FileName,
-                dto.RowVersion,
-                stream),
+            guid, 
+            dto.File.FileName,
+            dto.RowVersion,
+            stream,
+            dto.File.ContentType), 
             cancellationToken);
         return this.FromResult(result);
     }

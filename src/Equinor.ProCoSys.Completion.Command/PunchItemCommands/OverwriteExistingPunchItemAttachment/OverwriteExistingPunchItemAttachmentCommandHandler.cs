@@ -21,6 +21,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandler : IRequestHandle
             request.PunchItemGuid,
             request.FileName,
             request.Content,
+            request.ContentType,
             request.RowVersion,
             cancellationToken);
 

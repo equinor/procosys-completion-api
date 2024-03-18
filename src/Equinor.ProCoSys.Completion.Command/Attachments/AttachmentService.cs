@@ -29,6 +29,35 @@ public class AttachmentService : IAttachmentService
     private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<AttachmentService> _logger;
 
+
+    private static readonly Dictionary<string, byte[]> s_fileSignature = new()
+    {
+        { ".pdf", [0x25, 0x50, 0x44, 0x46] },
+        { ".jpg", [0xFF, 0xD8, 0xFF] },
+        { ".png", [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] },
+        { ".gif", [0x47, 0x49, 0x46, 0x38] },
+        { ".bmp", [0x42, 0x4D] },
+        { ".tiff", [0x49, 0x49, 0x2A, 0x00] }, // TIFF image (little-endian)
+        { ".tif", [0x4D, 0x4D, 0x00, 0x2A] }, // TIFF image (big-endian)
+        { ".webp", [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50] },
+        { ".docx", [0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00] }, // DOCX (also valid for other Office Open XML formats like .xlsx and .pptx)
+        { ".xlsx", [0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00] } // XLSX (also valid for other Office Open XML formats)
+    };
+
+    private static readonly Dictionary <string, string> s_contentTypeMappings = new()
+    {
+        { ".pdf", "application/pdf" },
+        { ".jpg", "image/jpeg" },
+        { ".png", "image/png" },
+        { ".gif", "image/gif" },
+        { ".bmp", "image/bmp" },
+        { ".tiff", "image/tiff" },
+        { ".tif", "image/tiff" },
+        { ".webp", "image/webp" },
+        { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+        { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+    };
+
     public AttachmentService(
         IAttachmentRepository attachmentRepository,
         IPlantProvider plantProvider,
@@ -53,6 +82,7 @@ public class AttachmentService : IAttachmentService
         Guid parentGuid,
         string fileName,
         Stream content,
+        string contentType,
         CancellationToken cancellationToken)
     {
         var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
@@ -69,7 +99,8 @@ public class AttachmentService : IAttachmentService
             fileName);
         _attachmentRepository.Add(attachment);
 
-        await UploadAsync(attachment, content, false, cancellationToken);
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, contentType);
+        await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
         // ReSharper disable once UnusedVariable
         var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
@@ -87,6 +118,7 @@ public class AttachmentService : IAttachmentService
         Guid parentGuid,
         string fileName,
         Stream content,
+        string contentType,
         string rowVersion,
         CancellationToken cancellationToken)
     {
@@ -99,7 +131,8 @@ public class AttachmentService : IAttachmentService
 
         var changes = SetRevisionNumber(attachment);
 
-        await UploadAsync(attachment, content, true, cancellationToken);
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, contentType);
+        await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
 
         // ReSharper disable once UnusedVariable
         var integrationEvent = await PublishUpdatedEventsAsync(
@@ -207,6 +240,7 @@ public class AttachmentService : IAttachmentService
         Attachment attachment,
         Stream content,
         bool overwriteIfExists,
+        string contentType,
         CancellationToken cancellationToken)
     {
         var fullBlobPath = attachment.GetFullBlobPath();
@@ -214,6 +248,7 @@ public class AttachmentService : IAttachmentService
             _blobStorageOptions.Value.BlobContainer,
             fullBlobPath,
             content,
+            contentType,
             overwriteIfExists,
             cancellationToken);
 
@@ -296,5 +331,52 @@ public class AttachmentService : IAttachmentService
         attachment.IncreaseRevisionNumber();
         changes.Add(new ChangedProperty<int>(nameof(Attachment.RevisionNumber), oldRevision, attachment.RevisionNumber, ValueDisplayType.IntAsText));
         return changes;
+    }
+
+    public static async Task<string> DetermineContentTypeAsync(Stream stream, string filename, string providedContentType)
+    {
+        // Verify content type using file extension
+        var extension = Path.GetExtension(filename).ToLowerInvariant();
+        if (!s_fileSignature.TryGetValue(extension, out var expectedSignature))
+        {
+            // Extension not supported, return default content type
+            return "application/octet-stream";
+        }
+
+        // Only check the signature if the provided content type matches the extension
+        if (IsContentTypeMatchingExtension(providedContentType, extension))
+        {
+            // Reset position to the start of the stream
+            if (stream.CanSeek)
+            { 
+                stream.Seek(0, SeekOrigin.Begin); 
+            }
+
+            var actualSignature = new byte[expectedSignature.Length];
+            var bytesRead = await stream.ReadAsync(actualSignature, 0, actualSignature.Length);
+            if (bytesRead == expectedSignature.Length && actualSignature.SequenceEqual(expectedSignature))
+            {
+                // Signature matches, consider verified
+                // Reset position again
+                if (stream.CanSeek)
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                }
+                return providedContentType;
+            }
+        }
+
+        // If the content type does not match the signature, return default
+        return "application/octet-stream";
+    }
+
+    private static bool IsContentTypeMatchingExtension(string contentType, string extension)
+    {
+        if (s_contentTypeMappings.TryGetValue(extension, out var expectedContentType))
+        {
+            return contentType.Equals(expectedContentType, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
     }
 }

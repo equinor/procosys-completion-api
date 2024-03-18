@@ -15,6 +15,7 @@ public interface IAttachmentService
         Guid parentGuid,
         string fileName,
         Stream content,
+        string contentType,
         CancellationToken cancellationToken);
 
     Task<string> UploadOverwriteAsync(
@@ -22,6 +23,7 @@ public interface IAttachmentService
         Guid parentGuid,
         string fileName,
         Stream content,
+        string contentType,
         string rowVersion,
         CancellationToken cancellationToken);
 
