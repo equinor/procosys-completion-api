@@ -1,5 +1,9 @@
-﻿using Equinor.ProCoSys.Completion.DbSyncToPCS4.MappingConfig;
+﻿using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Text;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -9,20 +13,26 @@ namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
  */
 public class SyncToPCS4Service : ISyncToPCS4Service
 {
-    private readonly IPcs4Repository _pcs4Repository;
     private readonly IOptionsMonitor<SyncToPCS4Options> _options;
+    private readonly HttpClient _httpClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public SyncToPCS4Service(IPcs4Repository pcs4Repository, IOptionsMonitor<SyncToPCS4Options> options)
+    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor)
     {
-        _pcs4Repository = pcs4Repository;
         _options = options;
-    }
 
-    public const string PunchItem = "PunchItem";
+        var baseUrl = options.CurrentValue.Endpoint;
+        var client = new HttpClient()
+        {
+            BaseAddress = new Uri(baseUrl)
+        };
+        _httpClient = client;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
     /**
      * Insert a new row in the PCS 4 database based on the sourceObject.
-     * Note: The GetMappingConfigurationForSourceObject method in this class must have support for the given sourceObjectName.
+     * Note: The endpoint must have support for the given sourceObjectName.
      */
     public async Task SyncNewObjectAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
@@ -30,21 +40,14 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         {
             return;
         }
-        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlInsertStatementBuilder = new SqlInsertStatementBuilder(_pcs4Repository);
-
-        var (sqlUpdateStatement, sqlParameters) = await sqlInsertStatementBuilder.BuildAsync(sourceObjectMappingConfig,
-                                                                                             sourceObject,
-                                                                                             plant,
-                                                                                             cancellationToken);
-
-        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+        var request = CreateRequest(SyncToPCS4Constants.InsertEndpoint, "POST", sourceObjectName, sourceObject, plant);
+        await SendRequest(request, "Insert", sourceObjectName, cancellationToken);
     }
 
     /**
      * Updates the PCS 4 database with changes provided by the sourceObject. 
-     * Note: The GetMappingConfigurationForSourceObject method in this class must have support for the given sourceObjectName.
+     * Note: The endpoint must have support for the given sourceObjectName.
      */
     public async Task SyncObjectUpdateAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
@@ -52,21 +55,14 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         {
             return;
         }
-        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlUpdateStatementBuilder = new SqlUpdateStatementBuilder(_pcs4Repository);
-
-        var (sqlUpdateStatement, sqlParameters) = await sqlUpdateStatementBuilder.BuildAsync(sourceObjectMappingConfig,
-                                                                                             sourceObject,
-                                                                                             plant,
-                                                                                             cancellationToken);
-
-        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlUpdateStatement, sqlParameters, cancellationToken);
+        var request = CreateRequest(SyncToPCS4Constants.UpdateEndpoint, "PUT", sourceObjectName, sourceObject, plant);
+        await SendRequest(request, "Update", sourceObjectName, cancellationToken);
     }
 
     /**
      * Deletes the row in the PCS 4 database that correspond to the given source object. 
-     * Note: The GetMappingConfigurationForSourceObject method in this class must have support for the given sourceObjectName.
+     * Note: The endpoint must have support for the given sourceObjectName.
      */
     public async Task SyncObjectDeletionAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
     {
@@ -74,28 +70,42 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         {
             return;
         }
-        var sourceObjectMappingConfig = GetMappingConfigurationForSourceObject(sourceObjectName);
 
-        var sqlDeleteStatementBuilder = new SqlDeleteStatementBuilder(_pcs4Repository);
-
-        var (sqlDeleteStatement, sqlParameters) = await sqlDeleteStatementBuilder.BuildAsync(sourceObjectMappingConfig,
-                                                                                             sourceObject,
-                                                                                             plant,
-                                                                                             cancellationToken);
-
-        await _pcs4Repository.ExecuteSingleRowOperationAsync(sqlDeleteStatement, sqlParameters, cancellationToken);
+        var request = CreateRequest(SyncToPCS4Constants.DeleteEndpoint, "DELETE", sourceObjectName, sourceObject, plant);
+        await SendRequest(request, "Delete", sourceObjectName, cancellationToken);
     }
 
-    /**
-     * Will return the mapping configuration for the given source object
-     */
-    private static ISourceObjectMappingConfig GetMappingConfigurationForSourceObject(string sourceObjectName)
-        => sourceObjectName switch
+    private static HttpRequestMessage CreateRequest(string url, string method, string sourceObjectName, object sourceObject, string plant)
+    {
+        var bodyObject = new SyncObjectDto { SyncObjectName = sourceObjectName, SynchObject = sourceObject, SyncPlant = plant };
+
+        var requestBody = JsonConvert.SerializeObject(bodyObject);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod(method), url) { Content = content };
+
+        return request;
+    }
+
+    private async Task SendRequest(HttpRequestMessage request, string method, string sourceObjectName, CancellationToken cancellationToken)
+    {
+        AddBearerToken(ref request);
+        var result = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!result.IsSuccessStatusCode)
         {
-            PunchItem => new PunchItemMappingConfig(),
-            _ => throw new NotImplementedException(
-                $"Mapping is not implemented for source object with name '{sourceObjectName}'."),
-        };
+            throw new Exception($"Error occured when trying to execute a ({method}) sync statement to PCS4 for data of type ({sourceObjectName}).");
+        }
+    }
+
+    private void AddBearerToken(ref HttpRequestMessage request)
+    {
+        var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(' ').Last();
+
+        if (token is not null)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
 }
 
 

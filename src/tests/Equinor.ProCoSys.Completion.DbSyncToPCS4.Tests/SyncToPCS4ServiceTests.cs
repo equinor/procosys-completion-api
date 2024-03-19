@@ -16,7 +16,7 @@ public class SyncToPCS4ServiceTests : TestsBase
     public void Setup()
     {
         _optionsMock = Substitute.For<IOptionsMonitor<SyncToPCS4Options>>();
-        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = true});
+        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = true, Endpoint = "api-url" });
         _dut = new SyncToPCS4Service(_pcs4RepositoryMock, _optionsMock);
     }
 
@@ -37,7 +37,7 @@ public class SyncToPCS4ServiceTests : TestsBase
     public async Task SyncNewObjectAsync_ShouldNotThrowException_WhenMissingConfigForObject_AndDisabledSync()
     {
         // Arrange 
-        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false });
+        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false, Endpoint = "api-url" });
 
         // Act
         await _dut.SyncNewObjectAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
@@ -60,7 +60,7 @@ public class SyncToPCS4ServiceTests : TestsBase
     public async Task SyncObjectUpdateAsync_ShouldNotThrowException_WhenMissingConfigForObject_AndDisabledSync()
     {
         // Arrange 
-        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false });
+        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false, Endpoint = "api-url" });
 
         // Act
         await _dut.SyncObjectUpdateAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
@@ -83,7 +83,7 @@ public class SyncToPCS4ServiceTests : TestsBase
     public async Task SyncObjectDeletionAsync_ShouldNotThrowException_WhenMissingConfigForObject_AndDisabledSync()
     {
         // Arrange 
-        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false });
+        _optionsMock.CurrentValue.Returns(new SyncToPCS4Options { ConnectionString = "blah", Enabled = false, Endpoint = "api-url" });
 
         // Act
         await _dut.SyncObjectDeletionAsync(SourceObjectNameMissingConfig, _sourceTestObject, null!, default);
