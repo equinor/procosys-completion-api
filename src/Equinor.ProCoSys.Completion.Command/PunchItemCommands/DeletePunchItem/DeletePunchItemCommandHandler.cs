@@ -57,7 +57,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Service.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+            await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

@@ -191,7 +191,6 @@ public static class ApplicationModule
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
 
         // Singleton - Created the first time they are requested
-        services.AddSingleton<IPcs4Repository, Pcs4Repository>();
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
     }
 }

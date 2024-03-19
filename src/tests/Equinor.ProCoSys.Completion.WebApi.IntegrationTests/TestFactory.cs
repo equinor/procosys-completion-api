@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.Extensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -38,7 +39,6 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
-    private readonly IPcs4Repository _pcs4RepositoryMock = Substitute.For<IPcs4Repository>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
 
@@ -156,8 +156,12 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
             services.AddScoped(_ => _permissionApiServiceMock);
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
-            services.AddScoped(_ => _pcs4RepositoryMock);
             services.AddScoped(_ => _emailServiceMock);
+
+            services.Configure<SyncToPCS4Options>(options =>
+            {
+                options.Endpoint = "https://localhost/test";
+            });
         });
 
         builder.ConfigureServices(services =>
