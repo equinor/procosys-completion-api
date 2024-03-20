@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.4" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.2" />
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.3" />
     <PackageReference Include="FluentValidation" Version="11.8.1" />
     <PackageReference Include="MassTransit" Version="8.1.2" />
     <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.1.2" />
