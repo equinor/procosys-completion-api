@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
@@ -28,6 +29,7 @@ public class AttachmentService : IAttachmentService
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
     private readonly IIntegrationEventPublisher _integrationEventPublisher;
     private readonly ILogger<AttachmentService> _logger;
+    private readonly IModifiedEventService _modifiedEventService;
 
 
     private static readonly Dictionary<string, byte[]> s_fileSignature = new()
@@ -65,7 +67,8 @@ public class AttachmentService : IAttachmentService
         IAzureBlobService azureBlobService,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
         IIntegrationEventPublisher integrationEventPublisher,
-        ILogger<AttachmentService> logger)
+        ILogger<AttachmentService> logger,
+        IModifiedEventService modifiedEventService)
     {
         _attachmentRepository = attachmentRepository;
         _plantProvider = plantProvider;
@@ -74,6 +77,7 @@ public class AttachmentService : IAttachmentService
         _blobStorageOptions = blobStorageOptions;
         _integrationEventPublisher = integrationEventPublisher;
         _logger = logger;
+        _modifiedEventService = modifiedEventService;
     }
 
     public async Task<AttachmentDto> UploadNewAsync(
@@ -169,15 +173,12 @@ public class AttachmentService : IAttachmentService
             fullBlobPath,
             cancellationToken);
 
-        _attachmentRepository.Remove(attachment);
-
         // ReSharper disable once UnusedVariable
         var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
 
-        // Setting RowVersion before delete has 2 missions:
-        // 1) Set correct Concurrency
-        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+        // Set correct Concurrency
         attachment.SetRowVersion(rowVersion);
+        _attachmentRepository.Remove(attachment);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Todo 109496 sync with pcs4 goes here
@@ -306,20 +307,18 @@ public class AttachmentService : IAttachmentService
 
     private async Task<AttachmentDeletedIntegrationEvent> PublishDeletedEventsAsync(Attachment attachment, CancellationToken cancellationToken)
     {
-        // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
-
-        var integrationEvent = new AttachmentDeletedIntegrationEvent(attachment, _plantProvider.Plant);
+        var modifiedEvent = await _modifiedEventService.GetModifiedEventAsync(cancellationToken);
+        var integrationEvent = new AttachmentDeletedIntegrationEvent(_plantProvider.Plant, attachment.Guid,
+            attachment.ParentGuid, modifiedEvent.User, modifiedEvent.ModifiedAtUtc);
+        
         await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             $"Attachment {attachment.FileName} deleted",
             attachment.Guid,
             attachment.ParentGuid,
-            // Our entities don't have DeletedByOid / DeletedAtUtc ...
-            // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
-            new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
-            attachment.ModifiedAtUtc!.Value);
+            modifiedEvent.User,
+            modifiedEvent.ModifiedAtUtc);
         await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }

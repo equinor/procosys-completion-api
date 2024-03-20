@@ -8,6 +8,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
@@ -41,6 +42,7 @@ public class AttachmentServiceTests : TestsBase
     private readonly string _newJpgFileName = "N-image.jpg";
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly string _contentTypeJpeg = "image/jpeg";
+    private IModifiedEventService _modifiedEventServiceMock;
 
     [TestInitialize]
     public void Setup()
@@ -79,6 +81,10 @@ public class AttachmentServiceTests : TestsBase
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
 
         _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+        
+        _modifiedEventServiceMock = Substitute.For<IModifiedEventService>();
+        _modifiedEventServiceMock.GetModifiedEventAsync(default)
+            .Returns(new ModifiedEvent(_existingAttachment.ModifiedAtUtc!.Value, new User(_person.Guid, _person.GetFullName())));
 
         var blobStorageOptions = new BlobStorageOptions
         {
@@ -94,7 +100,8 @@ public class AttachmentServiceTests : TestsBase
             _azureBlobServiceMock,
             blobStorageOptionsMock,
             _integrationEventPublisherMock,
-            Substitute.For<ILogger<AttachmentService>>());
+            Substitute.For<ILogger<AttachmentService>>(),
+            _modifiedEventServiceMock);
     }
 
     #region UploadNewAsync
