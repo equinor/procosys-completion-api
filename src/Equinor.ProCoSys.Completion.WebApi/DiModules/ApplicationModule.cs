@@ -29,6 +29,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Persons;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.WebApi.Authentication;
@@ -145,6 +146,8 @@ public static class ApplicationModule
         services.AddScoped<IContentAccessChecker, ContentAccessChecker>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
+        services.AddScoped<IPersonApiService, MainApiPersonService>();
+        services.AddScoped<IPersonCache, PersonCache>();
         services.AddScoped<IPunchItemHelper, PunchItemHelper>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddScoped<IUnitOfWork>(x => x.GetRequiredService<CompletionContext>());

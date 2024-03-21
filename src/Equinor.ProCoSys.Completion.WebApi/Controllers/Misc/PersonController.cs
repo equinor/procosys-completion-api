@@ -1,0 +1,33 @@
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading;
+using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Persons;
+using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Misc;
+
+[Authorize]
+[ApiController]
+[Route("MainPersons")]
+public class MainPersonController : ControllerBase
+{
+    private readonly IPersonCache _personCache;
+
+
+    public MainPersonController(
+        IPersonCache personCache)
+    {
+        _personCache = personCache;
+    }
+
+    [HttpGet("All")]
+    public async Task<IList<ProCoSys4Person>> GetPersonsFromMainApi(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        string plant,
+        CancellationToken cancellationToken) => await _personCache.GetAllPersonsAsync(plant, cancellationToken);
+
+}
