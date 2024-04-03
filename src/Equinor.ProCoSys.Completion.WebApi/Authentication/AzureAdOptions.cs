@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Equinor.ProCoSys.Completion.WebApi.Authentication;
+﻿namespace Equinor.ProCoSys.Completion.WebApi.Authentication;
 
 /// <summary>
 /// Options for Azure authentication and authorization.

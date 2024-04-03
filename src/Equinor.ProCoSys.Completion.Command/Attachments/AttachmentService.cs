@@ -31,35 +31,6 @@ public class AttachmentService : IAttachmentService
     private readonly ILogger<AttachmentService> _logger;
     private readonly IModifiedEventService _modifiedEventService;
 
-
-    private static readonly Dictionary<string, byte[]> s_fileSignature = new()
-    {
-        { ".pdf", [0x25, 0x50, 0x44, 0x46] },
-        { ".jpg", [0xFF, 0xD8, 0xFF] },
-        { ".png", [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] },
-        { ".gif", [0x47, 0x49, 0x46, 0x38] },
-        { ".bmp", [0x42, 0x4D] },
-        { ".tiff", [0x49, 0x49, 0x2A, 0x00] }, // TIFF image (little-endian)
-        { ".tif", [0x4D, 0x4D, 0x00, 0x2A] }, // TIFF image (big-endian)
-        { ".webp", [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50] },
-        { ".docx", [0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00] }, // DOCX (also valid for other Office Open XML formats like .xlsx and .pptx)
-        { ".xlsx", [0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00] } // XLSX (also valid for other Office Open XML formats)
-    };
-
-    private static readonly Dictionary <string, string> s_contentTypeMappings = new()
-    {
-        { ".pdf", "application/pdf" },
-        { ".jpg", "image/jpeg" },
-        { ".png", "image/png" },
-        { ".gif", "image/gif" },
-        { ".bmp", "image/bmp" },
-        { ".tiff", "image/tiff" },
-        { ".tif", "image/tiff" },
-        { ".webp", "image/webp" },
-        { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-        { ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
-    };
-
     public AttachmentService(
         IAttachmentRepository attachmentRepository,
         IPlantProvider plantProvider,
@@ -103,7 +74,7 @@ public class AttachmentService : IAttachmentService
             fileName);
         _attachmentRepository.Add(attachment);
 
-        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, contentType);
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
         await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
         // ReSharper disable once UnusedVariable
@@ -135,7 +106,7 @@ public class AttachmentService : IAttachmentService
 
         var changes = SetRevisionNumber(attachment);
 
-        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, contentType);
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
         await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
 
         // ReSharper disable once UnusedVariable
@@ -332,50 +303,9 @@ public class AttachmentService : IAttachmentService
         return changes;
     }
 
-    public static async Task<string> DetermineContentTypeAsync(Stream stream, string filename, string providedContentType)
+    private static async Task<string> DetermineContentTypeAsync(Stream stream, string filename, CancellationToken cancellationToken)
     {
-        // Verify content type using file extension
         var extension = Path.GetExtension(filename).ToLowerInvariant();
-        if (!s_fileSignature.TryGetValue(extension, out var expectedSignature))
-        {
-            // Extension not supported, return default content type
-            return "application/octet-stream";
-        }
-
-        // Only check the signature if the provided content type matches the extension
-        if (IsContentTypeMatchingExtension(providedContentType, extension))
-        {
-            // Reset position to the start of the stream
-            if (stream.CanSeek)
-            { 
-                stream.Seek(0, SeekOrigin.Begin); 
-            }
-
-            var actualSignature = new byte[expectedSignature.Length];
-            var bytesRead = await stream.ReadAsync(actualSignature, 0, actualSignature.Length);
-            if (bytesRead == expectedSignature.Length && actualSignature.SequenceEqual(expectedSignature))
-            {
-                // Signature matches, consider verified
-                // Reset position again
-                if (stream.CanSeek)
-                {
-                    stream.Seek(0, SeekOrigin.Begin);
-                }
-                return providedContentType;
-            }
-        }
-
-        // If the content type does not match the signature, return default
-        return "application/octet-stream";
-    }
-
-    private static bool IsContentTypeMatchingExtension(string contentType, string extension)
-    {
-        if (s_contentTypeMappings.TryGetValue(extension, out var expectedContentType))
-        {
-            return contentType.Equals(expectedContentType, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return false;
+        return await FileMagicMatcher.GetMimeForFileAsync(stream, extension, cancellationToken);
     }
 }

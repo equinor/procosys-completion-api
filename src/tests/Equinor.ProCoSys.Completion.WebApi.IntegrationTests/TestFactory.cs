@@ -23,7 +23,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using NSubstitute.Extensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
