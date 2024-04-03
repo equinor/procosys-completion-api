@@ -59,7 +59,7 @@ public sealed class FileMagicMatcherTests : TestsBase
         foreach (var file in files)
         {
             var filePath = Path.Combine("Attachments", "Files", file);
-            var fileExtension = Path.GetExtension(filePath);
+            var fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
             var stream = File.OpenRead(filePath);
             var result = await FileMagicMatcher.GetMimeForFileAsync(stream, fileExtension, CancellationToken.None);
             Assert.AreEqual(FileMagicConstants.MimeTypes.Unknown, result,
