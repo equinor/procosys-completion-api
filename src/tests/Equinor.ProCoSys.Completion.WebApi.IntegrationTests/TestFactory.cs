@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Equinor.ProCoSys.Auth.Authorization;
@@ -23,7 +24,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using NSubstitute.Extensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -63,7 +63,23 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
     public static string AValidRowVersion => "AAAAAAAAAAA=";
     public static string WrongButValidRowVersion => "AAAAAAAAAAA=";
 
-    public Dictionary<string, KnownTestData> SeededData { get; }
+    public static ProCoSysPerson Person1 = new()
+    {
+        AzureOid = "asdf-fghj-qwer-tyui",
+        Email = "test@email.com",
+        FirstName = "Ola",
+        LastName = "Hansen",
+        UserName = "oha@mail.com"
+    };
+    public static ProCoSysPerson Person2 = new () {
+        AzureOid = "1234-4567-6789-5432",
+        Email = "test2@email.com",
+        FirstName = "Hans",
+        LastName = "Olsen",
+        UserName = "hans@mail.com"
+    };
+
+public Dictionary<string, KnownTestData> SeededData { get; }
 
     #region singleton implementation
     private static TestFactory s_instance;
@@ -384,6 +400,11 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Email = "noreply@pcs.com",
                 ServicePrincipal = true
             }));
+        _personApiServiceMock.GetAllPersonsAsync(PlantWithAccess, Arg.Any<CancellationToken>())
+            .Returns([
+                    Person1,
+                    Person2
+                ]);
         CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidNotRestricted)
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidRestricted)
@@ -434,7 +455,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                 Permissions =
                 [
                     Permissions.PUNCHITEM_READ,
-                    Permissions.LIBRARY_READ
+                    Permissions.LIBRARY_READ,
+                    Permissions.USER_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ClaimsTransformation.NoRestrictions]
@@ -470,7 +492,8 @@ public sealed class TestFactory : WebApplicationFactory<Startup>
                     Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
-                    Permissions.LIBRARY_READ
+                    Permissions.LIBRARY_READ,
+                    Permissions.USER_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ClaimsTransformation.NoRestrictions]
