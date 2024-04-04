@@ -15,6 +15,7 @@ public class Permissions
     public const string PUNCHITEM_DETACH = "PUNCHLISTITEM/DETACH";
     public const string PUNCHITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
     public const string PUNCHITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
+    public const string USER_READ = "USER/READ";
 
     public const string LIBRARY_READ = "LIBRARY_GENERAL/READ";
 

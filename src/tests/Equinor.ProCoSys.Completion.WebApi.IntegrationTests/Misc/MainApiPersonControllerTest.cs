@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Person;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -14,31 +13,32 @@ public class MainApiPersonControllerTest
     private const string Route = "MainPersons";
 
     [TestMethod]
-    public async Task Get_All_AsReader_ShouldReturnOk() => await GetAllPersons(UserType.Reader, TestFactory.PlantWithAccess);
+    public async Task GetAll_AsReader_ShouldReturnOk() => await GetAllPersons(UserType.Reader, TestFactory.PlantWithAccess);
 
     [TestMethod]
-    public async Task Get_All_AsReader_ShouldReturnBadRequest_WhenUnknownPlant() 
+    public async Task GetAll_AsReader_ShouldReturnBadRequest_WhenUnknownPlant() 
         => await GetAllPersons(
             UserType.Reader, 
             "NOT_A_PLANT",
-            HttpStatusCode.BadRequest);
+            HttpStatusCode.BadRequest,
+            "Plant 'NOT_A_PLANT' is not a valid plant");
 
     [TestMethod]
-    public async Task Get_All_AsReader_ShouldReturnNoContent_WhenNoPersonsInPlant()
+    public async Task GetAll_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await GetAllPersons(
             UserType.Reader,
             TestFactory.PlantWithoutAccess,
-            HttpStatusCode.NoContent);
+            HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task Get_All_AsAnonymous_ShouldReturnUnauthorized()
+    public async Task GetAll_AsAnonymous_ShouldReturnUnauthorized()
         => await GetAllPersons(
             UserType.Anonymous,
             TestFactory.PlantWithAccess,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
-    public async Task Get_All_AsAnonymous_ShouldReturnUnauthorized_WhenUnknownPlant()
+    public async Task GetAll_AsAnonymous_ShouldReturnUnauthorized_WhenUnknownPlant()
         => await GetAllPersons(
             UserType.Anonymous,
             "NOT_A_PLANT",
@@ -58,7 +58,7 @@ public class MainApiPersonControllerTest
         }
         var content = await response.Content.ReadAsStringAsync();
         Assert.IsNotNull(content);
-        var result = JsonConvert.DeserializeObject<List<ProCoSysPerson>>(content);
+        var result = JsonConvert.DeserializeObject<List<ProCoSysTestPerson>>(content);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Count == 2);
         Assert.IsTrue(result.Any(x => x.AzureOid == TestFactory.Person1.AzureOid));

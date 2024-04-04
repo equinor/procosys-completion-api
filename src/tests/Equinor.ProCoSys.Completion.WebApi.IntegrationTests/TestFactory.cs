@@ -16,7 +16,6 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
-using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -456,7 +455,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 Permissions =
                 [
                     Permissions.PUNCHITEM_READ,
-                    Permissions.LIBRARY_READ
+                    Permissions.LIBRARY_READ,
+                    Permissions.USER_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ClaimsTransformation.NoRestrictions]
@@ -492,7 +492,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
-                    Permissions.LIBRARY_READ
+                    Permissions.LIBRARY_READ,
+                    Permissions.USER_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ClaimsTransformation.NoRestrictions]
