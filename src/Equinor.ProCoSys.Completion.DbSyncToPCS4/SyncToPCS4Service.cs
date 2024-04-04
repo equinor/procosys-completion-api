@@ -77,7 +77,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
 
     private static HttpRequestMessage CreateRequest(string url, string method, string sourceObjectName, object sourceObject, string plant)
     {
-        var bodyObject = new SyncObjectDto { SyncObjectName = sourceObjectName, SynchObject = sourceObject, SyncPlant = plant };
+        var bodyObject = new SyncObjectDto { SyncObjectName = sourceObjectName, SyncObject = sourceObject, SyncPlant = plant };
 
         var requestBody = JsonConvert.SerializeObject(bodyObject);
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
