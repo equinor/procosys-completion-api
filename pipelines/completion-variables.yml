@@ -61,7 +61,7 @@ variables:
 
     # Key in $(certKvName) to get password for $(sqlAdminUserName)
   - name: 'sqlAdminPasswordKvKey'
-    value: 'pcs5-sqladminlogin-$(envName)'
+    value: 'pcs5-completion-sqladminlogin-$(envName)'
 
   - name: 'sqlServerName'
     value: 'sql-pcs5-completion-$(envName)'
