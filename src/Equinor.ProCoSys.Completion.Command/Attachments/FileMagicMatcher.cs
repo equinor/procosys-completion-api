@@ -155,7 +155,7 @@ public static class FileMagicMatcher
         {
             return FileMagicConstants.MimeTypes.Unknown;
         }
-
+        // Make sure stream is reset before reading signature.
         if (stream.CanSeek)
         {
             stream.Seek(0, SeekOrigin.Begin);
@@ -164,16 +164,12 @@ public static class FileMagicMatcher
         var actualSignature = new byte[expectedSignature.Length];
         _ = await stream.ReadAsync(actualSignature, cancellationToken);
 
-        if (expectedMagicMatcher(actualSignature))
-        {
-            return expectedContentType;
-        }
-
+        // Reset stream after signature is read.
         if (stream.CanSeek)
         {
             stream.Seek(0, SeekOrigin.Begin);
         }
 
-        return FileMagicConstants.MimeTypes.Unknown;
+        return expectedMagicMatcher(actualSignature) ? expectedContentType : FileMagicConstants.MimeTypes.Unknown;
     }
 }
