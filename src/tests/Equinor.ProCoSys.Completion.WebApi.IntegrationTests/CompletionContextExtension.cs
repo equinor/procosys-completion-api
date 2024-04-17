@@ -190,11 +190,13 @@ public static class CompletionContextExtension
         SeedWorkOrder(
             dbContext,
             plant,
-            KnownData.OriginalWorkOrderGuid[plant]);
+            KnownData.OriginalWorkOrderGuid[plant],
+            "004");
         SeedWorkOrder(
             dbContext,
             plant,
-            KnownData.WorkOrderGuid[plant]);
+            KnownData.WorkOrderGuid[plant],
+            "005");
 
         var swcrNo = 10;
         SeedSWCR(
@@ -209,9 +211,9 @@ public static class CompletionContextExtension
             KnownData.DocumentGuid[plant]);
     }
 
-    private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid)
+    private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid, string no)
     {
-        var workOrder = new WorkOrder(plant, guid, Guid.NewGuid().ToString().Substring(0, WorkOrder.NoLengthMax));
+        var workOrder = new WorkOrder(plant, guid, no);
         var workOrderRepository = new WorkOrderRepository(dbContext);
         workOrderRepository.Add(workOrder);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
