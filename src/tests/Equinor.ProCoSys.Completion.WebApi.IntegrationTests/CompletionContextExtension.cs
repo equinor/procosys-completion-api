@@ -191,12 +191,12 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             KnownData.OriginalWorkOrderGuid[plant],
-            "004");
+            KnownData.OriginalWorkOrderNo4);
         SeedWorkOrder(
             dbContext,
             plant,
             KnownData.WorkOrderGuid[plant],
-            "005");
+            KnownData.OriginalWorkOrderNo5);
 
         var swcrNo = 10;
         SeedSWCR(

@@ -32,7 +32,7 @@ public class WorkOrdersController : ControllerBase
         [Required]
         [FromQuery] string searchPhrase)
     {
-        var result = await _mediator.Send(new WorkOrderSearchQuery(searchPhrase, plant), cancellationToken);
+        var result = await _mediator.Send(new WorkOrderSearchQuery(searchPhrase), cancellationToken);
         return this.FromResult(result);
     }
 }

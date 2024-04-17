@@ -23,10 +23,10 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery _query = new("123", "PCS$PlantA");
+        WorkOrderSearchQuery query = new("123");
 
         // Act
-        var result = await dut.Handle(_query, default);
+        var result = await dut.Handle(query, default);
 
         // Assert
         Assert.IsNotNull(result);
@@ -41,10 +41,10 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery _query = new("004", "PCS$PlantA");
+        WorkOrderSearchQuery query = new("004");
 
         // Act
-        var result = await dut.Handle(_query, default);
+        var result = await dut.Handle(query, default);
 
         // Assert
         Assert.IsNotNull(result);

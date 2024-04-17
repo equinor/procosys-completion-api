@@ -7,8 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
 public class WorkOrderSearchQuery : IRequest<Result<IEnumerable<WorkOrderDto>>>
 {
 
-    public WorkOrderSearchQuery(string searchPhrase, string plant) => (SearchPhrase, Plant) = (searchPhrase, plant);
+    public WorkOrderSearchQuery(string searchPhrase) => SearchPhrase = searchPhrase;
 
     public string SearchPhrase { get; }
-    public string Plant { get; }
 }

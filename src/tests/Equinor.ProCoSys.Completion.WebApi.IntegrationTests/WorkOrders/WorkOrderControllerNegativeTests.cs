@@ -10,14 +10,14 @@ public class WorkOrderControllerNegativeTests
     [TestMethod]
     public async Task GetWorkOrder_BySearch_AsAnonymous_ShouldReturnUnauthorized()
         => await WorkOrderControllerTestsHelper.SearchForWorkOrderAsync(
-            "004",
+            KnownData.OriginalWorkOrderNo4,
             UserType.Anonymous,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
     public async Task GetWorkOrder_BySearch_AsNoPermissionUser_ShouldReturnForbidden()
         => await WorkOrderControllerTestsHelper.SearchForWorkOrderAsync(
-            "004",
+            KnownData.OriginalWorkOrderNo4,
             UserType.NoPermissionUser,
             HttpStatusCode.Forbidden);
 }

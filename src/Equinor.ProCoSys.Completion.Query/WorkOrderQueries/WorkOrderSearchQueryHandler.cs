@@ -20,7 +20,6 @@ public class WorkOrderSearchQueryHandler : IRequestHandler<WorkOrderSearchQuery,
     {
         var workOrders = await (from workOrder in _context.QuerySet<WorkOrder>()
             where workOrder.No.Contains(request.SearchPhrase)
-            where workOrder.Plant.Equals(request.Plant)
             select new WorkOrderDto(
                 workOrder.Guid,
                 workOrder.No
