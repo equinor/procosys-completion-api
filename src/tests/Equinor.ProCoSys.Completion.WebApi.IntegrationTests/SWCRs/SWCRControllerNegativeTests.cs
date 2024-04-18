@@ -10,14 +10,14 @@ public class SWCRControllerNegativeTests
     [TestMethod]
     public async Task GetSWCR_BySearch_AsAnonymous_ShouldReturnUnauthorized()
         => await SWCRControllerTestsHelper.SearchForSWCRAsync(
-            "1",
+            KnownData.OriginalSWCRNoAsString,
             UserType.Anonymous,
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
     public async Task GetSWCR_BySearch_AsNoPermissionUser_ShouldReturnForbidden()
         => await SWCRControllerTestsHelper.SearchForSWCRAsync(
-            "1",
+            KnownData.OriginalSWCRNoAsString,
             UserType.NoPermissionUser,
             HttpStatusCode.Forbidden);
 }

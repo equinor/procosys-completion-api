@@ -7,7 +7,7 @@ using ServiceResult;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Query.SWCRQueries;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.SWCRQueries;
+namespace Equinor.ProCoSys.Completion.Query.Tests.SWCRQueries.SWCRSearch;
 
 [TestClass]
 public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
