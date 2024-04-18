@@ -99,4 +99,16 @@ public static class KnownData
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbCC") },
         { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbDD") }
     };
+
+    public static Dictionary<string, string> WorkOrderNo = new()
+    {
+        { PlantA, "004" },
+        { PlantB, "005" }
+    };
+
+    public static Dictionary<string, string> OriginalWorkOrderNo = new()
+    {
+        { PlantA, "006" },
+        { PlantB, "007" }
+    };
 }

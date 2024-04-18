@@ -456,7 +456,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 [
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ,
-                    Permissions.USER_READ
+                    Permissions.USER_READ,
+                    Permissions.WO_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ClaimsTransformation.NoRestrictions]
