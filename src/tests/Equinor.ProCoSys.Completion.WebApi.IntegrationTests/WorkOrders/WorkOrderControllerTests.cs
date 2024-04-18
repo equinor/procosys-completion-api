@@ -12,7 +12,7 @@ public class WorkOrderControllerTests
     public async Task GetWorkOrder_BySearch_AsReader_ShouldReturnWorkOrder()
     {
         // Act
-        var workOrders = await WorkOrderControllerTestsHelper.SearchForWorkOrderAsync(KnownData.OriginalWorkOrderNo4, UserType.Reader);
+        var workOrders = await WorkOrderControllerTestsHelper.SearchForWorkOrderAsync(KnownData.WorkOrderNo[KnownData.PlantA], UserType.Reader);
         
         // Assert
         Assert.IsTrue(workOrders.Count == 1);

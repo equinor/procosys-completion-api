@@ -22,9 +22,6 @@ public static class KnownData
     public static string PlantATitle => "Plant A";
     public static string PlantBTitle => "Plant B";
 
-    public static string OriginalWorkOrderNo4 => "004";
-    public static string OriginalWorkOrderNo5 => "005";
-
     public static Dictionary<string, Guid> ProjectGuidA = new()
     {
         { PlantA, new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa11") },
@@ -101,5 +98,17 @@ public static class KnownData
     {
         { PlantA, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbCC") },
         { PlantB, new("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbDD") }
+    };
+
+    public static Dictionary<string, string> WorkOrderNo = new()
+    {
+        { PlantA, "004" },
+        { PlantB, "005" }
+    };
+
+    public static Dictionary<string, string> OriginalWorkOrderNo = new()
+    {
+        { PlantA, "006" },
+        { PlantB, "007" }
     };
 }
