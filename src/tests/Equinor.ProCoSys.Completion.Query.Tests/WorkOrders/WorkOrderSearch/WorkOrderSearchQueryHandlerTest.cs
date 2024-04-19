@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.WorkOrders.WorkOrderSearch;
 
@@ -23,7 +24,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new("123");
+        WorkOrderSearchQuery query = new(Guid.NewGuid().ToString());
 
         // Act
         var result = await dut.Handle(query, default);
@@ -41,7 +42,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new("004");
+        WorkOrderSearchQuery query = new(ReadOnlyTestsBase.WorkOrderNo);
 
         // Act
         var result = await dut.Handle(query, default);

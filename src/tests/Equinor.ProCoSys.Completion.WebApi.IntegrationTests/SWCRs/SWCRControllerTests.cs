@@ -9,10 +9,10 @@ public class SWCRControllerTests
 {
 
     [TestMethod]
-    public async Task GetSWCR_BySearch_AsReader_ShouldReturnWorkOrder()
+    public async Task GetSWCR_BySearch_AsReader_ShouldReturnSWCR()
     {
         // Act
-        var swcrs = await SWCRControllerTestsHelper.SearchForSWCRAsync(KnownData.OriginalSWCRNoAsString, UserType.Reader);
+        var swcrs = await SWCRControllerTestsHelper.SearchForSWCRAsync(KnownData.SWCRNo[KnownData.SWCRGuid[KnownData.PlantA]].ToString(), UserType.Reader);
 
         // Assert
         Assert.IsTrue(swcrs.Count == 1);

@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Query.SWCRQueries;
+using System;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.SWCRQueries.SWCRSearch;
 
@@ -23,7 +24,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new SWCRSearchQueryHandler(context);
-        SWCRSearchQuery _query = new("123");
+        SWCRSearchQuery _query = new(Guid.NewGuid().ToString());
 
         // Act
         var result = await dut.Handle(_query, default);
@@ -41,7 +42,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new SWCRSearchQueryHandler(context);
-        SWCRSearchQuery _query = new("1");
+        SWCRSearchQuery _query = new(ReadOnlyTestsBase.SWCRNo.ToString());
 
         // Act
         var result = await dut.Handle(_query, default);

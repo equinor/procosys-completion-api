@@ -22,8 +22,6 @@ public static class KnownData
     public static string PlantATitle => "Plant A";
     public static string PlantBTitle => "Plant B";
 
-    public static string OriginalSWCRNoAsString => "11";
-
     public static Dictionary<string, Guid> ProjectGuidA = new()
     {
         { PlantA, new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa11") },
@@ -112,5 +110,12 @@ public static class KnownData
     {
         { PlantA, "006" },
         { PlantB, "007" }
+    };
+
+    // SWCRNo for specific SWCR Guids.
+    public static Dictionary<Guid, int> SWCRNo = new()
+    {
+        { SWCRGuid[PlantA], 11 },
+        { SWCRGuid[PlantB], 12 }
     };
 }
