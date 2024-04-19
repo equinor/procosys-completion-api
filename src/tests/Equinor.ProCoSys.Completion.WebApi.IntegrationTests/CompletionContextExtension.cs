@@ -202,7 +202,7 @@ public static class CompletionContextExtension
             dbContext,
             plant,
             KnownData.SWCRGuid[plant],
-            KnownData.SWCRNo[KnownData.SWCRGuid[plant]]);
+            KnownData.SWCRNo[plant]);
 
         SeedDocument(
             dbContext,

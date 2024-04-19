@@ -113,9 +113,9 @@ public static class KnownData
     };
 
     // SWCRNo for specific SWCR Guids.
-    public static Dictionary<Guid, int> SWCRNo = new()
+    public static Dictionary<string, int> SWCRNo = new()
     {
-        { SWCRGuid[PlantA], 11 },
-        { SWCRGuid[PlantB], 12 }
+        { PlantA, 11 },
+        { PlantB, 12 }
     };
 }
