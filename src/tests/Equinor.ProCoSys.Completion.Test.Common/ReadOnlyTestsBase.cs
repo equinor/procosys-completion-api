@@ -50,6 +50,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected TokenCredential _tokenCredentialsMock;
     protected static readonly int SWCRNo = 1;
     protected static readonly string WorkOrderNo = "004";
+    protected static readonly string DocumentNo = "1A";
 
     [TestInitialize]
     public void SetupBase()
@@ -133,7 +134,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
         _sortingId.Add(plant, AddLibraryItem(context, sorting));
         _typeId.Add(plant, AddLibraryItem(context, type));
 
-        var document = new Document(plant, Guid.NewGuid(), "1A");
+        var document = new Document(plant, Guid.NewGuid(), DocumentNo);
         _documentId.Add(plant, AddDocument(context, document));
 
         var swcr = new SWCR(plant, Guid.NewGuid(), SWCRNo);

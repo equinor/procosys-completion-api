@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Equinor.ProCoSys.Completion.Query.DocumentQueries;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.WorkOrders.WorkOrderSearch;
+namespace Equinor.ProCoSys.Completion.Query.Tests.DocumentQueries.DocumentSearch;
 
 [TestClass]
-public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
+public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
 {
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -23,8 +23,8 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new(Guid.NewGuid().ToString());
+        var dut = new DocumentSearchQueryHandler(context);
+        DocumentSearchQuery query = new(Guid.NewGuid().ToString());
 
         // Act
         var result = await dut.Handle(query, default);
@@ -36,13 +36,13 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnWorkOrder_WhenMatchesExists()
+    public async Task Handler_ShouldReturnDocument_WhenMatchesExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new(ReadOnlyTestsBase.WorkOrderNo);
+        var dut = new DocumentSearchQueryHandler(context);
+        DocumentSearchQuery query = new(ReadOnlyTestsBase.DocumentNo);
 
         // Act
         var result = await dut.Handle(query, default);

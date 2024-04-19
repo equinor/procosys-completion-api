@@ -207,7 +207,8 @@ public static class CompletionContextExtension
         SeedDocument(
             dbContext,
             plant,
-            KnownData.DocumentGuid[plant]);
+            KnownData.DocumentGuid[plant],
+            KnownData.DocumentNo[plant]);
     }
 
     private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid, string no)
@@ -226,9 +227,9 @@ public static class CompletionContextExtension
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
-    private static void SeedDocument(CompletionContext dbContext, string plant, Guid guid)
+    private static void SeedDocument(CompletionContext dbContext, string plant, Guid guid, string no)
     {
-        var document = new Document(plant, guid, Guid.NewGuid().ToString());
+        var document = new Document(plant, guid, no);
         var documentRepository = new DocumentRepository(dbContext);
         documentRepository.Add(document);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
