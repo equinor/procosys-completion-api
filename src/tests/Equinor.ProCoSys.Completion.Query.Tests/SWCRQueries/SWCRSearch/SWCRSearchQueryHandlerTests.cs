@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ServiceResult;
+using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Query.SWCRQueries;
 using System;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.WorkOrders.WorkOrderSearch;
+namespace Equinor.ProCoSys.Completion.Query.Tests.SWCRQueries.SWCRSearch;
 
 [TestClass]
-public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
+public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
 {
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -23,11 +23,11 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new(Guid.NewGuid().ToString());
+        var dut = new SWCRSearchQueryHandler(context);
+        SWCRSearchQuery _query = new(Guid.NewGuid().ToString());
 
         // Act
-        var result = await dut.Handle(query, default);
+        var result = await dut.Handle(_query, default);
 
         // Assert
         Assert.IsNotNull(result);
@@ -36,16 +36,16 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnWorkOrder_WhenMatchesExists()
+    public async Task Handler_ShouldReturnSWCR_WhenMatchesExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new(ReadOnlyTestsBase.WorkOrderNo);
+        var dut = new SWCRSearchQueryHandler(context);
+        SWCRSearchQuery _query = new(ReadOnlyTestsBase.SWCRNo.ToString());
 
         // Act
-        var result = await dut.Handle(query, default);
+        var result = await dut.Handle(_query, default);
 
         // Assert
         Assert.IsNotNull(result);
@@ -53,4 +53,3 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         Assert.AreEqual(1, result.Data.Count());
     }
 }
-

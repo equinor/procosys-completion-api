@@ -111,4 +111,11 @@ public static class KnownData
         { PlantA, "006" },
         { PlantB, "007" }
     };
+
+    // SWCRNo for specific SWCR Guids.
+    public static Dictionary<string, int> SWCRNo = new()
+    {
+        { PlantA, 11 },
+        { PlantB, 12 }
+    };
 }

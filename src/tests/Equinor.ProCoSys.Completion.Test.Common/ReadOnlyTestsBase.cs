@@ -48,6 +48,8 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected ICurrentUserProvider _currentUserProviderMock;
     protected IEventDispatcher _eventDispatcherMock;
     protected TokenCredential _tokenCredentialsMock;
+    protected static readonly int SWCRNo = 1;
+    protected static readonly string WorkOrderNo = "004";
 
     [TestInitialize]
     public void SetupBase()
@@ -134,10 +136,10 @@ public abstract class ReadOnlyTestsBase : TestsBase
         var document = new Document(plant, Guid.NewGuid(), "1A");
         _documentId.Add(plant, AddDocument(context, document));
 
-        var swcr = new SWCR(plant, Guid.NewGuid(), 1);
+        var swcr = new SWCR(plant, Guid.NewGuid(), SWCRNo);
         _swcrId.Add(plant, AddSWCR(context, swcr));
 
-        var workOrder = new WorkOrder(plant, Guid.NewGuid(), "004");
+        var workOrder = new WorkOrder(plant, Guid.NewGuid(), WorkOrderNo);
         _workOrderId.Add(plant, AddWorkOrder(context, workOrder));
     }
 
