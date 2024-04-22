@@ -42,7 +42,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new SWCRSearchQueryHandler(context);
-        SWCRSearchQuery _query = new(ReadOnlyTestsBase.SWCRNo.ToString());
+        SWCRSearchQuery _query = new(SWCRNo.ToString());
 
         // Act
         var result = await dut.Handle(_query, default);
