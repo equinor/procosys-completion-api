@@ -18,6 +18,7 @@ public class Permissions
     public const string USER_READ = "USER/READ";
     public const string WO_READ = "WO/READ";
     public const string SWCR_READ = "SWCR/READ";
+    public const string DOCUMENT_READ = "DOCUMENT/READ";
 
     public const string LIBRARY_READ = "LIBRARY_GENERAL/READ";
 

@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.Test.Common;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Query.SWCRQueries;
+using Equinor.ProCoSys.Completion.Test.Common;
+using Microsoft.EntityFrameworkCore;
 using System;
+using Equinor.ProCoSys.Completion.Query.DocumentQueries;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.SWCRQueries.SWCRSearch;
+namespace Equinor.ProCoSys.Completion.Query.Tests.DocumentQueries.DocumentSearch;
 
 [TestClass]
-public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
+public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
 {
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
@@ -23,11 +23,11 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new SWCRSearchQueryHandler(context);
-        SWCRSearchQuery _query = new(Guid.NewGuid().ToString());
+        var dut = new DocumentSearchQueryHandler(context);
+        DocumentSearchQuery query = new(Guid.NewGuid().ToString());
 
         // Act
-        var result = await dut.Handle(_query, default);
+        var result = await dut.Handle(query, default);
 
         // Assert
         Assert.IsNotNull(result);
@@ -36,16 +36,16 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnSWCR_WhenMatchesExists()
+    public async Task Handler_ShouldReturnDocument_WhenMatchesExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var dut = new SWCRSearchQueryHandler(context);
-        SWCRSearchQuery _query = new(SWCRNo.ToString());
+        var dut = new DocumentSearchQueryHandler(context);
+        DocumentSearchQuery query = new(DocumentNo);
 
         // Act
-        var result = await dut.Handle(_query, default);
+        var result = await dut.Handle(query, default);
 
         // Assert
         Assert.IsNotNull(result);
@@ -53,3 +53,4 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(1, result.Data.Count());
     }
 }
+
