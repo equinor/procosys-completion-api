@@ -12,7 +12,6 @@ using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Documents;
 
-
 [ApiController]
 [Route("Documents")]
 public class DocumentsController : ControllerBase
