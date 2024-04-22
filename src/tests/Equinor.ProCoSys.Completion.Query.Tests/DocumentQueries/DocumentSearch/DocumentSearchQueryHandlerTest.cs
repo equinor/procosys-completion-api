@@ -42,7 +42,7 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new DocumentSearchQueryHandler(context);
-        DocumentSearchQuery query = new(ReadOnlyTestsBase.DocumentNo);
+        DocumentSearchQuery query = new(DocumentNo);
 
         // Act
         var result = await dut.Handle(query, default);
