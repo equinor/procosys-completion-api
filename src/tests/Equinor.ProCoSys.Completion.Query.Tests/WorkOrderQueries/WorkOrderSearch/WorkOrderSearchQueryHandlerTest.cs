@@ -42,7 +42,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var dut = new WorkOrderSearchQueryHandler(context);
-        WorkOrderSearchQuery query = new(ReadOnlyTestsBase.WorkOrderNo);
+        WorkOrderSearchQuery query = new(WorkOrderNo);
 
         // Act
         var result = await dut.Handle(query, default);
