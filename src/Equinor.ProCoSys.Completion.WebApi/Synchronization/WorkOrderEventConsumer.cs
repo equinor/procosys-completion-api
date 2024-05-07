@@ -20,7 +20,7 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
 
     public WorkOrderEventConsumer(ILogger<WorkOrderEventConsumer> logger,
-        WorkOrderRepository workOrderRepository,
+        IWorkOrderRepository workOrderRepository,
         IUnitOfWork unitOfWork,
         ICurrentUserSetter currentUserSetter,
         IOptionsMonitor<ApplicationOptions> applicationOptions)

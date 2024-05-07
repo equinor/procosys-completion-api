@@ -123,20 +123,35 @@ public static class ApplicationModule
                     e.Name = "completion_wo";
                     e.Temporary = false;
                 });
+            x.AddConsumer<PunchItemEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_punch_item";
+                    e.Temporary = false;
+                });
 
             x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
+                var queueName = "punchItemQueue";
+
                 cfg.Host(connectionString);
 
+
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
-                
                 cfg.ConfigureJsonSerializerOptions(opts =>
                 {
                     opts.Converters.Add(new OracleGuidConverter());
                     opts.Converters.Add(new JsonStringEnumConverter());
                     return opts;
                 });
+
+                cfg.ReceiveEndpoint(queueName, e =>
+                {
+                    e.ConfigureConsumer<PunchItemEventConsumer>(context);
+                });
+
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {
                     e.ClearSerialization();
