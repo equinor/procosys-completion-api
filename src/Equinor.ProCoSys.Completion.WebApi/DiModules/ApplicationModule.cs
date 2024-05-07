@@ -92,6 +92,38 @@ public static class ApplicationModule
                     e.Temporary = false;
                 });
 
+            x.AddConsumer<LibraryEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_library";
+                    e.Temporary = false;
+                });
+
+            x.AddConsumer<DocumentEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_document";
+                    e.Temporary = false;
+                });
+
+            x.AddConsumer<SWCREventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_swcr";
+                    e.Temporary = false;
+                });
+
+            x.AddConsumer<WorkOrderEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_wo";
+                    e.Temporary = false;
+                });
+
             x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
@@ -123,7 +155,42 @@ public static class ApplicationModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false; 
                 });
-
+                cfg.SubscriptionEndpoint("completion_library", "library", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<LibraryEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_document", "document", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<DocumentEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_swcr", "swcr", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<SWCREventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_wo", "wo", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<WorkOrderEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
                 // cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
                 // {
                 //     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
