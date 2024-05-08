@@ -12,19 +12,22 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class ProjectEventConsumer : IConsumer<ProjectEvent>
 {
-    private readonly ILogger<ProjectEventConsumer> _logger; 
+    private readonly ILogger<ProjectEventConsumer> _logger;
+    private readonly IPlantSetter _plantSetter;
     private readonly IProjectRepository _projectRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
     
-    public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger, 
+    public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger,
+        IPlantSetter plantSetter,
         IProjectRepository projectRepository, 
         IUnitOfWork unitOfWork, 
         ICurrentUserSetter currentUserSetter, 
         IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
+        _plantSetter = plantSetter;
         _projectRepository = projectRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
@@ -35,10 +38,8 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     {
         var projectEvent = context.Message;
 
-        if (projectEvent.ProCoSysGuid == Guid.Empty)
-        {
-            throw new Exception("Message is missing ProCoSysGuid");
-        }
+        ValidateMessage(projectEvent);
+        _plantSetter.SetPlant(projectEvent.Plant);
 
         if (projectEvent.Behavior == "delete")
         {
@@ -70,6 +71,19 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
         
         _logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
             context.MessageId, projectEvent.ProCoSysGuid, projectEvent.ProjectName);
+    }
+
+    private static void ValidateMessage(ProjectEvent projectEvent)
+    {
+        if (projectEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
+        if (string.IsNullOrEmpty(projectEvent.Plant))
+        {
+            throw new Exception("Message is missing Plant");
+        }
     }
 
     private static void MapFromEventToProject(IProjectEventV1 projectEvent, Project project)

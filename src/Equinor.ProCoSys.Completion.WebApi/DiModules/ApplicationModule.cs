@@ -149,7 +149,12 @@ public static class ApplicationModule
 
                 cfg.ReceiveEndpoint(queueName, e =>
                 {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
                 });
 
                 cfg.SubscriptionEndpoint("completion_project","project", e =>

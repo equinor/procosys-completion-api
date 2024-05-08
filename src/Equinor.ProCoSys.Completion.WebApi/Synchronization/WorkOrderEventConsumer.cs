@@ -7,25 +7,27 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
 {
     private readonly ILogger<WorkOrderEventConsumer> _logger;
+    private readonly IPlantSetter _plantSetter;
     private readonly IWorkOrderRepository _workOrderRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
 
     public WorkOrderEventConsumer(ILogger<WorkOrderEventConsumer> logger,
+        IPlantSetter plantSetter,
         IWorkOrderRepository workOrderRepository,
         IUnitOfWork unitOfWork,
         ICurrentUserSetter currentUserSetter,
         IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
+        _plantSetter = plantSetter;
         _workOrderRepository = workOrderRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
@@ -36,11 +38,8 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
     {
         var busEvent = context.Message;
 
-        if (busEvent.ProCoSysGuid == Guid.Empty)
-        {
-            throw new Exception("Message is missing ProCoSysGuid");
-        }
-
+        ValidateMessage(busEvent);
+        _plantSetter.SetPlant(busEvent.Plant);
 
         if (await _workOrderRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
@@ -58,6 +57,19 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
 
         _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.WoNo);
+    }
+
+    private static void ValidateMessage(WorkOrderEvent busEvent)
+    {
+        if (busEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Plant))
+        {
+            throw new Exception("Message is missing Plant");
+        }
     }
 
     private static void MapFromEventToWorkOrder(IWorkOrderEventV1 workOrderEvent, WorkOrder workOrder)

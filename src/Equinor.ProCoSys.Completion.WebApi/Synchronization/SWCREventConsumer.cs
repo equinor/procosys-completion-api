@@ -7,25 +7,27 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class SWCREventConsumer : IConsumer<SWCREvent>
 {
     private readonly ILogger<SWCREventConsumer> _logger;
+    private readonly IPlantSetter _plantSetter;
     private readonly ISWCRRepository _swcrRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
 
     public SWCREventConsumer(ILogger<SWCREventConsumer> logger,
+        IPlantSetter plantSetter,
         ISWCRRepository swcrRepository,
         IUnitOfWork unitOfWork,
         ICurrentUserSetter currentUserSetter,
         IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
+        _plantSetter = plantSetter;
         _swcrRepository = swcrRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
@@ -36,10 +38,8 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
     {
         var busEvent = context.Message;
 
-        if (busEvent.ProCoSysGuid == Guid.Empty)
-        {
-            throw new Exception("Message is missing ProCoSysGuid");
-        }
+        ValidateMessage(busEvent);
+        _plantSetter.SetPlant(busEvent.Plant);
 
         if (await _swcrRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
@@ -58,6 +58,19 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
         _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.SwcrNo);
 
+    }
+
+    private static void ValidateMessage(SWCREvent busEvent)
+    {
+        if (busEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Plant))
+        {
+            throw new Exception("Message is missing Plant");
+        }
     }
 
     private static void MapFromEventToSWCR(ISwcrEventV1 swcrEvent, SWCR swcr)

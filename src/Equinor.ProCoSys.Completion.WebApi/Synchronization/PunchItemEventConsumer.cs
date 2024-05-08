@@ -12,9 +12,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
-using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 
@@ -23,6 +20,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
 {
     private readonly ILogger<PunchItemEventConsumer> _logger;
+    private readonly IPlantSetter _plantSetter;
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
@@ -34,6 +32,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
 
     public PunchItemEventConsumer(ILogger<PunchItemEventConsumer> logger,
+        IPlantSetter plantSetter,
         IPunchItemRepository punchItemRepository,
         IProjectRepository projectRepository,
         ILibraryItemRepository libraryItemRepository,
@@ -45,6 +44,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
+        _plantSetter = plantSetter;
         _punchItemRepository = punchItemRepository;
         _projectRepository = projectRepository;
         _libraryItemRepository = libraryItemRepository;
@@ -60,12 +60,9 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         var busEvent = context.Message;
 
-        if (busEvent.ProCoSysGuid == Guid.Empty)
-        {
-            throw new Exception("Message is missing ProCoSysGuid");
-        }
+        ValidateMessage(busEvent);
+        _plantSetter.SetPlant(busEvent.Plant);
 
-        
         if (await _punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await _punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
@@ -92,10 +89,27 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
 
       }*/
 
+    private static void ValidateMessage(PunchItemEvent busEvent)
+    {
+        if (busEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Plant))
+        {
+            throw new Exception("Message is missing Plant");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Description))
+        {
+            throw new Exception("Message is missing Description");
+        }
+    }
+
     private async Task<PunchItem> CreatePunchItem(IPunchListItemEventV1 busEvent, CancellationToken cancellationToken)
     {
-        // TODO Change to ProjectGuid when new pcsBus version is available.
-        var project = await _projectRepository.GetAsync(busEvent.ProCoSysGuid, cancellationToken);
+        var project = await _projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
         // TODO Consider making fields mandatory in pcaBus
         var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
@@ -104,17 +118,12 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
             busEvent.ClearingByOrgGuid.Value, cancellationToken) : throw new Exception("Message is missing ClearingByOrgGuid");
 
-        if (string.IsNullOrEmpty(busEvent.Description))
-        {
-            throw new Exception("Message is missing Description");
-        }
-
         var punchItem = new PunchItem(
             busEvent.Plant,
             project,
             busEvent.ChecklistGuid,
             Enum.Parse<Category>(busEvent.Category),
-            busEvent.Description,
+            busEvent.Description!,
             raisedByOrg,
             clearingByOrg);
         
@@ -126,14 +135,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         await SetLibraryItemAsync(punchItem, busEvent.PunchListSortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
         await SetLibraryItemAsync(punchItem, busEvent.PunchListTypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
 
-        // TODO verify this is ok approach
-        if (int.TryParse(busEvent.Estimate, out var number)) {
-            SetEstimate(punchItem, number);
-        }
-        else
-        {
-            throw new Exception("Message/Estimate does not have a valid format");
-        }
+        SetEstimate(punchItem, busEvent.Estimate);
 
         await SetOriginalWorkOrderAsync(punchItem, busEvent.OriginalWoGuid, cancellationToken);
         await SetWorkOrderAsync(punchItem, busEvent.WoGuid, cancellationToken);
@@ -240,12 +242,15 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         punchItem.SetOriginalWorkOrder(wo);
     }
 
-    private void SetEstimate(PunchItem punchItem, int? estimate)
+    private void SetEstimate(PunchItem punchItem, string? estimate)
     {
-        punchItem.Estimate = estimate;
-        if (estimate is null)
+        if (int.TryParse(estimate, out var number))
         {
-            return;
+            punchItem.Estimate = number;
+        }
+        else
+        {
+            throw new Exception("Message/Estimate does not have a valid format");
         }
     }
 

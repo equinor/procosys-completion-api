@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
@@ -13,20 +12,22 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class DocumentEventConsumer : IConsumer<DocumentEvent>
 {
-
     private readonly ILogger<DocumentEventConsumer> _logger;
+    private readonly IPlantSetter _plantSetter;
     private readonly IDocumentRepository _documentRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserSetter _currentUserSetter;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
 
     public DocumentEventConsumer(ILogger<DocumentEventConsumer> logger,
+        IPlantSetter plantSetter,
         IDocumentRepository documentRepository,
         IUnitOfWork unitOfWork,
         ICurrentUserSetter currentUserSetter,
         IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _logger = logger;
+        _plantSetter = plantSetter;
         _documentRepository = documentRepository;
         _unitOfWork = unitOfWork;
         _currentUserSetter = currentUserSetter;
@@ -37,11 +38,8 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
     {
         var busEvent = context.Message;
 
-        if (busEvent.ProCoSysGuid == Guid.Empty)
-        {
-            throw new Exception("Message is missing ProCoSysGuid");
-        }
-
+        ValidateMessage(busEvent);
+        _plantSetter.SetPlant(busEvent.Plant);
 
         if (await _documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
@@ -60,6 +58,19 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
 
         _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
+    }
+
+    private static void ValidateMessage(DocumentEvent busEvent)
+    {
+        if (busEvent.ProCoSysGuid == Guid.Empty)
+        {
+            throw new Exception("Message is missing ProCoSysGuid");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Plant))
+        {
+            throw new Exception("Message is missing Plant");
+        }
     }
 
     private static Document CreateDocumentEntity(IDocumentEventV1 documentEvent)
