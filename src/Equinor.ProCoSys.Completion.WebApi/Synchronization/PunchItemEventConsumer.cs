@@ -125,7 +125,8 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             Enum.Parse<Category>(busEvent.Category),
             busEvent.Description!,
             raisedByOrg,
-            clearingByOrg);
+            clearingByOrg,
+            busEvent.ProCoSysGuid);
         
         // TODO not in bus message, need to resolve (nullable in db)?
         //await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);

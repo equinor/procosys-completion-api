@@ -16,6 +16,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class ProjectEventConsumerTests
 {
     private readonly IProjectRepository _projectRepoMock = Substitute.For<IProjectRepository>();
+    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly ProjectEventConsumer _projectEventConsumer;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -23,7 +24,7 @@ public class ProjectEventConsumerTests
     private Project? _projectAddedToRepository;
 
     public ProjectEventConsumerTests() =>
-        _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _projectRepoMock, 
+        _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _plantSetter, _projectRepoMock, 
             _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
 
     [TestInitialize]

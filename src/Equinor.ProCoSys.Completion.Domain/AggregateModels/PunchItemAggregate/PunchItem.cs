@@ -33,13 +33,14 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Category category,
         string description,
         LibraryItem raisedByOrg,
-        LibraryItem clearingByOrg)
+        LibraryItem clearingByOrg,
+        Guid? proCoSysGuid = null)
         : base(plant)
     {
         CheckListGuid = checkListGuid;
         Category = category;
         Description = description;
-        Guid = MassTransit.NewId.NextGuid();
+        Guid = proCoSysGuid ?? MassTransit.NewId.NextGuid();
 
         SetProject(plant, project);
         SetRaisedByOrg(raisedByOrg);
