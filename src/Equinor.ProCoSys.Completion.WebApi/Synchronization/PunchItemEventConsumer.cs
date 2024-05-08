@@ -66,7 +66,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         if (await _punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await _punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-       //     MapFromEventToWorkOrder(busEvent, punchItem);
+            await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
         }
         else
         {
@@ -80,14 +80,6 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
-
-    /*  private static void MapFromEventToPunchItem(IPunchListItemEventV1 punchItemEvent, PunchItem punchItem)
-      {
-          // punchItem.Type
-          //punchItem.Description
-          punchItem.CheckListGuid = punchItemEvent.ChecklistGuid;
-
-      }*/
 
     private static void ValidateMessage(PunchItemEvent busEvent)
     {
@@ -128,8 +120,17 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             clearingByOrg,
             busEvent.ProCoSysGuid);
         
-        // TODO not in bus message, need to resolve (nullable in db)?
+        // TODO not in bus message, need to resolve? (nullable in db)
         //await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
+        await MapPunchItemEventToPunchItem(busEvent, punchItem, cancellationToken);
+
+        return punchItem;
+    }
+
+    private async Task MapPunchItemEventToPunchItem(IPunchListItemEventV1 busEvent, PunchItem punchItem,
+        CancellationToken cancellationToken)
+    {
+        punchItem.Description = busEvent.Description!;
         SetDueTime(punchItem, busEvent.DueDate);
 
         await SetLibraryItemAsync(punchItem, busEvent.PunchPriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
@@ -147,8 +148,6 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         SetMaterialRequired(punchItem, busEvent.MaterialRequired);
         SetMaterialETAUtc(punchItem, busEvent.MaterialETA);
         SetMaterialExternalNo(punchItem, busEvent.MaterialExternalNo);
-
-        return punchItem;
     }
 
     private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo)

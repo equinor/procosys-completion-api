@@ -127,14 +127,14 @@ public static class ApplicationModule
                 .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punch_item";
+                    e.Name = "completion_punchitem";
                     e.Temporary = false;
                 });
 
             x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
-                var queueName = "punchItemQueue";
+                var queueName = "punchItemCompletionTransferQueue";
 
                 cfg.Host(connectionString);
 
@@ -208,6 +208,15 @@ public static class ApplicationModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<WorkOrderEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_punchitem", "punchlistitem", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
