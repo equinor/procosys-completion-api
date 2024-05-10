@@ -23,7 +23,7 @@ public class DeepLinkUtility : IDeepLinkUtility
         return contextName switch
         {
             // todo 109830 Deep link to the punch item
-            nameof(PunchItem) => $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}",
+            nameof(PunchItem) => $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={guid}",
             _ => throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}")
         };
     }

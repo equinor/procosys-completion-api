@@ -100,9 +100,9 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            _logger.LogError("Error occurred on update of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            _logger.LogError(e, "Error occurred on update of punch item with guid {PunchItemGuid}", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
