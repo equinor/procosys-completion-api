@@ -70,9 +70,9 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            _logger.LogError("Error occurred on clear of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            _logger.LogError(e, "Error occurred on clear of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
