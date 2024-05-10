@@ -155,6 +155,8 @@ public static class ApplicationModule
                     e.ConfigureConsumer<PunchItemEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
                 });
 
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
