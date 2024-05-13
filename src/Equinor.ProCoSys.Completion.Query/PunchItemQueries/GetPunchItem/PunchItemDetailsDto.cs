@@ -2,7 +2,7 @@
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 
-public record PunchItemDetailsDto(
+public sealed record PunchItemDetailsDto(
     Guid Guid,
     string ProjectName,
     int ItemNo,
@@ -39,4 +39,5 @@ public record PunchItemDetailsDto(
     WorkOrderDto? OriginalWorkOrder,
     DocumentDto? Document,
     SWCRDto? SWCR,
+    int AttachmentCount,
     string RowVersion);
