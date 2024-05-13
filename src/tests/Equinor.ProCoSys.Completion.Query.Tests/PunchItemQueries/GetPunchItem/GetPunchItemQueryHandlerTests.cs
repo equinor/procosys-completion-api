@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -130,7 +131,7 @@ public class GetPunchItemQueryHandlerTests : ReadOnlyTestsBase
         var dut = new GetPunchItemQueryHandler(context);
 
         // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(()
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException<PunchItem>>(()
             => dut.Handle(query, default));
     }
 
