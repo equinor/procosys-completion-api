@@ -98,7 +98,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
 
     private void AddBearerToken(ref HttpRequestMessage request)
     {
-        var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(' ').Last();
+        var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString().Split(' ').Last();
 
         if (token is not null)
         {
