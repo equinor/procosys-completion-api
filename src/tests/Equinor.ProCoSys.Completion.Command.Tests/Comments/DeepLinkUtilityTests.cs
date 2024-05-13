@@ -27,12 +27,15 @@ public class DeepLinkUtilityTests : TestsBase
     [TestMethod]
     public void CreateUrl_ShouldCreateUrl_ForPunchType()
     {
+        // Arrange
+        var guid = Guid.NewGuid();
+
         // Act
-        var result = _dut.CreateUrl(nameof(PunchItem), Guid.NewGuid());
+        var result = _dut.CreateUrl(nameof(PunchItem), guid);
 
         // Assert
-        // todo 109830 Test correct deep link to the punch item
-        Assert.IsTrue(result.StartsWith($"{_baseUrl.TrimEnd('/')}/{TestPlantA[4..]}"));
+        var expected = $"{_baseUrl.TrimEnd('/')}/{TestPlantA[4..]}/Completion/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={guid}";
+        Assert.AreEqual(expected, result);
     }
 
     [TestMethod]
