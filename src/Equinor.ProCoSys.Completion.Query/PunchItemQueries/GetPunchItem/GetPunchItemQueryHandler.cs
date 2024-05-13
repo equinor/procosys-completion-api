@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -49,8 +51,12 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
 
         if (punchItem is null)
         {
-            throw new Exception($"PunchItem with Guid {request.PunchItemGuid} not found");
+            throw new EntityNotFoundException<PunchItem>(request.PunchItemGuid);
         }
+
+        var attachmentCount = await _context.QuerySet<Attachment>()
+            .Where(x => x.ParentGuid == punchItem.Guid)
+            .CountAsync(cancellationToken);
 
         var createdBy = MapToPersonDto(punchItem.CreatedBy)!;
         var modifiedBy = MapToPersonDto(punchItem.ModifiedBy);
@@ -105,6 +111,7 @@ public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Resul
                        originalWorkOrderDto,
                        documentDto,
                        swcrDto,
+                       attachmentCount,
                        punchItem.RowVersion.ConvertToString());
         return new SuccessResult<PunchItemDetailsDto>(punchItemDetailsDto);
     }
