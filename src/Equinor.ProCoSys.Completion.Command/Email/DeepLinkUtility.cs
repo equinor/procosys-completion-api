@@ -31,7 +31,7 @@ public class DeepLinkUtility(IPlantProvider plantProvider, IOptionsMonitor<Appli
     private string GetPlantNameWithoutPCSPrefix() => plantProvider.Plant[4..];
 
     private static string PunchItemDeepLinkCreator(DeepLinkCreatorArgs args) =>
-        $"{args.Options.CurrentValue.BaseUrl.TrimEnd('/')}/{args.Plant}/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={args.Guid}";
+        $"{args.Options.CurrentValue.BaseUrl.TrimEnd('/')}/{args.Plant}/Completion/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={args.Guid}";
 
     private sealed record DeepLinkCreatorArgs(string Plant, Guid Guid, IOptionsMonitor<ApplicationOptions> Options);
 }
