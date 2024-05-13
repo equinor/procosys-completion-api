@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -6,27 +7,31 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Command.Email;
 
-public class DeepLinkUtility : IDeepLinkUtility
+public class DeepLinkUtility(IPlantProvider plantProvider, IOptionsMonitor<ApplicationOptions> options)
+    : IDeepLinkUtility
 {
-    private readonly IOptionsMonitor<ApplicationOptions> _options;
-    private readonly IPlantProvider _plantProvider;
-
-    public DeepLinkUtility(IPlantProvider plantProvider, IOptionsMonitor<ApplicationOptions> options)
+    private readonly Dictionary<string, Func<DeepLinkCreatorArgs, string>> _deepLinkCreators = new()
     {
-        _plantProvider = plantProvider;
-        _options = options;
-    }
+        { nameof(PunchItem), PunchItemDeepLinkCreator }
+    };
 
     public string CreateUrl(string contextName, Guid guid)
     {
         var plant = GetPlantNameWithoutPCSPrefix();
-        return contextName switch
+        var args = new DeepLinkCreatorArgs(plant, guid, options);
+
+        if (!_deepLinkCreators.TryGetValue(contextName, out var creator))
         {
-            // todo 109830 Deep link to the punch item
-            nameof(PunchItem) => $"{_options.CurrentValue.BaseUrl.TrimEnd('/')}/{plant}/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={guid}",
-            _ => throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}")
-        };
+            throw new NotImplementedException($"DeepLinkUtility.CreateUrl not implemented for {contextName}");
+        }
+
+        return creator(args);
     }
 
-    private string GetPlantNameWithoutPCSPrefix() => _plantProvider.Plant[4..];
+    private string GetPlantNameWithoutPCSPrefix() => plantProvider.Plant[4..];
+
+    private static string PunchItemDeepLinkCreator(DeepLinkCreatorArgs args) =>
+        $"{args.Options.CurrentValue.BaseUrl.TrimEnd('/')}/{args.Plant}/PunchListItem/RedirectToPunchListItemView?punchListItemGuid={args.Guid}";
+
+    private sealed record DeepLinkCreatorArgs(string Plant, Guid Guid, IOptionsMonitor<ApplicationOptions> Options);
 }
