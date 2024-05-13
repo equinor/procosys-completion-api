@@ -91,7 +91,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             if (changes.Any())
             {
-                await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+                //await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+                await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
             }
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);

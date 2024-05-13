@@ -57,7 +57,8 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+            //await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
