@@ -7,7 +7,7 @@ using Equinor.ProCoSys.Common.Misc;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 
-public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IVoidable
+public class MailTemplate : EntityBase, IAggregateRoot, IModificationAuditable, IVoidable
 {
     public const int CodeLengthMax = 64;
     public const int SubjectLengthMax = 512;
@@ -31,9 +31,6 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
     public string Code { get; private set; }
     public string Subject { get; set; }
     public string Body { get; set; }
-    public DateTime CreatedAtUtc { get; private set; }
-    public int CreatedById { get; private set; }
-    public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
@@ -44,13 +41,6 @@ public class MailTemplate : EntityBase, IAggregateRoot, ICreationAuditable, IMod
     public string? Plant { get; set; }
     
     public bool IsGlobal() => Plant.IsEmpty();
-
-    public void SetCreated(Person createdBy)
-    {
-        CreatedAtUtc = TimeService.UtcNow;
-        CreatedById = createdBy.Id;
-        CreatedBy = createdBy;
-    }
 
     public void SetModified(Person modifiedBy)
     {
