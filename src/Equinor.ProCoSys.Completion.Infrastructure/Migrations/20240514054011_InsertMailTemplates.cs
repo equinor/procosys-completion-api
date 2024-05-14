@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -36,17 +37,16 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .Annotation("SqlServer:TemporalHistoryTableSchema", null)
                 .Annotation("SqlServer:TemporalPeriodEndColumnName", "PeriodEnd")
                 .Annotation("SqlServer:TemporalPeriodStartColumnName", "PeriodStart");
-            migrationBuilder.Sql("delete from MailTemplates where Code in ('PUNCH_COMMENTED','PUNCH_REJECTED')");
 
-            var code = "PUNCH_COMMENTED";
+            migrationBuilder.Sql($"delete from MailTemplates where Code in ('{MailTemplateCode.PunchCommented}','{MailTemplateCode.PunchRejected}')");
+
             var subject = "Punch {{Entity.ItemNo}} commented";
             var body = "Punch {{Entity.ItemNo}} commented by {{Comment.CreatedBy.FirstName}} {{Comment.CreatedBy.LastName}}.<br>  Comment: {{Comment.Text}}<br>  Url: {{Url}}";
-            InsertSql(migrationBuilder, code, subject, body);
+            InsertSql(migrationBuilder, MailTemplateCode.PunchCommented, subject, body);
 
-            code = "PUNCH_REJECTED";
             subject = "Punch {{Entity.ItemNo}} rejected";
             body = "Punch {{Entity.ItemNo}} rejected by {{Entity.RejectedBy.FirstName}} {{Entity.RejectedBy.LastName}}.<br>  Reject reason: {{Comment}}<br>  Link: {{Url}}";
-            InsertSql(migrationBuilder, code, subject, body);
+            InsertSql(migrationBuilder, MailTemplateCode.PunchRejected, subject, body);
         }
 
         private void InsertSql(MigrationBuilder migrationBuilder, string code, string subject, string body)
