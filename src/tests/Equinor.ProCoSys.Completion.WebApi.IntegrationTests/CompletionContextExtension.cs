@@ -76,25 +76,10 @@ public static class CompletionContextExtension
     {
         var mailTemplateA = new MailTemplate(KnownData.MailTemplateA, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
         var mailTemplateB = new MailTemplate(KnownData.MailTemplateB, Guid.NewGuid().ToString(), $"<p>{Guid.NewGuid()}</p>");
-        var punchRejectedMailTemplate = new MailTemplate(
-            MailTemplateCode.PunchRejected,
-            "Punch {{Entity.ItemNo}} rejected",
-            "Punch {{Entity.ItemNo}} rejected by {{Entity.RejectedBy.FirstName}} {{Entity.RejectedBy.LastName}}.<br>" +
-            "Reject reason: {{Comment}}<br>" +
-            "Url: {{Url}}");
-
-        var punchCommentedMailTemplate = new MailTemplate(
-            MailTemplateCode.PunchCommented,
-            "Punch {{Entity.ItemNo}} commented",
-            "Punch {{Entity.ItemNo}} commented by {{Comment.CreatedBy.FirstName}} {{Comment.CreatedBy.LastName}}.<br>" +
-            "Comment: {{Comment.Text}}<br>" +
-            "Url: {{Url}}");
 
         var mailTemplateRepository = new MailTemplateRepository(dbContext);
         mailTemplateRepository.Add(mailTemplateA);
         mailTemplateRepository.Add(mailTemplateB);
-        mailTemplateRepository.Add(punchRejectedMailTemplate);
-        mailTemplateRepository.Add(punchCommentedMailTemplate);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 

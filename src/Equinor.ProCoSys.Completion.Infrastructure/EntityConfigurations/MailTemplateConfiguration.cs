@@ -10,7 +10,6 @@ internal class MailTemplateConfiguration : IEntityTypeConfiguration<MailTemplate
     public void Configure(EntityTypeBuilder<MailTemplate> builder)
     {
         builder.ConfigureSystemVersioning();
-        builder.ConfigureCreationAudit();
         builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 

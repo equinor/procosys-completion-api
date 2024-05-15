@@ -45,7 +45,7 @@ public class CompletionMailServiceTests
 
         _mailTemplateRepositoryMock = Substitute.For<IMailTemplateRepository>();
         var mailTemplate = new MailTemplate(_code, "S", "B");
-        _mailTemplateRepositoryMock.GetByCodeAsync(_plant, _code, Arg.Any<CancellationToken>())
+        _mailTemplateRepositoryMock.GetNonVoidedByCodeAsync(_plant, _code, Arg.Any<CancellationToken>())
             .Returns(mailTemplate);
 
         _templateTransformerMock = Substitute.For<ITemplateTransformer>();

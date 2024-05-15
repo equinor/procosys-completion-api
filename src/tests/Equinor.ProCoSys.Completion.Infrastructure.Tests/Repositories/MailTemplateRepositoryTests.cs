@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
@@ -16,6 +18,7 @@ public class MailTemplateRepositoryTests : RepositoryTestBase<MailTemplate>
     private readonly string _codeA = "A";
     private readonly string _codeB = "B";
     private readonly string _codeC = "C";
+    private readonly string _codeVoided = "V";
     private readonly string _plantP = "P";
     private MailTemplate _globalMailTemplateA;
     private MailTemplate _mailTemplateBInPlantP;
@@ -43,13 +46,13 @@ public class MailTemplateRepositoryTests : RepositoryTestBase<MailTemplate>
     protected override MailTemplate GetNewEntity() => new("c|", "s", "b");
 
     [TestMethod]
-    public async Task GetByCode_ShouldGetGlobalMailTemplate_WhenPlantSpecificDoNotExists()
+    public async Task GetNonVoidedByCode_ShouldGetGlobalMailTemplate_WhenPlantSpecificDoNotExists()
     {
         // Arrange
         var dut = ArrangeRepository();
 
         // Act
-        var result = await dut.GetByCodeAsync(_plantP, _codeA, default);
+        var result = await dut.GetNonVoidedByCodeAsync(_plantP, _codeA, default);
 
         // Assert
         Assert.AreEqual(_globalMailTemplateA, result);
@@ -57,13 +60,13 @@ public class MailTemplateRepositoryTests : RepositoryTestBase<MailTemplate>
     }
 
     [TestMethod]
-    public async Task GetByCode_ShouldGetPlantSpecificMailTemplate_WhenGlobalDoNotExists()
+    public async Task GetNonVoidedByCode_ShouldGetPlantSpecificMailTemplate_WhenGlobalDoNotExists()
     {
         // Arrange
         var dut = ArrangeRepository();
 
         // Act
-        var result = await dut.GetByCodeAsync(_plantP, _codeB, default);
+        var result = await dut.GetNonVoidedByCodeAsync(_plantP, _codeB, default);
 
         // Assert
         Assert.AreEqual(_mailTemplateBInPlantP, result);
@@ -71,17 +74,39 @@ public class MailTemplateRepositoryTests : RepositoryTestBase<MailTemplate>
     }
 
     [TestMethod]
-    public async Task GetByCode_ShouldGetPlantSpecificMailTemplate_WhenBothGlobalAndPlantSpecificExists()
+    public async Task GetNonVoidedByCode_ShouldGetPlantSpecificMailTemplate_WhenBothGlobalAndPlantSpecificExists()
     {
         // Arrange
         var dut = ArrangeRepository();
 
         // Act
-        var result = await dut.GetByCodeAsync(_plantP, _codeC, default);
+        var result = await dut.GetNonVoidedByCodeAsync(_plantP, _codeC, default);
 
         // Assert
         Assert.AreEqual(_mailTemplateCInPlantP, result);
         Assert.IsFalse(result.IsGlobal());
+    }
+
+    [TestMethod]
+    public async Task GetNonVoidedByCode_ShouldThrowEntityNotFoundException_WhenGettingVoidedMailTemplate()
+    {
+        // Arrange
+        var dut = ArrangeRepository();
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
+            => dut.GetNonVoidedByCodeAsync(_plantP, _codeVoided, default));
+    }
+
+    [TestMethod]
+    public async Task GetNonVoidedByCode_ShouldThrowEntityNotFoundException_WhenGettingUnknownMailTemplate()
+    {
+        // Arrange
+        var dut = ArrangeRepository();
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
+            => dut.GetNonVoidedByCodeAsync(_plantP, Guid.NewGuid().ToString(), default));
     }
 
     private MailTemplateRepository ArrangeRepository()
@@ -93,12 +118,15 @@ public class MailTemplateRepositoryTests : RepositoryTestBase<MailTemplate>
         _globalMailTemplateC = new MailTemplate(_codeC, "s", "b");
         _mailTemplateCInPlantP = new MailTemplate(_codeC, "s", "b") { Plant = _plantP };
 
+        var voidedMailTemplate = new MailTemplate(_codeVoided, "s", "b") { IsVoided = true };
+
         var mailTemplates = new List<MailTemplate>
         {
             _globalMailTemplateA,
             _mailTemplateBInPlantP,
             _globalMailTemplateC,
-            _mailTemplateCInPlantP
+            _mailTemplateCInPlantP,
+            voidedMailTemplate
         };
 
         _dbSetMock = mailTemplates.AsQueryable().BuildMockDbSet();
