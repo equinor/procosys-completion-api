@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -41,12 +39,20 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
+
+        // Test if message library type is not present in LibraryType enum
+        if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals("COMM_PRIORITY"))
+        {
+            _logger.LogInformation("LibraryType not in scope of import: {libraryType}", busEvent.Type );
+            return;
+        }
+
         _plantSetter.SetPlant(busEvent.Plant);
 
-        if (Enum.IsDefined(typeof(LibraryType), busEvent.Type) &&
-            await _libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await _libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var library = await _libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            _logger.LogInformation("LibraryItem exists, updating {id}, {guid}, {type}", library.Id, library.Guid.ToString(), library.Type.ToString());
             MapFromEventToLibrary(busEvent, library);
         }
         else
@@ -73,6 +79,16 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         {
             throw new Exception("Message is missing Plant");
         }
+
+        if (string.IsNullOrEmpty(busEvent.Type))
+        {
+            throw new Exception("Message is missing Type");
+        }
+
+        if (string.IsNullOrEmpty(busEvent.Description))
+        {
+            throw new Exception("Message is missing Description");
+        }
     }
 
     private static LibraryItem CreateLibraryEntity(ILibraryEventV1 libraryEvent)
@@ -81,7 +97,10 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
             libraryEvent.ProCoSysGuid,
             libraryEvent.Code,
             libraryEvent.Description!,
-            (LibraryType)Enum.Parse(typeof(LibraryType), libraryEvent.Type));
+            !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType)
+                && libraryEvent.Type.ToUpper() == "COMM_PRIORITY"
+                ? LibraryType.PUNCHLIST_PRIORITY : libType
+            );
         return library;
     }
   
