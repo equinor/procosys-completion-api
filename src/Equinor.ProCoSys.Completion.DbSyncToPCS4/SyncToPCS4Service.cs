@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Threading;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -27,6 +29,44 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         };
         _httpClient = client;
         _httpContextAccessor = httpContextAccessor;
+    }
+    public async Task SyncNewPunchListItemAsync(object updateEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(updateEvent);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("POST"), SyncToPCS4Constants.PunchListItemInsertEndpoint) { Content = content };
+        await SendRequest(request, "Insert", "PunchListItem", cancellationToken);
+    }
+
+    public async Task SyncPunchListItemUpdateAsync(object updateEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(updateEvent);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("PUT"), SyncToPCS4Constants.PunchListItemUpdateEndpoint) { Content = content };
+        await SendRequest(request, "Update", "PunchListItem", cancellationToken);
+    }
+
+    public async Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(deleteEvent);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("DELETE"), SyncToPCS4Constants.PunchListItemDeleteEndpoint) { Content = content };
+        await SendRequest(request, "Delete", "PunchListItem", cancellationToken);
     }
 
     /**
