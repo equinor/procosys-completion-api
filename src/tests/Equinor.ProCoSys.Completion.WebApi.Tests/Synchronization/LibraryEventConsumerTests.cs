@@ -96,8 +96,6 @@ public class LibraryEventConsumerTests
         Assert.AreEqual(Type, libraryItemToUpdate.Type);
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
-    
-
 
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()

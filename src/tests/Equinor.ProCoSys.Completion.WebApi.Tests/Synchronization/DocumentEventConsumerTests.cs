@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -43,7 +42,7 @@ public class DocumentEventConsumerTests
                 _documentAddedToRepository = callInfo.Arg<Document>();
             });
     }
-
+    
     [TestMethod]
     public async Task Consume_ShouldAddNewDocument_WhenDocumentDoesNotExist()
     {
@@ -105,7 +104,6 @@ public class DocumentEventConsumerTests
             => _documentEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
 
-    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {

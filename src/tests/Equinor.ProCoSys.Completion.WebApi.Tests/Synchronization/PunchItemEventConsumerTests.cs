@@ -145,18 +145,18 @@ public class PunchItemEventConsumerTests
         //Arrange
         var bEvent = GetTestEvent(Guid.Empty, Plant, _projectGuid,
             "description",
-            Guid.NewGuid(),
+            Guid.Empty,
             Category.PA,
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             "55",
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             false,
             false,
             "NO123"
@@ -169,25 +169,24 @@ public class PunchItemEventConsumerTests
             => _punchItemEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
 
-    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
         var bEvent = GetTestEvent(Guid.NewGuid(), "", _projectGuid,
             "description",
-            Guid.NewGuid(),
+            Guid.Empty,
             Category.PA,
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             "55",
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
             false,
             false,
             "NO123"

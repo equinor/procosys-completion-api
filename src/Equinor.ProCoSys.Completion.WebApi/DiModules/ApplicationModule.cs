@@ -101,7 +101,7 @@ public static class ApplicationModule
                 });
 
             x.AddConsumer<DocumentEventConsumer>()
-                .Endpoint(e =>
+               .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Name = "completion_document";
@@ -146,7 +146,6 @@ public static class ApplicationModule
                     opts.Converters.Add(new JsonStringEnumConverter());
                     return opts;
                 });
-                /*
                 cfg.ReceiveEndpoint("libraryCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -158,8 +157,6 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                */
-                /*
                 cfg.ReceiveEndpoint("swcrCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -171,8 +168,6 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                */
-                
                 cfg.ReceiveEndpoint("documentCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -184,8 +179,6 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                
-                /*
                 cfg.ReceiveEndpoint("workOrderCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -197,8 +190,6 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                */
-                /*
                 cfg.ReceiveEndpoint("punchItemCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -210,7 +201,6 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                */
 
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {
