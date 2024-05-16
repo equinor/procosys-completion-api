@@ -22,6 +22,7 @@ public class PunchItemsControllerTests : TestBase
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
+        TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
     }
 
     [TestMethod]
@@ -512,7 +513,7 @@ public class PunchItemsControllerTests : TestBase
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<DateTimeOffset>())
             .Returns(uri);
- 
+
         // Act
         var attachmentUrl = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
             UserType.Reader,

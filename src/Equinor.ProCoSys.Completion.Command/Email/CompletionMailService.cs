@@ -51,7 +51,7 @@ public class CompletionMailService : ICompletionMailService
             return;
         }
 
-        var mailTemplate = await _mailTemplateRepository.GetByCodeAsync(_plantProvider.Plant, templateCode, cancellationToken);
+        var mailTemplate = await _mailTemplateRepository.GetNonVoidedByCodeAsync(_plantProvider.Plant, templateCode, cancellationToken);
 
         var subject = _templateTransformer.Transform(mailTemplate.Subject, emailContext);
         var body = _templateTransformer.Transform(mailTemplate.Body, emailContext);

@@ -3,6 +3,9 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -15,8 +18,9 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     private readonly IOptionsMonitor<SyncToPCS4Options> _options;
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<SyncToPCS4Service> _logger;
 
-    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor)
+    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor, ILogger<SyncToPCS4Service> logger)
     {
         _options = options;
 
@@ -27,6 +31,46 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         };
         _httpClient = client;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
+    }
+    public async Task SyncNewPunchListItemAsync(object updateEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(updateEvent);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("POST"), SyncToPCS4Constants.PunchListItemInsertEndpoint) { Content = content };
+        await SendRequest(request, "Insert", "PunchListItem", cancellationToken);
+    }
+
+    public async Task SyncPunchListItemUpdateAsync(object updateEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(updateEvent);
+        _logger.LogDebug(@"Serialized Request: {requestBody}",requestBody);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("PUT"), SyncToPCS4Constants.PunchListItemUpdateEndpoint) { Content = content };
+        await SendRequest(request, "Update", "PunchListItem", cancellationToken);
+    }
+
+    public async Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken)
+    {
+        if (!_options.CurrentValue.Enabled)
+        {
+            return;
+        }
+
+        var requestBody = JsonConvert.SerializeObject(deleteEvent);
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(new HttpMethod("DELETE"), SyncToPCS4Constants.PunchListItemDeleteEndpoint) { Content = content };
+        await SendRequest(request, "Delete", "PunchListItem", cancellationToken);
     }
 
     /**
@@ -98,7 +142,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
 
     private void AddBearerToken(ref HttpRequestMessage request)
     {
-        var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(' ').Last();
+        var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString().Split(' ').Last();
 
         if (token is not null)
         {

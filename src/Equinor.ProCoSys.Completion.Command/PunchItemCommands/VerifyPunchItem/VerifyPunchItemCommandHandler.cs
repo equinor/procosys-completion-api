@@ -66,7 +66,8 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+            //await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
+            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
@@ -74,9 +75,9 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            _logger.LogError("Error occurred on verify of punch item with guid {PunchItemGuid}.", request.PunchItemGuid);
+            _logger.LogError(e, "Error occurred on verify of punch item with guid {PunchItemGuid}", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

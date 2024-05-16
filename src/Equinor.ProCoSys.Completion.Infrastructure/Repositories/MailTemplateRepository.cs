@@ -14,16 +14,16 @@ public class MailTemplateRepository : EntityRepository<MailTemplate>, IMailTempl
     {
     }
 
-    public async Task<MailTemplate> GetByCodeAsync(string plant, string code, CancellationToken cancellationToken)
+    public async Task<MailTemplate> GetNonVoidedByCodeAsync(string plant, string code, CancellationToken cancellationToken)
     {
         var mailTemplates = await DefaultQuery
-            .Where(mt => mt.Code == code && (mt.Plant == plant || mt.Plant == null))
+            .Where(mt => !mt.IsVoided && mt.Code == code && (mt.Plant == plant || mt.Plant == null))
             .ToListAsync(cancellationToken);
         var mailTemplate = mailTemplates.SingleOrDefault(mt => mt.Plant == plant) ?? 
                            mailTemplates.SingleOrDefault(mt => mt.Plant == null);
         if (mailTemplate is null)
         {
-            throw new EntityNotFoundException($"Could not find {nameof(MailTemplate)} with code {code}. Must be configured ...");
+            throw new EntityNotFoundException($"Could not find non voided{nameof(MailTemplate)} with code {code}. Must be configured ...");
         }
         return mailTemplate;
     }
