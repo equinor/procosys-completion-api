@@ -28,7 +28,6 @@ public class PunchItemEventConsumerTests
     private readonly ISWCRRepository _swcrRepoMock = Substitute.For<ISWCRRepository>();
     private readonly IWorkOrderRepository _workOrderRepoMock = Substitute.For<IWorkOrderRepository>();
 
-
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly PunchItemEventConsumer _punchItemEventConsumer;

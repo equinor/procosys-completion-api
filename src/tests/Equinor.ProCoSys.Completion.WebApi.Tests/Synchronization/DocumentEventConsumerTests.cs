@@ -136,7 +136,7 @@ public class DocumentEventConsumerTests
             string.Empty,
             string.Empty,
             string.Empty,
-            DateTime.UtcNow, 
-            null
+            DateTime.UtcNow,
+            DateOnly.MinValue
         );
 }
