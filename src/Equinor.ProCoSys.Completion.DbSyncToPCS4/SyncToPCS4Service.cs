@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -17,8 +18,9 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     private readonly IOptionsMonitor<SyncToPCS4Options> _options;
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<SyncToPCS4Service> _logger;
 
-    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor)
+    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor, ILogger<SyncToPCS4Service> logger)
     {
         _options = options;
 
@@ -29,6 +31,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         };
         _httpClient = client;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
     public async Task SyncNewPunchListItemAsync(object updateEvent, CancellationToken cancellationToken)
     {
@@ -51,6 +54,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         }
 
         var requestBody = JsonConvert.SerializeObject(updateEvent);
+        _logger.LogDebug(@"Serialized Request: {requestBody}",requestBody);
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         var request = new HttpRequestMessage(new HttpMethod("PUT"), SyncToPCS4Constants.PunchListItemUpdateEndpoint) { Content = content };
         await SendRequest(request, "Update", "PunchListItem", cancellationToken);
