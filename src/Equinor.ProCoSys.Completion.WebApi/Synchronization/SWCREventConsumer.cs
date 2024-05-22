@@ -73,17 +73,20 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
         }
     }
 
-    private static void MapFromEventToSWCR(ISwcrEventV1 swcrEvent, SWCR swcr)
+    private static void MapFromEventToSWCR(ISwcrEventV1 busEvent, SWCR swcr)
     {
-        swcr.IsVoided = swcrEvent.IsVoided;
+        swcr.IsVoided = busEvent.IsVoided;
+        swcr.No = int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue 
+            : throw new Exception("SwcrNo does not have a valid format");
     }
 
-    private SWCR CreateSWCREntity(ISwcrEventV1 busEvent)
+    private static SWCR CreateSWCREntity(ISwcrEventV1 busEvent)
     {
         var swcr = new SWCR(
             busEvent.Plant,
-            busEvent.ProCoSysGuid, 
-            int.Parse(busEvent.SwcrNo)
+            busEvent.ProCoSysGuid,
+            int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue
+                : throw new Exception("SwcrNo does not have a valid format")
         );
         return swcr;
     }

@@ -30,9 +30,9 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, 
 
     // private setters needed for Entity Framework
     public Guid Guid { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
-    public LibraryType Type { get; private set; }
+    public string Code { get; set; }
+    public string Description { get; set; }
+    public LibraryType Type { get; set; }
 
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }

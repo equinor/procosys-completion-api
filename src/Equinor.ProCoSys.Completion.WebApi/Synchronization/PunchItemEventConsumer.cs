@@ -103,7 +103,6 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         var project = await _projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
-        // TODO Consider making fields mandatory in pcaBus
         var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
             busEvent.RaisedByOrgGuid.Value,
             cancellationToken) : throw new Exception("Message is missing RaisedByOrgGuid");
@@ -150,41 +149,14 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         SetMaterialExternalNo(punchItem, busEvent.MaterialExternalNo);
     }
 
-    private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo)
-    {
-        if (materialExternalNo is null)
-        {
-            return;
-        }
-        punchItem.MaterialExternalNo = materialExternalNo;
-    }
+    private static void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo) => punchItem.MaterialExternalNo = materialExternalNo;
 
-    private void SetMaterialETAUtc(PunchItem punchItem, DateTime? materialETAUtc )
-    {
-        if (materialETAUtc is null)
-        {
-            return;
-        }
-        punchItem.MaterialETAUtc = materialETAUtc;
-    }
+    private static void SetMaterialETAUtc(PunchItem punchItem, DateTime? materialETAUtc ) => punchItem.MaterialETAUtc = materialETAUtc;
 
-    private void SetMaterialRequired(PunchItem punchItem, bool materialRequired)
-    {
-        if (!materialRequired)
-        {
-            return;
-        }
-        punchItem.MaterialRequired = materialRequired;
-    }
+    private static void SetMaterialRequired(PunchItem punchItem, bool materialRequired) => punchItem.MaterialRequired = materialRequired;
 
-    private void SetExternalItemNo(PunchItem punchItem, string? externalItemNo)
-    {
-        if (externalItemNo is null)
-        {
-            return;
-        }
-        punchItem.ExternalItemNo = externalItemNo;
-    }
+    private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo) => punchItem.ExternalItemNo = externalItemNo;
+    
 
     private async Task SetDocumentAsync(
         PunchItem punchItem,
@@ -193,6 +165,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (documentGuid is null)
         {
+            punchItem.ClearDocument();
             return;
         }
 
@@ -207,6 +180,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (swcrGuid is null)
         {
+            punchItem.ClearSWCR();
             return;
         }
 
@@ -221,6 +195,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (workOrderGuid is null)
         {
+            punchItem.ClearWorkOrder();
             return;
         }
 
@@ -235,6 +210,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (originalWorkOrderGuid is null)
         {
+            punchItem.ClearOriginalWorkOrder();
             return;
         }
 
@@ -242,8 +218,14 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         punchItem.SetOriginalWorkOrder(wo);
     }
 
-    private void SetEstimate(PunchItem punchItem, string? estimate)
+    private static void SetEstimate(PunchItem punchItem, string? estimate)
     {
+        if (estimate is null)
+        {
+            punchItem.Estimate = null;
+            return;
+        }
+
         if (int.TryParse(estimate, out var number))
         {
             punchItem.Estimate = number;
@@ -254,14 +236,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         }
     }
 
-    private void SetDueTime(PunchItem punchItem, DateTime? dueTimeUtc)
-    {
-        if (dueTimeUtc is null)
-        {
-            return;
-        }
-        punchItem.DueTimeUtc = dueTimeUtc;
-    }
+    private static void SetDueTime(PunchItem punchItem, DateTime? dueTimeUtc) => punchItem.DueTimeUtc = dueTimeUtc;
 
     private async Task SetLibraryItemAsync(
         PunchItem punchItem,
@@ -271,21 +246,48 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (libraryGuid is null)
         {
-            return;
+            ProcessLibraryType(libraryType, punchItem);
         }
+        else
+        {
+            var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
+            ProcessLibraryType(libraryType, punchItem, libraryItem);
+        }
+    }
 
-        var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
-
+    private static void ProcessLibraryType(LibraryType libraryType, PunchItem punchItem, LibraryItem? libraryItem = null)
+    {
         switch (libraryType)
         {
             case LibraryType.PUNCHLIST_PRIORITY:
-                punchItem.SetPriority(libraryItem);
+                if (libraryItem is null)
+                {
+                    punchItem.ClearPriority();
+                }
+                else
+                {
+                    punchItem.SetPriority(libraryItem);
+                }
                 break;
             case LibraryType.PUNCHLIST_SORTING:
-                punchItem.SetSorting(libraryItem);
+                if (libraryItem is null)
+                {
+                    punchItem.ClearSorting();
+                }
+                else
+                {
+                    punchItem.SetSorting(libraryItem);
+                }
                 break;
             case LibraryType.PUNCHLIST_TYPE:
-                punchItem.SetType(libraryItem);
+                if (libraryItem is null)
+                {
+                    punchItem.ClearType();
+                }
+                else
+                {
+                    punchItem.SetType(libraryItem);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);

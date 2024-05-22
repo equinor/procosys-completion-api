@@ -98,7 +98,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
             libraryEvent.Code,
             libraryEvent.Description!,
             !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType)
-                && libraryEvent.Type.ToUpper() == "COMM_PRIORITY"
+                && libraryEvent.Type.Equals("COMM_PRIORITY", StringComparison.CurrentCultureIgnoreCase)
                 ? LibraryType.PUNCHLIST_PRIORITY : libType
             );
         return library;
@@ -107,8 +107,12 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
     private static void MapFromEventToLibrary(ILibraryEventV1 libraryEvent, LibraryItem library)
     {
         library.IsVoided = libraryEvent.IsVoided;
+        library.Description = libraryEvent.Description!;
+        library.Code = libraryEvent.Code;
+        library.Type = !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType) 
+                       && libraryEvent.Type.Equals("COMM_PRIORITY", StringComparison.CurrentCultureIgnoreCase) 
+                       ? LibraryType.PUNCHLIST_PRIORITY : libType;
     }
-
 }
 
 

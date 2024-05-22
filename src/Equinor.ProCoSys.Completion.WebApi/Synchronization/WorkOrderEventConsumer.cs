@@ -72,21 +72,18 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
         }
     }
 
-    private static void MapFromEventToWorkOrder(IWorkOrderEventV1 workOrderEvent, WorkOrder workOrder)
+    private static void MapFromEventToWorkOrder(IWorkOrderEventV1 busEvent, WorkOrder workOrder)
     {
-        // TODO closed / voided the same?
-        workOrder.IsClosed = workOrderEvent.IsVoided;
+        workOrder.No = busEvent.WoNo;
+        // TODO Investigate mapping for isClosed/isVoided
+        // workOrder.IsClosed = busEvent.IsVoided;
     }
 
-    private WorkOrder CreateWorkOrderEntity(IWorkOrderEventV1 busEvent)
-    {
-        var wo = new WorkOrder(
+    private static WorkOrder CreateWorkOrderEntity(IWorkOrderEventV1 busEvent) => new (
             busEvent.Plant,
             busEvent.ProCoSysGuid,
             busEvent.WoNo
         );
-        return wo;
-    }
 
 }
 

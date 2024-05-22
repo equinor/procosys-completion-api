@@ -43,16 +43,15 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
 
         if (await _documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            // TODO Implement mapping ?
             var document = await _documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-           // MapFromEventToDocument(busEvent, document);
+            MapFromEventToDocument(busEvent, document);
         }
         else
         {
             var document = CreateDocumentEntity(busEvent);
             _documentRepository.Add(document);
         }
-
+        
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
@@ -73,23 +72,23 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
         }
     }
 
-    private static Document CreateDocumentEntity(IDocumentEventV1 documentEvent)
+    private static Document CreateDocumentEntity(IDocumentEventV1 busEvent)
     {
         var document = new Document(
-            documentEvent.Plant,
-            documentEvent.ProCoSysGuid,
-            documentEvent.DocumentNo
+            busEvent.Plant,
+            busEvent.ProCoSysGuid,
+            busEvent.DocumentNo
         );
         return document;
     }
 
-    
-    private static void MapFromEventToDocument(IDocumentEventV1 documentEvent, Document document)
-    { 
-        // Todo Is there anything to update?
-        // document.IsVoided = documentEvent.;
+
+    private static void MapFromEventToDocument(IDocumentEventV1 busEvent, Document document)
+    {
+        document.No = busEvent.DocumentNo;
+        // TODO No input for setting isVoided?
+        //document.IsVoided = busEvent.xxxxxx
     }
-    
 }
 
 
