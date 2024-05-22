@@ -1,16 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Azure.Core;
+using Azure.Identity;
+using Equinor.ProCoSys.Auth;
+using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Common.Swagger;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
+using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Seeding;
+using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Microsoft.ApplicationInsights.DependencyCollector;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -20,18 +31,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
-using Equinor.ProCoSys.Auth;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Common.Swagger;
-using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
-using System.IO;
-using Equinor.ProCoSys.Completion.WebApi.HostedServices;
-using Azure.Core;
-using Azure.Identity;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Microsoft.ApplicationInsights.Extensibility;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Equinor.ProCoSys.Completion.WebApi;
 
@@ -192,6 +193,8 @@ public class Startup
         {
             options.ConnectionString = Configuration.GetRequiredConfiguration("ApplicationInsights:ConnectionString");
         });
+        services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) => { module.EnableSqlCommandTextInstrumentation = true; });
+
         services.AddMediatrModules();
         services.AddApplicationModules(Configuration);
 
