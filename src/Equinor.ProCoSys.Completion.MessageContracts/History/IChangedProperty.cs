@@ -4,6 +4,6 @@ public interface IChangedProperty
 {
     string Name { get; }
     object? OldValue { get; }
-    object? NewValue { get; }
+    object? CurrentValue { get; }
     ValueDisplayType ValueDisplayType { get; }
 }

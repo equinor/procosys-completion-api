@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
@@ -126,7 +125,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         var changedProperty = changedProperties[0];
         Assert.AreEqual(nameof(PunchItem.Category), changedProperty.Name);
         Assert.AreEqual(Category.PA.ToString(), changedProperty.OldValue);
-        Assert.AreEqual(Category.PB.ToString(), changedProperty.NewValue);
+        Assert.AreEqual(Category.PB.ToString(), changedProperty.CurrentValue);
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4

@@ -3,6 +3,6 @@
 public interface IProperty
 {
     string Name { get; }
-    object? Value { get; }
+    object? CurrentValue { get; }
     ValueDisplayType ValueDisplayType { get; }
 }

@@ -50,7 +50,7 @@ public abstract class TestsBase
         ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(property);
-        var user = property.Value as User;
+        var user = property.CurrentValue as User;
         Assert.IsNotNull(user);
         Assert.AreEqual(value.Oid, user.Oid);
         Assert.AreEqual(value.FullName, user.FullName);
@@ -64,26 +64,26 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(property);
         Assert.IsNotNull(value);
-        Assert.AreEqual(value, property.Value);
+        Assert.AreEqual(value, property.CurrentValue);
         Assert.AreEqual(valueDisplayType, property.ValueDisplayType);
     }
 
     protected void AssertChange(
         IChangedProperty change,
         object oldValue,
-        object newValue,
+        object currentValue,
         ValueDisplayType valueDisplayType = ValueDisplayType.StringAsText)
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(newValue, change.NewValue);
+        Assert.AreEqual(currentValue, change.CurrentValue);
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
     protected void AssertPersonChange(
         IChangedProperty change,
         User oldValue,
-        User newValue,
+        User currentValue,
         ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(change);
@@ -98,16 +98,16 @@ public abstract class TestsBase
             Assert.AreEqual(oldValue.Oid, user.Oid);
             Assert.AreEqual(oldValue.FullName, user.FullName);
         }
-        if (change.NewValue is null)
+        if (change.CurrentValue is null)
         {
-            Assert.IsNull(newValue);
+            Assert.IsNull(currentValue);
         }
         else
         {
-            var user = change.NewValue as User;
+            var user = change.CurrentValue as User;
             Assert.IsNotNull(user);
-            Assert.AreEqual(newValue.Oid, user.Oid);
-            Assert.AreEqual(newValue.FullName, user.FullName);
+            Assert.AreEqual(currentValue.Oid, user.Oid);
+            Assert.AreEqual(currentValue.FullName, user.FullName);
         }
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }

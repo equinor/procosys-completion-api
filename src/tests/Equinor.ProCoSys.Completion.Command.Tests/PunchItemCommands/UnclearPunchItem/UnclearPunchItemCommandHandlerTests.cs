@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvent
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnclearPunchItem;
 
@@ -98,7 +97,6 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
         AssertNotCleared(integrationEvent);
         AssertNotRejected(integrationEvent);
