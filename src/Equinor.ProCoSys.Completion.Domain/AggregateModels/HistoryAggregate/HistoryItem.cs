@@ -4,7 +4,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
-// todo add unit tests
+// todo History: Add unit tests
 public class HistoryItem : EntityBase, IAggregateRoot
 {
     public const int EventDisplayNameLengthMax = 254;

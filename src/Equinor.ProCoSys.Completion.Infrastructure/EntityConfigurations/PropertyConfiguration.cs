@@ -19,6 +19,6 @@ internal class PropertyConfiguration : IEntityTypeConfiguration<Property>
             .HasMaxLength(Property.ValueDisplayTypeLengthMax)
             .IsRequired();
 
-        // todo Create index
+        // todo History: Create index
     }
 }

@@ -25,6 +25,12 @@ internal class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
             .HasMaxLength(HistoryItem.EventByFullNameLengthMax)
             .IsRequired();
 
-        // todo Create index
+        builder
+            .HasMany(x => x.Properties)
+            .WithOne()
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // todo History: Create index
     }
 }

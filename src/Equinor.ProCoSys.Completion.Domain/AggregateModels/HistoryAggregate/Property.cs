@@ -2,7 +2,7 @@
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
-// todo add unit tests
+// todo History: Add unit tests
 public class Property : EntityBase
 {
     public const int NameLengthMax = 128;
@@ -17,7 +17,9 @@ public class Property : EntityBase
     }
 
     public string Name { get; private set; }
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? OldValue { get; private set; }
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? CurrentValue { get; private set; }
     public string ValueDisplayType { get; private set; }
 }
