@@ -21,10 +21,9 @@
 
   <ItemGroup>
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.5" />
-    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.5" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.8" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />
-    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
     <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.4" />
