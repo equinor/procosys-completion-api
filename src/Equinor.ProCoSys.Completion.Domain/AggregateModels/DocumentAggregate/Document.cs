@@ -25,7 +25,7 @@ public class Document : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMo
     }
 
     // private setters needed for Entity Framework
-    public string No { get; private set; }
+    public string No { get; set; }
     public bool IsVoided { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }

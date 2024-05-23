@@ -25,7 +25,7 @@ public class WorkOrder : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     }
 
     // private setters needed for Entity Framework
-    public string No { get; private set; }
+    public string No { get; set; }
     public bool IsClosed { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
