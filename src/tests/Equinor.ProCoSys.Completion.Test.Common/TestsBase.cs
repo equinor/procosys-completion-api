@@ -71,19 +71,19 @@ public abstract class TestsBase
     protected void AssertChange(
         IChangedProperty change,
         object oldValue,
-        object currentValue,
+        object newValue,
         ValueDisplayType valueDisplayType = ValueDisplayType.StringAsText)
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(currentValue, change.NewValue);
+        Assert.AreEqual(newValue, change.NewValue);
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
     protected void AssertPersonChange(
         IChangedProperty change,
         User oldValue,
-        User currentValue,
+        User newValue,
         ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(change);
@@ -100,14 +100,14 @@ public abstract class TestsBase
         }
         if (change.NewValue is null)
         {
-            Assert.IsNull(currentValue);
+            Assert.IsNull(newValue);
         }
         else
         {
             var user = change.NewValue as User;
             Assert.IsNotNull(user);
-            Assert.AreEqual(currentValue.Oid, user.Oid);
-            Assert.AreEqual(currentValue.FullName, user.FullName);
+            Assert.AreEqual(newValue.Oid, user.Oid);
+            Assert.AreEqual(newValue.FullName, user.FullName);
         }
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
