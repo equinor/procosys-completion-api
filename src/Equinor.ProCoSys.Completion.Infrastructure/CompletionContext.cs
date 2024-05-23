@@ -10,6 +10,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -93,6 +94,8 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();
     public virtual DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
+    public virtual DbSet<HistoryItem> History => Set<HistoryItem>();
+    public virtual DbSet<Property> Properties => Set<Property>();
 
     // NB! This method need to be Public, if made private it will not apply
     public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
