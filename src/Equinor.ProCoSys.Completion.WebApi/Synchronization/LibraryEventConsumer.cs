@@ -91,7 +91,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         }
     }
 
-    private static LibraryItem CreateLibraryEntity(ILibraryEventV1 libraryEvent)
+    private static LibraryItem CreateLibraryEntity(LibraryEvent libraryEvent)
     {
         var library = new LibraryItem(libraryEvent.Plant,
             libraryEvent.ProCoSysGuid,
@@ -104,7 +104,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         return library;
     }
   
-    private static void MapFromEventToLibrary(ILibraryEventV1 libraryEvent, LibraryItem library)
+    private static void MapFromEventToLibrary(LibraryEvent libraryEvent, LibraryItem library)
     {
         library.IsVoided = libraryEvent.IsVoided;
         library.Description = libraryEvent.Description!;
@@ -117,16 +117,11 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
 
 
 public record LibraryEvent(
-    string EventType,
     string Plant,
     Guid ProCoSysGuid,
-    long LibraryId,
-    int? ParentId,
-    Guid? ParentGuid,
     string Code,
     string? Description,
     bool IsVoided,
-    string Type,
-    DateTime LastUpdated
-) : ILibraryEventV1;
+    string Type
+); // all these fields adhere to LibraryEventV1
 
