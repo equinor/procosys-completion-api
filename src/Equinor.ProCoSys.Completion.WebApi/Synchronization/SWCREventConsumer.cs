@@ -88,6 +88,8 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
             int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue
                 : throw new Exception("SwcrNo does not have a valid format")
         );
+        swcr.CreatedAtUtc = busEvent.CreatedAt;
+        swcr.IsVoided = busEvent.IsVoided;
         return swcr;
     }
 }

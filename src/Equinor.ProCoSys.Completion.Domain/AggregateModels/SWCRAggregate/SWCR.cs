@@ -25,7 +25,7 @@ public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModifi
     // private setters needed for Entity Framework
     public int No { get; set; }
     public bool IsVoided { get; set; }
-    public DateTime CreatedAtUtc { get; private set; }
+    public DateTime CreatedAtUtc { get; set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;
     public DateTime? ModifiedAtUtc { get; private set; }
