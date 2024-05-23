@@ -76,7 +76,7 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(newValue, change.NewValue);
+        Assert.AreEqual(newValue, change.Value);
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
@@ -98,13 +98,13 @@ public abstract class TestsBase
             Assert.AreEqual(oldValue.Oid, user.Oid);
             Assert.AreEqual(oldValue.FullName, user.FullName);
         }
-        if (change.NewValue is null)
+        if (change.Value is null)
         {
             Assert.IsNull(newValue);
         }
         else
         {
-            var user = change.NewValue as User;
+            var user = change.Value as User;
             Assert.IsNotNull(user);
             Assert.AreEqual(newValue.Oid, user.Oid);
             Assert.AreEqual(newValue.FullName, user.FullName);
