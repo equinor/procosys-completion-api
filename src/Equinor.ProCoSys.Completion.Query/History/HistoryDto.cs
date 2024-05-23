@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
 namespace Equinor.ProCoSys.Completion.Query.History;
 
