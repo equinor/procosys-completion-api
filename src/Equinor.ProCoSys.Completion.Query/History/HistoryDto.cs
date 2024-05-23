@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
 namespace Equinor.ProCoSys.Completion.Query.History;
 
 public record HistoryDto(
-    Guid ParentGuid,
-    Guid Guid,
-    string Text,
-    List<string> Labels,
-    List<PersonDto> Mentions,
-    PersonDto CreatedBy,
-    DateTime CreatedAtUtc);
-// No need for expose RowVersion since we don't support Update or Delete of Comments 
+    Guid? EventForParentGuid,
+    Guid EventForGuid,
+    Guid EventByOid,
+    DateTime EventAtUtc,
+    string EventDisplayName,
+    string EventByFullName,
+    List<PropertyDto> Properties,
+    string RowVersion);
+
