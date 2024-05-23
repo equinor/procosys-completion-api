@@ -125,7 +125,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         var changedProperty = changedProperties[0];
         Assert.AreEqual(nameof(PunchItem.Category), changedProperty.Name);
         Assert.AreEqual(Category.PA.ToString(), changedProperty.OldValue);
-        Assert.AreEqual(Category.PB.ToString(), changedProperty.CurrentValue);
+        Assert.AreEqual(Category.PB.ToString(), changedProperty.NewValue);
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4

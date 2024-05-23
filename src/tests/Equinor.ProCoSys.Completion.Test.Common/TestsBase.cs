@@ -50,7 +50,7 @@ public abstract class TestsBase
         ValueDisplayType valueDisplayType = ValueDisplayType.UserAsNameOnly)
     {
         Assert.IsNotNull(property);
-        var user = property.CurrentValue as User;
+        var user = property.Value as User;
         Assert.IsNotNull(user);
         Assert.AreEqual(value.Oid, user.Oid);
         Assert.AreEqual(value.FullName, user.FullName);
@@ -64,7 +64,7 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(property);
         Assert.IsNotNull(value);
-        Assert.AreEqual(value, property.CurrentValue);
+        Assert.AreEqual(value, property.Value);
         Assert.AreEqual(valueDisplayType, property.ValueDisplayType);
     }
 
@@ -76,7 +76,7 @@ public abstract class TestsBase
     {
         Assert.IsNotNull(change);
         Assert.AreEqual(oldValue, change.OldValue);
-        Assert.AreEqual(currentValue, change.CurrentValue);
+        Assert.AreEqual(currentValue, change.NewValue);
         Assert.AreEqual(valueDisplayType, change.ValueDisplayType);
     }
 
@@ -98,13 +98,13 @@ public abstract class TestsBase
             Assert.AreEqual(oldValue.Oid, user.Oid);
             Assert.AreEqual(oldValue.FullName, user.FullName);
         }
-        if (change.CurrentValue is null)
+        if (change.NewValue is null)
         {
             Assert.IsNull(currentValue);
         }
         else
         {
-            var user = change.CurrentValue as User;
+            var user = change.NewValue as User;
             Assert.IsNotNull(user);
             Assert.AreEqual(currentValue.Oid, user.Oid);
             Assert.AreEqual(currentValue.FullName, user.FullName);

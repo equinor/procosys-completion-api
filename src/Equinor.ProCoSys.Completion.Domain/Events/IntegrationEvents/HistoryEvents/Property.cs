@@ -4,6 +4,6 @@ namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEve
 
 public record Property(
     string Name, 
-    object? CurrentValue, 
+    object? Value, 
     ValueDisplayType ValueDisplayType = ValueDisplayType.StringAsText)
     : IProperty;

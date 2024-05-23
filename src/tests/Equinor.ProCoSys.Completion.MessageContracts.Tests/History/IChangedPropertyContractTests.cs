@@ -18,7 +18,7 @@ public class IChangedPropertyContractTests
         {
             { "Name", typeof(string) },
             { "OldValue", typeof(object) },
-            { "CurrentValue", typeof(object) },
+            { "NewValue", typeof(object) },
             { "ValueDisplayType", typeof(ValueDisplayType) }
         };
         var actualProperties = typeof(IChangedProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);

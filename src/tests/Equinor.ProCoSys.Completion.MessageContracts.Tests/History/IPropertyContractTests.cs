@@ -17,7 +17,7 @@ public class IPropertyContractTests
         var expectedProperties = new Dictionary<string, Type>
         {
             { "Name", typeof(string) },
-            { "CurrentValue", typeof(object) },
+            { "Value", typeof(object) },
             { "ValueDisplayType", typeof(ValueDisplayType) }
         };
         var actualProperties = typeof(IProperty).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);

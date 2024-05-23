@@ -2,13 +2,13 @@
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 
-// the generic param T is to force same type for OldValue and CurrentValue
+// the generic param T is to force same type for OldValue and NewValue
 public record ChangedProperty<T>(
     string Name,
     T? OldValue,
-    T? CurrentValue,
+    T? NewValue,
     ValueDisplayType ValueDisplayType = ValueDisplayType.StringAsText) : IChangedProperty
 {
     object? IChangedProperty.OldValue => OldValue;
-    object? IChangedProperty.CurrentValue => CurrentValue;
+    object? IChangedProperty.NewValue => NewValue;
 }
