@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -43,7 +42,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         // Test if message library type is not present in LibraryType enum
         if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals("COMM_PRIORITY"))
         {
-            _logger.LogInformation("LibraryType not in scope of import: {libraryType}", busEvent.Type );
+            _logger.LogInformation($"{nameof(LibraryEvent)} not in scope of import: {{libraryType}}", busEvent.Type );
             return;
         }
 
@@ -52,7 +51,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         if (await _libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var library = await _libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-            _logger.LogInformation("LibraryItem exists, updating {id}, {guid}, {type}", library.Id, library.Guid.ToString(), library.Type.ToString());
+            _logger.LogInformation($"{nameof(LibraryEvent)} exists, updating {{id}}, {{guid}}, {{type}}", library.Id, library.Guid.ToString(), library.Type.ToString());
             MapFromEventToLibrary(busEvent, library);
         }
         else
@@ -64,7 +63,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("LibraryItem Message Consumed: {MessageId} \n Guid {Guid} \n {LibraryCode}",
+        _logger.LogInformation($"{nameof(LibraryEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n Code {{LibraryCode}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
     }
 
@@ -72,22 +71,22 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception("Message is missing ProCoSysGuid");
+            throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.ProCoSysGuid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception("Message is missing Plant");
+            throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Plant)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Type))
         {
-            throw new Exception("Message is missing Type");
+            throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Type)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Description))
         {
-            throw new Exception("Message is missing Description");
+            throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Description)}");
         }
     }
 

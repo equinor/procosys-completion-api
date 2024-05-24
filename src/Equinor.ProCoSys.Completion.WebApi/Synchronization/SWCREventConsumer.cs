@@ -55,7 +55,7 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        _logger.LogInformation($"{nameof(SWCREvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.SwcrNo);
 
     }
@@ -64,12 +64,12 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception("Message is missing ProCoSysGuid");
+            throw new Exception($"{nameof(SWCREvent)} is missing {nameof(SWCREvent.ProCoSysGuid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception("Message is missing Plant");
+            throw new Exception($"{nameof(SWCREvent)} is missing {nameof(SWCREvent.Plant)}");
         }
     }
 
@@ -77,7 +77,7 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
     {
         swcr.IsVoided = busEvent.IsVoided;
         swcr.No = int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue 
-            : throw new Exception("SwcrNo does not have a valid format");
+            : throw new Exception($"{nameof(SWCREvent.SwcrNo)} does not have a valid format");
     }
 
     private static SWCR CreateSWCREntity(ISwcrEventV1 busEvent)
@@ -86,7 +86,7 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
             busEvent.Plant,
             busEvent.ProCoSysGuid,
             int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue
-                : throw new Exception("SwcrNo does not have a valid format")
+                : throw new Exception($"{nameof(SWCREvent.SwcrNo)} does not have a valid format")
         );
         swcr.CreatedAtUtc = busEvent.CreatedAt;
         swcr.IsVoided = busEvent.IsVoided;
