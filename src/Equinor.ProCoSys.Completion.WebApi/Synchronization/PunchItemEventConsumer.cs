@@ -77,7 +77,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        _logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
@@ -85,17 +85,17 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception("Message is missing ProCoSysGuid");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Guid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception("Message is missing Plant");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Plant)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Description))
         {
-            throw new Exception("Message is missing Description");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Description)}");
         }
     }
 
@@ -105,9 +105,9 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
 
         var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
             busEvent.RaisedByOrgGuid.Value,
-            cancellationToken) : throw new Exception("Message is missing RaisedByOrgGuid");
+            cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing RaisedByOrgGuid");
         var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
-            busEvent.ClearingByOrgGuid.Value, cancellationToken) : throw new Exception("Message is missing ClearingByOrgGuid");
+            busEvent.ClearingByOrgGuid.Value, cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing ClearingByOrgGuid");
 
         var punchItem = new PunchItem(
             busEvent.Plant,
@@ -232,7 +232,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         }
         else
         {
-            throw new Exception("Message/Estimate does not have a valid format");
+            throw new Exception($"{nameof(PunchItemEvent)}.{nameof(PunchItemEvent.Estimate)} does not have a valid format");
         }
     }
 
