@@ -13,6 +13,8 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
 {
+    private DateTime? _dueTimeUtc;
+    private DateTime? _materialETAUtc;
     public const int IdentitySeed = 4000001;
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
@@ -65,11 +67,37 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? TypeId { get; private set; }
     public LibraryItem? Priority { get; private set; }
     public int? PriorityId { get; private set; }
-    public DateTime? DueTimeUtc { get; set; }
+
+    public DateTime? DueTimeUtc
+    {
+        get => _dueTimeUtc;
+        set
+        {
+            if (value.HasValue && value.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new Exception($"{nameof(PunchItem)}.{nameof(DueTimeUtc)} must be UTC");
+            }
+            _dueTimeUtc = value;
+        }
+    }
+
     public int? Estimate { get; set; }
     public string? ExternalItemNo { get; set; }
     public bool MaterialRequired { get; set; }
-    public DateTime? MaterialETAUtc { get; set; }
+
+    public DateTime? MaterialETAUtc
+    {
+        get => _materialETAUtc;
+        set
+        {
+            if (value.HasValue && value.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new Exception($"{nameof(PunchItem)}.{nameof(DueTimeUtc)} must be UTC");
+            }
+            _materialETAUtc = value;
+        }
+    }
+
     public string? MaterialExternalNo { get; set; }
     public WorkOrder? WorkOrder { get; private set; }
     public int? WorkOrderId { get; private set; }

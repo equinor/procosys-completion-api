@@ -209,7 +209,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var changedProperty = historyEvent.ChangedProperties[0];
         Assert.AreEqual(RejectPunchItemCommandHandler.RejectReasonPropertyName, changedProperty.Name);
         Assert.IsNull(changedProperty.OldValue);
-        Assert.AreEqual(_command.Comment, changedProperty.NewValue);
+        Assert.AreEqual(_command.Comment, changedProperty.Value);
     }
 
     [TestMethod]

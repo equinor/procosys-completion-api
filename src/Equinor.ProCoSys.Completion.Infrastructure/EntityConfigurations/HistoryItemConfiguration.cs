@@ -26,6 +26,10 @@ internal class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
             .IsRequired();
 
         builder
+            .Property(x => x.EventAtUtc)
+            .HasConversion(CompletionContext.DateTimeKindConverter);
+
+        builder
             .HasMany(x => x.Properties)
             .WithOne()
             .IsRequired()
