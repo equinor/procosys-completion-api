@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
@@ -19,6 +21,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -75,6 +78,8 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
+            
+            x.AddConsumer<HistoryItemCreatedEventConsumer>();
 
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
@@ -131,13 +136,17 @@ public static class ApplicationModule
                     e.Temporary = false;
                 });
 
+            var connectionString = configuration.GetConnectionString("ServiceBus");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new Exception("Missing ConnectionString configuration: ServiceBus");
+            }
+            CreateEndpointConventions(connectionString);
+
             x.UsingAzureServiceBus((context,cfg) =>
             {
-                var connectionString = configuration.GetConnectionString("ServiceBus");
-                
 
                 cfg.Host(connectionString);
-
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 cfg.ConfigureJsonSerializerOptions(opts =>
@@ -146,6 +155,21 @@ public static class ApplicationModule
                     opts.Converters.Add(new JsonStringEnumConverter());
                     return opts;
                 });
+
+                #region Receive from queues
+
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
+                {
+                    //e.ClearSerialization();
+                    //e.UseRawJsonSerializer();
+                    //e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+
                 cfg.ReceiveEndpoint("libraryCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -212,7 +236,9 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
+                #endregion
 
+                #region Receive from topics
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {
                     e.ClearSerialization();
@@ -276,10 +302,7 @@ public static class ApplicationModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                // cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
-                // {
-                //     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
-                // });
+                #endregion
 
                 cfg.AutoStart = true;
             });
@@ -319,6 +342,7 @@ public static class ApplicationModule
         services.AddScoped<ILabelRepository, LabelRepository>();
         services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<IMailTemplateRepository, MailTemplateRepository>();
+        services.AddScoped<IHistoryItemRepository, HistoryItemRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
@@ -349,5 +373,12 @@ public static class ApplicationModule
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
+    }
+
+    private static void CreateEndpointConventions(string connectionString)
+    {
+        var endPoint = Regex.Match(connectionString, @"Endpoint=(.+?)(;|\z)", RegexOptions.Singleline).Groups[1].Value;
+        var endPointUri = new Uri(endPoint);
+        EndpointConvention.Map<HistoryItemCreatedEventConsumer>(new Uri(endPointUri, QueueNames.CompletionHistoryCreated));
     }
 }
