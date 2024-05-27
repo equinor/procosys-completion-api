@@ -37,6 +37,5 @@ public class Person : EntityBase, IAggregateRoot, IHaveGuid
     public DateTime ProCoSys4LastUpdated { get; set; }
     public DateTime SyncTimestamp { get; set; }
 
-
     public string GetFullName() => $"{FirstName} {LastName}";
 }
