@@ -1,7 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;

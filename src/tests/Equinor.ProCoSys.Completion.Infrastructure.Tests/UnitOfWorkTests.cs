@@ -6,8 +6,6 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Completion.Test.Common;

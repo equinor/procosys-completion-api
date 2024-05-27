@@ -3,8 +3,6 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
