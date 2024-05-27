@@ -22,7 +22,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _knownWorkOrder = _openWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 1");
-        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
+        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsVoided = true };
         context.WorkOrders.Add(_openWorkOrder);
         context.WorkOrders.Add(_closedWorkOrder);
 

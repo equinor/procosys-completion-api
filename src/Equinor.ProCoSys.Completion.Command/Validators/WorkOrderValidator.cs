@@ -26,7 +26,7 @@ public class WorkOrderValidator : IWorkOrderValidator
     {
         var workOrder = await GetWorkOrderAsync(workOrderGuid, cancellationToken);
 
-        return workOrder is not null && workOrder.IsClosed;
+        return workOrder is not null && workOrder.IsVoided;
     }
 
     private async Task<WorkOrder?> GetWorkOrderAsync(Guid workOrderGuid, CancellationToken cancellationToken)

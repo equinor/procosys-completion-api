@@ -82,8 +82,7 @@ public class WorkOrderEventConsumer(
         workOrder.No = busEvent.WoNo;
         workOrder.ProCoSys4LastUpdated = busEvent.LastUpdated;
         workOrder.SyncedTimeStamp = DateTime.UtcNow;
-        // TODO Investigate mapping for isClosed/isVoided
-        // workOrder.IsClosed = busEvent.IsVoided;
+        workOrder.IsVoided = busEvent.IsVoided;
     }
 
     private static WorkOrder CreateWorkOrderEntity(WorkOrderEvent busEvent) =>
@@ -93,7 +92,8 @@ public class WorkOrderEventConsumer(
             busEvent.WoNo
         ) {
             ProCoSys4LastUpdated = busEvent.LastUpdated,
-            SyncedTimeStamp = DateTime.UtcNow 
+            SyncedTimeStamp = DateTime.UtcNow,
+            IsVoided = busEvent.IsVoided
         };
 }
 
