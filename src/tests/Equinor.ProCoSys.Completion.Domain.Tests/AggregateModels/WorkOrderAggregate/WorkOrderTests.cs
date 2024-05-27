@@ -1,6 +1,5 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.WorkOrderAggregate;

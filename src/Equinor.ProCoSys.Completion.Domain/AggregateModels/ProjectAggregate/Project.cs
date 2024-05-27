@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 
-public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid
+public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 {
     public const int NameLengthMax = 30;
     public const int DescriptionLengthMax = 1000;
@@ -66,4 +66,6 @@ public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid
             IsClosed = value;
         }
     }
+
+    public bool IsVoided { get; set; }
 }

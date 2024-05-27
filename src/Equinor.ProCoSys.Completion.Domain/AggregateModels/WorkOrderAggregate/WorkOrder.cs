@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
-public class WorkOrder : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
+public class WorkOrder : PlantEntityBase, IAggregateRoot, IHaveGuid
 {
     public const int NoLengthMax = 30;
 
@@ -27,27 +27,8 @@ public class WorkOrder : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     // private setters needed for Entity Framework
     public string No { get; set; }
     public bool IsVoided { get; set; }
-    public DateTime CreatedAtUtc { get; private set; }
-    public int CreatedById { get; private set; }
-    public Person CreatedBy { get; private set; } = null!;
-    public DateTime? ModifiedAtUtc { get; private set; }
-    public int? ModifiedById { get; private set; }
-    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
     public DateTime SyncedTimeStamp { get; set; }
-
-    public void SetCreated(Person createdBy)
-    {
-        CreatedAtUtc = TimeService.UtcNow;
-        CreatedBy = createdBy;
-        CreatedById = createdBy.Id;
-    }
-
-    public void SetModified(Person modifiedBy)
-    {
-        ModifiedAtUtc = TimeService.UtcNow;
-        ModifiedBy = modifiedBy;
-        ModifiedById = modifiedBy.Id;
-    }
+    
 }

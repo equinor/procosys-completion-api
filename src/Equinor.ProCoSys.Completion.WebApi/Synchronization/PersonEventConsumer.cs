@@ -61,8 +61,7 @@ public class PersonEventConsumer(
                 context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.ProCoSys4LastUpdated);
             return;
         }
-
-
+        
         MapFromEventToPerson(personEvent, person);
         person.SyncedTimeStamp = DateTime.UtcNow;
 
