@@ -31,6 +31,7 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
@@ -742,6 +743,32 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(
             new UpdatePunchItemAttachmentCommand(guid, attachmentGuid, dto.Description, dto.Labels, dto.RowVersion),
             cancellationToken);
+        return this.FromResult(result);
+    }
+
+    #endregion
+
+    #region History
+
+    /// <summary>
+    /// Get all history on a PunchItem
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>List of history (or empty list)</returns>
+    /// <response code="404">PunchItem not found</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
+    [HttpGet("{guid}/History")]
+    public async Task<ActionResult<IEnumerable<CommentDto>>> GetPunchItemHistory(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [FromRoute] Guid guid)
+    {
+        var result = await _mediator.Send(new GetPunchItemHistoryQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
