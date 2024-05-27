@@ -36,7 +36,7 @@ public class SWCREventConsumer(
                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.SyncedTimeStamp );
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.SyncTimestamp );
                 return;
             }
 
@@ -50,12 +50,12 @@ public class SWCREventConsumer(
                 return;
             }
             MapFromEventToSWCR(busEvent, swcr);
-            swcr.SyncedTimeStamp = DateTime.UtcNow;
+            swcr.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var swcr = CreateSWCREntity(busEvent);
-            swcr.SyncedTimeStamp = DateTime.UtcNow;
+            swcr.SyncTimestamp = DateTime.UtcNow;
             swcrRepository.Add(swcr);
         }
 

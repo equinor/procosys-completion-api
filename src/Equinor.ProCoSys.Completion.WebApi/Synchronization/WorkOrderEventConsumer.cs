@@ -35,7 +35,7 @@ public class WorkOrderEventConsumer(
                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, workOrder.SyncedTimeStamp );
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, workOrder.SyncTimestamp );
                 return;
             }
 
@@ -81,7 +81,7 @@ public class WorkOrderEventConsumer(
     {
         workOrder.No = busEvent.WoNo;
         workOrder.ProCoSys4LastUpdated = busEvent.LastUpdated;
-        workOrder.SyncedTimeStamp = DateTime.UtcNow;
+        workOrder.SyncTimestamp = DateTime.UtcNow;
         workOrder.IsVoided = busEvent.IsVoided;
     }
 
@@ -92,7 +92,7 @@ public class WorkOrderEventConsumer(
             busEvent.WoNo
         ) {
             ProCoSys4LastUpdated = busEvent.LastUpdated,
-            SyncedTimeStamp = DateTime.UtcNow,
+            SyncTimestamp = DateTime.UtcNow,
             IsVoided = busEvent.IsVoided
         };
 }

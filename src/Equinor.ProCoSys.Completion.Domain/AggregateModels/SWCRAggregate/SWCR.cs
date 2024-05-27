@@ -1,7 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -25,5 +22,5 @@ public class SWCR : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
     public bool IsVoided { get; set; }
     public Guid Guid { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
-    public DateTime SyncedTimeStamp { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 }

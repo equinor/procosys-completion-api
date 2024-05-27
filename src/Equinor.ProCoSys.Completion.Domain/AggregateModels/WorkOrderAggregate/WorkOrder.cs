@@ -29,6 +29,6 @@ public class WorkOrder : PlantEntityBase, IAggregateRoot, IHaveGuid
     public bool IsVoided { get; set; }
     public Guid Guid { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
-    public DateTime SyncedTimeStamp { get; set; }
+    public DateTime SyncTimestamp { get; set; }
     
 }
