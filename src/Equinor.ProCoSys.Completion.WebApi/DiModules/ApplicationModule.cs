@@ -201,6 +201,17 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
+                cfg.ReceiveEndpoint("projectCompletionTransferQueue", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ProjectEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
 
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {

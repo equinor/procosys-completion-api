@@ -146,16 +146,11 @@ public class LibraryEventConsumerTests
             => _libraryEventConsumer.Consume(_contextMock), "Message is missing Description");
     }
 
-    private static LibraryEvent GetTestEvent(Guid guid, string plant, string description, string type, bool isVoided) => new (string.Empty,
+    private static LibraryEvent GetTestEvent(Guid guid, string plant, string description, string type, bool isVoided) => new (
             plant,
             guid,
-            1234,
-            int.MinValue,
-            Guid.Empty,
             Code,
             description,
             isVoided,
-            type,
-            DateTime.Now);
-
+            type);
 }

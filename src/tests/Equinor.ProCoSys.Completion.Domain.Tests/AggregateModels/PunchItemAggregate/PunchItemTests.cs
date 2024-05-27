@@ -967,4 +967,16 @@ public class PunchItemTests : IModificationAuditableTests
     }
 
     #endregion
+
+
+    [TestMethod]
+    public void Set_DueTimeUtc_ShouldThrowException_WhenNotUtc() =>
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.DueTimeUtc = DateTime.Now);
+
+    [TestMethod]
+    public void Set_MaterialETAUtc_ShouldThrowException_WhenNotUtc() =>
+        // Act and Assert
+        Assert.ThrowsException<Exception>(() => _dut.MaterialETAUtc = DateTime.Now);
+
 }
