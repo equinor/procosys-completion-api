@@ -6,11 +6,9 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 
-public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid, IVoidable
+public class SWCR : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 {
-#pragma warning disable CS8618
     protected SWCR()
-#pragma warning restore CS8618
         : base(null)
     {
     }
@@ -32,18 +30,6 @@ public class SWCR : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModifi
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
-
-    public void SetCreated(Person createdBy)
-    {
-        CreatedAtUtc = TimeService.UtcNow;
-        CreatedBy = createdBy;
-        CreatedById = createdBy.Id;
-    }
-
-    public void SetModified(Person modifiedBy)
-    {
-        ModifiedAtUtc = TimeService.UtcNow;
-        ModifiedBy = modifiedBy;
-        ModifiedById = modifiedBy.Id;
-    }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncedTimeStamp { get; set; }
 }

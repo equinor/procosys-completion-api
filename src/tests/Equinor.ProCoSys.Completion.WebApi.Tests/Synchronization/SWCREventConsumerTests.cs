@@ -47,7 +47,7 @@ public class SWCREventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, false);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, false, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         _swcrRepoMock.ExistsAsync(guid, default).Returns(false);
@@ -68,12 +68,13 @@ public class SWCREventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true,DateTime.Now);
 
 
         var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
         {
-            IsVoided = false
+            IsVoided = false,
+            ProCoSys4LastUpdated = DateTime.Now.AddMinutes(-1)
         };
 
         _swcrRepoMock.ExistsAsync(guid, default).Returns(true);
@@ -91,12 +92,66 @@ public class SWCREventConsumerTests
 
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedHasNotChanged()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var bEventLastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated);
+
+
+        var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
+        {
+            IsVoided = false,
+            ProCoSys4LastUpdated = bEventLastUpdated
+        };
+
+        _swcrRepoMock.ExistsAsync(guid, default).Returns(true);
+        _swcrRepoMock.GetAsync(guid, default).Returns(swcrToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _swcrEventConsumer.Consume(_contextMock);
+
+        //Assert
+        _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedIsOutdated()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var bEventLastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated);
+
+
+        var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
+        {
+            IsVoided = false,
+            ProCoSys4LastUpdated = bEventLastUpdated.AddMinutes(1)
+        };
+
+        _swcrRepoMock.ExistsAsync(guid, default).Returns(true);
+        _swcrRepoMock.GetAsync(guid, default).Returns(swcrToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _swcrEventConsumer.Consume(_contextMock);
+
+        //Assert
+        _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, SwcrNo, false);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, SwcrNo, false, DateTime.Now);
 
         _contextMock.Message.Returns(bEvent);
 
@@ -110,7 +165,7 @@ public class SWCREventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, string.Empty, SwcrNo, false);
+        var bEvent = GetTestEvent(Guid.Empty, string.Empty, SwcrNo, false, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
@@ -118,7 +173,7 @@ public class SWCREventConsumerTests
             => _swcrEventConsumer.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided) => new (
+    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided, DateTime lastUpdated) => new (
             string.Empty,
             plant,
             guid,
@@ -139,7 +194,7 @@ public class SWCREventConsumerTests
             string.Empty,
             DateTime.UtcNow,
             isVoided,
-            DateTime.UtcNow,
+            lastUpdated,
             DateOnly.MinValue,
             float.MinValue
         );

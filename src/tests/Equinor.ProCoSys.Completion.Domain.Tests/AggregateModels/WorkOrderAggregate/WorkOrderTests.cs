@@ -6,16 +6,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.WorkOrderAggregate;
 
 [TestClass]
-public class WorkOrderTests : IModificationAuditableTests
+public class WorkOrderTests 
 {
     private WorkOrder _dut;
     private readonly string _testPlant = "PlantA";
     private readonly string _no = "0001";
     private readonly Guid _guid = Guid.NewGuid();
-
-    protected override ICreationAuditable GetCreationAuditable() => _dut;
-    protected override IModificationAuditable GetModificationAuditable() => _dut;
-
+    
     [TestInitialize]
     public void Setup() => _dut = new WorkOrder(_testPlant, _guid, _no);
 

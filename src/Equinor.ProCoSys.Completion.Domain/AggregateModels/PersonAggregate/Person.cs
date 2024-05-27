@@ -5,7 +5,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
-public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveGuid
+public class Person : EntityBase, IAggregateRoot, IHaveGuid
 {
     public const int FirstNameLengthMax = 128;
     public const int LastNameLengthMax = 128;
@@ -36,23 +36,9 @@ public class Person : EntityBase, IAggregateRoot, IModificationAuditable, IHaveG
     public string UserName { get; set; }
     public string Email { get; set; }
     public bool Superuser { get; set; }
-    public DateTime? ModifiedAtUtc { get; private set; }
-    public int? ModifiedById { get; private set; }
-    public Person? ModifiedBy { get; private set; }
-    public DateTime ProCoSys4LastUpdated { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncedTimeStamp { get; set; }
 
-    public void SetProCoSys4LastUpdated(DateTime proCoSys4LastUpdated) =>  ProCoSys4LastUpdated = proCoSys4LastUpdated;
-
-    public void SetModified(Person modifiedBy)
-    {
-        ModifiedAtUtc = TimeService.UtcNow;
-        if (modifiedBy is null)
-        {
-            throw new ArgumentNullException(nameof(modifiedBy));
-        }
-        ModifiedById = modifiedBy.Id;
-        ModifiedBy = modifiedBy;
-    }
 
     public string GetFullName() => $"{FirstName} {LastName}";
 }

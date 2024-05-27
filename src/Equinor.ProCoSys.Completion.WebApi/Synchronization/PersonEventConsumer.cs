@@ -10,27 +10,14 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class PersonEventConsumer : IConsumer<PersonEvent>
+public class PersonEventConsumer(
+    ILogger<PersonEventConsumer> logger,
+    IPersonRepository personRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserSetter currentUserSetter,
+    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    : IConsumer<PersonEvent>
 {
-    private readonly ILogger<PersonEventConsumer> _logger; 
-    private readonly IPersonRepository _personRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-    
-    public PersonEventConsumer(ILogger<PersonEventConsumer> logger, 
-        IPersonRepository personRepository, 
-        IUnitOfWork unitOfWork, 
-        ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _personRepository = personRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
-
     public async Task Consume(ConsumeContext<PersonEvent> context)
     {
         var personEvent = context.Message;
@@ -42,35 +29,47 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
 
         if (personEvent.Behavior == "delete")
         {
-            _logger.LogInformation("Delete behavior for person is currently not implemented.");
+            logger.LogInformation("Delete behavior for person is currently not implemented.");
             return;
         }
 
-        if (!await _personRepository.ExistsAsync(personEvent.Guid, context.CancellationToken))
+        if (!await personRepository.ExistsAsync(personEvent.Guid, context.CancellationToken))
         {
-            _logger.LogInformation("Person does not exists. Message Skipped: {MessageId} \n {UserName} \n {Guid}",
+            logger.LogInformation("Person does not exists. Message Skipped: {MessageId} \n {UserName} \n {Guid}",
                 context.MessageId, personEvent.UserName, personEvent.Guid);
             return;
         }
 
-        var person = await _personRepository.GetAsync(personEvent.Guid, context.CancellationToken);
+        var person = await personRepository.GetAsync(personEvent.Guid, context.CancellationToken);
+
+        if (person.ProCoSys4LastUpdated == personEvent.LastUpdated)
+        {
+            logger.LogInformation("Person Message Ignored because LastUpdated is the same as in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {LastUpdated} \n" +
+                                  "SyncedToCompletion: {CreatedAtUtc} \n",
+                context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.SyncedTimeStamp );
+            return;
+        }
 
         if (person.ProCoSys4LastUpdated > personEvent.LastUpdated)
         {
-            _logger.LogWarning("Person Message Ignored because a newer LastUpdated already exits in db\n" +
-                               "MessageId: {MessageId} \n Guid {Guid} \n " +
-                               "EventLastUpdated: {LastUpdated} \n" +
-                               "LastUpdatedFromDb: {PersonLastUpdated}",
+            logger.LogWarning("Person Message Ignored because a newer LastUpdated already exits in db\n" +
+                              "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                              "EventLastUpdated: {LastUpdated} \n" +
+                              "LastUpdatedFromDb: {ProjectLastUpdated}",
                 context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.ProCoSys4LastUpdated);
             return;
         }
 
+
         MapFromEventToPerson(personEvent, person);
+        person.SyncedTimeStamp = DateTime.UtcNow;
 
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",
+        logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",
             context.MessageId, personEvent.Guid, personEvent.UserName);
     }
 
@@ -81,7 +80,7 @@ public class PersonEventConsumer : IConsumer<PersonEvent>
         person.Email = personEvent.Email;
         person.UserName = personEvent.UserName;
         person.Superuser = personEvent.SuperUser;
-        person.SetProCoSys4LastUpdated(personEvent.LastUpdated);
+        person.ProCoSys4LastUpdated = personEvent.LastUpdated;
     }
 }
 

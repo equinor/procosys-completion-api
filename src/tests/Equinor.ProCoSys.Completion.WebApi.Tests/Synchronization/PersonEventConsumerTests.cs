@@ -102,7 +102,35 @@ public class PersonEventConsumerTests
             "average.joe@equinor.com", 
             false);
 
-        person.SetProCoSys4LastUpdated(DateTime.Now.AddDays(1));
+        person.ProCoSys4LastUpdated = DateTime.Now.AddDays(1);
+        _personRepoMock.ExistsAsync(guid, default).Returns(true);
+        _personRepoMock.GetAsync(guid, default).Returns(person);
+        _contextMock.Message.Returns(testEvent);
+
+        //Act
+        await _personEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _personRepoMock.Received(1).GetAsync(guid, default);
+        _personRepoMock.Received(0).Remove(person);
+        _personRepoMock.Received(0).Add(person);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreMessage_IfLastUpdatedHasNotChanged()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var testEvent = new PersonEvent("", guid, "Average Max", "Joe", "AJOE", "average.joe@equinor.com", true,
+            lastUpdated,
+            null);
+        var person = new Person(guid, "Average", "Joe", "AJOE", "average.joe@equinor.com", false)
+        {
+            ProCoSys4LastUpdated = lastUpdated
+        };
+
         _personRepoMock.ExistsAsync(guid, default).Returns(true);
         _personRepoMock.GetAsync(guid, default).Returns(person);
         _contextMock.Message.Returns(testEvent);

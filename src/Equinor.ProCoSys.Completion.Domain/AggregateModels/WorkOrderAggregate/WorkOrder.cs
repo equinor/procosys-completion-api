@@ -34,6 +34,8 @@ public class WorkOrder : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncedTimeStamp { get; set; }
 
     public void SetCreated(Person createdBy)
     {

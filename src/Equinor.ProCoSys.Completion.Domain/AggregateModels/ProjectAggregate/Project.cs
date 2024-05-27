@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 
-public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid
+public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid
 {
     public const int NameLengthMax = 30;
     public const int DescriptionLengthMax = 1000;
@@ -38,34 +38,11 @@ public class Project : PlantEntityBase, IAggregateRoot, ICreationAuditable, IMod
      * LastUpdated is the last time the project was updated in ProCoSys4
      * We do not save it as UTC, because we do not know for sure if it is UTC or not (it is, but we don't know for sure)
      */
-    public DateTime ProCoSys4LastUpdated { get; private set; }
-    public DateTime CreatedAtUtc { get; private set; }
-    public int CreatedById { get; private set; }
-    public Person CreatedBy { get; private set; } = null!;
-    public DateTime? ModifiedAtUtc { get; private set; }
-    public int? ModifiedById { get; private set; }
-    public Person? ModifiedBy { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+
+    public DateTime SyncedTimeStamp { get; set; }
     public Guid Guid { get; private set; }
-
-    public void SetProCoSys4LastUpdated(DateTime proCoSys4LastUpdated)
-    {
-        ProCoSys4LastUpdated = proCoSys4LastUpdated;
-    }
-
-    public void SetCreated(Person createdBy)
-    {
-        CreatedAtUtc = TimeService.UtcNow;
-        CreatedById = createdBy.Id;
-        CreatedBy = createdBy;
-    }
-
-    public void SetModified(Person modifiedBy)
-    {
-        ModifiedAtUtc = TimeService.UtcNow;
-        ModifiedById = modifiedBy.Id;
-        ModifiedBy = modifiedBy;
-    }
-
+    
     public bool IsDeletedInSource
     {
         get => _isDeletedInSource;
