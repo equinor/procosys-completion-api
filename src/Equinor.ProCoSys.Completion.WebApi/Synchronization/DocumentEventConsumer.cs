@@ -55,7 +55,7 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        _logger.LogInformation($"{nameof(DocumentEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
     }
 
@@ -63,12 +63,12 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception("Message is missing ProCoSysGuid");
+            throw new Exception($"{nameof(DocumentEvent)} is missing {nameof(DocumentEvent.ProCoSysGuid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception("Message is missing Plant");
+            throw new Exception($"{nameof(DocumentEvent)} is missing {nameof(DocumentEvent.Plant)}");
         }
     }
 

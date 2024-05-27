@@ -55,7 +55,7 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Document Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        _logger.LogInformation($"{nameof(WorkOrderEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.WoNo);
     }
 
@@ -63,12 +63,12 @@ public class WorkOrderEventConsumer : IConsumer<WorkOrderEvent>
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception("Message is missing ProCoSysGuid");
+            throw new Exception($"{nameof(WorkOrderEvent)} is missing {nameof(WorkOrderEvent.ProCoSysGuid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception("Message is missing Plant");
+            throw new Exception($"{nameof(WorkOrderEvent)} is missing {nameof(WorkOrderEvent.Plant)}");
         }
     }
 

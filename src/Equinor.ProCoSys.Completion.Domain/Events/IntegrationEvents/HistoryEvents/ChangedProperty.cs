@@ -10,5 +10,5 @@ public record ChangedProperty<T>(
     ValueDisplayType ValueDisplayType = ValueDisplayType.StringAsText) : IChangedProperty
 {
     object? IChangedProperty.OldValue => OldValue;
-    object? IChangedProperty.NewValue => NewValue;
+    object? IChangedProperty.Value => NewValue;
 }

@@ -4,7 +4,6 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
-// todo History: Add unit tests
 public class HistoryItem : EntityBase, IAggregateRoot
 {
     public const int EventDisplayNameLengthMax = 254;
@@ -24,6 +23,10 @@ public class HistoryItem : EntityBase, IAggregateRoot
         EventDisplayName = eventDisplayName;
         EventByOid = eventByOid;
         EventByFullName = eventByFullName;
+        if (eventAtUtc.Kind != DateTimeKind.Utc)
+        {
+            throw new Exception($"{nameof(HistoryItem)}.{nameof(EventAtUtc)} must be UTC");
+        }
         EventAtUtc = eventAtUtc;
         EventForParentGuid = eventForParentGuid;
     }
