@@ -8,11 +8,11 @@ public class Property : EntityBase
     public const int NameLengthMax = 128;
     public const int ValueDisplayTypeLengthMax = 64;
 
-    public Property(string name, string? oldValue, string? currentValue, string valueDisplayType)
+    public Property(string name, string? oldValue, string? value, string valueDisplayType)
     {
         Name = name;
         OldValue = oldValue;
-        CurrentValue = currentValue;
+        Value = value;
         ValueDisplayType = valueDisplayType;
     }
 
@@ -20,6 +20,6 @@ public class Property : EntityBase
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? OldValue { get; private set; }
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? CurrentValue { get; private set; }
+    public string? Value { get; private set; }
     public string ValueDisplayType { get; private set; }
 }

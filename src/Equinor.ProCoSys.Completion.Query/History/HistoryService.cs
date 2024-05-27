@@ -17,31 +17,31 @@ public class HistoryService : IHistoryService
     public HistoryService(IReadOnlyContext context) => _context = context;
 
     public async Task<IEnumerable<HistoryDto>> GetAllAsync(
-        Guid guid,
+        Guid parentGuid,
         CancellationToken cancellationToken)
     {
         var historyItems =
-            await (from c in _context.QuerySet<HistoryItem>()
-                        .Include(c => c.Properties)
-                    where c.EventForGuid == guid
-                    select c)
+            await (from h in _context.QuerySet<HistoryItem>()
+                        .Include(h => h.Properties)
+                    where h.EventForGuid == parentGuid || h.EventForParentGuid == parentGuid
+                    select h)
                 .TagWith($"{nameof(HistoryService)}.{nameof(GetAllAsync)}")
                 .ToListAsync(cancellationToken);
 
-        var historyDtos = historyItems.Select(c => new HistoryDto(
-            c.EventForParentGuid,
-            c.EventForGuid,
-            c.EventByOid,
-            c.EventAtUtc,
-            c.EventDisplayName,
-            c.EventByFullName, 
-            c.Properties.Select(p => new PropertyDto(
+        var historyDtos = historyItems.Select(h => new HistoryDto(
+            h.EventForParentGuid,
+            h.EventForGuid,
+            h.EventByOid,
+            h.EventAtUtc,
+            h.EventDisplayName,
+            h.EventByFullName, 
+            h.Properties.Select(p => new PropertyDto(
                 p.Name,
                 p.OldValue,
-                p.CurrentValue,
+                p.Value,
                 p.ValueDisplayType
             )).ToList(),
-            c.RowVersion.ConvertToString()));
+            h.RowVersion.ConvertToString()));
 
         return historyDtos;
     }

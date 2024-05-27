@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.Completion.Query;
+﻿namespace Equinor.ProCoSys.Completion.Query.History;
 
 public record PropertyDto(
     string Name,

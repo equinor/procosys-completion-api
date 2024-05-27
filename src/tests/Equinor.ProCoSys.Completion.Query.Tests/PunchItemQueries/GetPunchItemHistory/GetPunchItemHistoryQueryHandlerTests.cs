@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Query.History;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -60,6 +61,10 @@ public class GetPunchItemHistoryQueryHandlerTests : TestsBase
         Assert.AreEqual(_historyDto.EventByFullName, history.EventByFullName);
         Assert.AreEqual(_historyDto.EventDisplayName, history.EventDisplayName);
         Assert.AreEqual(_historyDto.Properties.Count, history.Properties.Count);
+        foreach (var property in _historyDto.Properties)
+        {
+            Assert.IsTrue(history.Properties.Any(p => p == property));
+        }
     }
 
     [TestMethod]

@@ -312,7 +312,6 @@ public static class ApplicationModule
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
         services.AddScoped<Query.Comments.ICommentService, Query.Comments.CommentService>();
-
         services.AddScoped<Query.History.IHistoryService, Query.History.HistoryService>();
         services.AddScoped<Command.Attachments.IAttachmentService, Command.Attachments.AttachmentService>();
         services.AddScoped<Query.Attachments.IAttachmentService, Query.Attachments.AttachmentService>();
