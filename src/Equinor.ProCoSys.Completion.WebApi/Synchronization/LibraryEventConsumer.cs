@@ -45,7 +45,7 @@ public class LibraryEventConsumer(
                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncedTimeStamp );
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncTimestamp );
                 return;
             }
 
@@ -60,12 +60,12 @@ public class LibraryEventConsumer(
             }
             
             MapFromEventToLibrary(busEvent, library);
-            library.SyncedTimeStamp = DateTime.UtcNow;
+            library.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var lib = CreateLibraryEntity(busEvent);
-            lib.SyncedTimeStamp = DateTime.UtcNow;
+            lib.SyncTimestamp = DateTime.UtcNow;
             libraryRepository.Add(lib);
         }
 

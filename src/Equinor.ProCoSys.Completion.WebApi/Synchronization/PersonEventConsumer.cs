@@ -48,7 +48,7 @@ public class PersonEventConsumer(
                                   "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {LastUpdated} \n" +
                                   "SyncedToCompletion: {CreatedAtUtc} \n",
-                context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.SyncedTimeStamp );
+                context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.SyncTimestamp );
             return;
         }
 
@@ -63,7 +63,7 @@ public class PersonEventConsumer(
         }
         
         MapFromEventToPerson(personEvent, person);
-        person.SyncedTimeStamp = DateTime.UtcNow;
+        person.SyncTimestamp = DateTime.UtcNow;
 
         currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);

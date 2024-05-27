@@ -37,7 +37,7 @@ public class Person : EntityBase, IAggregateRoot, IHaveGuid
     public string Email { get; set; }
     public bool Superuser { get; set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
-    public DateTime SyncedTimeStamp { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 
 
     public string GetFullName() => $"{FirstName} {LastName}";

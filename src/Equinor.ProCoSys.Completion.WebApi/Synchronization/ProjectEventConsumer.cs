@@ -42,7 +42,7 @@ public class ProjectEventConsumer(
                                    "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                    "EventLastUpdated: {LastUpdated} \n" +
                                    "SyncedToCompletion: {CreatedAtUtc} \n",
-                    context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.SyncedTimeStamp );
+                    context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.SyncTimestamp );
                 return;
             }
 
@@ -87,7 +87,7 @@ public class ProjectEventConsumer(
         project.IsClosed = projectEvent.IsClosed;
         project.Name = projectEvent.ProjectName;
         project.ProCoSys4LastUpdated = projectEvent.LastUpdated;
-        project.SyncedTimeStamp = DateTime.UtcNow;
+        project.SyncTimestamp = DateTime.UtcNow;
         
         if (projectEvent.Description is not null)
         {
@@ -104,7 +104,7 @@ public class ProjectEventConsumer(
         {
             IsClosed = projectEvent.IsClosed,
             ProCoSys4LastUpdated = projectEvent.LastUpdated,
-            SyncedTimeStamp = DateTime.UtcNow
+            SyncTimestamp = DateTime.UtcNow
         };
 }
 

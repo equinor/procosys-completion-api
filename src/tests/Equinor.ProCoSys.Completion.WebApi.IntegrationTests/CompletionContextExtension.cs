@@ -199,7 +199,7 @@ public static class CompletionContextExtension
     {
         var workOrder = new WorkOrder(plant, guid, no)
         {
-            ProCoSys4LastUpdated = DateTime.Now, SyncedTimeStamp = DateTime.Now, IsVoided = false
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
         };
         var workOrderRepository = new WorkOrderRepository(dbContext);
         workOrderRepository.Add(workOrder);
@@ -209,7 +209,7 @@ public static class CompletionContextExtension
     private static void SeedSWCR(CompletionContext dbContext, string plant, Guid guid, int no)
     {
         var swcr = new SWCR(plant, guid, no)  {
-            ProCoSys4LastUpdated = DateTime.Now, SyncedTimeStamp = DateTime.Now, IsVoided = false
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
         };
         var swcrRepository = new SWCRRepository(dbContext);
         swcrRepository.Add(swcr);
@@ -219,7 +219,7 @@ public static class CompletionContextExtension
     private static void SeedDocument(CompletionContext dbContext, string plant, Guid guid, string no)
     {
         var document = new Document(plant, guid, no) {
-            ProCoSys4LastUpdated = DateTime.Now, SyncedTimeStamp = DateTime.Now, IsVoided = false
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
         };
         var documentRepository = new DocumentRepository(dbContext);
         documentRepository.Add(document);
@@ -236,7 +236,7 @@ public static class CompletionContextExtension
         bool superuser)
     {
         var person = new Person(new Guid(oid), firstName, lastName, userName, email, superuser) {
-            ProCoSys4LastUpdated = DateTime.Now, SyncedTimeStamp = DateTime.Now
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now
         };
         var personRepository = new PersonRepository(dbContext, null!, null!);
         personRepository.Add(person);
@@ -252,7 +252,7 @@ public static class CompletionContextExtension
     {
         var projectRepository = new ProjectRepository(dbContext);
         var project = new Project(plant, guid, name, desc) {
-            ProCoSys4LastUpdated = DateTime.Now, SyncedTimeStamp = DateTime.Now, IsVoided = false
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
         };
         projectRepository.Add(project);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();

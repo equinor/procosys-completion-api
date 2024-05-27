@@ -34,7 +34,7 @@ public class DocumentEventConsumer(
                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.SyncedTimeStamp );
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.SyncTimestamp );
                 return;
             }
 
@@ -48,12 +48,12 @@ public class DocumentEventConsumer(
                 return;
             }
             MapFromEventToDocument(busEvent, document);
-            document.SyncedTimeStamp = DateTime.UtcNow;
+            document.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var document = CreateDocumentEntity(busEvent);
-            document.SyncedTimeStamp = DateTime.UtcNow;
+            document.SyncTimestamp = DateTime.UtcNow;
             documentRepository.Add(document);
         }
         

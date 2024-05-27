@@ -40,7 +40,7 @@ public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
      */
     public DateTime ProCoSys4LastUpdated { get; set; }
 
-    public DateTime SyncedTimeStamp { get; set; }
+    public DateTime SyncTimestamp { get; set; }
     public Guid Guid { get; private set; }
     
     public bool IsDeletedInSource

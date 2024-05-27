@@ -33,5 +33,5 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
     
     public bool IsVoided { get; set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
-    public DateTime SyncedTimeStamp { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 }
