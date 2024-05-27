@@ -20,12 +20,6 @@ public class SWCR : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
     // private setters needed for Entity Framework
     public int No { get; set; }
     public bool IsVoided { get; set; }
-    public DateTime CreatedAtUtc { get; set; }
-    public int CreatedById { get; private set; }
-    public Person CreatedBy { get; private set; } = null!;
-    public DateTime? ModifiedAtUtc { get; private set; }
-    public int? ModifiedById { get; private set; }
-    public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
     public DateTime SyncTimestamp { get; set; }
