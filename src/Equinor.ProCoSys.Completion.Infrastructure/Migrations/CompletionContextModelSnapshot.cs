@@ -301,11 +301,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsVoided")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
 
                     b.Property<string>("No")
                         .IsRequired()
@@ -327,21 +339,19 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("ProCoSys4LastUpdated")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
                         .IsUnique();
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("Documents");
 
@@ -614,6 +624,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -624,6 +640,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<bool>("IsVoided")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("PeriodEnd")
                         .ValueGeneratedOnAddOrUpdate()
@@ -640,16 +662,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("ProCoSys4LastUpdated")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
-
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -658,11 +674,15 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("Guid")
                         .IsUnique()
                         .HasDatabaseName("IX_LibraryItems_Guid");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Code", "Description", "Type" });
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("Library");
 
@@ -864,6 +884,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("PeriodEnd")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
@@ -885,9 +911,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<bool>("Superuser")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -897,6 +920,8 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("Guid")
                         .IsUnique();
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("Persons");
 
@@ -920,6 +945,12 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -934,8 +965,11 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<bool>("IsDeletedInSource")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsVoided")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -965,13 +999,14 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
                         .IsUnique();
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("Projects");
 
@@ -1194,11 +1229,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsVoided")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
 
                     b.Property<int>("No")
                         .HasColumnType("int");
@@ -1218,21 +1265,19 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("ProCoSys4LastUpdated")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
                         .IsUnique();
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("SWCRs");
 
@@ -1256,11 +1301,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsVoided")
+                    b.Property<bool>("IsClosed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModifiedById")
+                        .HasColumnType("int");
 
                     b.Property<string>("No")
                         .IsRequired()
@@ -1282,21 +1339,19 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("ProCoSys4LastUpdated")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<DateTime>("SyncedTimeStamp")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("Guid")
                         .IsUnique();
+
+                    b.HasIndex("ModifiedById");
 
                     b.ToTable("WorkOrders");
 
@@ -1591,6 +1646,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
                 });
 
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate.Document", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate.Property", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate.HistoryItem", null)
@@ -1634,6 +1706,23 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryItem", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate.Link", b =>
                 {
                     b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
@@ -1657,6 +1746,33 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ModifiedById")
                         .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate.Project", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("ModifiedBy");
                 });
@@ -1777,6 +1893,40 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Navigation("VerifiedBy");
 
                     b.Navigation("WorkOrder");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate.SWCR", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate.WorkOrder", b =>
+                {
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
                 });
 
             modelBuilder.Entity("LabelLabelEntity", b =>
