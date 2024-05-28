@@ -44,14 +44,14 @@ spec:
         ASPNETCORE_ENVIRONMENT: 'Test'
         UseAzureAppConfiguration: 'true'
       monitoring: false
-      replicas: 2
+      replicas: 4
       resources:
         requests:
           memory: '256Mi'
-          cpu: '100m'
+          cpu: '400m'
         limits:
           memory: '256Mi'
-          cpu: '250m'
+          cpu: '500m'
     # Prod environment
     - environment: prod
       identity:
