@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -22,7 +22,7 @@ public class LinkServiceTests : TestsBase
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly Guid _parentGuid = Guid.NewGuid();
     private ILinkRepository _linkRepositoryMock;
-    private IIntegrationEventPublisher _integrationEventPublisherMock;
+    private IMessageProducer _messageProducerMock;
     private LinkService _dut;
     private Link _linkAddedToRepository;
     private Link _existingLink;
@@ -44,13 +44,13 @@ public class LinkServiceTests : TestsBase
         _linkRepositoryMock.GetAsync(_existingLink.Guid, default)
             .Returns(_existingLink);
 
-        _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+        _messageProducerMock = Substitute.For<IMessageProducer>();
 
         _dut = new LinkService(
             _linkRepositoryMock,
             _plantProviderMock,
             _unitOfWorkMock,
-            _integrationEventPublisherMock,
+            _messageProducerMock,
             Substitute.For<ILogger<LinkService>>());
     }
 
@@ -98,7 +98,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         LinkCreatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<LinkCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -122,12 +122,12 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAsync_ShouldPublishHistoryCreatedIntegrationEvent()
+    public async Task AddAsync_ShouldSendHistoryCreatedIntegrationEvent()
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
@@ -230,7 +230,7 @@ public class LinkServiceTests : TestsBase
             default);
 
         // Assert
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -241,7 +241,7 @@ public class LinkServiceTests : TestsBase
         var newTitle = Guid.NewGuid().ToString();
         var newUrl = Guid.NewGuid().ToString();
         LinkUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<LinkUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -270,14 +270,14 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldPublishHistoryUpdatedIntegrationEvent_WhenChanges()
+    public async Task UpdateAsync_ShouldSendHistoryUpdatedIntegrationEvent_WhenChanges()
     {
         // Arrange
         var oldTitle = _existingLink.Title;
         var oldUrl = _existingLink.Url;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -364,7 +364,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         LinkDeletedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<LinkDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -389,12 +389,12 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task DeleteAsync_ShouldPublishHistoryDeletedIntegrationEvent()
+    public async Task DeleteAsync_ShouldSendHistoryDeletedIntegrationEvent()
     {
         // Arrange
         HistoryDeletedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryDeletedIntegrationEvent>();

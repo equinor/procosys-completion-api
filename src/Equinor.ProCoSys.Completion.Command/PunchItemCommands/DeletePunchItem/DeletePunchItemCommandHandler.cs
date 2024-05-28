@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -19,20 +19,20 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<DeletePunchItemCommandHandler> _logger;
 
     public DeletePunchItemCommandHandler(
         IPunchItemRepository punchItemRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<DeletePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
     }
 
@@ -79,7 +79,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
     {
         var integrationEvent = new PunchItemDeletedIntegrationEvent(punchItem);
 
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             $"Punch item {punchItem.Category} {punchItem.ItemNo} deleted",
@@ -88,7 +88,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
             new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
             punchItem.ModifiedAtUtc!.Value);
 
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
 
         return integrationEvent;
     }

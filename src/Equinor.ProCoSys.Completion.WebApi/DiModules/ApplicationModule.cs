@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
+﻿using System.Text.Json.Serialization;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
@@ -14,7 +12,7 @@ using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Common.TemplateTransforming;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
@@ -78,8 +76,10 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
-            
+
             x.AddConsumer<HistoryItemCreatedEventConsumer>();
+            x.AddConsumer<HistoryItemUpdatedEventConsumer>();
+            x.AddConsumer<HistoryItemDeletedEventConsumer>();
 
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
@@ -136,15 +136,9 @@ public static class ApplicationModule
                     e.Temporary = false;
                 });
 
-            var connectionString = configuration.GetConnectionString("ServiceBus");
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new Exception("Missing ConnectionString configuration: ServiceBus");
-            }
-            CreateEndpointConventions(connectionString);
-
             x.UsingAzureServiceBus((context,cfg) =>
             {
+                var connectionString = configuration.GetConnectionString("ServiceBus");
 
                 cfg.Host(connectionString);
 
@@ -160,10 +154,23 @@ public static class ApplicationModule
 
                 cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
                 {
-                    //e.ClearSerialization();
-                    //e.UseRawJsonSerializer();
-                    //e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryUpdated, e =>
+                {
+                    e.ConfigureConsumer<HistoryItemUpdatedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryDeleted, e =>
+                {
+                    e.ConfigureConsumer<HistoryItemDeletedEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
@@ -364,7 +371,7 @@ public static class ApplicationModule
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
-        services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
+        services.AddScoped<IMessageProducer, MessageProducer>();
         services.AddScoped<IAzureBlobService, AzureBlobService>();
         services.AddScoped<ITemplateTransformer, TemplateTransformer>();
         services.AddScoped<ICompletionMailService, CompletionMailService>();
@@ -373,12 +380,5 @@ public static class ApplicationModule
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
-    }
-
-    private static void CreateEndpointConventions(string connectionString)
-    {
-        var endPoint = Regex.Match(connectionString, @"Endpoint=(.+?)(;|\z)", RegexOptions.Singleline).Groups[1].Value;
-        var endPointUri = new Uri(endPoint);
-        EndpointConvention.Map<HistoryItemCreatedEventConsumer>(new Uri(endPointUri, QueueNames.CompletionHistoryCreated));
     }
 }

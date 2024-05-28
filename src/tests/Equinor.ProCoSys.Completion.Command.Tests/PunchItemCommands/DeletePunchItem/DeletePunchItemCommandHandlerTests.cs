@@ -30,7 +30,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
                 _punchItemRepositoryMock,
                 _syncToPCS4ServiceMock,
                 _unitOfWorkMock,
-                _integrationEventPublisherMock,
+                _messageProducerMock,
                 _logger);
         }
 
@@ -82,7 +82,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         {
             // Arrange
             PunchItemDeletedIntegrationEvent integrationEvent = null!;
-            _integrationEventPublisherMock
+            _messageProducerMock
                 .When(x => x.PublishAsync(Arg.Any<PunchItemDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
                 .Do(Callback.First(callbackInfo =>
                 {
@@ -103,12 +103,12 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
         }
 
         [TestMethod]
-        public async Task HandlingCommand_ShouldPublishHistoryDeletedIntegrationEvent()
+        public async Task HandlingCommand_ShouldSendHistoryDeletedIntegrationEvent()
         {
             // Arrange
             HistoryDeletedIntegrationEvent historyEvent = null!;
-            _integrationEventPublisherMock
-                .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            _messageProducerMock
+                .When(x => x.SendHistoryAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
                 .Do(Callback.First(callbackInfo =>
                 {
                     historyEvent = callbackInfo.Arg<HistoryDeletedIntegrationEvent>();
@@ -134,7 +134,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             // Arrange
             PunchItemDeletedIntegrationEvent integrationEvent = null!;
 
-            _integrationEventPublisherMock
+            _messageProducerMock
                 .When(x => x.PublishAsync(
                     Arg.Any<PunchItemDeletedIntegrationEvent>(),
                     default))

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
@@ -35,10 +35,8 @@ public class AttachmentServiceTests : TestsBase
     private Attachment _attachmentAddedToRepository;
     private Attachment _existingAttachment;
     private IAzureBlobService _azureBlobServiceMock;
-    private IIntegrationEventPublisher _integrationEventPublisherMock;
-    //private readonly string _existingFileName = "E.txt";
+    private IMessageProducer _messageProducer;
     private readonly string _existingJpgFileName = "E-image.jpg";
-    //private readonly string _newFileName = "N.txt";
     private readonly string _newJpgFileName = "N-image.jpg";
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly string _contentTypeJpeg = "image/jpeg";
@@ -80,7 +78,7 @@ public class AttachmentServiceTests : TestsBase
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
 
-        _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+        _messageProducer = Substitute.For<IMessageProducer>();
         
         _modifiedEventServiceMock = Substitute.For<IModifiedEventService>();
         _modifiedEventServiceMock.GetModifiedEventAsync(default)
@@ -99,7 +97,7 @@ public class AttachmentServiceTests : TestsBase
             _unitOfWorkMock,
             _azureBlobServiceMock,
             blobStorageOptionsMock,
-            _integrationEventPublisherMock,
+            _messageProducer,
             Substitute.For<ILogger<AttachmentService>>(),
             _modifiedEventServiceMock);
     }
@@ -119,7 +117,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<Stream>(),
             Arg.Any<string>(),
             Arg.Any<bool>());
-       await _integrationEventPublisherMock.Received(0)
+       await _messageProducer.Received(0)
            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
        await _unitOfWorkMock.Received(0).SetAuditDataAsync();
        await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -175,7 +173,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentCreatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducer
             .When(x => x.PublishAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -199,12 +197,12 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UploadNewAsync_ShouldPublishHistoryCreatedIntegrationEvent_WhenFileNameNotExist()
+    public async Task UploadNewAsync_ShouldSendHistoryCreatedIntegrationEvent_WhenFileNameNotExist()
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducer
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
@@ -264,7 +262,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<Stream>(),
             Arg.Any<string>(),
             Arg.Any<bool>());
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducer.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
         await _unitOfWorkMock.Received(0).SetAuditDataAsync();
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -308,7 +306,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducer
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -333,13 +331,13 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UploadOverwriteAsync_ShouldPublishHistoryUpdatedIntegrationEvent_WhenFileNameExist()
+    public async Task UploadOverwriteAsync_ShouldSendHistoryUpdatedIntegrationEvent_WhenFileNameExist()
     {
         // Arrange
         var oldRevisionNumber = _existingAttachment.RevisionNumber;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducer
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -459,7 +457,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentDeletedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducer
             .When(x => x.PublishAsync(Arg.Any<AttachmentDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -484,12 +482,12 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task DeleteAsync_ShouldPublishHistoryDeletedIntegrationEvent()
+    public async Task DeleteAsync_ShouldSendHistoryDeletedIntegrationEvent()
     {
         // Arrange
         HistoryDeletedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducer
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryDeletedIntegrationEvent>();
@@ -575,7 +573,7 @@ public class AttachmentServiceTests : TestsBase
             default);
 
         // Assert
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducer.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -585,7 +583,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var newTitle = Guid.NewGuid().ToString();
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducer
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -615,13 +613,13 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldPublishHistoryUpdatedIntegrationEvent_WhenChanges()
+    public async Task UpdateAsync_ShouldSendHistoryUpdatedIntegrationEvent_WhenChanges()
     {
         // Arrange
         var oldDescription = _existingAttachment.Description;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducer
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();

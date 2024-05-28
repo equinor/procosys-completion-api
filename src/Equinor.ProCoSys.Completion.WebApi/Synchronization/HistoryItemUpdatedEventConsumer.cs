@@ -7,15 +7,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class HistoryItemCreatedEventConsumer : IConsumer<IHistoryItemCreatedV1>
+public class HistoryItemUpdatedEventConsumer : IConsumer<IHistoryItemUpdatedV1>
 {
-    private readonly ILogger<HistoryItemCreatedEventConsumer> _logger;
+    private readonly ILogger<HistoryItemUpdatedEventConsumer> _logger;
     private readonly IHistoryItemRepository _historyItemRepository;
     private readonly IUnitOfWork _unitOfWork;
-    
+
     // unit tests
-    public HistoryItemCreatedEventConsumer(
-        ILogger<HistoryItemCreatedEventConsumer> logger,
+    public HistoryItemUpdatedEventConsumer(
+        ILogger<HistoryItemUpdatedEventConsumer> logger,
         IHistoryItemRepository historyItemRepository, 
         IUnitOfWork unitOfWork)
     {
@@ -24,34 +24,35 @@ public class HistoryItemCreatedEventConsumer : IConsumer<IHistoryItemCreatedV1>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Consume(ConsumeContext<IHistoryItemCreatedV1> context)
+    public async Task Consume(ConsumeContext<IHistoryItemUpdatedV1> context)
     {
-        var historyItemCreatedV1 = context.Message;
+        var historyItemUpdatedV1 = context.Message;
 
-        var historyItemEntity = CreateHistoryItemEntity(historyItemCreatedV1);
+        var historyItemEntity = CreateHistoryItemEntity(historyItemUpdatedV1);
         _historyItemRepository.Add(historyItemEntity);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
         
         _logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
-            nameof(IHistoryItemCreatedV1),
+            nameof(IHistoryItemUpdatedV1),
             context.MessageId, 
-            historyItemCreatedV1.Guid, 
-            historyItemCreatedV1.DisplayName);
+            historyItemUpdatedV1.Guid, 
+            historyItemUpdatedV1.DisplayName);
     }
 
-    private static HistoryItem CreateHistoryItemEntity(IHistoryItemCreatedV1 historyItemCreated)
+    private static HistoryItem CreateHistoryItemEntity(IHistoryItemUpdatedV1 historyItemUpdated)
     {
         var historyItem = new HistoryItem(
-            historyItemCreated.Guid, 
-            historyItemCreated.DisplayName, 
-            historyItemCreated.EventBy.Oid,
-            historyItemCreated.EventBy.FullName,
-            historyItemCreated.EventAtUtc,
-            historyItemCreated.ParentGuid);
+            historyItemUpdated.Guid, 
+            historyItemUpdated.DisplayName, 
+            historyItemUpdated.EventBy.Oid,
+            historyItemUpdated.EventBy.FullName,
+            historyItemUpdated.EventAtUtc,
+            historyItemUpdated.ParentGuid);
 
-        foreach (var property in historyItemCreated.Properties)
+        foreach (var property in historyItemUpdated.ChangedProperties)
         {
-            historyItem.AddPropertyForCreate(property.Name,
+            historyItem.AddPropertyForUpdate(property.Name,
+                property.OldValue,
                 property.Value,
                 property.ValueDisplayType);
         }
