@@ -69,6 +69,7 @@ public class PunchItemsController : ControllerBase
     /// <summary>
     /// Get a PunchItem by its Guid
     /// </summary>
+    ///  /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid on PunchItem</param>
     /// <returns>Found PunchItem</returns>
@@ -76,6 +77,10 @@ public class PunchItemsController : ControllerBase
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}")]
     public async Task<ActionResult<PunchItemDetailsDto>> GetPunchItemByGuid(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
