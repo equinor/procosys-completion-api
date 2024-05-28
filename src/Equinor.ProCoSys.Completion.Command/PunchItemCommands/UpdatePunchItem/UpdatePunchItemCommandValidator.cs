@@ -410,7 +410,7 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
             CancellationToken cancellationToken)
         {
             var guid = GetGuidValue(operations, propName);
-            return !await workOrderValidator.IsClosedAsync(guid, cancellationToken);
+            return !await workOrderValidator.IsVoidedAsync(guid, cancellationToken);
         }
 
         async Task<bool> BeAnExistingSWCRAsync(

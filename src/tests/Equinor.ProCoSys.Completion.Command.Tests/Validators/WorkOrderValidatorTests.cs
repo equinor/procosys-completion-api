@@ -68,7 +68,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_closedWorkOrder.Guid, default);
+        var result = await dut.IsVoidedAsync(_closedWorkOrder.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -82,7 +82,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_openWorkOrder.Guid, default);
+        var result = await dut.IsVoidedAsync(_openWorkOrder.Guid, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -96,7 +96,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(Guid.Empty, default);
+        var result = await dut.IsVoidedAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);

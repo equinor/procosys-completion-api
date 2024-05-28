@@ -3,7 +3,7 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
-public class WorkOrder : PlantEntityBase, IAggregateRoot, IHaveGuid
+public class WorkOrder : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 {
     public const int NoLengthMax = 30;
 

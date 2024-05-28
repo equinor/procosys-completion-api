@@ -471,7 +471,7 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_OriginalWorkOrderGuid_IsClosed()
     {
         // Arrange
-        _workOrderValidatorMock.IsClosedAsync(_originalWorkOrderGuid, default).Returns(true);
+        _workOrderValidatorMock.IsVoidedAsync(_originalWorkOrderGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -501,7 +501,7 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_WorkOrderGuid_IsClosed()
     {
         // Arrange
-        _workOrderValidatorMock.IsClosedAsync(_workOrderGuid, default).Returns(true);
+        _workOrderValidatorMock.IsVoidedAsync(_workOrderGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

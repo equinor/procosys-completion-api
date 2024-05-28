@@ -210,7 +210,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             => await workOrderValidator.ExistsAsync(guid, cancellationToken);
 
         async Task<bool> NotBeAClosedWorkOrderAsync(Guid guid, CancellationToken cancellationToken)
-            => !await workOrderValidator.IsClosedAsync(guid, cancellationToken);
+            => !await workOrderValidator.IsVoidedAsync(guid, cancellationToken);
 
         async Task<bool> BeAnExistingSWCRAsync(Guid guid, CancellationToken cancellationToken)
             => await swcrValidator.ExistsAsync(guid, cancellationToken);
