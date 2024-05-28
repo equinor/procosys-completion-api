@@ -13,7 +13,7 @@ public class HistoryItemUpdatedEventConsumer : IConsumer<IHistoryItemUpdatedV1>
     private readonly IHistoryItemRepository _historyItemRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    // unit tests
+    // todo unit tests
     public HistoryItemUpdatedEventConsumer(
         ILogger<HistoryItemUpdatedEventConsumer> logger,
         IHistoryItemRepository historyItemRepository, 

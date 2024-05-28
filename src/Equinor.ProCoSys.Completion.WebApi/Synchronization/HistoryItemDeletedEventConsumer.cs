@@ -13,7 +13,7 @@ public class HistoryItemDeletedEventConsumer : IConsumer<IHistoryItemDeletedV1>
     private readonly IHistoryItemRepository _historyItemRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    // unit tests
+    // todo unit tests
     public HistoryItemDeletedEventConsumer(
         ILogger<HistoryItemDeletedEventConsumer> logger,
         IHistoryItemRepository historyItemRepository, 
