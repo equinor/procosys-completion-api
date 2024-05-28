@@ -3,59 +3,60 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
-using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class DocumentEventConsumer : IConsumer<DocumentEvent>
+public class DocumentEventConsumer(
+    ILogger<DocumentEventConsumer> logger,
+    IPlantSetter plantSetter,
+    IDocumentRepository documentRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<DocumentEvent>
 {
-    private readonly ILogger<DocumentEventConsumer> _logger;
-    private readonly IPlantSetter _plantSetter;
-    private readonly IDocumentRepository _documentRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-
-    public DocumentEventConsumer(ILogger<DocumentEventConsumer> logger,
-        IPlantSetter plantSetter,
-        IDocumentRepository documentRepository,
-        IUnitOfWork unitOfWork,
-        ICurrentUserSetter currentUserSetter,
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _plantSetter = plantSetter;
-        _documentRepository = documentRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
-
     public async Task Consume(ConsumeContext<DocumentEvent> context)
     {
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-        _plantSetter.SetPlant(busEvent.Plant);
+        plantSetter.SetPlant(busEvent.Plant);
 
-        if (await _documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var document = await _documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
+            {
+                logger.LogInformation("Document Message Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "EventLastUpdated: {LastUpdated} \n" +
+                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.SyncTimestamp );
+                return;
+            }
+
+            if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
+            {
+                logger.LogWarning("Document Message Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {EventLastUpdated} \n" +
+                                  "LastUpdatedFromDb: {LastUpdated}",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.ProCoSys4LastUpdated);
+                return;
+            }
             MapFromEventToDocument(busEvent, document);
+            document.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var document = CreateDocumentEntity(busEvent);
-            _documentRepository.Add(document);
+            document.SyncTimestamp = DateTime.UtcNow;
+            documentRepository.Add(document);
         }
         
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation($"{nameof(DocumentEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
+        logger.LogInformation($"{nameof(DocumentEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
     }
 
@@ -72,47 +73,28 @@ public class DocumentEventConsumer : IConsumer<DocumentEvent>
         }
     }
 
-    private static Document CreateDocumentEntity(IDocumentEventV1 busEvent)
+    private static Document CreateDocumentEntity(DocumentEvent busEvent)
     {
         var document = new Document(
             busEvent.Plant,
             busEvent.ProCoSysGuid,
             busEvent.DocumentNo
-        );
+        ) { ProCoSys4LastUpdated = busEvent.LastUpdated, IsVoided = busEvent.IsVoided};
         return document;
     }
-
-
-    private static void MapFromEventToDocument(IDocumentEventV1 busEvent, Document document)
+    
+    private static void MapFromEventToDocument(DocumentEvent busEvent, Document document)
     {
         document.No = busEvent.DocumentNo;
-        // TODO No input for setting isVoided?
-        //document.IsVoided = busEvent.xxxxxx
+        document.ProCoSys4LastUpdated = busEvent.LastUpdated;
+        document.IsVoided = busEvent.IsVoided;
     }
 }
 
-
-public record DocumentEvent
-(
-    string EventType, 
-    string Plant, 
+public record DocumentEvent(
+    string Plant,
     Guid ProCoSysGuid,
-    string ProjectName,
-    long DocumentId,
     string DocumentNo,
-    string? Title,
-    string? AcceptanceCode,
-    string? Archive,
-    string? AccessCode,
-    string? Complex,
-    string? DocumentType,
-    string? DisciplineId,
-    string? DocumentCategory,
-    string? HandoverStatus,
-    string? RegisterType,
-    string? RevisionNo,
-    string? RevisionStatus,
-    string? ResponsibleContractor,
-    DateTime LastUpdated,
-    DateOnly? RevisionDate
-) : IDocumentEventV1;
+    bool IsVoided,
+    DateTime LastUpdated
+); //: using fields from IDocumentEventV1;

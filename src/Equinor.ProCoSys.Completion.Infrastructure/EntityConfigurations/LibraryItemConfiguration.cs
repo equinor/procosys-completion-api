@@ -11,8 +11,6 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
     {
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
-        builder.ConfigureCreationAudit();
-        builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
         builder.Property(x => x.Code)

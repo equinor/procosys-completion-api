@@ -11,8 +11,6 @@ internal class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrder>
     {
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
-        builder.ConfigureCreationAudit();
-        builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
         builder

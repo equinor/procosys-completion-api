@@ -47,7 +47,7 @@ public class WorkOrderEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, WoNo);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         _workOrderRepoMock.ExistsAsync(guid, default).Returns(false);
@@ -67,7 +67,7 @@ public class WorkOrderEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, WoNo);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now);
 
 
         var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo);
@@ -86,12 +86,60 @@ public class WorkOrderEventConsumerTests
 
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedHasNotChanged()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated);
+        
+        var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo)
+        {
+            ProCoSys4LastUpdated = lastUpdated
+        };
+
+        _workOrderRepoMock.ExistsAsync(guid, default).Returns(true);
+        _workOrderRepoMock.GetAsync(guid, default).Returns(workOrderToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _workOrderEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedIsOutDated()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated);
+        
+        var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo)
+        {
+            ProCoSys4LastUpdated = lastUpdated.AddMinutes(3)
+        };
+
+        _workOrderRepoMock.ExistsAsync(guid, default).Returns(true);
+        _workOrderRepoMock.GetAsync(guid, default).Returns(workOrderToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _workOrderEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, WoNo);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, WoNo, DateTime.Now);
 
         _contextMock.Message.Returns(bEvent);
 
@@ -99,13 +147,12 @@ public class WorkOrderEventConsumerTests
         await Assert.ThrowsExceptionAsync<Exception>(()
             => _workOrderEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
-
     
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, string.Empty, WoNo);
+        var bEvent = GetTestEvent(Guid.Empty, string.Empty, WoNo, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
@@ -113,47 +160,11 @@ public class WorkOrderEventConsumerTests
             => _workOrderEventConsumer.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static WorkOrderEvent GetTestEvent(Guid guid, string plant, string woNo) => new (
-            string.Empty,
+    private static WorkOrderEvent GetTestEvent(Guid guid, string plant, string woNo, DateTime lastUpdated) => new (
             plant,
             guid,
-            string.Empty,
-            woNo,
-            long.MinValue,
-            string.Empty,
-            Guid.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            double.MinValue,
-            int.MinValue,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            DateOnly.MinValue,
-            DateOnly.MinValue,
-            DateOnly.MinValue,
-            DateOnly.MinValue,
-            DateTime.UtcNow,
-            false,
-            DateTime.UtcNow
+            woNo, 
+            false, 
+            lastUpdated
         );
 }

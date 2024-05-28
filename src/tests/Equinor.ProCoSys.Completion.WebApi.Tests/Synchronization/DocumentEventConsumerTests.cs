@@ -48,7 +48,7 @@ public class DocumentEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, DocumentNo);
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         _documentRepoMock.ExistsAsync(guid, default).Returns(false);
@@ -68,7 +68,7 @@ public class DocumentEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, DocumentNo);
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, DateTime.Now);
 
 
         var documentToUpdate = new Document(Plant, guid, DocumentNo)
@@ -90,12 +90,64 @@ public class DocumentEventConsumerTests
 
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedNotChanged()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, lastUpdated);
+
+
+        var documentToUpdate = new Document(Plant, guid, DocumentNo)
+        {
+            IsVoided = false,
+            ProCoSys4LastUpdated = lastUpdated
+        };
+
+        _documentRepoMock.ExistsAsync(guid, default).Returns(true);
+        _documentRepoMock.GetAsync(guid, default).Returns(documentToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _documentEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreUpdate_WhenLastUpdatedOutDated()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, lastUpdated);
+
+
+        var documentToUpdate = new Document(Plant, guid, DocumentNo)
+        {
+            IsVoided = false,
+            ProCoSys4LastUpdated = lastUpdated.AddMinutes(1)
+        };
+
+        _documentRepoMock.ExistsAsync(guid, default).Returns(true);
+        _documentRepoMock.GetAsync(guid, default).Returns(documentToUpdate);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _documentEventConsumer.Consume(_contextMock);
+
+        //Assert
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, DocumentNo);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, DocumentNo, DateTime.Now);
 
         _contextMock.Message.Returns(bEvent);
 
@@ -108,7 +160,7 @@ public class DocumentEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, string.Empty, DocumentNo);
+        var bEvent = GetTestEvent(Guid.Empty, string.Empty, DocumentNo, DateTime.Now);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
@@ -116,27 +168,11 @@ public class DocumentEventConsumerTests
             => _documentEventConsumer.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static DocumentEvent GetTestEvent(Guid guid, string plant, string documentNo) => new(
-            string.Empty,
+    private static DocumentEvent GetTestEvent(Guid guid, string plant, string documentNo, DateTime lastUpdated) => new(
             plant,
             guid,
-            string.Empty,
-            long.MinValue,
             documentNo,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            DateTime.UtcNow,
-            DateOnly.MinValue
+            false,
+            lastUpdated
         );
 }

@@ -9,28 +9,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Command.Validators;
 
-public class WorkOrderValidator : IWorkOrderValidator
+public class WorkOrderValidator(IReadOnlyContext context) : IWorkOrderValidator
 {
-    private readonly IReadOnlyContext _context;
-
-    public WorkOrderValidator(IReadOnlyContext context) => _context = context;
-
     public async Task<bool> ExistsAsync(Guid workOrderGuid, CancellationToken cancellationToken)
     {
         var workOrder = await GetWorkOrderAsync(workOrderGuid, cancellationToken);
-
         return workOrder is not null;
     }
 
-    public async Task<bool> IsClosedAsync(Guid workOrderGuid, CancellationToken cancellationToken)
+    public async Task<bool> IsVoidedAsync(Guid workOrderGuid, CancellationToken cancellationToken)
     {
         var workOrder = await GetWorkOrderAsync(workOrderGuid, cancellationToken);
-
-        return workOrder is not null && workOrder.IsClosed;
+        return workOrder is not null && workOrder.IsVoided;
     }
 
     private async Task<WorkOrder?> GetWorkOrderAsync(Guid workOrderGuid, CancellationToken cancellationToken)
-        => await (from wo in _context.QuerySet<WorkOrder>()
+        => await (from wo in context.QuerySet<WorkOrder>()
             where wo.Guid == workOrderGuid
             select wo).SingleOrDefaultAsync(cancellationToken);
 }

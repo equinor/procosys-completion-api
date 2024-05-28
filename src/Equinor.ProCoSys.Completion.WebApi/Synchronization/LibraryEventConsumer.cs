@@ -9,30 +9,15 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class LibraryEventConsumer : IConsumer<LibraryEvent>
+public class LibraryEventConsumer(
+    ILogger<LibraryEventConsumer> logger,
+    IPlantSetter plantSetter,
+    ILibraryItemRepository libraryRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<LibraryEvent>
 {
-    private readonly ILogger<LibraryEventConsumer> _logger;
-    private readonly IPlantSetter _plantSetter;
-    private readonly ILibraryItemRepository _libraryRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-
-    public LibraryEventConsumer(ILogger<LibraryEventConsumer> logger,
-        IPlantSetter plantSetter,
-        ILibraryItemRepository libraryRepository,
-        IUnitOfWork unitOfWork,
-        ICurrentUserSetter currentUserSetter,
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _plantSetter = plantSetter;
-        _libraryRepository = libraryRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
-
+    
+    private const string CommPriority = "COMM_PRIORITY";
     public async Task Consume(ConsumeContext<LibraryEvent> context)
     {
         var busEvent = context.Message;
@@ -40,30 +25,51 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         ValidateMessage(busEvent);
 
         // Test if message library type is not present in LibraryType enum
-        if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals("COMM_PRIORITY"))
+        if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals(CommPriority))
         {
-            _logger.LogInformation($"{nameof(LibraryEvent)} not in scope of import: {{libraryType}}", busEvent.Type );
+            logger.LogInformation($"{nameof(LibraryEvent)} not in scope of import: {{libraryType}}", busEvent.Type );
             return;
         }
 
-        _plantSetter.SetPlant(busEvent.Plant);
+        plantSetter.SetPlant(busEvent.Plant);
 
-        if (await _libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var library = await _libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-            _logger.LogInformation($"{nameof(LibraryEvent)} exists, updating {{id}}, {{guid}}, {{type}}", library.Id, library.Guid.ToString(), library.Type.ToString());
+            var library = await libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            
+            if (library.ProCoSys4LastUpdated == busEvent.LastUpdated)
+            {
+                logger.LogInformation("Library Message Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "EventLastUpdated: {LastUpdated} \n" +
+                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncTimestamp );
+                return;
+            }
+
+            if (library.ProCoSys4LastUpdated > busEvent.LastUpdated)
+            {
+                logger.LogWarning("Library Message Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {EventLastUpdated} \n" +
+                                  "LastUpdatedFromDb: {LastUpdated}",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.ProCoSys4LastUpdated);
+                return;
+            }
+            
             MapFromEventToLibrary(busEvent, library);
+            library.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var lib = CreateLibraryEntity(busEvent);
-            _libraryRepository.Add(lib);
+            lib.SyncTimestamp = DateTime.UtcNow;
+            libraryRepository.Add(lib);
         }
 
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation($"{nameof(LibraryEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n Code {{LibraryCode}}",
+        logger.LogInformation($"{nameof(LibraryEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n Code {{LibraryCode}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
     }
 
@@ -83,11 +89,7 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         {
             throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Type)}");
         }
-
-        if (string.IsNullOrEmpty(busEvent.Description))
-        {
-            throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Description)}");
-        }
+        
     }
 
     private static LibraryItem CreateLibraryEntity(LibraryEvent libraryEvent)
@@ -97,9 +99,9 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
             libraryEvent.Code,
             libraryEvent.Description!,
             !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType)
-                && libraryEvent.Type.Equals("COMM_PRIORITY", StringComparison.CurrentCultureIgnoreCase)
+                && libraryEvent.Type.Equals(CommPriority, StringComparison.CurrentCultureIgnoreCase)
                 ? LibraryType.PUNCHLIST_PRIORITY : libType
-            );
+            ) { IsVoided = libraryEvent.IsVoided, ProCoSys4LastUpdated = libraryEvent.LastUpdated };
         return library;
     }
   
@@ -109,11 +111,11 @@ public class LibraryEventConsumer : IConsumer<LibraryEvent>
         library.Description = libraryEvent.Description!;
         library.Code = libraryEvent.Code;
         library.Type = !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType) 
-                       && libraryEvent.Type.Equals("COMM_PRIORITY", StringComparison.CurrentCultureIgnoreCase) 
+                       && libraryEvent.Type.Equals(CommPriority, StringComparison.CurrentCultureIgnoreCase) 
                        ? LibraryType.PUNCHLIST_PRIORITY : libType;
+        library.ProCoSys4LastUpdated = libraryEvent.LastUpdated;
     }
 }
-
 
 public record LibraryEvent(
     string Plant,
@@ -121,6 +123,7 @@ public record LibraryEvent(
     string Code,
     string? Description,
     bool IsVoided,
-    string Type
+    string Type,
+    DateTime LastUpdated
 ); // all these fields adhere to LibraryEventV1
 

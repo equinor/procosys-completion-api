@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -198,7 +197,10 @@ public static class CompletionContextExtension
 
     private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid, string no)
     {
-        var workOrder = new WorkOrder(plant, guid, no);
+        var workOrder = new WorkOrder(plant, guid, no)
+        {
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
+        };
         var workOrderRepository = new WorkOrderRepository(dbContext);
         workOrderRepository.Add(workOrder);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
@@ -206,7 +208,9 @@ public static class CompletionContextExtension
 
     private static void SeedSWCR(CompletionContext dbContext, string plant, Guid guid, int no)
     {
-        var swcr = new SWCR(plant, guid, no);
+        var swcr = new SWCR(plant, guid, no)  {
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
+        };
         var swcrRepository = new SWCRRepository(dbContext);
         swcrRepository.Add(swcr);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
@@ -214,7 +218,9 @@ public static class CompletionContextExtension
 
     private static void SeedDocument(CompletionContext dbContext, string plant, Guid guid, string no)
     {
-        var document = new Document(plant, guid, no);
+        var document = new Document(plant, guid, no) {
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
+        };
         var documentRepository = new DocumentRepository(dbContext);
         documentRepository.Add(document);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
@@ -229,7 +235,9 @@ public static class CompletionContextExtension
         string email,
         bool superuser)
     {
-        var person = new Person(new Guid(oid), firstName, lastName, userName, email, superuser);
+        var person = new Person(new Guid(oid), firstName, lastName, userName, email, superuser) {
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now
+        };
         var personRepository = new PersonRepository(dbContext, null!, null!);
         personRepository.Add(person);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
@@ -243,7 +251,9 @@ public static class CompletionContextExtension
         string desc)
     {
         var projectRepository = new ProjectRepository(dbContext);
-        var project = new Project(plant, guid, name, desc);
+        var project = new Project(plant, guid, name, desc) {
+            ProCoSys4LastUpdated = DateTime.Now, SyncTimestamp = DateTime.Now, IsVoided = false
+        };
         projectRepository.Add(project);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return project;

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.WorkOrders;
 
-public class WorkOrderControllerTestsHelper
+public static class WorkOrderControllerTestsHelper
 {
     private const string Route = "WorkOrders/Search";
 

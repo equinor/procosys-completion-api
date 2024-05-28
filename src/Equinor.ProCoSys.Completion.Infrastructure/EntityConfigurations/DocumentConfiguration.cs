@@ -11,8 +11,6 @@ internal class DocumentConfiguration : IEntityTypeConfiguration<Document>
     {
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
-        builder.ConfigureCreationAudit();
-        builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
         builder
