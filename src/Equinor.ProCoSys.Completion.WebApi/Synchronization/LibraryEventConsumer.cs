@@ -13,9 +13,7 @@ public class LibraryEventConsumer(
     ILogger<LibraryEventConsumer> logger,
     IPlantSetter plantSetter,
     ILibraryItemRepository libraryRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<LibraryEvent>
 {
     
@@ -69,7 +67,6 @@ public class LibraryEventConsumer(
             libraryRepository.Add(lib);
         }
 
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(LibraryEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n Code {{LibraryCode}}",

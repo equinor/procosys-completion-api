@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
@@ -13,9 +12,7 @@ public class DocumentEventConsumer(
     ILogger<DocumentEventConsumer> logger,
     IPlantSetter plantSetter,
     IDocumentRepository documentRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<DocumentEvent>
 {
     public async Task Consume(ConsumeContext<DocumentEvent> context)
@@ -57,7 +54,6 @@ public class DocumentEventConsumer(
             documentRepository.Add(document);
         }
         
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(DocumentEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",

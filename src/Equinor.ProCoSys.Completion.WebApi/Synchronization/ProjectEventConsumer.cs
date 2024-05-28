@@ -14,9 +14,7 @@ public class ProjectEventConsumer(
     ILogger<ProjectEventConsumer> logger,
     IPlantSetter plantSetter,
     IProjectRepository projectRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<ProjectEvent>
 {
     public async Task Consume(ConsumeContext<ProjectEvent> context)
@@ -62,7 +60,6 @@ public class ProjectEventConsumer(
             var project = CreateProjectEntity(projectEvent);
             projectRepository.Add(project);
         }
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
         
         logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 

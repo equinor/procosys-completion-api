@@ -3,7 +3,6 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -14,9 +13,7 @@ public class SWCREventConsumer(
     ILogger<SWCREventConsumer> logger,
     IPlantSetter plantSetter,
     ISWCRRepository swcrRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<SWCREvent>
 {
     public async Task Consume(ConsumeContext<SWCREvent> context)
@@ -59,7 +56,6 @@ public class SWCREventConsumer(
             swcrRepository.Add(swcr);
         }
 
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(SWCREvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",

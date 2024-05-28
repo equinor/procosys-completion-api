@@ -13,9 +13,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 public class PersonEventConsumer(
     ILogger<PersonEventConsumer> logger,
     IPersonRepository personRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<PersonEvent>
 {
     public async Task Consume(ConsumeContext<PersonEvent> context)
@@ -65,7 +63,6 @@ public class PersonEventConsumer(
         MapFromEventToPerson(personEvent, person);
         person.SyncTimestamp = DateTime.UtcNow;
 
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",

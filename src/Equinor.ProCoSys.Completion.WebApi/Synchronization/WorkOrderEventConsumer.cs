@@ -2,7 +2,6 @@
 using Equinor.ProCoSys.Completion.Domain;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
@@ -13,9 +12,7 @@ public class WorkOrderEventConsumer(
     ILogger<WorkOrderEventConsumer> logger,
     IPlantSetter plantSetter,
     IWorkOrderRepository workOrderRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<WorkOrderEvent>
 {
     public async Task Consume(ConsumeContext<WorkOrderEvent> context)
@@ -57,7 +54,6 @@ public class WorkOrderEventConsumer(
             workOrderRepository.Add(workOrder);
         }
 
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(WorkOrderEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
