@@ -12,13 +12,14 @@ using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Common.TemplateTransforming;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -75,6 +76,10 @@ public static class ApplicationModule
                 o.UseSqlServer();
                 o.UseBusOutbox();
             });
+
+            x.AddConsumer<HistoryItemCreatedEventConsumer>();
+            x.AddConsumer<HistoryItemUpdatedEventConsumer>();
+            x.AddConsumer<HistoryItemDeletedEventConsumer>();
 
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
@@ -134,10 +139,8 @@ public static class ApplicationModule
             x.UsingAzureServiceBus((context,cfg) =>
             {
                 var connectionString = configuration.GetConnectionString("ServiceBus");
-                
 
                 cfg.Host(connectionString);
-
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 cfg.ConfigureJsonSerializerOptions(opts =>
@@ -146,6 +149,34 @@ public static class ApplicationModule
                     opts.Converters.Add(new JsonStringEnumConverter());
                     return opts;
                 });
+
+                #region Receive from queues
+
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
+                {
+                    e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryUpdated, e =>
+                {
+                    e.ConfigureConsumer<HistoryItemUpdatedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.CompletionHistoryDeleted, e =>
+                {
+                    e.ConfigureConsumer<HistoryItemDeletedEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+
                 cfg.ReceiveEndpoint("libraryCompletionTransferQueue", e =>
                 {
                     e.ClearSerialization();
@@ -212,7 +243,9 @@ public static class ApplicationModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
+                #endregion
 
+                #region Receive from topics
                 cfg.SubscriptionEndpoint("completion_project","project", e =>
                 {
                     e.ClearSerialization();
@@ -276,10 +309,7 @@ public static class ApplicationModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                // cfg.Send<PunchItemCreatedIntegrationEvent>(topologyConfigurator =>
-                // {
-                //     topologyConfigurator.UseSessionIdFormatter(ctx => ctx.Message.Guid.ToString());
-                // });
+                #endregion
 
                 cfg.AutoStart = true;
             });
@@ -319,6 +349,7 @@ public static class ApplicationModule
         services.AddScoped<ILabelRepository, LabelRepository>();
         services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<IMailTemplateRepository, MailTemplateRepository>();
+        services.AddScoped<IHistoryItemRepository, HistoryItemRepository>();
         services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
         services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
@@ -341,7 +372,7 @@ public static class ApplicationModule
         services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
-        services.AddScoped<IIntegrationEventPublisher, IntegrationEventPublisher>();
+        services.AddScoped<IMessageProducer, MessageProducer>();
         services.AddScoped<IAzureBlobService, AzureBlobService>();
         services.AddScoped<ITemplateTransformer, TemplateTransformer>();
         services.AddScoped<ICompletionMailService, CompletionMailService>();

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
@@ -32,7 +32,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly ICompletionMailService _completionMailService;
     private readonly IDeepLinkUtility _deepLinkUtility;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RejectPunchItemCommandHandler> _logger;
     private readonly IOptionsMonitor<ApplicationOptions> _options;
@@ -45,7 +45,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         ISyncToPCS4Service syncToPCS4Service,
         ICompletionMailService completionMailService,
         IDeepLinkUtility deepLinkUtility,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         IUnitOfWork unitOfWork,
         ILogger<RejectPunchItemCommandHandler> logger,
         IOptionsMonitor<ApplicationOptions> options)
@@ -57,7 +57,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _syncToPCS4Service = syncToPCS4Service;
         _completionMailService = completionMailService;
         _deepLinkUtility = deepLinkUtility;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _unitOfWork = unitOfWork;
         _logger = logger;
         _options = options;
@@ -80,7 +80,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             await _unitOfWork.SetAuditDataAsync();
 
             var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _integrationEventPublisher,
+                _messageProducer,
                 punchItem,
                 "Punch item rejected",
                 [change],
