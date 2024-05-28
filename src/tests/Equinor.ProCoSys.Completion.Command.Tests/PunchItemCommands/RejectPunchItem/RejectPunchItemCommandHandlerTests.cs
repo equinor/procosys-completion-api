@@ -77,7 +77,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _syncToPCS4ServiceMock,
             _completionMailServiceMock,
             _deepLinkUtilityMock,
-            _integrationEventPublisherMock,
+            _messageProducerMock,
             _unitOfWorkMock,
             Substitute.For<ILogger<RejectPunchItemCommandHandler>>(),
             _optionsMock);
@@ -164,7 +164,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -182,12 +182,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent()
+    public async Task HandlingCommand_ShouldSendHistoryUpdatedIntegrationEvent()
     {
         // Arrange
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -248,7 +248,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(
                 Arg.Any<PunchItemUpdatedIntegrationEvent>(),
                 default))

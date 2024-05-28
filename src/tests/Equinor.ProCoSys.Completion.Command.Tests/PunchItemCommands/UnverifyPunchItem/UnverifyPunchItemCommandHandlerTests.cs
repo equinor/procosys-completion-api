@@ -30,7 +30,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
             _punchItemRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
-            _integrationEventPublisherMock,
+            _messageProducerMock,
             Substitute.For<ILogger<UnverifyPunchItemCommandHandler>>());
     }
 
@@ -87,7 +87,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -104,12 +104,12 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent()
+    public async Task HandlingCommand_ShouldSendHistoryUpdatedIntegrationEvent()
     {
         // Arrange
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -136,7 +136,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(
                 Arg.Any<PunchItemUpdatedIntegrationEvent>(),
                 default))

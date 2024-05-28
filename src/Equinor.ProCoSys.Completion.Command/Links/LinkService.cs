@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -20,20 +20,20 @@ public class LinkService : ILinkService
     private readonly ILinkRepository _linkRepository;
     private readonly IPlantProvider _plantProvider;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<LinkService> _logger;
 
     public LinkService(
         ILinkRepository linkRepository,
         IPlantProvider plantProvider,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<LinkService> logger)
     {
         _linkRepository = linkRepository;
         _plantProvider = plantProvider;
         _unitOfWork = unitOfWork;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
     }
 
@@ -134,7 +134,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkCreatedIntegrationEvent(link, _plantProvider.Plant);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var properties = new List<IProperty>
         {
@@ -148,7 +148,7 @@ public class LinkService : ILinkService
             new User(link.CreatedBy.Guid, link.CreatedBy.GetFullName()),
             link.CreatedAtUtc,
             properties);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -161,7 +161,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkUpdatedIntegrationEvent(link, _plantProvider.Plant);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             $"Link {link.Title} updated",
@@ -170,7 +170,7 @@ public class LinkService : ILinkService
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
             link.ModifiedAtUtc!.Value,
             changes);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -180,7 +180,7 @@ public class LinkService : ILinkService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new LinkDeletedIntegrationEvent(link, _plantProvider.Plant);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             $"Link {link.Title} deleted",
@@ -190,7 +190,7 @@ public class LinkService : ILinkService
             // ... but both ModifiedBy and ModifiedAtUtc are updated when entity is deleted
             new User(link.ModifiedBy!.Guid, link.ModifiedBy!.GetFullName()),
             link.ModifiedAtUtc!.Value);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 

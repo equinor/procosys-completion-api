@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -28,7 +28,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
         protected ISyncToPCS4Service _syncToPCS4ServiceMock;
-        protected IIntegrationEventPublisher _integrationEventPublisherMock;
+        protected IMessageProducer _messageProducerMock;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
@@ -64,7 +64,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
             _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
-            _integrationEventPublisherMock = Substitute.For<IIntegrationEventPublisher>();
+            _messageProducerMock = Substitute.For<IMessageProducer>();
             var id = 5;
             _currentPerson = SetupPerson(++id);
             _personRepositoryMock.GetCurrentPersonAsync(default)

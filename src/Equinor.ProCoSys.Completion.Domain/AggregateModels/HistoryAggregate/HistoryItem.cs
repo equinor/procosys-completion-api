@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
@@ -43,5 +44,9 @@ public class HistoryItem : EntityBase, IAggregateRoot
     public string EventByFullName { get; private set; }
     public Guid? EventForParentGuid { get; private set; }
 
-    public void AddProperty(Property property) => _properties.Add(property);
+    public void AddPropertyForCreate(string propertyName, object? propertyValue, ValueDisplayType valueDisplayType) =>
+        _properties.Add(new Property(propertyName, null, propertyValue?.ToString(), valueDisplayType.ToString()));
+
+    public void AddPropertyForUpdate(string propertyName, object? propertyOldValue, object? propertyValue, ValueDisplayType valueDisplayType) =>
+        _properties.Add(new Property(propertyName, propertyOldValue?.ToString(), propertyValue?.ToString(), valueDisplayType.ToString()));
 }

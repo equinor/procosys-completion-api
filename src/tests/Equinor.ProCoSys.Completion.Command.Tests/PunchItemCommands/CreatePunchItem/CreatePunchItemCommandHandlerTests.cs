@@ -77,7 +77,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _documentRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
-            _integrationEventPublisherMock,
+            _messageProducerMock,
             Substitute.For<ILogger<CreatePunchItemCommandHandler>>());
     }
 
@@ -185,7 +185,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemCreatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<PunchItemCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -206,12 +206,14 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_WithAllPropertiesSet_ShouldPublishHistoryCreatedIntegrationEvent()
+    public async Task HandlingCommand_WithAllPropertiesSet_ShouldSendHistoryCreatedIntegrationEvent()
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(
+                Arg.Any<HistoryCreatedIntegrationEvent>(), 
+                Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
@@ -317,12 +319,14 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldPublishHistoryCreatedIntegrationEvent()
+    public async Task HandlingCommand_WithOnlyRequiredPropertiesSet_ShouldSendHistoryCreatedIntegrationEvent()
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(
+                Arg.Any<HistoryCreatedIntegrationEvent>(), 
+                Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
@@ -394,7 +398,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemCreatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(
                 Arg.Any<PunchItemCreatedIntegrationEvent>(),
                 default))
