@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
