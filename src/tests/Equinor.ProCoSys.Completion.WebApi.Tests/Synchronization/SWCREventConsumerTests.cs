@@ -27,7 +27,7 @@ public class SWCREventConsumerTests
 
     public SWCREventConsumerTests() =>
         _swcrEventConsumer = new SWCREventConsumer(Substitute.For<ILogger<SWCREventConsumer>>(), _plantSetter, _swcrRepoMock,
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()

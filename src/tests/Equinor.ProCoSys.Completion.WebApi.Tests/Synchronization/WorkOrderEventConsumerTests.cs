@@ -27,7 +27,7 @@ public class WorkOrderEventConsumerTests
 
     public WorkOrderEventConsumerTests() =>
         _workOrderEventConsumer = new WorkOrderEventConsumer(Substitute.For<ILogger<WorkOrderEventConsumer>>(), _plantSetter, _workOrderRepoMock,
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()

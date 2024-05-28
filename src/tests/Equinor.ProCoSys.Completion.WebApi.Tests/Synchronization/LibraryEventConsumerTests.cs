@@ -29,7 +29,7 @@ public class LibraryEventConsumerTests
 
     public LibraryEventConsumerTests() =>
         _libraryEventConsumer = new LibraryEventConsumer(Substitute.For<ILogger<LibraryEventConsumer>>(), _plantSetter, _libraryItemRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()

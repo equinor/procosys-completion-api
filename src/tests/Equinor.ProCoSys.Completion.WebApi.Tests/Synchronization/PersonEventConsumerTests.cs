@@ -23,7 +23,7 @@ public class PersonEventConsumerTests
 
     public PersonEventConsumerTests() =>
         _personEventConsumer = new PersonEventConsumer(Substitute.For<ILogger<PersonEventConsumer>>(), _personRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _azureAdOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup() => _azureAdOptionsMock.CurrentValue.Returns(new ApplicationOptions { ObjectId = new Guid() });

@@ -25,7 +25,7 @@ public class ProjectEventConsumerTests
 
     public ProjectEventConsumerTests() =>
         _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _plantSetter, _projectRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()

@@ -28,7 +28,7 @@ public class DocumentEventConsumerTests
 
     public DocumentEventConsumerTests() =>
         _documentEventConsumer = new DocumentEventConsumer(Substitute.For<ILogger<DocumentEventConsumer>>(), _plantSetter, _documentRepoMock,
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()
