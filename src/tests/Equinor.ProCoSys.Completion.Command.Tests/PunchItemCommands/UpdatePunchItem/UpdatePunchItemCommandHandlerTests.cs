@@ -66,7 +66,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _documentRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
-            _integrationEventPublisherMock,
+            _messageProducerMock,
             Substitute.For<ILogger<UpdatePunchItemCommandHandler>>());
     }
 
@@ -312,7 +312,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -330,7 +330,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent_WhenOperationsGiven()
+    public async Task HandlingCommand_ShouldSendHistoryUpdatedIntegrationEvent_WhenOperationsGiven()
     {
         // Arrange
         var oldDescription = _existingPunchItem[_testPlant].Description;
@@ -338,8 +338,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.Code;
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -455,7 +455,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldPublishHistoryUpdatedIntegrationEvent_WhenOperationsWithNullGiven()
+    public async Task HandlingCommand_ShouldSendHistoryUpdatedIntegrationEvent_WhenOperationsWithNullGiven()
     {
         // Don't test MaterialRequired here. Can't be null
         // Arrange
@@ -488,8 +488,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _integrationEventPublisherMock
-            .When(x => x.PublishAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
                 historyEvent = callbackInfo.Arg<HistoryUpdatedIntegrationEvent>();
@@ -594,7 +594,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -609,7 +609,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -624,7 +624,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -640,7 +640,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -656,7 +656,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -672,7 +672,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -688,7 +688,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -704,7 +704,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -720,7 +720,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -736,7 +736,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -752,7 +752,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -768,7 +768,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -784,7 +784,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -800,7 +800,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -816,7 +816,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -832,7 +832,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -848,7 +848,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert 
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -952,7 +952,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _integrationEventPublisherMock.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
     #endregion
@@ -963,7 +963,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _integrationEventPublisherMock
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<PunchItemUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {

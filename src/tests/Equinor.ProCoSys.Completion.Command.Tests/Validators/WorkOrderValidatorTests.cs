@@ -22,7 +22,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         _knownWorkOrder = _openWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 1");
-        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsClosed = true };
+        _closedWorkOrder = new WorkOrder(_testPlant, Guid.NewGuid(), "WorkOrder 2") { IsVoided = true };
         context.WorkOrders.Add(_openWorkOrder);
         context.WorkOrders.Add(_closedWorkOrder);
 
@@ -68,7 +68,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_closedWorkOrder.Guid, default);
+        var result = await dut.IsVoidedAsync(_closedWorkOrder.Guid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -82,7 +82,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(_openWorkOrder.Guid, default);
+        var result = await dut.IsVoidedAsync(_openWorkOrder.Guid, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -96,7 +96,7 @@ public class WorkOrderValidatorTests : ReadOnlyTestsBase
         var dut = new WorkOrderValidator(context);
 
         // Act
-        var result = await dut.IsClosedAsync(Guid.Empty, default);
+        var result = await dut.IsVoidedAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);

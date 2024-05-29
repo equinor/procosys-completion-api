@@ -25,7 +25,7 @@ public class ProjectEventConsumerTests
 
     public ProjectEventConsumerTests() =>
         _projectEventConsumer = new ProjectEventConsumer(Substitute.For<ILogger<ProjectEventConsumer>>(), _plantSetter, _projectRepoMock, 
-            _unitOfWorkMock, Substitute.For<ICurrentUserSetter>(), _applicationOptionsMock);
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()
@@ -79,7 +79,7 @@ public class ProjectEventConsumerTests
         var testEvent = new ProjectEvent("", Description, false, lastUpdated, "plant", guid, ProjectName, null);
         //simulate project received from db to be one hour "older" than event coming in.
         var projectToUpdate = new Project("AnyPlant",guid, "AnyProjectName", "AnyDescription");
-        projectToUpdate.SetProCoSys4LastUpdated(DateTime.Now.Subtract(TimeSpan.FromHours(1)));
+        projectToUpdate.ProCoSys4LastUpdated =DateTime.Now.Subtract(TimeSpan.FromHours(1));
         _projectRepoMock.ExistsAsync(guid, default).Returns(true);
         _projectRepoMock.GetAsync(guid, default).Returns(projectToUpdate);
         _contextMock.Message.Returns(testEvent);
@@ -151,7 +151,7 @@ public class ProjectEventConsumerTests
             "delete");
 
         var toDelete = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription");
-        toDelete.SetProCoSys4LastUpdated(DateTime.Now);
+        toDelete.ProCoSys4LastUpdated = DateTime.Now;
         _projectRepoMock.GetAsync(guid, default).Returns(toDelete);
         _contextMock.Message.Returns(testEvent);
 
@@ -172,7 +172,34 @@ public class ProjectEventConsumerTests
             "ProjectName", null);
 
         var project = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription");
-        project.SetProCoSys4LastUpdated(DateTime.Now.AddDays(1));
+        project.ProCoSys4LastUpdated = DateTime.Now.AddDays(1);
+        _projectRepoMock.ExistsAsync(guid, default).Returns(true);
+        _projectRepoMock.GetAsync(guid, default).Returns(project);
+        _contextMock.Message.Returns(testEvent);
+
+        //Act
+        await _projectEventConsumer.Consume(_contextMock);
+        
+        //Assert
+        await _projectRepoMock.Received(1).GetAsync(guid, default);
+        _projectRepoMock.Received(0).Remove(project);
+        _projectRepoMock.Received(0).Add(project);
+        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+    }
+    
+    [TestMethod]
+    public async Task Consume_ShouldIgnoreMessage_IfLastUpdatedHasNotChanged()
+    {
+        //Arrange
+        var guid = Guid.NewGuid();
+        var lastUpdated = DateTime.Now;
+        var testEvent = new ProjectEvent("", "project", false, lastUpdated, "plant", guid,
+            "ProjectName", null);
+
+        var project = new Project("AnyPlant",guid,"AnyProjectName","AnyDescription")
+        {
+            ProCoSys4LastUpdated = lastUpdated
+        };
         _projectRepoMock.ExistsAsync(guid, default).Returns(true);
         _projectRepoMock.GetAsync(guid, default).Returns(project);
         _contextMock.Message.Returns(testEvent);

@@ -11,8 +11,6 @@ internal class SWCRConfiguration : IEntityTypeConfiguration<SWCR>
     {
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
-        builder.ConfigureCreationAudit();
-        builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
         builder

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -19,20 +19,20 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
     private readonly IPunchItemRepository _punchItemRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<UpdatePunchItemCategoryCommandHandler> _logger;
 
     public UpdatePunchItemCategoryCommandHandler(
         IPunchItemRepository punchItemRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<UpdatePunchItemCategoryCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
     }
 
@@ -50,7 +50,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
             await _unitOfWork.SetAuditDataAsync();
 
             var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _integrationEventPublisher,
+                _messageProducer,
                 punchItem,
                 $"Punch item category changed to {request.Category}",
                 [change],

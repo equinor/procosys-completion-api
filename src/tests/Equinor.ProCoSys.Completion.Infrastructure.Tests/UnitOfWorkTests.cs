@@ -5,7 +5,7 @@ using Azure.Core;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -69,15 +69,15 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(libraryItem);
+        var attachment = new Attachment("Project", "Type", Guid.NewGuid(), "TestFile.docx");
+        dut.Attachments.Add(attachment);
 
         // Act
         await dut.SetAuditDataAsync();
 
         // Assert
-        AssertCreated(libraryItem);
-        AssertNotModified(libraryItem);
+        AssertCreated(attachment);
+        AssertNotModified(attachment);
     }
 
     [TestMethod]
@@ -86,8 +86,8 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(libraryItem);
+        var libraryItem = new Attachment("Project", "Type", Guid.NewGuid(), "TestFile.docx");
+        dut.Attachments.Add(libraryItem);
 
         // Act
         await dut.SaveChangesAsync();
@@ -103,20 +103,20 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(libraryItem);
+        var attachment = new Attachment("Project", "Type", Guid.NewGuid(), "TestFile.docx");
+        dut.Attachments.Add(attachment);
 
         await dut.SaveChangesAsync();
 
         // trigger a change on record. EF change tracker notice this
-        libraryItem.IsVoided = true;
+        attachment.Description = "new description";
 
         // Act
         await dut.SetAuditDataAsync();
 
         // Assert
-        AssertCreated(libraryItem);
-        AssertModified(libraryItem);
+        AssertCreated(attachment);
+        AssertModified(attachment);
     }
 
     [TestMethod]
@@ -125,20 +125,20 @@ public class UnitOfWorkTests
         // Arrange
         await using var dut = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var libraryItem = new LibraryItem(_plant, Guid.NewGuid(), "EQ", "Equinor", LibraryType.COMPLETION_ORGANIZATION);
-        dut.Library.Add(libraryItem);
+        var attachment = new Attachment("Project", "Type", Guid.NewGuid(), "TestFile.docx");
+        dut.Attachments.Add(attachment);
 
         await dut.SaveChangesAsync();
 
         // trigger a change on record. EF change tracker notice this
-        libraryItem.IsVoided = true;
+        attachment.Description = "new description";
 
         // Act
         await dut.SaveChangesAsync();
 
         // Assert
-        AssertCreated(libraryItem);
-        AssertModified(libraryItem);
+        AssertCreated(attachment);
+        AssertModified(attachment);
     }
 
     private void AssertModified(IModificationAuditable auditable)

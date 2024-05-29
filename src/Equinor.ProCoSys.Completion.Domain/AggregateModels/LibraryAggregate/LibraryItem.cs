@@ -1,12 +1,9 @@
 ﻿using System;
 using Equinor.ProCoSys.Common;
-using Equinor.ProCoSys.Common.Time;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.Audit;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 
-public class LibraryItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IModificationAuditable, IHaveGuid, IVoidable
+public class LibraryItem : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 {
     public const int CodeLengthMax = 255;
     public const int DescriptionLengthMax = 255;
@@ -33,26 +30,8 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, 
     public string Code { get; set; }
     public string Description { get; set; }
     public LibraryType Type { get; set; }
-
-    public DateTime CreatedAtUtc { get; private set; }
-    public int CreatedById { get; private set; }
-    public Person CreatedBy { get; private set; } = null!;
-    public DateTime? ModifiedAtUtc { get; private set; }
-    public int? ModifiedById { get; private set; }
-    public Person? ModifiedBy { get; private set; }
+    
     public bool IsVoided { get; set; }
-
-    public void SetCreated(Person createdBy)
-    {
-        CreatedAtUtc = TimeService.UtcNow;
-        CreatedById = createdBy.Id;
-        CreatedBy = createdBy;
-    }
-
-    public void SetModified(Person modifiedBy)
-    {
-        ModifiedAtUtc = TimeService.UtcNow;
-        ModifiedById = modifiedBy.Id;
-        ModifiedBy = modifiedBy;
-    }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 }

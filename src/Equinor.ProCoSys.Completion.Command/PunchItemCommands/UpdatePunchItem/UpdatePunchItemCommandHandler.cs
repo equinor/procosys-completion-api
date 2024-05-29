@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -35,7 +35,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
@@ -47,7 +47,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
@@ -58,7 +58,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
     }
 
@@ -79,7 +79,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             if (changes.Any())
             {
                 integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                    _integrationEventPublisher,
+                    _messageProducer,
                     punchItem,
                     "Punch item updated",
                     changes,

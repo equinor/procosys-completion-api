@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
@@ -27,7 +27,7 @@ public class AttachmentService : IAttachmentService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAzureBlobService _azureBlobService;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<AttachmentService> _logger;
     private readonly IModifiedEventService _modifiedEventService;
 
@@ -37,7 +37,7 @@ public class AttachmentService : IAttachmentService
         IUnitOfWork unitOfWork,
         IAzureBlobService azureBlobService,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<AttachmentService> logger,
         IModifiedEventService modifiedEventService)
     {
@@ -46,7 +46,7 @@ public class AttachmentService : IAttachmentService
         _unitOfWork = unitOfWork;
         _azureBlobService = azureBlobService;
         _blobStorageOptions = blobStorageOptions;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
         _modifiedEventService = modifiedEventService;
     }
@@ -236,7 +236,7 @@ public class AttachmentService : IAttachmentService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new AttachmentCreatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var properties = new List<IProperty>
         {
@@ -249,7 +249,7 @@ public class AttachmentService : IAttachmentService
             new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),
             attachment.CreatedAtUtc,
             properties);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -263,7 +263,7 @@ public class AttachmentService : IAttachmentService
         await _unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = new AttachmentUpdatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             displayName,
@@ -272,7 +272,7 @@ public class AttachmentService : IAttachmentService
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value,
             changes);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -282,7 +282,7 @@ public class AttachmentService : IAttachmentService
         var integrationEvent = new AttachmentDeletedIntegrationEvent(_plantProvider.Plant, attachment.Guid,
             attachment.ParentGuid, modifiedEvent.User, modifiedEvent.ModifiedAtUtc);
         
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             $"Attachment {attachment.FileName} deleted",
@@ -290,7 +290,7 @@ public class AttachmentService : IAttachmentService
             attachment.ParentGuid,
             modifiedEvent.User,
             modifiedEvent.ModifiedAtUtc);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 

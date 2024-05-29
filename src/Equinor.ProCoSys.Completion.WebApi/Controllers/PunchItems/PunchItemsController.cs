@@ -69,7 +69,7 @@ public class PunchItemsController : ControllerBase
     /// <summary>
     /// Get a PunchItem by its Guid
     /// </summary>
-    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    ///  /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid on PunchItem</param>
     /// <returns>Found PunchItem</returns>

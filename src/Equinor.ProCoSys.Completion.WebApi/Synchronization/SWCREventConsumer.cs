@@ -3,61 +3,63 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class SWCREventConsumer : IConsumer<SWCREvent>
+public class SWCREventConsumer(
+    ILogger<SWCREventConsumer> logger,
+    IPlantSetter plantSetter,
+    ISWCRRepository swcrRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<SWCREvent>
 {
-    private readonly ILogger<SWCREventConsumer> _logger;
-    private readonly IPlantSetter _plantSetter;
-    private readonly ISWCRRepository _swcrRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-
-    public SWCREventConsumer(ILogger<SWCREventConsumer> logger,
-        IPlantSetter plantSetter,
-        ISWCRRepository swcrRepository,
-        IUnitOfWork unitOfWork,
-        ICurrentUserSetter currentUserSetter,
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _plantSetter = plantSetter;
-        _swcrRepository = swcrRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
-
     public async Task Consume(ConsumeContext<SWCREvent> context)
     {
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-        _plantSetter.SetPlant(busEvent.Plant);
+        plantSetter.SetPlant(busEvent.Plant);
 
-        if (await _swcrRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await swcrRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var swcr = await _swcrRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            var swcr = await swcrRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            
+            if (swcr.ProCoSys4LastUpdated == busEvent.LastUpdated)
+            {
+                logger.LogInformation("Swcr Message Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "EventLastUpdated: {LastUpdated} \n" +
+                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.SyncTimestamp );
+                return;
+            }
+
+            if (swcr.ProCoSys4LastUpdated > busEvent.LastUpdated)
+            {
+                logger.LogWarning("Swcr Message Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {EventLastUpdated} \n" +
+                                  "LastUpdatedFromDb: {LastUpdated}",
+                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.ProCoSys4LastUpdated);
+                return;
+            }
             MapFromEventToSWCR(busEvent, swcr);
+            swcr.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
             var swcr = CreateSWCREntity(busEvent);
-            _swcrRepository.Add(swcr);
+            swcr.SyncTimestamp = DateTime.UtcNow;
+            swcrRepository.Add(swcr);
         }
 
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation($"{nameof(SWCREvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
+        logger.LogInformation($"{nameof(SWCREvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.SwcrNo);
-
     }
 
     private static void ValidateMessage(SWCREvent busEvent)
@@ -78,6 +80,8 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
         swcr.IsVoided = busEvent.IsVoided;
         swcr.No = int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue 
             : throw new Exception($"{nameof(SWCREvent.SwcrNo)} does not have a valid format");
+        swcr.ProCoSys4LastUpdated = busEvent.LastUpdated;
+       
     }
 
     private static SWCR CreateSWCREntity(ISwcrEventV1 busEvent)
@@ -87,13 +91,10 @@ public class SWCREventConsumer : IConsumer<SWCREvent>
             busEvent.ProCoSysGuid,
             int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue
                 : throw new Exception($"{nameof(SWCREvent.SwcrNo)} does not have a valid format")
-        );
-        swcr.CreatedAtUtc = busEvent.CreatedAt;
-        swcr.IsVoided = busEvent.IsVoided;
+        ) { IsVoided = busEvent.IsVoided, ProCoSys4LastUpdated = busEvent.LastUpdated};
         return swcr;
     }
 }
-
 
 public record SWCREvent
 (

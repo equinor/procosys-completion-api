@@ -10,49 +10,43 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class ProjectEventConsumer : IConsumer<ProjectEvent>
+public class ProjectEventConsumer(
+    ILogger<ProjectEventConsumer> logger,
+    IPlantSetter plantSetter,
+    IProjectRepository projectRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<ProjectEvent>
 {
-    private readonly ILogger<ProjectEventConsumer> _logger;
-    private readonly IPlantSetter _plantSetter;
-    private readonly IProjectRepository _projectRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-    
-    public ProjectEventConsumer(ILogger<ProjectEventConsumer> logger,
-        IPlantSetter plantSetter,
-        IProjectRepository projectRepository, 
-        IUnitOfWork unitOfWork, 
-        ICurrentUserSetter currentUserSetter, 
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _plantSetter = plantSetter;
-        _projectRepository = projectRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
-
     public async Task Consume(ConsumeContext<ProjectEvent> context)
     {
         var projectEvent = context.Message;
 
         ValidateMessage(projectEvent);
-        _plantSetter.SetPlant(projectEvent.Plant);
+        plantSetter.SetPlant(projectEvent.Plant);
 
         if (projectEvent.Behavior == "delete")
         {
-            var project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
-            _projectRepository.Remove(project);
+            var project = await projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
+            projectRepository.Remove(project);
         }
         
-        else if(await _projectRepository.ExistsAsync(projectEvent.ProCoSysGuid, context.CancellationToken))
+        else if(await projectRepository.ExistsAsync(projectEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var project = await _projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
+            var project = await projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
+
+            if (project.ProCoSys4LastUpdated == projectEvent.LastUpdated)
+            {
+                logger.LogInformation("Project Message Ignored because LastUpdated is the same as in db\n" +
+                                   "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                   "EventLastUpdated: {LastUpdated} \n" +
+                                   "SyncedToCompletion: {CreatedAtUtc} \n",
+                    context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.SyncTimestamp );
+                return;
+            }
+
             if (project.ProCoSys4LastUpdated > projectEvent.LastUpdated)
             {
-                _logger.LogWarning("Project Message Ignored because a newer LastUpdated already exits in db\n" +
+                logger.LogWarning("Project Message Ignored because a newer LastUpdated already exits in db\n" +
                                        "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                        "EventLastUpdated: {LastUpdated} \n" +
                                        "LastUpdatedFromDb: {ProjectLastUpdated}",
@@ -64,12 +58,11 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
         else 
         {
             var project = CreateProjectEntity(projectEvent);
-            _projectRepository.Add(project);
+            projectRepository.Add(project);
         }
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
         
-        _logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
+        logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
             context.MessageId, projectEvent.ProCoSysGuid, projectEvent.ProjectName);
     }
 
@@ -90,7 +83,8 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     {
         project.IsClosed = projectEvent.IsClosed;
         project.Name = projectEvent.ProjectName;
-        project.SetProCoSys4LastUpdated(projectEvent.LastUpdated);
+        project.ProCoSys4LastUpdated = projectEvent.LastUpdated;
+        project.SyncTimestamp = DateTime.UtcNow;
         
         if (projectEvent.Description is not null)
         {
@@ -99,15 +93,16 @@ public class ProjectEventConsumer : IConsumer<ProjectEvent>
     }
 
     //12/12/2023 We use name as description if description is missing. Its a super edge case and pcs4 does not have any projects with description is null today
-    private static Project CreateProjectEntity(IProjectEventV1 projectEvent)
-    {
-        var project = new Project(projectEvent.Plant,
-             projectEvent.ProCoSysGuid,
-             projectEvent.ProjectName,
-             projectEvent.Description ?? projectEvent.ProjectName);
-        project.SetProCoSys4LastUpdated(projectEvent.LastUpdated);
-        return project;
-    }
+    private static Project CreateProjectEntity(IProjectEventV1 projectEvent) =>
+        new(projectEvent.Plant,
+            projectEvent.ProCoSysGuid,
+            projectEvent.ProjectName,
+            projectEvent.Description ?? projectEvent.ProjectName)
+        {
+            IsClosed = projectEvent.IsClosed,
+            ProCoSys4LastUpdated = projectEvent.LastUpdated,
+            SyncTimestamp = DateTime.UtcNow
+        };
 }
 
 public record ProjectEvent(string EventType, string? Description, 

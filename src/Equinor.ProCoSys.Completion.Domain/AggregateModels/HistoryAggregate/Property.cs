@@ -2,7 +2,6 @@
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
-// todo History: Add unit tests
 public class Property : EntityBase
 {
     public const int NameLengthMax = 128;

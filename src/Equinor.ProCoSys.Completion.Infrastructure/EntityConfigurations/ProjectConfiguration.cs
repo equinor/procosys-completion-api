@@ -11,8 +11,6 @@ internal class ProjectConfiguration : IEntityTypeConfiguration<Project>
     {
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
-        builder.ConfigureCreationAudit();
-        builder.ConfigureModificationAudit();
         builder.ConfigureConcurrencyToken();
 
         builder

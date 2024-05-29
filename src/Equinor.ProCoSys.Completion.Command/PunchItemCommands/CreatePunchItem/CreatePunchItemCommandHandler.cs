@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.EventPublishers;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -35,7 +35,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private readonly IDocumentRepository _documentRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventPublisher _integrationEventPublisher;
+    private readonly IMessageProducer _messageProducer;
     private readonly ILogger<CreatePunchItemCommandHandler> _logger;
 
     public CreatePunchItemCommandHandler(
@@ -49,7 +49,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         IDocumentRepository documentRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
-        IIntegrationEventPublisher integrationEventPublisher,
+        IMessageProducer messageProducer,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
         _plantProvider = plantProvider;
@@ -62,7 +62,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _documentRepository = documentRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
-        _integrationEventPublisher = integrationEventPublisher;
+        _messageProducer = messageProducer;
         _logger = logger;
     }
 
@@ -145,7 +145,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         CancellationToken cancellationToken)
     {
         var integrationEvent = new PunchItemCreatedIntegrationEvent(punchItem);
-        await _integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryCreatedIntegrationEvent(
             $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
@@ -154,7 +154,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
             punchItem.CreatedAtUtc,
             properties);
-        await _integrationEventPublisher.PublishAsync(historyEvent, cancellationToken);
+        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
 
         return integrationEvent;
     }
