@@ -461,6 +461,19 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task GetPunchItemHistoryAsync_AsReader_ShouldGetPunchItemHistoryWithProperties()
+    {
+        // Act
+        var history = await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest
+        );
+
+        Assert.AreEqual(_punchItemGuidUnderTest, history.First().EventForGuid);
+    }
+
+    [TestMethod]
     public async Task UploadPunchItemAttachment_AsWriter_ShouldUploadPunchAttachment()
     {
         // Arrange and Act

@@ -567,6 +567,26 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<List<CommentDto>>(content);
     }
 
+    public static async Task<List<HistoryDto>> GetPunchItemHistoryAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/History");
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<List<HistoryDto>>(content);
+    }
+
     private static async Task<string> PostAsync(
         UserType userType,
         string plant,
