@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Equinor.ProCoSys.Auth.Authentication;
+﻿using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Auth.Client;
