@@ -17,6 +17,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -338,7 +339,7 @@ public static class CompletionContextExtension
     {
         var historyItemRepository = new HistoryItemRepository(dbContext);
         var historyItem = new HistoryItem(parentGuid, displayName, oid, fullName, utc);
-        historyItem.AddProperty(property);
+        historyItem.AddPropertyForCreate(property.Name, property.Value, ValueDisplayType.StringAsText);
         historyItemRepository.Add(historyItem);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return historyItem;
