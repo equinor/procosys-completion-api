@@ -7,39 +7,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class HistoryItemUpdatedEventConsumer : IConsumer<IHistoryItemUpdatedV1>
+public class HistoryItemUpdatedEventConsumer(
+    ILogger<HistoryItemUpdatedEventConsumer> logger,
+    IPropertyHelper propertyHelper,
+    IHistoryItemRepository historyItemRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<IHistoryItemUpdatedV1>
 {
-    private readonly ILogger<HistoryItemUpdatedEventConsumer> _logger;
-    private readonly IHistoryItemRepository _historyItemRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    // todo unit tests
-    public HistoryItemUpdatedEventConsumer(
-        ILogger<HistoryItemUpdatedEventConsumer> logger,
-        IHistoryItemRepository historyItemRepository, 
-        IUnitOfWork unitOfWork)
-    {
-        _logger = logger;
-        _historyItemRepository = historyItemRepository;
-        _unitOfWork = unitOfWork;
-    }
-
     public async Task Consume(ConsumeContext<IHistoryItemUpdatedV1> context)
     {
         var historyItemUpdatedV1 = context.Message;
 
         var historyItemEntity = CreateHistoryItemEntity(historyItemUpdatedV1);
-        _historyItemRepository.Add(historyItemEntity);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        historyItemRepository.Add(historyItemEntity);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
         
-        _logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
+        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
             nameof(IHistoryItemUpdatedV1),
             context.MessageId, 
             historyItemUpdatedV1.Guid, 
             historyItemUpdatedV1.DisplayName);
     }
 
-    private static HistoryItem CreateHistoryItemEntity(IHistoryItemUpdatedV1 historyItemUpdated)
+    private HistoryItem CreateHistoryItemEntity(IHistoryItemUpdatedV1 historyItemUpdated)
     {
         var historyItem = new HistoryItem(
             historyItemUpdated.Guid, 
@@ -49,12 +39,33 @@ public class HistoryItemUpdatedEventConsumer : IConsumer<IHistoryItemUpdatedV1>
             historyItemUpdated.EventAtUtc,
             historyItemUpdated.ParentGuid);
 
-        foreach (var property in historyItemUpdated.ChangedProperties)
+        foreach (var changedProperty in historyItemUpdated.ChangedProperties)
         {
-            historyItem.AddPropertyForUpdate(property.Name,
-                property.OldValue,
-                property.Value,
-                property.ValueDisplayType);
+            var property = new Property(changedProperty.Name, changedProperty.ValueDisplayType.ToString());
+            var oldValueAsUser = propertyHelper.TryGetPropertyValueAsUser(changedProperty.OldValue, changedProperty.ValueDisplayType);
+            if (oldValueAsUser is null)
+            {
+                property.OldValue = changedProperty.OldValue?.ToString();
+            }
+            else
+            {
+                property.OldValue = oldValueAsUser.FullName;
+                property.OldOidValue = oldValueAsUser.Oid;
+            }
+
+            var valueAsUser = propertyHelper.TryGetPropertyValueAsUser(changedProperty.Value, changedProperty.ValueDisplayType);
+            if (valueAsUser is null)
+            {
+                property.Value = changedProperty.Value?.ToString();
+            }
+            else
+            {
+                property.Value = valueAsUser.FullName;
+                property.OidValue = valueAsUser.Oid;
+            }
+
+
+            historyItem.AddProperty(property);
         }
         return historyItem;
     }

@@ -18,24 +18,26 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class HistoryItemUpdatedEventConsumerTests
 {
     private readonly IHistoryItemRepository _historyItemRepositoryMock = Substitute.For<IHistoryItemRepository>();
+    private readonly IPropertyHelper _propertyHelperMock = Substitute.For<IPropertyHelper>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private HistoryItemUpdatedEventConsumer _dut = null!;
     private readonly ConsumeContext<IHistoryItemUpdatedV1> _contextMock = Substitute.For<ConsumeContext<IHistoryItemUpdatedV1>>();
     private HistoryItem? _historyItemAddedToRepository;
-    private static readonly IChangedProperty s_propertyInEvent = new ChangedProperty<object>("P", 1, 2);
-    private readonly HistoryUpdatedIntegrationEvent _historyUpdatedIntegrationEvent = new(
-        "D",
-        Guid.NewGuid(),
-        Guid.NewGuid(),
-        new User(Guid.NewGuid(), "Yoda"),
-        DateTime.UtcNow,
-        [s_propertyInEvent]);
+    private HistoryUpdatedIntegrationEvent _historyUpdatedIntegrationEvent = null!;
 
     [TestInitialize]
     public void Setup()
     {
+        _historyUpdatedIntegrationEvent = new(
+            "D",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new User(Guid.NewGuid(), "Yoda"),
+            DateTime.UtcNow,
+            []);
         _dut = new HistoryItemUpdatedEventConsumer(
             Substitute.For<ILogger<HistoryItemUpdatedEventConsumer>>(),
+            _propertyHelperMock,
             _historyItemRepositoryMock,
             _unitOfWorkMock);
         _contextMock.Message.Returns(_historyUpdatedIntegrationEvent);
@@ -62,12 +64,68 @@ public class HistoryItemUpdatedEventConsumerTests
         Assert.AreEqual(_historyUpdatedIntegrationEvent.EventBy.Oid, _historyItemAddedToRepository.EventByOid);
 
         Assert.IsNotNull(_historyItemAddedToRepository.Properties);
-        var property = _historyItemAddedToRepository.Properties.ElementAt(0);
-        Assert.AreEqual(s_propertyInEvent.Name, property.Name);
-        Assert.AreEqual(s_propertyInEvent.Value!.ToString(), property.Value);
-        Assert.AreEqual(s_propertyInEvent.OldValue!.ToString(), property.OldValue);
-        Assert.AreEqual(s_propertyInEvent.ValueDisplayType.ToString(), property.ValueDisplayType);
+        Assert.AreEqual(0, _historyItemAddedToRepository.Properties.Count);
+    }
 
+    [TestMethod]
+    public async Task Consume_ShouldAddNewHistoryItem_WithProperty()
+    {
+        // Arrange
+        var propertyInEvent = new ChangedProperty<object>("P", 1, 2);
+        _historyUpdatedIntegrationEvent.ChangedProperties.Add(propertyInEvent);
+
+        // Act
+        await _dut.Consume(_contextMock);
+
+        // Assert
+        Assert.IsNotNull(_historyItemAddedToRepository);
+        Assert.IsNotNull(_historyItemAddedToRepository.Properties);
+        var property = _historyItemAddedToRepository.Properties.ElementAt(0);
+        Assert.AreEqual(propertyInEvent.Name, property.Name);
+        Assert.AreEqual(propertyInEvent.ValueDisplayType.ToString(), property.ValueDisplayType);
+
+        Assert.AreEqual(propertyInEvent.Value!.ToString(), property.Value);
+        Assert.AreEqual(propertyInEvent.OldValue!.ToString(), property.OldValue);
+        Assert.IsNull(property.OidValue);
+        Assert.IsNull(property.OldOidValue);
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldAddNewHistoryItem_WithUserProperty()
+    {
+        // Arrange
+        var propertyInEvent = new ChangedProperty<object>("P", "{oldjson}", "{json}", ValueDisplayType.UserAsNameOnly);
+        _historyUpdatedIntegrationEvent.ChangedProperties.Add(propertyInEvent);
+        var oldUserValue = new User(Guid.NewGuid(), "Yoda");
+        var userValue = new User(Guid.NewGuid(), "Grogu");
+        _propertyHelperMock.TryGetPropertyValueAsUser(propertyInEvent.Value, propertyInEvent.ValueDisplayType)
+            .Returns(userValue);
+        _propertyHelperMock.TryGetPropertyValueAsUser(propertyInEvent.OldValue, propertyInEvent.ValueDisplayType)
+            .Returns(oldUserValue);
+
+        // Act
+        await _dut.Consume(_contextMock);
+
+        // Assert
+        Assert.IsNotNull(_historyItemAddedToRepository);
+        Assert.IsNotNull(_historyItemAddedToRepository.Properties);
+        var property = _historyItemAddedToRepository.Properties.ElementAt(0);
+        Assert.AreEqual(propertyInEvent.Name, property.Name);
+        Assert.AreEqual(propertyInEvent.ValueDisplayType.ToString(), property.ValueDisplayType);
+
+        Assert.AreEqual(userValue.FullName, property.Value);
+        Assert.AreEqual(userValue.Oid, property.OidValue);
+        Assert.AreEqual(oldUserValue.FullName, property.OldValue);
+        Assert.AreEqual(oldUserValue.Oid, property.OldOidValue);
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldSave()
+    {
+        // Act
+        await _dut.Consume(_contextMock);
+
+        // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 }

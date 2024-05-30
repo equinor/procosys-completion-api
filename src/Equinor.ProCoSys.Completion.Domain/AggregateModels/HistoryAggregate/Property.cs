@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Common;
+﻿using System;
+using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
@@ -7,18 +8,22 @@ public class Property : EntityBase
     public const int NameLengthMax = 128;
     public const int ValueDisplayTypeLengthMax = 64;
 
-    public Property(string name, string? oldValue, string? value, string valueDisplayType)
+    public Property(string name, string valueDisplayType)
     {
         Name = name;
-        OldValue = oldValue;
-        Value = value;
         ValueDisplayType = valueDisplayType;
     }
 
     public string Name { get; private set; }
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? OldValue { get; private set; }
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? Value { get; private set; }
     public string ValueDisplayType { get; private set; }
+
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string? OldValue { get; set; }
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string? Value { get; set; }
+
+    // Set if OldValue represent a user. For GDPR purposes if we need to remove
+    public Guid? OldOidValue { get; set; }
+    // Set if Value represent a user. For GDPR purposes if we need to remove
+    public Guid? OidValue { get; set; }
 }

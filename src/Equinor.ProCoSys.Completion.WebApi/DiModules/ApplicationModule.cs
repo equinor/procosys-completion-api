@@ -389,6 +389,7 @@ public static class ApplicationModule
         services.AddScoped<ICompletionMailService, CompletionMailService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
+        services.AddScoped<IPropertyHelper, PropertyHelper>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
