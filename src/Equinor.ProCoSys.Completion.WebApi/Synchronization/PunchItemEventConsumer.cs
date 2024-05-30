@@ -128,6 +128,8 @@ public class PunchItemEventConsumer(
         SetMaterialRequired(punchItem, busEvent.MaterialRequired);
         SetMaterialETAUtc(punchItem, busEvent.MaterialETA);
         SetMaterialExternalNo(punchItem, busEvent.MaterialExternalNo);
+
+        await SetSyncProperties(punchItem, busEvent, cancellationToken);
     }
 
     private static void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo) => punchItem.MaterialExternalNo = materialExternalNo;
