@@ -8,9 +8,10 @@ public class OracleGuidConverter : JsonConverter<Guid>
 {
     public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+      
         var s = reader.GetString();
 
-        if (s is null)
+        if (string.IsNullOrEmpty(s))
         {
             throw new NullReferenceException();
         }

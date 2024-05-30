@@ -91,7 +91,9 @@ public static class MassTransitModule
                 cfg.ConfigureJsonSerializerOptions(opts =>
                 {
                     opts.Converters.Add(new OracleGuidConverter());
+                    opts.Converters.Add(new NullableOracleGuidConverter());
                     opts.Converters.Add(new JsonStringEnumConverter());
+                    opts.Converters.Add(new CustomNullableDateTimeConverter());
                     opts.Converters.Add(new CustomDateTimeConverter());
                     return opts;
                 });
