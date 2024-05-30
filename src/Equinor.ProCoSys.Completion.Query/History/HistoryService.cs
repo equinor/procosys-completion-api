@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Query.History;
 
+// todo write unit tests
 public class HistoryService : IHistoryService
 {
     private readonly IReadOnlyContext _context;
@@ -24,6 +25,7 @@ public class HistoryService : IHistoryService
             await (from h in _context.QuerySet<HistoryItem>()
                         .Include(h => h.Properties)
                     where h.EventForGuid == parentGuid || h.EventForParentGuid == parentGuid
+                    orderby h.EventAtUtc descending 
                     select h)
                 .TagWith($"{nameof(HistoryService)}.{nameof(GetAllAsync)}")
                 .ToListAsync(cancellationToken);
