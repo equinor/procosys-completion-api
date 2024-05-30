@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -22,18 +23,21 @@ public class LinkService : ILinkService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessageProducer _messageProducer;
     private readonly ILogger<LinkService> _logger;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
 
     public LinkService(
         ILinkRepository linkRepository,
         IPlantProvider plantProvider,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
+        ISyncToPCS4Service syncToPCS4Service,
         ILogger<LinkService> logger)
     {
         _linkRepository = linkRepository;
         _plantProvider = plantProvider;
         _unitOfWork = unitOfWork;
         _messageProducer = messageProducer;
+        _syncToPCS4Service = syncToPCS4Service;
         _logger = logger;
     }
 
@@ -44,24 +48,36 @@ public class LinkService : ILinkService
         string url,
         CancellationToken cancellationToken)
     {
-        var link = new Link(parentType, parentGuid, title, url);
-        _linkRepository.Add(link);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        // ReSharper disable once UnusedVariable
-        var integrationEvent = await PublishCreatedEventsAsync(link, cancellationToken);
+        try
+        {
+            var link = new Link(parentType, parentGuid, title, url);
+            _linkRepository.Add(link);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // ReSharper disable once UnusedVariable
+            var integrationEvent = await PublishCreatedEventsAsync(link, cancellationToken);
 
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncNewObjectAsync(SyncToPCS4Service.Link, integrationEvent, link.Plant, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {ParentType} : {LinkParentGuid}", 
-            link.Title, 
-            link.Guid,
-            link.ParentType, 
-            link.ParentGuid);
+            await _syncToPCS4Service.SyncNewLinkAsync(integrationEvent, cancellationToken);
 
-        return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
+            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {ParentType} : {LinkParentGuid}",
+                link.Title,
+                link.Guid,
+                link.ParentType,
+                link.ParentGuid);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on insertion of Link");
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
@@ -74,30 +90,45 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetAsync(guid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var changes = UpdateLink(link, title, url);
-        // ReSharper disable once NotAccessedVariable
-        LinkUpdatedIntegrationEvent integrationEvent;
-        if (changes.Any())
+        try
         {
-            // ReSharper disable once RedundantAssignment
-            integrationEvent = await PublishUpdatedEventsAsync(link, changes, cancellationToken);
+            var link = await _linkRepository.GetAsync(guid, cancellationToken);
+
+            var changes = UpdateLink(link, title, url);
+            // ReSharper disable once NotAccessedVariable
+            LinkUpdatedIntegrationEvent? integrationEvent = null;
+            if (changes.Any())
+            {
+                // ReSharper disable once RedundantAssignment
+                integrationEvent = await PublishUpdatedEventsAsync(link, changes, cancellationToken);
+            }
+
+            link.SetRowVersion(rowVersion);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (integrationEvent != null)
+            {
+                await _syncToPCS4Service.SyncLinkUpdateAsync(integrationEvent, cancellationToken);
+            }
+
+            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {ParentType} : {LinkParentGuid}",
+                link.Title,
+                link.Guid,
+                link.ParentType,
+                link.ParentGuid);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return link.RowVersion.ConvertToString();
         }
-
-        link.SetRowVersion(rowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.Link, integrationEvent, link.Plant, cancellationToken);
-
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {ParentType} : {LinkParentGuid}", 
-            link.Title, 
-            link.Guid,
-            link.ParentType, 
-            link.ParentGuid);
-
-        return link.RowVersion.ConvertToString();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on update of Link with guid {guid}", guid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task DeleteAsync(
@@ -105,27 +136,39 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var link = await _linkRepository.GetAsync(guid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        _linkRepository.Remove(link);
+        try
+        {
+            var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
-        // ReSharper disable once UnusedVariable
-        var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);
+            _linkRepository.Remove(link);
 
-        // Setting RowVersion before delete has 2 missions:
-        // 1) Set correct Concurrency
-        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
-        link.SetRowVersion(rowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // ReSharper disable once UnusedVariable
+            var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);
 
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Service.Link, integrationEvent, link.Plant, cancellationToken);
+            // Setting RowVersion before delete has 2 missions:
+            // 1) Set correct Concurrency
+            // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+            link.SetRowVersion(rowVersion);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {ParentType} : {LinkParentGuid}", 
-            link.Title, 
-            link.Guid,
-            link.ParentType, 
-            link.ParentGuid);
+            await _syncToPCS4Service.SyncLinkDeleteAsync(integrationEvent, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {ParentType} : {LinkParentGuid}",
+                link.Title,
+                link.Guid,
+                link.ParentType,
+                link.ParentGuid);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on deletion of Link with guid {guid}", guid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     private async Task<LinkCreatedIntegrationEvent> PublishCreatedEventsAsync(Link link, CancellationToken cancellationToken)
