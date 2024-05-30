@@ -51,8 +51,8 @@ public class PunchItemEventConsumer(
             punchItemRepository.Add(punchItem);
         }
         
-        _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
-        await _unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
+        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
@@ -144,18 +144,18 @@ public class PunchItemEventConsumer(
     private async Task SetSyncProperties(PunchItem punchItem, IPunchListItemEventV1 busEvent,
         CancellationToken cancellationToken)
     {
-        var createdBy = await _personRepository.GetOrCreateAsync(busEvent.CreatedByGuid, cancellationToken);
+        var createdBy = await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid, cancellationToken);
 
         punchItem.SetSyncProperties(
             createdBy,
             busEvent.CreatedAt,
-            busEvent.ModifiedByGuid is null ? await _personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid!.Value, cancellationToken) : null,
+            busEvent.ModifiedByGuid is null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid!.Value, cancellationToken) : null,
             busEvent.LastUpdated,
-            busEvent.ClearedByGuid is null ? await _personRepository.GetOrCreateAsync(busEvent.ClearedByGuid!.Value, cancellationToken) : null,
+            busEvent.ClearedByGuid is null ? await personRepository.GetOrCreateAsync(busEvent.ClearedByGuid!.Value, cancellationToken) : null,
             busEvent.ClearedAt,
-            busEvent.RejectedByGuid is null ? await _personRepository.GetOrCreateAsync(busEvent.RejectedByGuid!.Value, cancellationToken) : null,
+            busEvent.RejectedByGuid is null ? await personRepository.GetOrCreateAsync(busEvent.RejectedByGuid!.Value, cancellationToken) : null,
             busEvent.RejectedAt,
-            busEvent.VerifiedByGuid is null ? await _personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid!.Value, cancellationToken) : null,
+            busEvent.VerifiedByGuid is null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid!.Value, cancellationToken) : null,
             busEvent.VerifiedAt
             );
     }
@@ -170,7 +170,7 @@ public class PunchItemEventConsumer(
             return;
         }
 
-        var person = await _personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
+        var person = await personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
     }
 
