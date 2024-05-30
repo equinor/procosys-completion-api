@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Links;
 
@@ -51,6 +52,7 @@ public class LinkServiceTests : TestsBase
             _plantProviderMock,
             _unitOfWorkMock,
             _messageProducerMock,
+            _syncToPCS4ServiceMock,
             Substitute.For<ILogger<LinkService>>());
     }
 

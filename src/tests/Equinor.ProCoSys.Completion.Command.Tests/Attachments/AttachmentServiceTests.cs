@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
@@ -99,7 +100,8 @@ public class AttachmentServiceTests : TestsBase
             blobStorageOptionsMock,
             _messageProducer,
             Substitute.For<ILogger<AttachmentService>>(),
-            _modifiedEventServiceMock);
+            _modifiedEventServiceMock,
+            _syncToPCS4ServiceMock);
     }
 
     #region UploadNewAsync
