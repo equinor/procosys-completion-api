@@ -390,4 +390,30 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ProjectId = project.Id;
         Project = project;
     }
+
+    public void SetSyncProperties(
+        Person createdBy, 
+        DateTime createdAt,
+        Person? modifiedBy,
+        DateTime? modifiedAt,
+        Person? clearedBy,
+        DateTime? clearedAt,
+        Person? rejectedBy,
+        DateTime? rejectedAt,
+        Person? verifiedBy,
+        DateTime? verifiedAt
+        )
+    {
+        CreatedBy = createdBy;
+        CreatedAtUtc = createdAt;
+        ModifiedBy = modifiedBy;
+        ModifiedAtUtc = modifiedAt;
+        ClearedBy = clearedBy;
+        ClearedAtUtc = clearedAt;
+        RejectedBy = rejectedBy;
+        RejectedAtUtc = rejectedAt;
+        VerifiedBy = verifiedBy;
+        VerifiedAtUtc = verifiedAt;
+    }
+
 }

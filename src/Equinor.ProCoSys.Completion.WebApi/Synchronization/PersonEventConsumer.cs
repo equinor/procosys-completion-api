@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
@@ -16,6 +14,8 @@ public class PersonEventConsumer(
     IUnitOfWork unitOfWork)
     : IConsumer<PersonEvent>
 {
+    private const string CreateFromPunchEventType = "CreateForPunch";
+
     public async Task Consume(ConsumeContext<PersonEvent> context)
     {
         var personEvent = context.Message;
@@ -33,35 +33,56 @@ public class PersonEventConsumer(
 
         if (!await personRepository.ExistsAsync(personEvent.Guid, context.CancellationToken))
         {
-            logger.LogInformation("Person does not exists. Message Skipped: {MessageId} \n {UserName} \n {Guid}",
-                context.MessageId, personEvent.UserName, personEvent.Guid);
-            return;
+            if (CreateFromPunchEventType.Equals(personEvent.EventType, StringComparison.InvariantCultureIgnoreCase))
+            {
+                var person = new Person(personEvent.Guid, 
+                    personEvent.FirstName, 
+                    personEvent.LastName,
+                    personEvent.UserName, 
+                    personEvent.Email, 
+                    personEvent.SuperUser)
+                {
+                    ProCoSys4LastUpdated = personEvent.LastUpdated,
+                    SyncTimestamp = DateTime.UtcNow
+                };
+                personRepository.Add(person);
+                logger.LogInformation("Person does not exists. Add user: {MessageId} \n {UserName} \n {Guid}",
+                    context.MessageId, personEvent.UserName, personEvent.Guid);
+            }
+            else
+            {
+                logger.LogInformation("Person does not exists. Message Skipped: {MessageId} \n {UserName} \n {Guid}",
+                    context.MessageId, personEvent.UserName, personEvent.Guid);
+
+                return;
+            }
         }
-
-        var person = await personRepository.GetAsync(personEvent.Guid, context.CancellationToken);
-
-        if (person.ProCoSys4LastUpdated == personEvent.LastUpdated)
+        else
         {
-            logger.LogInformation("Person Message Ignored because LastUpdated is the same as in db\n" +
+            var person = await personRepository.GetAsync(personEvent.Guid, context.CancellationToken);
+
+            if (person.ProCoSys4LastUpdated == personEvent.LastUpdated)
+            {
+                logger.LogInformation("Person Message Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "EventLastUpdated: {LastUpdated} \n" +
+                                      "SyncedToCompletion: {CreatedAtUtc} \n",
+                    context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.SyncTimestamp);
+                return;
+            }
+
+            if (person.ProCoSys4LastUpdated > personEvent.LastUpdated)
+            {
+                logger.LogWarning("Person Message Ignored because a newer LastUpdated already exits in db\n" +
                                   "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {LastUpdated} \n" +
-                                  "SyncedToCompletion: {CreatedAtUtc} \n",
-                context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.SyncTimestamp );
-            return;
+                                  "LastUpdatedFromDb: {ProjectLastUpdated}",
+                    context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.ProCoSys4LastUpdated);
+                return;
+            }
+            MapFromEventToPerson(personEvent, person);
+            person.SyncTimestamp = DateTime.UtcNow;
         }
-
-        if (person.ProCoSys4LastUpdated > personEvent.LastUpdated)
-        {
-            logger.LogWarning("Person Message Ignored because a newer LastUpdated already exits in db\n" +
-                              "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
-                              "EventLastUpdated: {LastUpdated} \n" +
-                              "LastUpdatedFromDb: {ProjectLastUpdated}",
-                context.MessageId, personEvent.Guid, personEvent.LastUpdated, person.ProCoSys4LastUpdated);
-            return;
-        }
-        
-        MapFromEventToPerson(personEvent, person);
-        person.SyncTimestamp = DateTime.UtcNow;
 
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 

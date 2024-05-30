@@ -105,6 +105,20 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
     public IQueryable<TEntity> QuerySet<TEntity>() where TEntity : class => Set<TEntity>().AsNoTracking();
 
+    public async Task<int> SaveChangesFromSyncAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateConcurrencyToken();
+        try
+        {
+            var result = await base.SaveChangesAsync(cancellationToken);
+            return result;
+        }
+        catch (DbUpdateConcurrencyException concurrencyException)
+        {
+            throw new ConcurrencyException("Data store operation failed. Data may have been modified or deleted since entities were loaded.", concurrencyException);
+        }
+    }
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await SetAuditDataAsync();
