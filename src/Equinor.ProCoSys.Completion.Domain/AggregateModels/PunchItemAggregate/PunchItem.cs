@@ -401,7 +401,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Person? rejectedBy,
         DateTime? rejectedAt,
         Person? verifiedBy,
-        DateTime? verifiedAt
+        DateTime? verifiedAt,
+        Person? actionBy
         )
     {
         CreatedBy = createdBy;
@@ -414,6 +415,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         RejectedAtUtc = rejectedAt;
         VerifiedBy = verifiedBy;
         VerifiedAtUtc = verifiedAt;
+        ActionBy = actionBy;
     }
 
 }
