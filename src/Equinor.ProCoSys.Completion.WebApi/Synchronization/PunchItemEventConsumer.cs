@@ -17,70 +17,44 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
+public class PunchItemEventConsumer(
+    ILogger<PunchItemEventConsumer> logger,
+    IPlantSetter plantSetter,
+    IPersonRepository personRepository,
+    IPunchItemRepository punchItemRepository,
+    IProjectRepository projectRepository,
+    ILibraryItemRepository libraryItemRepository,
+    IDocumentRepository documentRepository,
+    ISWCRRepository swcrRepository,
+    IWorkOrderRepository woRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserSetter currentUserSetter,
+    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    : IConsumer<PunchItemEvent>
 {
-    private readonly ILogger<PunchItemEventConsumer> _logger;
-    private readonly IPlantSetter _plantSetter;
-    private readonly IPersonRepository _personRepository;
-    private readonly IPunchItemRepository _punchItemRepository;
-    private readonly IProjectRepository _projectRepository;
-    private readonly ILibraryItemRepository _libraryItemRepository;
-    private readonly IDocumentRepository _documentRepository;
-    private readonly ISWCRRepository _swcrRepository;
-    private readonly IWorkOrderRepository _woRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserSetter _currentUserSetter;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptions;
-
-    public PunchItemEventConsumer(ILogger<PunchItemEventConsumer> logger,
-        IPlantSetter plantSetter,
-        IPersonRepository personRepository,
-        IPunchItemRepository punchItemRepository,
-        IProjectRepository projectRepository,
-        ILibraryItemRepository libraryItemRepository,
-        IDocumentRepository documentRepository,
-        ISWCRRepository swcrRepository,
-        IWorkOrderRepository woRepository,
-        IUnitOfWork unitOfWork,
-        ICurrentUserSetter currentUserSetter,
-        IOptionsMonitor<ApplicationOptions> applicationOptions)
-    {
-        _logger = logger;
-        _plantSetter = plantSetter;
-        _personRepository = personRepository;
-        _punchItemRepository = punchItemRepository;
-        _projectRepository = projectRepository;
-        _libraryItemRepository = libraryItemRepository;
-        _documentRepository = documentRepository;
-        _swcrRepository = swcrRepository;
-        _woRepository = woRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserSetter = currentUserSetter;
-        _applicationOptions = applicationOptions;
-    }
 
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-        _plantSetter.SetPlant(busEvent.Plant);
+        plantSetter.SetPlant(busEvent.Plant);
 
-        if (await _punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var punchItem = await _punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
         }
         else
         {
             var punchItem = await CreatePunchItem(busEvent, context.CancellationToken);
-            _punchItemRepository.Add(punchItem);
+            punchItemRepository.Add(punchItem);
         }
         
         _currentUserSetter.SetCurrentUserOid(_applicationOptions.CurrentValue.ObjectId);
         await _unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        _logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
+        logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
@@ -109,12 +83,12 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
 
     private async Task<PunchItem> CreatePunchItem(IPunchListItemEventV1 busEvent, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
+        var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
-        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
+        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
             busEvent.RaisedByOrgGuid.Value,
             cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing RaisedByOrgGuid");
-        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await _libraryItemRepository.GetAsync(
+        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
             busEvent.ClearingByOrgGuid.Value, cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing ClearingByOrgGuid");
 
         var punchItem = new PunchItem(
@@ -211,7 +185,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             return;
         }
 
-        var doc = await _documentRepository.GetAsync(documentGuid.Value, cancellationToken);
+        var doc = await documentRepository.GetAsync(documentGuid.Value, cancellationToken);
         punchItem.SetDocument(doc);
     }
 
@@ -226,7 +200,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             return;
         }
 
-        var swcr = await _swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
+        var swcr = await swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
         punchItem.SetSWCR(swcr);
     }
 
@@ -241,7 +215,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             return;
         }
 
-        var wo = await _woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
+        var wo = await woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
         punchItem.SetWorkOrder(wo);
     }
 
@@ -256,7 +230,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
             return;
         }
 
-        var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
+        var wo = await woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);
     }
 
@@ -292,7 +266,7 @@ public class PunchItemEventConsumer : IConsumer<PunchItemEvent>
         }
         else
         {
-            var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
+            var libraryItem = await libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
             ProcessLibraryType(libraryType, punchItem, libraryItem);
         }
     }

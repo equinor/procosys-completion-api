@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -16,6 +17,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -168,6 +170,18 @@ public static class CompletionContextExtension
         var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
         knownTestData.CommentInPunchItemAGuid = comment.Guid;
 
+        var property = new Property("Property name", "Old value", "New value", "Value display type");
+
+        var historyItem = SeedHistory(
+            dbContext, 
+            punchItem.Guid, "History display name", 
+            userProvider.GetCurrentUserOid(), 
+            "History full name", 
+            DateTime.UtcNow, 
+            property);
+
+        knownTestData.HistoryInPunchItem = historyItem;
+
         var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItem.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
 
@@ -291,7 +305,12 @@ public static class CompletionContextExtension
         return punchItem;
     }
 
-    private static Link SeedLink(CompletionContext dbContext, string parentType, Guid parentGuid, string title, string url)
+    private static Link SeedLink(
+        CompletionContext dbContext, 
+        string parentType, 
+        Guid parentGuid, 
+        string title, 
+        string url)
     {
         var linkRepository = new LinkRepository(dbContext);
         var link = new Link(parentType, parentGuid, title, url);
@@ -307,6 +326,23 @@ public static class CompletionContextExtension
         commentRepository.Add(comment);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return comment;
+    }
+
+    private static HistoryItem SeedHistory(
+        CompletionContext dbContext, 
+        Guid parentGuid, 
+        string displayName, 
+        Guid oid, 
+        string fullName, 
+        DateTime utc, 
+        Property property)
+    {
+        var historyItemRepository = new HistoryItemRepository(dbContext);
+        var historyItem = new HistoryItem(parentGuid, displayName, oid, fullName, utc);
+        historyItem.AddPropertyForCreate(property.Name, property.Value, ValueDisplayType.StringAsText);
+        historyItemRepository.Add(historyItem);
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
+        return historyItem;
     }
 
     private static Attachment SeedAttachment(

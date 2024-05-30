@@ -40,7 +40,7 @@ public class WorkOrderEventConsumer(
             {
                 logger.LogWarning("WorkOrder Message Ignored because a newer LastUpdated already exits in db\n" +
                                   "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
-                                  "EventLastUpdated: {EventLaastUpdated} \n" +
+                                  "EventLastUpdated: {EventLastUpdated} \n" +
                                   "LastUpdatedFromDb: {LastUpdated}",
                     context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, workOrder.ProCoSys4LastUpdated);
                 return;

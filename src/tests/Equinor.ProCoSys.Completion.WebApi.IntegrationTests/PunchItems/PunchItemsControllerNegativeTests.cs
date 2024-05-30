@@ -1922,6 +1922,59 @@ public class PunchItemsControllerNegativeTests : TestBase
 
     #endregion
 
+    #region GetHistory
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.Writer,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.Writer,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItemHistory_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            HttpStatusCode.NotFound);
+    #endregion
+
+
     private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()
     {
         var punchItemUnderTest = await GetPunchItemUnderTest();
