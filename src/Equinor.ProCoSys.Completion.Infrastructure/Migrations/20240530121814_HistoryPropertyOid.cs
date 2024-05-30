@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
