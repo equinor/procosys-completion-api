@@ -32,7 +32,7 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
-
+    
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
@@ -81,7 +81,7 @@ public class PunchItemEventConsumer(
         }
     }
 
-    private async Task<PunchItem> CreatePunchItem(IPunchListItemEventV1 busEvent, CancellationToken cancellationToken)
+    private async Task<PunchItem> CreatePunchItem(PunchItemEvent busEvent, CancellationToken cancellationToken)
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
@@ -107,7 +107,7 @@ public class PunchItemEventConsumer(
         return punchItem;
     }
 
-    private async Task MapPunchItemEventToPunchItem(IPunchListItemEventV1 busEvent, PunchItem punchItem,
+    private async Task MapPunchItemEventToPunchItem(PunchItemEvent busEvent, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
         punchItem.Description = busEvent.Description!;
@@ -140,10 +140,16 @@ public class PunchItemEventConsumer(
 
     private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo) => punchItem.ExternalItemNo = externalItemNo;
 
-    private async Task SetSyncProperties(PunchItem punchItem, IPunchListItemEventV1 busEvent,
+    private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
         CancellationToken cancellationToken)
     {
-        var createdBy = await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid, cancellationToken);
+        //We need this, because some of the historic punch items are missing azure oid for created by
+        if(busEvent.CreatedByGuid is null)
+        { 
+            busEvent = busEvent with { CreatedByGuid = Guid.Empty };
+        }
+
+        var createdBy = await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken);
 
         punchItem.SetSyncProperties(
             createdBy,
@@ -291,6 +297,7 @@ public class PunchItemEventConsumer(
                     punchItem.SetType(libraryItem);
                 }
                 break;
+            case LibraryType.COMPLETION_ORGANIZATION:
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
@@ -344,9 +351,7 @@ public record PunchItemEvent
     Guid? ClearedByGuid,
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
-    Guid CreatedByGuid,
+    Guid? CreatedByGuid,
     Guid? ActionByGuid
-) : IPunchListItemEventV1
-{
-}
+) : IPunchListItemEventV1;
 
