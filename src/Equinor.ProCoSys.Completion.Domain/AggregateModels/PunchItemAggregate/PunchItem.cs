@@ -392,7 +392,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     }
 
     public void SetSyncProperties(
-        Person createdBy, 
+        Person? createdBy, 
         DateTime createdAt,
         Person? modifiedBy,
         DateTime? modifiedAt,
@@ -405,7 +405,11 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Person? actionBy
         )
     {
-        CreatedBy = createdBy;
+        if(createdBy != null)
+        {
+            CreatedBy = createdBy;
+        }
+
         CreatedAtUtc = createdAt;
         ModifiedBy = modifiedBy;
         ModifiedAtUtc = modifiedAt;

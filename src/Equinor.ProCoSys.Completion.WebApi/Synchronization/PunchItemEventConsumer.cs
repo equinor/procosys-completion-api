@@ -141,18 +141,9 @@ public class PunchItemEventConsumer(
     private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo) => punchItem.ExternalItemNo = externalItemNo;
 
     private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
-        CancellationToken cancellationToken)
-    {
-        //We need this, because some of the historic punch items are missing azure oid for created by
-        if(busEvent.CreatedByGuid is null)
-        { 
-            busEvent = busEvent with { CreatedByGuid = Guid.Empty };
-        }
-
-        var createdBy = await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken);
-
+        CancellationToken cancellationToken) =>
         punchItem.SetSyncProperties(
-            createdBy,
+            busEvent.CreatedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
             busEvent.CreatedAt,
             busEvent.ModifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
             busEvent.LastUpdated,
@@ -163,8 +154,7 @@ public class PunchItemEventConsumer(
             busEvent.VerifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
             busEvent.VerifiedAt,
             busEvent.ActionByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ActionByGuid.Value, cancellationToken) : null
-            );
-    }
+        );
 
     private async Task SetDocumentAsync(
         PunchItem punchItem,
