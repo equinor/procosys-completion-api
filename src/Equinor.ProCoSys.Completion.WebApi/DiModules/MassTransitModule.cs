@@ -168,6 +168,7 @@ public static class MassTransitModule
                 });
                 cfg.ReceiveEndpoint(configuration.GetValue<string>("MassTransit:PunchItemCompletionTransferQueue")!, e =>
                 {
+                    
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
