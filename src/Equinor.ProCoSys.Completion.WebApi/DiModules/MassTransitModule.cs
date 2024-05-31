@@ -166,7 +166,7 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                cfg.ReceiveEndpoint(configuration.GetValue<string>("MassTransit:PunchItemCompletionTransferQueue")!, e =>
+                cfg.ReceiveEndpoint(QueueNames.PunchItemCompletionTransferQueue, e =>
                 {
                     
                     e.ClearSerialization();
@@ -177,6 +177,9 @@ public static class MassTransitModule
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
+                    
+              
+                    
                 });
                 cfg.ReceiveEndpoint(QueueNames.ProjectCompletionTransferQueue, e =>
                 {
