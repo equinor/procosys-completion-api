@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Microsoft.Extensions.Logging;
