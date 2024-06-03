@@ -1,14 +1,15 @@
 ﻿using System;
+// todo consider go through codebase and use System.Text.Json instead of Newtonsoft.Json
+using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
 {
-    public User? TryGetPropertyValueAsUser(object? propertyValue, ValueDisplayType valueDisplayType)
+    public User? GetPropertyValueAsUser(object? propertyValue, ValueDisplayType valueDisplayType)
     {
         if (propertyValue is null || !valueDisplayType.ToString().StartsWith("User"))
         {
@@ -18,7 +19,9 @@ public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
         var propertyValueAsString = propertyValue.ToString();
         try
         {
-            var user = JsonConvert.DeserializeObject<User>(propertyValueAsString!);
+            var user = JsonSerializer.Deserialize<User>(
+                propertyValueAsString!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (user is null)
             {
                 throw new("DeserializeObject returned null");
@@ -27,7 +30,7 @@ public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Error deserialize {propertyValueAsString} into {nameof(User)}");
+            logger.LogError(ex, "Error deserialize {property} into {userObject}", propertyValueAsString, nameof(User));
             throw;
         }
     }

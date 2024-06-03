@@ -42,7 +42,7 @@ public class HistoryItemUpdatedEventConsumer(
         foreach (var changedProperty in historyItemUpdated.ChangedProperties)
         {
             var property = new Property(changedProperty.Name, changedProperty.ValueDisplayType.ToString());
-            var oldValueAsUser = propertyHelper.TryGetPropertyValueAsUser(changedProperty.OldValue, changedProperty.ValueDisplayType);
+            var oldValueAsUser = propertyHelper.GetPropertyValueAsUser(changedProperty.OldValue, changedProperty.ValueDisplayType);
             if (oldValueAsUser is null)
             {
                 property.OldValue = changedProperty.OldValue?.ToString();
@@ -53,7 +53,7 @@ public class HistoryItemUpdatedEventConsumer(
                 property.OldOidValue = oldValueAsUser.Oid;
             }
 
-            var valueAsUser = propertyHelper.TryGetPropertyValueAsUser(changedProperty.Value, changedProperty.ValueDisplayType);
+            var valueAsUser = propertyHelper.GetPropertyValueAsUser(changedProperty.Value, changedProperty.ValueDisplayType);
             if (valueAsUser is null)
             {
                 property.Value = changedProperty.Value?.ToString();

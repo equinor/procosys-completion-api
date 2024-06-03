@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -14,24 +14,30 @@ public class PropertyHelperTests
     private readonly PropertyHelper _propertyHelper = new(Substitute.For<ILogger<PropertyHelper>>());
 
     [TestMethod]
-    public void NonUserProperty_ShouldReturnNull_WhenValueDisplayType_NotUser()
+    public void GetPropertyValueAsUser_ShouldReturnNull_WhenValueDisplayType_NotUser()
     {
+        // Arrange
+        var oid = Guid.NewGuid();
+        var fn = "Peter Pan";
+        var json = $"{{\"oid\": \"{oid}\",\"fullName\": \"{fn}\"}}";
+
         // Act
-        var result = _propertyHelper.TryGetPropertyValueAsUser("S", ValueDisplayType.StringAsText);
+        var result = _propertyHelper.GetPropertyValueAsUser(json, ValueDisplayType.StringAsText);
 
         // Assert
         Assert.IsNull(result);
     }
 
     [TestMethod]
-    public void UserPropertyAsJSon_ShouldReturnUserObject_WhenCorrectValueDisplayType()
+    public void GetPropertyValueAsUser_ShouldReturnUserObject_WhenCorrectJsonAndValueDisplayType()
     {
+        // Arrange
         var oid = Guid.NewGuid();
         var fn = "Peter Pan";
         var json = $"{{\"oid\": \"{oid}\",\"fullName\": \"{fn}\"}}";
 
         // Act
-        var result = _propertyHelper.TryGetPropertyValueAsUser(json, ValueDisplayType.UserAsLinkToAddressBook);
+        var result = _propertyHelper.GetPropertyValueAsUser(json, ValueDisplayType.UserAsLinkToAddressBook);
 
         // Assert
         Assert.IsNotNull(result);
@@ -40,22 +46,8 @@ public class PropertyHelperTests
     }
 
     [TestMethod]
-    public void UserPropertyAsJSon_ShouldReturnNull_WhenValueDisplayType_NotUser()
-    {
-        var oid = Guid.NewGuid();
-        var fn = "Peter Pan";
-        var json = $"{{\"oid\": \"{oid}\",\"fullName\": \"{fn}\"}}";
-
-        // Act
-        var result = _propertyHelper.TryGetPropertyValueAsUser(json, ValueDisplayType.StringAsText);
-        //Assert.ThrowsException<Exception>(() => _dut.Clear(_person));
-        // Assert
-        Assert.IsNull(result);
-    }
-
-    [TestMethod]
-    public void UserPropertyAsNonJSon_ShouldThrowException() =>
+    public void GetPropertyValueAsUser_ShouldThrowJsonException_WhenNotValidJson() =>
         // Act and Assert
-        Assert.ThrowsException<Exception>(
-            () => _propertyHelper.TryGetPropertyValueAsUser("", ValueDisplayType.UserAsContactCard));
+        Assert.ThrowsException<JsonException>(
+            () => _propertyHelper.GetPropertyValueAsUser("", ValueDisplayType.UserAsContactCard));
 }

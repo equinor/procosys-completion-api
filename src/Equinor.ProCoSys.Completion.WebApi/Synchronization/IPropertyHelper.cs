@@ -5,5 +5,5 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public interface IPropertyHelper
 {
-    User? TryGetPropertyValueAsUser(object? propertyValue, ValueDisplayType valueDisplayType);
+    User? GetPropertyValueAsUser(object? propertyValue, ValueDisplayType valueDisplayType);
 }

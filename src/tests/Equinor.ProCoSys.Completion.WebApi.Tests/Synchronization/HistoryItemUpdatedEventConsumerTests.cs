@@ -98,9 +98,9 @@ public class HistoryItemUpdatedEventConsumerTests
         _historyUpdatedIntegrationEvent.ChangedProperties.Add(propertyInEvent);
         var oldUserValue = new User(Guid.NewGuid(), "Yoda");
         var userValue = new User(Guid.NewGuid(), "Grogu");
-        _propertyHelperMock.TryGetPropertyValueAsUser(propertyInEvent.Value, propertyInEvent.ValueDisplayType)
+        _propertyHelperMock.GetPropertyValueAsUser(propertyInEvent.Value, propertyInEvent.ValueDisplayType)
             .Returns(userValue);
-        _propertyHelperMock.TryGetPropertyValueAsUser(propertyInEvent.OldValue, propertyInEvent.ValueDisplayType)
+        _propertyHelperMock.GetPropertyValueAsUser(propertyInEvent.OldValue, propertyInEvent.ValueDisplayType)
             .Returns(oldUserValue);
 
         // Act

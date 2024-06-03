@@ -43,7 +43,7 @@ public class HistoryItemCreatedEventConsumer(
         foreach (var createdProperty in historyItemCreated.Properties)
         {
             var property = new Property(createdProperty.Name, createdProperty.ValueDisplayType.ToString());
-            var valueAsUser = propertyHelper.TryGetPropertyValueAsUser(createdProperty.Value, createdProperty.ValueDisplayType);
+            var valueAsUser = propertyHelper.GetPropertyValueAsUser(createdProperty.Value, createdProperty.ValueDisplayType);
             if (valueAsUser is null)
             {
                 property.Value = createdProperty.Value?.ToString();
