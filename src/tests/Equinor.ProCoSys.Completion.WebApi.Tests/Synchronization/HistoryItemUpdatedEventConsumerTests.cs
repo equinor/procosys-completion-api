@@ -18,7 +18,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class HistoryItemUpdatedEventConsumerTests
 {
     private readonly IHistoryItemRepository _historyItemRepositoryMock = Substitute.For<IHistoryItemRepository>();
-    private readonly IPropertyHelper _propertyHelperMock = Substitute.For<IPropertyHelper>();
+    private readonly IUserPropertyHelper _propertyHelperMock = Substitute.For<IUserPropertyHelper>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private HistoryItemUpdatedEventConsumer _dut = null!;
     private readonly ConsumeContext<IHistoryItemUpdatedV1> _contextMock = Substitute.For<ConsumeContext<IHistoryItemUpdatedV1>>();

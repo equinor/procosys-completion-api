@@ -9,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class HistoryItemUpdatedEventConsumer(
     ILogger<HistoryItemUpdatedEventConsumer> logger,
-    IPropertyHelper propertyHelper,
+    IUserPropertyHelper propertyHelper,
     IHistoryItemRepository historyItemRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<IHistoryItemUpdatedV1>

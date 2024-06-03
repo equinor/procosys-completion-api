@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
+public class UserPropertyHelper(ILogger<UserPropertyHelper> logger) : IUserPropertyHelper
 {
     public User? GetPropertyValueAsUser(object? propertyValue, ValueDisplayType valueDisplayType)
     {
@@ -30,7 +30,7 @@ public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error deserialize {property} into {userObject}", propertyValueAsString, nameof(User));
+            logger.LogError(ex, "Error deserialize '{property}' into {objectName}", propertyValueAsString, nameof(User));
             throw;
         }
     }

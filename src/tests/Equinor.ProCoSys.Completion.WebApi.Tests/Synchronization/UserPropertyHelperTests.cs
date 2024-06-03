@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Microsoft.Extensions.Logging;
@@ -8,9 +9,9 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 
 [TestClass]
-public class PropertyHelperTests
+public class UserPropertyHelperTests
 {
-    private readonly PropertyHelper _propertyHelper = new(Substitute.For<ILogger<PropertyHelper>>());
+    private readonly UserPropertyHelper _dut = new(Substitute.For<ILogger<UserPropertyHelper>>());
 
     [TestMethod]
     public void GetPropertyValueAsUser_ShouldReturnNull_WhenValueDisplayType_NotUser()
@@ -21,7 +22,7 @@ public class PropertyHelperTests
         var json = $"{{\"oid\": \"{oid}\",\"fullName\": \"{fn}\"}}";
 
         // Act
-        var result = _propertyHelper.GetPropertyValueAsUser(json, ValueDisplayType.StringAsText);
+        var result = _dut.GetPropertyValueAsUser(json, ValueDisplayType.StringAsText);
 
         // Assert
         Assert.IsNull(result);
@@ -36,7 +37,7 @@ public class PropertyHelperTests
         var json = $"{{\"oid\": \"{oid}\",\"fullName\": \"{fn}\"}}";
 
         // Act
-        var result = _propertyHelper.GetPropertyValueAsUser(json, ValueDisplayType.UserAsLinkToAddressBook);
+        var result = _dut.GetPropertyValueAsUser(json, ValueDisplayType.UserAsLinkToAddressBook);
 
         // Assert
         Assert.IsNotNull(result);
@@ -48,5 +49,5 @@ public class PropertyHelperTests
     public void GetPropertyValueAsUser_ShouldThrowJsonException_WhenNotValidJson() =>
         // Act and Assert
         Assert.ThrowsException<JsonException>(
-            () => _propertyHelper.GetPropertyValueAsUser("", ValueDisplayType.UserAsContactCard));
+            () => _dut.GetPropertyValueAsUser("", ValueDisplayType.UserAsContactCard));
 }
