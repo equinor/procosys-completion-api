@@ -45,8 +45,8 @@ public class PropertyHelperTests
     }
 
     [TestMethod]
-    public void GetPropertyValueAsUser_ShouldThrowException_WhenNotValidJson() =>
+    public void GetPropertyValueAsUser_ShouldThrowJsonException_WhenNotValidJson() =>
         // Act and Assert
-        Assert.ThrowsException<Exception>(
+        Assert.ThrowsException<JsonException>(
             () => _propertyHelper.GetPropertyValueAsUser("", ValueDisplayType.UserAsContactCard));
 }

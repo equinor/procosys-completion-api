@@ -1,9 +1,9 @@
 ﻿using System;
 // todo consider go through codebase and use System.Text.Json instead of Newtonsoft.Json
+using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
@@ -19,7 +19,9 @@ public class PropertyHelper(ILogger<PropertyHelper> logger) : IPropertyHelper
         var propertyValueAsString = propertyValue.ToString();
         try
         {
-            var user = JsonConvert.DeserializeObject<User>(propertyValueAsString!); 
+            var user = JsonSerializer.Deserialize<User>(
+                propertyValueAsString!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (user is null)
             {
                 throw new("DeserializeObject returned null");
