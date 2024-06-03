@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.Domain.Tests.AggregateModels.HistoryAggregate;
@@ -50,7 +49,7 @@ public class HistoryItemTests
             _eventForParentGuid));
 
     [TestMethod]
-    public void AddPropertyForCreate_ShouldAddPropertyWithValue()
+    public void AddProperty_ShouldAddProperty()
     {
         // Arrange
         var dut = new HistoryItem(
@@ -60,91 +59,15 @@ public class HistoryItemTests
             _eventByFullName,
             _eventAtUtc,
             _eventForParentGuid);
-        var propertyName = "X";
-        var propertyValue = "P";
-        var valueDisplayType = ValueDisplayType.IntAsText;
 
+        var property = new Property("X", "D");
+        
         // Act
-        dut.AddPropertyForCreate(propertyName, propertyValue, valueDisplayType);
+        dut.AddProperty(property);
         
         // Assert
         Assert.AreEqual(1, dut.Properties.Count);
-        var property = dut.Properties.ElementAt(0);
-        Assert.AreEqual(propertyName, property.Name);
-        Assert.IsNull(property.OldValue);
-        Assert.AreEqual(propertyValue, property.Value);
-        Assert.AreEqual(valueDisplayType.ToString(), property.ValueDisplayType);
+        Assert.AreEqual(property, dut.Properties.ElementAt(0));
     }
 
-    [TestMethod]
-    public void AddPropertyForCreate_ShouldAddPropertyWithNullValue()
-    {
-        // Arrange
-        var dut = new HistoryItem(
-            _eventForGuid,
-            _eventDisplayName,
-            _eventByOid,
-            _eventByFullName,
-            _eventAtUtc,
-            _eventForParentGuid);
-
-        // Act
-        dut.AddPropertyForCreate("X", null, ValueDisplayType.IntAsText);
-
-        // Assert
-        Assert.AreEqual(1, dut.Properties.Count);
-        var property = dut.Properties.ElementAt(0);
-        Assert.IsNull(property.Value);
-        Assert.IsNull(property.OldValue);
-    }
-
-    [TestMethod]
-    public void AddPropertyForUpdate_ShouldAddPropertyWithValue()
-    {
-        // Arrange
-        var dut = new HistoryItem(
-            _eventForGuid,
-            _eventDisplayName,
-            _eventByOid,
-            _eventByFullName,
-            _eventAtUtc,
-            _eventForParentGuid);
-        var propertyName = "X";
-        var propertyOldValue = "P1";
-        var propertyValue = "P2";
-        var valueDisplayType = ValueDisplayType.IntAsText;
-
-        // Act
-        dut.AddPropertyForUpdate(propertyName, propertyOldValue, propertyValue, valueDisplayType);
-
-        // Assert
-        Assert.AreEqual(1, dut.Properties.Count);
-        var property = dut.Properties.ElementAt(0);
-        Assert.AreEqual(propertyName, property.Name);
-        Assert.AreEqual(propertyOldValue, property.OldValue);
-        Assert.AreEqual(propertyValue, property.Value);
-        Assert.AreEqual(valueDisplayType.ToString(), property.ValueDisplayType);
-    }
-
-    [TestMethod]
-    public void AddPropertyForUpdate_ShouldAddPropertyWithNullValue()
-    {
-        // Arrange
-        var dut = new HistoryItem(
-            _eventForGuid,
-            _eventDisplayName,
-            _eventByOid,
-            _eventByFullName,
-            _eventAtUtc,
-            _eventForParentGuid);
-
-        // Act
-        dut.AddPropertyForUpdate("X", null, null, ValueDisplayType.IntAsText);
-
-        // Assert
-        Assert.AreEqual(1, dut.Properties.Count);
-        var property = dut.Properties.ElementAt(0);
-        Assert.IsNull(property.Value);
-        Assert.IsNull(property.OldValue);
-    }
 }

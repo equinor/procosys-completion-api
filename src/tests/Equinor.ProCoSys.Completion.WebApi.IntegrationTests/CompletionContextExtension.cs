@@ -17,7 +17,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
-using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -170,15 +169,12 @@ public static class CompletionContextExtension
         var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
         knownTestData.CommentInPunchItemAGuid = comment.Guid;
 
-        var property = new Property("Property name", "Old value", "New value", "Value display type");
-
         var historyItem = SeedHistory(
             dbContext, 
             punchItem.Guid, "History display name", 
             userProvider.GetCurrentUserOid(), 
             "History full name", 
-            DateTime.UtcNow, 
-            property);
+            DateTime.UtcNow);
 
         knownTestData.HistoryInPunchItem = historyItem;
 
@@ -334,12 +330,11 @@ public static class CompletionContextExtension
         string displayName, 
         Guid oid, 
         string fullName, 
-        DateTime utc, 
-        Property property)
+        DateTime utc)
     {
         var historyItemRepository = new HistoryItemRepository(dbContext);
         var historyItem = new HistoryItem(parentGuid, displayName, oid, fullName, utc);
-        historyItem.AddPropertyForCreate(property.Name, property.Value, ValueDisplayType.StringAsText);
+        historyItem.AddProperty(new Property("Property name", "Value display type"));
         historyItemRepository.Add(historyItem);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return historyItem;

@@ -7,32 +7,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class HistoryItemDeletedEventConsumer : IConsumer<IHistoryItemDeletedV1>
+public class HistoryItemDeletedEventConsumer(
+    ILogger<HistoryItemDeletedEventConsumer> logger,
+    IHistoryItemRepository historyItemRepository,
+    IUnitOfWork unitOfWork)
+    : IConsumer<IHistoryItemDeletedV1>
 {
-    private readonly ILogger<HistoryItemDeletedEventConsumer> _logger;
-    private readonly IHistoryItemRepository _historyItemRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    // todo unit tests
-    public HistoryItemDeletedEventConsumer(
-        ILogger<HistoryItemDeletedEventConsumer> logger,
-        IHistoryItemRepository historyItemRepository, 
-        IUnitOfWork unitOfWork)
-    {
-        _logger = logger;
-        _historyItemRepository = historyItemRepository;
-        _unitOfWork = unitOfWork;
-    }
-
     public async Task Consume(ConsumeContext<IHistoryItemDeletedV1> context)
     {
         var historyItemDeletedV1 = context.Message;
 
         var historyItemEntity = CreateHistoryItemEntity(historyItemDeletedV1);
-        _historyItemRepository.Add(historyItemEntity);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        historyItemRepository.Add(historyItemEntity);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
         
-        _logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
+        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
             nameof(IHistoryItemDeletedV1),
             context.MessageId, 
             historyItemDeletedV1.Guid, 
