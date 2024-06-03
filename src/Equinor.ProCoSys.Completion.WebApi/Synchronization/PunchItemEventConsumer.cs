@@ -32,7 +32,7 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
-
+    
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
@@ -81,7 +81,7 @@ public class PunchItemEventConsumer(
         }
     }
 
-    private async Task<PunchItem> CreatePunchItem(IPunchListItemEventV1 busEvent, CancellationToken cancellationToken)
+    private async Task<PunchItem> CreatePunchItem(PunchItemEvent busEvent, CancellationToken cancellationToken)
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
@@ -107,7 +107,7 @@ public class PunchItemEventConsumer(
         return punchItem;
     }
 
-    private async Task MapPunchItemEventToPunchItem(IPunchListItemEventV1 busEvent, PunchItem punchItem,
+    private async Task MapPunchItemEventToPunchItem(PunchItemEvent busEvent, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
         punchItem.Description = busEvent.Description!;
@@ -128,6 +128,8 @@ public class PunchItemEventConsumer(
         SetMaterialRequired(punchItem, busEvent.MaterialRequired);
         SetMaterialETAUtc(punchItem, busEvent.MaterialETA);
         SetMaterialExternalNo(punchItem, busEvent.MaterialExternalNo);
+
+        await SetSyncProperties(punchItem, busEvent, cancellationToken);
     }
 
     private static void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo) => punchItem.MaterialExternalNo = materialExternalNo;
@@ -138,13 +140,10 @@ public class PunchItemEventConsumer(
 
     private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo) => punchItem.ExternalItemNo = externalItemNo;
 
-    private async Task SetSyncProperties(PunchItem punchItem, IPunchListItemEventV1 busEvent,
-        CancellationToken cancellationToken)
-    {
-        var createdBy = await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid, cancellationToken);
-
+    private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
+        CancellationToken cancellationToken) =>
         punchItem.SetSyncProperties(
-            createdBy,
+            busEvent.CreatedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
             busEvent.CreatedAt,
             busEvent.ModifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
             busEvent.LastUpdated,
@@ -155,8 +154,7 @@ public class PunchItemEventConsumer(
             busEvent.VerifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
             busEvent.VerifiedAt,
             busEvent.ActionByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ActionByGuid.Value, cancellationToken) : null
-            );
-    }
+        );
 
     private async Task SetDocumentAsync(
         PunchItem punchItem,
@@ -289,6 +287,7 @@ public class PunchItemEventConsumer(
                     punchItem.SetType(libraryItem);
                 }
                 break;
+            case LibraryType.COMPLETION_ORGANIZATION:
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
@@ -342,9 +341,7 @@ public record PunchItemEvent
     Guid? ClearedByGuid,
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
-    Guid CreatedByGuid,
+    Guid? CreatedByGuid,
     Guid? ActionByGuid
-) : IPunchListItemEventV1
-{
-}
+) : IPunchListItemEventV1;
 
