@@ -9,17 +9,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PunchItemEventConsumer(
     ILogger<PunchItemEventConsumer> logger,
     IPlantSetter plantSetter,
+    IPersonRepository personRepository,
     IPunchItemRepository punchItemRepository,
     IProjectRepository projectRepository,
     ILibraryItemRepository libraryItemRepository,
@@ -31,6 +32,7 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
+    
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
@@ -50,7 +52,7 @@ public class PunchItemEventConsumer(
         }
         
         currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
             context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
@@ -60,21 +62,26 @@ public class PunchItemEventConsumer(
     {
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Guid)}");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ProCoSysGuid)}");
+        }
+
+        if (busEvent.CreatedByGuid == Guid.Empty)
+        {
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.CreatedByGuid)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
-            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Plant)}");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
         }
 
         if (string.IsNullOrEmpty(busEvent.Description))
         {
-            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItem.Description)}");
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }
     }
 
-    private async Task<PunchItem> CreatePunchItem(IPunchListItemEventV1 busEvent, CancellationToken cancellationToken)
+    private async Task<PunchItem> CreatePunchItem(PunchItemEvent busEvent, CancellationToken cancellationToken)
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
@@ -94,14 +101,13 @@ public class PunchItemEventConsumer(
             clearingByOrg,
             busEvent.ProCoSysGuid);
         
-        // TODO not in bus message, need to resolve? (nullable in db)
-        //await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
+        await SetSyncProperties(punchItem, busEvent, cancellationToken);
         await MapPunchItemEventToPunchItem(busEvent, punchItem, cancellationToken);
 
         return punchItem;
     }
 
-    private async Task MapPunchItemEventToPunchItem(IPunchListItemEventV1 busEvent, PunchItem punchItem,
+    private async Task MapPunchItemEventToPunchItem(PunchItemEvent busEvent, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
         punchItem.Description = busEvent.Description!;
@@ -122,6 +128,8 @@ public class PunchItemEventConsumer(
         SetMaterialRequired(punchItem, busEvent.MaterialRequired);
         SetMaterialETAUtc(punchItem, busEvent.MaterialETA);
         SetMaterialExternalNo(punchItem, busEvent.MaterialExternalNo);
+
+        await SetSyncProperties(punchItem, busEvent, cancellationToken);
     }
 
     private static void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo) => punchItem.MaterialExternalNo = materialExternalNo;
@@ -131,7 +139,22 @@ public class PunchItemEventConsumer(
     private static void SetMaterialRequired(PunchItem punchItem, bool materialRequired) => punchItem.MaterialRequired = materialRequired;
 
     private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo) => punchItem.ExternalItemNo = externalItemNo;
-    
+
+    private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
+        CancellationToken cancellationToken) =>
+        punchItem.SetSyncProperties(
+            busEvent.CreatedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
+            busEvent.CreatedAt,
+            busEvent.ModifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
+            busEvent.LastUpdated,
+            busEvent.ClearedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ClearedByGuid.Value, cancellationToken) : null,
+            busEvent.ClearedAt,
+            busEvent.RejectedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.RejectedByGuid.Value, cancellationToken) : null,
+            busEvent.RejectedAt,
+            busEvent.VerifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
+            busEvent.VerifiedAt,
+            busEvent.ActionByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ActionByGuid.Value, cancellationToken) : null
+        );
 
     private async Task SetDocumentAsync(
         PunchItem punchItem,
@@ -264,6 +287,7 @@ public class PunchItemEventConsumer(
                     punchItem.SetType(libraryItem);
                 }
                 break;
+            case LibraryType.COMPLETION_ORGANIZATION:
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
         }
@@ -312,6 +336,12 @@ public record PunchItemEvent
     DateTime? ClearedAt,
     DateTime? RejectedAt,
     DateTime? VerifiedAt,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    Guid? ModifiedByGuid,
+    Guid? ClearedByGuid,
+    Guid? RejectedByGuid,
+    Guid? VerifiedByGuid,
+    Guid? CreatedByGuid,
+    Guid? ActionByGuid
 ) : IPunchListItemEventV1;
 

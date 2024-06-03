@@ -7,6 +7,7 @@ public interface IUnitOfWork
 {
     Task SetAuditDataAsync();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesFromSyncAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken);
     Task CommitTransactionAsync(CancellationToken cancellationToken);
     Task RollbackTransactionAsync(CancellationToken cancellationToken);

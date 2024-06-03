@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
@@ -22,6 +23,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class PunchItemEventConsumerTests
 {
     private readonly IPunchItemRepository _punchItemRepoMock = Substitute.For<IPunchItemRepository>();
+    private readonly IPersonRepository _personRepoMock = Substitute.For<IPersonRepository>();
     private readonly IProjectRepository _projectRepoMock = Substitute.For<IProjectRepository>();
     private readonly ILibraryItemRepository _libraryItemRepoMock = Substitute.For<ILibraryItemRepository>();
     private readonly IDocumentRepository _documentRepoMock = Substitute.For<IDocumentRepository>();
@@ -30,7 +32,7 @@ public class PunchItemEventConsumerTests
 
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly PunchItemEventConsumer _punchItemEventConsumer;
+    private readonly PunchItemEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<PunchItemEvent> _contextMock = Substitute.For<ConsumeContext<PunchItemEvent>>();
     private PunchItem? _punchItemAddedToRepository;
@@ -52,9 +54,10 @@ public class PunchItemEventConsumerTests
     private readonly Guid _documentGuid = Guid.NewGuid();
 
     public PunchItemEventConsumerTests() =>
-        _punchItemEventConsumer = new PunchItemEventConsumer(
+        _dut = new PunchItemEventConsumer(
             Substitute.For<ILogger<PunchItemEventConsumer>>(), 
             _plantSetter, 
+            _personRepoMock,
             _punchItemRepoMock,
             _projectRepoMock,
             _libraryItemRepoMock,
@@ -84,6 +87,8 @@ public class PunchItemEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
+        var actionByGuid = Guid.NewGuid();
+        var createdByGuid = Guid.NewGuid();
         
         var bEvent = GetTestEvent(guid, Plant, _projectGuid, 
             "description",
@@ -101,7 +106,13 @@ public class PunchItemEventConsumerTests
             _documentGuid,
             false,
             false,
-            "NO123"
+            "NO123",
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            createdByGuid,
+            actionByGuid
             );
         _contextMock.Message.Returns(bEvent);
 
@@ -125,17 +136,21 @@ public class PunchItemEventConsumerTests
             .Returns(new WorkOrder(Plant, _woGuid, "NO321"));
 
         _swcrRepoMock.GetAsync(_swcrGuid, Arg.Any<CancellationToken>()).Returns(new SWCR(Plant, _swcrGuid, 123));
+        _personRepoMock.GetOrCreateAsync(actionByGuid, Arg.Any<CancellationToken>()).Returns(
+            new Person(actionByGuid, "Ola", "Hansen", "oh", "oh@eqn.com", false));
+        _personRepoMock.GetOrCreateAsync(createdByGuid, Arg.Any<CancellationToken>()).Returns(
+            new Person(createdByGuid, "Hans", "Olsen", "ho", "ho@eqn.com", false));
         _documentRepoMock.GetAsync(_documentGuid, Arg.Any<CancellationToken>())
             .Returns(new Document(Plant, _documentGuid, "AS987"));
 
         //Act
-        await _punchItemEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.AreEqual(guid, _punchItemAddedToRepository.Guid);
         Assert.AreEqual(Plant, _punchItemAddedToRepository.Plant);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]
@@ -158,14 +173,20 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             false,
             false,
-            "NO123"
+            "NO123",
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty
         );
 
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _punchItemEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
+            => _dut.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
 
     [TestMethod]
@@ -188,18 +209,48 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             false,
             false,
-            "NO123"
+            "NO123",
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty
         );
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _punchItemEventConsumer.Consume(_contextMock), "Message is missing Plant");
+            => _dut.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static PunchItemEvent GetTestEvent(Guid guid, string plant, Guid projectGuid, string description, Guid checklistGuid, Category category, 
-        Guid raisedByOrgGuid, Guid clearingByOrgGuid, Guid punchListSortingGuid, Guid punchListTypeGuid, Guid punchPriorityGuid, string estimate, 
-        Guid originalWoGuid, Guid woGuid, Guid swcrGuid, Guid documentGuid, bool materialRequired, bool isVoided, string materialExternalNo) => new (
+    private static PunchItemEvent GetTestEvent(
+        Guid guid, 
+        string plant,
+        Guid projectGuid, 
+        string description, 
+        Guid checklistGuid, 
+        Category category, 
+        Guid raisedByOrgGuid, 
+        Guid clearingByOrgGuid, 
+        Guid punchListSortingGuid, 
+        Guid punchListTypeGuid, 
+        Guid punchPriorityGuid, 
+        string estimate, 
+        Guid originalWoGuid, 
+        Guid woGuid, 
+        Guid swcrGuid, 
+        Guid documentGuid, 
+        bool materialRequired, 
+        bool isVoided, 
+        string materialExternalNo,
+        Guid modifiedByGuid,
+        Guid clearedByGuid,
+        Guid rejectedByGuid,
+        Guid verifiedByGuid,
+        Guid createdByGuid,
+        Guid actionByGuid
+        ) => new (
         string.Empty,
         plant,
         guid,
@@ -239,6 +290,12 @@ public class PunchItemEventConsumerTests
         DateTime.UtcNow, 
         DateTime.UtcNow,
         DateTime.UtcNow, 
-        DateTime.UtcNow
+        DateTime.UtcNow,
+        modifiedByGuid,
+        clearedByGuid,
+        rejectedByGuid,
+        verifiedByGuid,
+        createdByGuid,
+        actionByGuid
     );
 }

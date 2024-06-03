@@ -9,11 +9,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class HistoryItemCreatedEventConsumer(
     ILogger<HistoryItemCreatedEventConsumer> logger,
+    IUserPropertyHelper propertyHelper,
     IHistoryItemRepository historyItemRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<IHistoryItemCreatedV1>
 {
-    // todo unit tests
 
     public async Task Consume(ConsumeContext<IHistoryItemCreatedV1> context)
     {
@@ -22,30 +22,39 @@ public class HistoryItemCreatedEventConsumer(
         var historyItemEntity = CreateHistoryItemEntity(historyItemCreatedV1);
         historyItemRepository.Add(historyItemEntity);
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
-        
-        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
+
+        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}",
             nameof(IHistoryItemCreatedV1),
-            context.MessageId, 
-            historyItemCreatedV1.Guid, 
+            context.MessageId,
+            historyItemCreatedV1.Guid,
             historyItemCreatedV1.DisplayName);
     }
 
-    private static HistoryItem CreateHistoryItemEntity(IHistoryItemCreatedV1 historyItemCreated)
+    private HistoryItem CreateHistoryItemEntity(IHistoryItemCreatedV1 historyItemCreated)
     {
         var historyItem = new HistoryItem(
-            historyItemCreated.Guid, 
-            historyItemCreated.DisplayName, 
+            historyItemCreated.Guid,
+            historyItemCreated.DisplayName,
             historyItemCreated.EventBy.Oid,
             historyItemCreated.EventBy.FullName,
             historyItemCreated.EventAtUtc,
             historyItemCreated.ParentGuid);
 
-        foreach (var property in historyItemCreated.Properties)
+        foreach (var createdProperty in historyItemCreated.Properties)
         {
-            historyItem.AddPropertyForCreate(property.Name,
-                property.Value,
-                property.ValueDisplayType);
-        }
+            var property = new Property(createdProperty.Name, createdProperty.ValueDisplayType.ToString());
+            var valueAsUser = propertyHelper.GetPropertyValueAsUser(createdProperty.Value, createdProperty.ValueDisplayType);
+            if (valueAsUser is null)
+            {
+                property.Value = createdProperty.Value?.ToString();
+            }
+            else
+            {
+                property.Value = valueAsUser.FullName;
+                property.OidValue = valueAsUser.Oid;
+            }
+            historyItem.AddProperty(property);        }
+
         return historyItem;
     }
 }
