@@ -18,7 +18,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class HistoryItemUpdatedEventConsumerTests
 {
     private readonly IHistoryItemRepository _historyItemRepositoryMock = Substitute.For<IHistoryItemRepository>();
-    private readonly IUserPropertyHelper _propertyHelperMock = Substitute.For<IUserPropertyHelper>();
+    private readonly IUserPropertyHelper _userPropertyHelperMock = Substitute.For<IUserPropertyHelper>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private HistoryItemUpdatedEventConsumer _dut = null!;
     private readonly ConsumeContext<IHistoryItemUpdatedV1> _contextMock = Substitute.For<ConsumeContext<IHistoryItemUpdatedV1>>();
@@ -37,7 +37,7 @@ public class HistoryItemUpdatedEventConsumerTests
             []);
         _dut = new HistoryItemUpdatedEventConsumer(
             Substitute.For<ILogger<HistoryItemUpdatedEventConsumer>>(),
-            _propertyHelperMock,
+            _userPropertyHelperMock,
             _historyItemRepositoryMock,
             _unitOfWorkMock);
         _contextMock.Message.Returns(_historyUpdatedIntegrationEvent);
@@ -98,9 +98,9 @@ public class HistoryItemUpdatedEventConsumerTests
         _historyUpdatedIntegrationEvent.ChangedProperties.Add(propertyInEvent);
         var oldUserValue = new User(Guid.NewGuid(), "Yoda");
         var userValue = new User(Guid.NewGuid(), "Grogu");
-        _propertyHelperMock.GetPropertyValueAsUser(propertyInEvent.Value, propertyInEvent.ValueDisplayType)
+        _userPropertyHelperMock.GetPropertyValueAsUser(propertyInEvent.Value, propertyInEvent.ValueDisplayType)
             .Returns(userValue);
-        _propertyHelperMock.GetPropertyValueAsUser(propertyInEvent.OldValue, propertyInEvent.ValueDisplayType)
+        _userPropertyHelperMock.GetPropertyValueAsUser(propertyInEvent.OldValue, propertyInEvent.ValueDisplayType)
             .Returns(oldUserValue);
 
         // Act
