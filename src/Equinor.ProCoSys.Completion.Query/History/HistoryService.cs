@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Query.History;
 
-// todo write unit tests
 public class HistoryService : IHistoryService
 {
     private readonly IReadOnlyContext _context;
