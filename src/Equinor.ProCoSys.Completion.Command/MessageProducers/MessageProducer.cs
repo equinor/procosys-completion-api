@@ -38,8 +38,12 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
             throw new InvalidOperationException($"Unknown type {nameof(message)}");
         }
 
-        var sender = await sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{shortAddress}"));
-        logger.LogInformation("Sending: DisplayName: {DisplayName}, ParentGuid: {ParentGuid}", message.DisplayName, message.ParentGuid);
+        var address = new Uri($"queue:{shortAddress}");
+        var sender = await sendEndpointProvider.GetSendEndpoint(address);
+        logger.LogInformation("Sending: DisplayName: {DisplayName}, ParentGuid: {ParentGuid}, Address: {Address}", 
+            message.DisplayName, 
+            message.ParentGuid,
+            address);
         await sender.Send(message, cancellationToken);
     }
 }

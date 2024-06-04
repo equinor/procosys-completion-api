@@ -37,6 +37,7 @@ using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,6 +131,7 @@ public static class ApplicationModule
         services.AddScoped<ICompletionMailService, CompletionMailService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
+        services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
