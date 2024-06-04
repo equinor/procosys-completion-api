@@ -22,15 +22,16 @@ public class LibraryItemRepository(CompletionContext context)
 
     public async Task<LibraryItem> GetOrCreateUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken)
     {
+        const string LibraryCodeForUnknownOrg = "UNKNOWN";
         var libraryItem = await Set.SingleOrDefaultAsync(l
-            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Plant == busEventPlant, cancellationToken);
+            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Plant == busEventPlant && l.Code == LibraryCodeForUnknownOrg, cancellationToken);
 
         if (libraryItem != null)
         {
             return libraryItem;
         }
-
-        var entity = new LibraryItem(busEventPlant, Guid.NewGuid(), "UNKNOWN", "NullValue in Oracle Db", LibraryType.COMPLETION_ORGANIZATION)
+       
+        var entity = new LibraryItem(busEventPlant, Guid.NewGuid(), LibraryCodeForUnknownOrg, "NullValue in Oracle Db", LibraryType.COMPLETION_ORGANIZATION)
         {
             IsVoided = true,
             SyncTimestamp = DateTime.UtcNow
