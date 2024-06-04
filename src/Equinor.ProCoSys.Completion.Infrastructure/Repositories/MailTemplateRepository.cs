@@ -16,7 +16,7 @@ public class MailTemplateRepository : EntityRepository<MailTemplate>, IMailTempl
 
     public async Task<MailTemplate> GetNonVoidedByCodeAsync(string plant, string code, CancellationToken cancellationToken)
     {
-        var mailTemplates = await DefaultQuery
+        var mailTemplates = await DefaultQueryable
             .Where(mt => !mt.IsVoided && mt.Code == code && (mt.Plant == plant || mt.Plant == null))
             .ToListAsync(cancellationToken);
         var mailTemplate = mailTemplates.SingleOrDefault(mt => mt.Plant == plant) ?? 

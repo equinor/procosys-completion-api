@@ -16,15 +16,15 @@ public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEnti
     {
     }
 
-    protected EntityWithGuidRepository(CompletionContext context, DbSet<TEntity> set, IQueryable<TEntity> defaultQuery)
-        : base(context, set, defaultQuery)
+    protected EntityWithGuidRepository(CompletionContext context, DbSet<TEntity> set, IQueryable<TEntity> defaultQueryable)
+        : base(context, set, defaultQueryable)
     {
     }
 
     public virtual async Task<TEntity> GetAsync(
         Guid guid,
         CancellationToken cancellationToken)
-        => await DefaultQuery
+        => await DefaultQueryable
                .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken)
            ?? throw new EntityNotFoundException<TEntity>(guid);
 
