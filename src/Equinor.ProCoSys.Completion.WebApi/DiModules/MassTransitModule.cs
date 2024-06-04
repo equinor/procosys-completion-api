@@ -80,6 +80,13 @@ public static class MassTransitModule
                     e.Name = "completion_punchitem";
                     e.Temporary = false;
                 });
+            x.AddConsumer<PunchItemChangeHistoryEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_punchitem_changehistory";
+                    e.Temporary = false;
+                });
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
@@ -168,7 +175,6 @@ public static class MassTransitModule
                 });
                 cfg.ReceiveEndpoint(QueueNames.PunchItemCompletionTransferQueue, e =>
                 {
-                    
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
@@ -177,9 +183,17 @@ public static class MassTransitModule
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
-                    
-              
-                    
+                });
+                cfg.ReceiveEndpoint(QueueNames.PunchItemChangeHistoryCompletionTransferQueue, e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
                 });
                 cfg.ReceiveEndpoint(QueueNames.ProjectCompletionTransferQueue, e =>
                 {
@@ -266,6 +280,15 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_punchitem_changehistory", "punchlistitem_changehistory", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
