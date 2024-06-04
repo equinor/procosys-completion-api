@@ -26,7 +26,8 @@ public class LibraryEventConsumer(
         // Test if message library type is not present in LibraryType enum
         if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals(CommPriority))
         {
-            logger.LogInformation($"{nameof(LibraryEvent)} not in scope of import: {{libraryType}}", busEvent.Type );
+            logger.LogInformation("{EventName} not in scope of import: {LibraryType}", 
+                nameof(LibraryEvent), busEvent.Type );
             return;
         }
 
@@ -38,21 +39,21 @@ public class LibraryEventConsumer(
             
             if (library.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
-                logger.LogInformation("Library Message Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                logger.LogInformation("{EventName} Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncTimestamp );
+                    nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncTimestamp );
                 return;
             }
 
             if (library.ProCoSys4LastUpdated > busEvent.LastUpdated)
             {
-                logger.LogWarning("Library Message Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
                                   "LastUpdatedFromDb: {LastUpdated}",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.ProCoSys4LastUpdated);
+                    nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.ProCoSys4LastUpdated);
                 return;
             }
             
@@ -68,8 +69,8 @@ public class LibraryEventConsumer(
 
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(LibraryEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n Code {{LibraryCode}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Code {LibraryCode}",
+            nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
     }
 
     private static void ValidateMessage(LibraryEvent busEvent)

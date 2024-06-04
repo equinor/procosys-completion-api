@@ -27,21 +27,21 @@ public class DocumentEventConsumer(
             var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
-                logger.LogInformation("Document Message Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                logger.LogInformation("{EventName} Ignored because LastUpdated is the same as in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.SyncTimestamp );
+                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.SyncTimestamp );
                 return;
             }
 
             if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
             {
-                logger.LogWarning("Document Message Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
                                   "LastUpdatedFromDb: {LastUpdated}",
-                    context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.ProCoSys4LastUpdated);
+                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, document.ProCoSys4LastUpdated);
                 return;
             }
             MapFromEventToDocument(busEvent, document);
@@ -56,8 +56,8 @@ public class DocumentEventConsumer(
         
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(DocumentEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
+            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
     }
 
     private static void ValidateMessage(DocumentEvent busEvent)

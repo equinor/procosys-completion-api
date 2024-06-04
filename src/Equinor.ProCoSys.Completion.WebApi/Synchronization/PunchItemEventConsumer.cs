@@ -53,8 +53,8 @@ public class PunchItemEventConsumer(
         currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+            nameof(PunchItemEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
     private static void ValidateMessage(PunchItemEvent busEvent)

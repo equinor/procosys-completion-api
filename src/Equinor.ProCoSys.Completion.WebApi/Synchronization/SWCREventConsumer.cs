@@ -30,7 +30,7 @@ public class SWCREventConsumer(
             if (swcr.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
                 logger.LogInformation("Swcr Message Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
                     context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.SyncTimestamp );
@@ -40,7 +40,7 @@ public class SWCREventConsumer(
             if (swcr.ProCoSys4LastUpdated > busEvent.LastUpdated)
             {
                 logger.LogWarning("Swcr Message Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
                                   "LastUpdatedFromDb: {LastUpdated}",
                     context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, swcr.ProCoSys4LastUpdated);
@@ -58,8 +58,8 @@ public class SWCREventConsumer(
 
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(SWCREvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.SwcrNo);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
+            nameof(SWCREvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.SwcrNo);
     }
 
     private static void ValidateMessage(SWCREvent busEvent)
