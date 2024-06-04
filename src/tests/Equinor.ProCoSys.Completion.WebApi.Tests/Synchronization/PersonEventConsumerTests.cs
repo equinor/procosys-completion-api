@@ -34,8 +34,9 @@ public class PersonEventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var testEvent = new PersonEvent(
-            "", 
-            guid, 
+            "",
+            Guid.NewGuid(),
+            guid,
             "Average Max", 
             "Joe", 
             "AJOE",
@@ -67,25 +68,14 @@ public class PersonEventConsumerTests
     }
     
     [TestMethod]
-    public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
-    {
-        //Arrange
-        var testEvent = new PersonEvent("", Guid.Empty, "Average Max", "Joe", "AJOE", "average.joe@equinor.com", true, DateTime.Now, null);
-        _contextMock.Message.Returns(testEvent);
-        
-        //Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(() 
-            => _personEventConsumer.Consume(_contextMock),"Message is missing ProCoSysGuid");
-    }
-
-    [TestMethod]
     public async Task Consume_ShouldIgnoreMessage_IfMessageIsOutdated()
     {
         //Arrange
-        var guid = Guid.NewGuid();
+        var azureOid = Guid.NewGuid();
         var testEvent = new PersonEvent(
             "",
-            guid,
+            Guid.NewGuid(),
+            azureOid,
             "Average Max",
             "Joe",
             "AJOE",
@@ -95,7 +85,7 @@ public class PersonEventConsumerTests
             null);
 
         var person = new Person(
-            guid, 
+            azureOid, 
             "Average", 
             "Joe", 
             "AJOE", 
@@ -103,15 +93,15 @@ public class PersonEventConsumerTests
             false);
 
         person.ProCoSys4LastUpdated = DateTime.Now.AddDays(1);
-        _personRepoMock.ExistsAsync(guid, default).Returns(true);
-        _personRepoMock.GetAsync(guid, default).Returns(person);
+        _personRepoMock.ExistsAsync(azureOid, default).Returns(true);
+        _personRepoMock.GetAsync(azureOid, default).Returns(person);
         _contextMock.Message.Returns(testEvent);
 
         //Act
         await _personEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _personRepoMock.Received(1).GetAsync(guid, default);
+        await _personRepoMock.Received(1).GetAsync(azureOid, default);
         _personRepoMock.Received(0).Remove(person);
         _personRepoMock.Received(0).Add(person);
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -121,25 +111,25 @@ public class PersonEventConsumerTests
     public async Task Consume_ShouldIgnoreMessage_IfLastUpdatedHasNotChanged()
     {
         //Arrange
-        var guid = Guid.NewGuid();
+        var azureOid = Guid.NewGuid();
         var lastUpdated = DateTime.Now;
-        var testEvent = new PersonEvent("", guid, "Average Max", "Joe", "AJOE", "average.joe@equinor.com", true,
+        var testEvent = new PersonEvent("", Guid.Empty, azureOid, "Average Max", "Joe", "AJOE", "average.joe@equinor.com", true,
             lastUpdated,
             null);
-        var person = new Person(guid, "Average", "Joe", "AJOE", "average.joe@equinor.com", false)
+        var person = new Person(azureOid, "Average", "Joe", "AJOE", "average.joe@equinor.com", false)
         {
             ProCoSys4LastUpdated = lastUpdated
         };
 
-        _personRepoMock.ExistsAsync(guid, default).Returns(true);
-        _personRepoMock.GetAsync(guid, default).Returns(person);
+        _personRepoMock.ExistsAsync(azureOid, default).Returns(true);
+        _personRepoMock.GetAsync(azureOid, default).Returns(person);
         _contextMock.Message.Returns(testEvent);
 
         //Act
         await _personEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _personRepoMock.Received(1).GetAsync(guid, default);
+        await _personRepoMock.Received(1).GetAsync(azureOid, default);
         _personRepoMock.Received(0).Remove(person);
         _personRepoMock.Received(0).Add(person);
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -149,10 +139,11 @@ public class PersonEventConsumerTests
     public async Task Consume_ShouldIgnoreMessage_WhenPersonDoesNotExist()
     {
         //Arrange
-        var guid = Guid.NewGuid();
+        var azureOid = Guid.NewGuid();
         var testEvent = new PersonEvent(
             "",
-            guid,
+            Guid.Empty,
+            azureOid,
             "Average Max",
             "Joe",
             "AJOE",
@@ -161,15 +152,15 @@ public class PersonEventConsumerTests
             DateTime.Now,
             null);
 
-        _personRepoMock.ExistsAsync(guid, default).Returns(false);
+        _personRepoMock.ExistsAsync(azureOid, default).Returns(false);
         _contextMock.Message.Returns(testEvent);
 
         //Act
         await _personEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _personRepoMock.Received(1).ExistsAsync(guid, default);
-        await _personRepoMock.Received(0).GetAsync(guid, default);
+        await _personRepoMock.Received(1).ExistsAsync(azureOid, default);
+        await _personRepoMock.Received(0).GetAsync(azureOid, default);
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
@@ -177,10 +168,11 @@ public class PersonEventConsumerTests
     public async Task Consume_ShouldIgnoreMessage_WhenBehaviorDelete()
     {
         //Arrange
-        var guid = Guid.NewGuid();
+        var azureOid = Guid.NewGuid();
         var testEvent = new PersonEvent(
             "",
-            guid,
+            Guid.Empty,
+            azureOid,
             "Average Max",
             "Joe",
             "AJOE",
@@ -195,7 +187,7 @@ public class PersonEventConsumerTests
         await _personEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _personRepoMock.Received(0).ExistsAsync(guid, default);
+        await _personRepoMock.Received(0).ExistsAsync(azureOid, default);
     }
 
 }

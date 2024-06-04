@@ -65,11 +65,6 @@ public class PunchItemEventConsumer(
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ProCoSysGuid)}");
         }
 
-        if (busEvent.CreatedByGuid == Guid.Empty)
-        {
-            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.CreatedByGuid)}");
-        }
-
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
