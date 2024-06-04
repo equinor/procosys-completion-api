@@ -32,7 +32,6 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
-    
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
