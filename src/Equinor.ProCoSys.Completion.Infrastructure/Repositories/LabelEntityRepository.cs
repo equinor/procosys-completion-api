@@ -16,7 +16,7 @@ public class LabelEntityRepository : EntityRepository<LabelEntity>, ILabelEntity
 
     public async Task<LabelEntity> GetByTypeAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken)
     {
-        var labelEntity = await DefaultQuery.Where(e => e.EntityType == entityType)
+        var labelEntity = await DefaultQueryable.Where(e => e.EntityType == entityType)
             .SingleOrDefaultAsync(cancellationToken);
         if (labelEntity is null)
         {
@@ -27,5 +27,5 @@ public class LabelEntityRepository : EntityRepository<LabelEntity>, ILabelEntity
     }
 
     public async Task<bool> ExistsAsync(EntityTypeWithLabel entityType, CancellationToken cancellationToken)
-        => await DefaultQuery.AnyAsync(e => e.EntityType == entityType, cancellationToken);
+        => await DefaultQueryable.AnyAsync(e => e.EntityType == entityType, cancellationToken);
 }

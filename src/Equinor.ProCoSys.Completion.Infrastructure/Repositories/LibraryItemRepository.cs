@@ -7,18 +7,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
-public class LibraryItemRepository : EntityWithGuidRepository<LibraryItem>, ILibraryItemRepository
+public class LibraryItemRepository(CompletionContext context)
+    : EntityWithGuidRepository<LibraryItem>(context, context.Library),
+        ILibraryItemRepository
 {
-    public LibraryItemRepository(CompletionContext context)
-        : base(context, context.Library)
-    {
-    }
-
     public async Task<LibraryItem> GetByGuidAndTypeAsync(
         Guid libraryGuid,
         LibraryType type,
         CancellationToken cancellationToken)
-        => await DefaultQuery
+        => await DefaultQueryable
                .SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type, cancellationToken)
            ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid);
+
+
+    public async Task<LibraryItem> GetOrCreateUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken)
+    {
+        var libraryItem = await Set.SingleOrDefaultAsync(l
+            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Plant == busEventPlant, cancellationToken);
+
+        if (libraryItem != null)
+        {
+            return libraryItem;
+        }
+
+        var entity = new LibraryItem(busEventPlant, Guid.NewGuid(), "UNKNOWN", "NullValue in Oracle Db", LibraryType.COMPLETION_ORGANIZATION)
+        {
+            IsVoided = true,
+            SyncTimestamp = DateTime.UtcNow
+        };
+        await Set.AddAsync(entity, cancellationToken);
+        return entity;
+    }
 }

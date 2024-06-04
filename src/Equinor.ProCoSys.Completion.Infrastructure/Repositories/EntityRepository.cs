@@ -12,34 +12,34 @@ public abstract class EntityRepository<TEntity> : Domain.IRepository<TEntity> wh
 {
     protected readonly CompletionContext Context;
     protected readonly DbSet<TEntity> Set;
-    protected readonly IQueryable<TEntity> DefaultQuery;
+    protected readonly IQueryable<TEntity> DefaultQueryable;
 
     protected EntityRepository(CompletionContext context, DbSet<TEntity> set)
         : this(context, set, set)
     {
     }
 
-    protected EntityRepository(CompletionContext context, DbSet<TEntity> set, IQueryable<TEntity> defaultQuery)
+    protected EntityRepository(CompletionContext context, DbSet<TEntity> set, IQueryable<TEntity> defaultQueryable)
     {
         Context = context;
         Set = set;
-        DefaultQuery = defaultQuery;
+        DefaultQueryable = defaultQueryable;
     }
 
     public virtual void Add(TEntity entity) =>
         Set.Add(entity);
 
     public Task<bool> Exists(int id, CancellationToken cancellationToken) =>
-        DefaultQuery.AnyAsync(x => x.Id == id, cancellationToken);
+        DefaultQueryable.AnyAsync(x => x.Id == id, cancellationToken);
 
     public virtual Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken) =>
-        DefaultQuery.ToListAsync(cancellationToken);
+        DefaultQueryable.ToListAsync(cancellationToken);
 
     public virtual Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        DefaultQuery.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        DefaultQueryable.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public Task<List<TEntity>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken) =>
-        DefaultQuery.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
+        DefaultQueryable.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
 
     public virtual void Remove(TEntity entity)
     {
