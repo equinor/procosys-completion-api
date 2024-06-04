@@ -6,6 +6,7 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 public class Property : EntityBase
 {
     public const int NameLengthMax = 128;
+    public const int ValueLengthMax = 4000;
     public const int ValueDisplayTypeLengthMax = 64;
 
     public Property(string name, string valueDisplayType)
@@ -17,9 +18,7 @@ public class Property : EntityBase
     public string Name { get; private set; }
     public string ValueDisplayType { get; private set; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? OldValue { get; set; }
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? Value { get; set; }
 
     // Set if OldValue represent a user. For GDPR purposes if we need to remove
