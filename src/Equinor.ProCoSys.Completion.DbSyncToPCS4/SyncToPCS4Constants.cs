@@ -2,15 +2,26 @@
 
 public class SyncToPCS4Constants
 {
+    // Sync Methods
+    public const string Post = "POST";
+    public const string Put = "PUT";
+    public const string Delete = "DELETE";
+
     // Sync Object Names
-    public const string PunchItem = "PunchItem";
+    public const string PunchListItem = "PunchListItem";
+    public const string Attachment = "Attachment";
+    public const string Link = "Link";
 
     // URL endpoints
-    public const string InsertEndpoint = "Sync/Add";
-    public const string UpdateEndpoint = "Sync/Update";
-    public const string DeleteEndpoint = "Sync/Delete";
-
     public const string PunchListItemInsertEndpoint = "PunchListItem/Add";
     public const string PunchListItemUpdateEndpoint = "PunchListItem/Update";
     public const string PunchListItemDeleteEndpoint = "PunchListItem/Delete";
+
+    public const string AttachmentInsertEndpoint = "Attachment/Add";
+    public const string AttachmentUpdateEndpoint = "Attachment/Update";
+    public const string AttachmentDeleteEndpoint = "Attachment/Delete";
+
+    public const string LinkInsertEndpoint = "Link/Attachment/Add";
+    public const string LinkUpdateEndpoint = "Link/Attachment/Update";
+    public const string LinkDeleteEndpoint = "Link/Attachment/Delete";
 }

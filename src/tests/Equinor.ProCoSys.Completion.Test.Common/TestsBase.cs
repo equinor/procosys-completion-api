@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -27,6 +28,7 @@ public abstract class TestsBase
     protected IUnitOfWork _unitOfWorkMock;
     protected IPlantProvider _plantProviderMock;
     protected ManualTimeProvider _timeProvider;
+    protected ISyncToPCS4Service _syncToPCS4ServiceMock;
     protected DateTime _utcNow;
     protected Person _person;
 
@@ -42,6 +44,8 @@ public abstract class TestsBase
         _utcNow = new DateTime(2020, 1, 1, 1, 1, 1, DateTimeKind.Utc);
         _timeProvider = new ManualTimeProvider(_utcNow);
         TimeService.SetProvider(_timeProvider);
+
+        _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
     }
 
     protected void AssertPerson(

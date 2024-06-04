@@ -412,7 +412,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        //await _syncToPCS4ServiceMock.Received(1).SyncNewObjectAsync(SyncToPCS4Constants.PunchItem, integrationEvent, _testPlant, default);
         await _syncToPCS4ServiceMock.Received(1).SyncNewPunchListItemAsync(integrationEvent, default);
     }
 

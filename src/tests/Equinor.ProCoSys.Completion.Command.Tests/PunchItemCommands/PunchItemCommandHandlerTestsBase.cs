@@ -27,7 +27,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected IWorkOrderRepository _workOrderRepositoryMock;
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
-        protected ISyncToPCS4Service _syncToPCS4ServiceMock;
         protected IMessageProducer _messageProducerMock;
         protected Person _currentPerson;
         protected Person _existingPerson1;
@@ -63,7 +62,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _workOrderRepositoryMock = Substitute.For<IWorkOrderRepository>();
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
-            _syncToPCS4ServiceMock = Substitute.For<ISyncToPCS4Service>();
             _messageProducerMock = Substitute.For<IMessageProducer>();
             var id = 5;
             _currentPerson = SetupPerson(++id);
