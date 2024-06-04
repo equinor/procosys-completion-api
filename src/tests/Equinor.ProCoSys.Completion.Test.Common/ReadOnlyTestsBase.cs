@@ -27,6 +27,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
     protected Dictionary<string, int> _closedProjectCId = new ();
     protected Dictionary<string, int> _raisedByOrgId = new ();
     protected Dictionary<string, int> _clearingByOrgId = new ();
+    protected Dictionary<string, int> _voidedOrgId = new ();
     protected Dictionary<string, int> _priorityId = new ();
     protected Dictionary<string, int> _sortingId = new ();
     protected Dictionary<string, int> _typeId = new ();
@@ -109,6 +110,12 @@ public abstract class ReadOnlyTestsBase : TestsBase
             "ENG",
             "ENG desc",
             LibraryType.COMPLETION_ORGANIZATION);
+        var voidedOrg = new LibraryItem(
+            plant,
+            Guid.NewGuid(),
+            "VOIDED",
+            "VOIDED desc",
+            LibraryType.COMPLETION_ORGANIZATION){ IsVoided = true };
         var priority = new LibraryItem(
             plant,
             Guid.NewGuid(),
@@ -130,6 +137,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
 
         _raisedByOrgId.Add(plant, AddLibraryItem(context, raisedByOrg));
         _clearingByOrgId.Add(plant, AddLibraryItem(context, clearingByOrg));
+        _voidedOrgId.Add(plant, AddLibraryItem(context, voidedOrg));
         _priorityId.Add(plant, AddLibraryItem(context, priority));
         _sortingId.Add(plant, AddLibraryItem(context, sorting));
         _typeId.Add(plant, AddLibraryItem(context, type));
