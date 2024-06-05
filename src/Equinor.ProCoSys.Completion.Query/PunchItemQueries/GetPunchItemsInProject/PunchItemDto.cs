@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProj
 public record PunchItemDto(
     Guid Guid,
     string ProjectName,
-    int ItemNo,
+    long ItemNo,
     Category Category,
     string Description,
     string RowVersion);

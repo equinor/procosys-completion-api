@@ -68,6 +68,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
             // Punch created in PCS5 has Id > 4000000. Punch created in PCS4 has Id <= 4000000
             .UseIdentityColumn(PunchItem.IdentitySeed);
 
+        builder.Property(x => x.ItemNo)
+            .HasDefaultValueSql($"NEXT VALUE FOR {PunchItem.PunchItemItemNoSequence}");
+        builder.HasIndex(x => x.ItemNo).IsUnique();
+
         builder.Property(f => f.Category)
             .HasDefaultValue(Category.PA)
             .IsRequired();

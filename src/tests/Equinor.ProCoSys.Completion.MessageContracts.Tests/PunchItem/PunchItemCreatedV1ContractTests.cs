@@ -21,7 +21,7 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
             { "ProjectName", typeof(string) },
             { "ProjectDescription", typeof(string) },
             { "Category", typeof(string) },
-            { "ItemNo", typeof(int) },
+            { "ItemNo", typeof(long) },
             { "Description", typeof(string) },
             { "RaisedByOrgCode", typeof(string) },
             { "RaisedByOrgGuid", typeof(Guid) },

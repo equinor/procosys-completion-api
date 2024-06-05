@@ -5,7 +5,7 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 public sealed record PunchItemDetailsDto(
     Guid Guid,
     string ProjectName,
-    int ItemNo,
+    long ItemNo,
     string Category,
     string Description,
     PersonDto CreatedBy,
