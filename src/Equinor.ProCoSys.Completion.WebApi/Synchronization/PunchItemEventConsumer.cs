@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
@@ -44,6 +45,9 @@ public class PunchItemEventConsumer(
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
+            // Keep in initial stage of transferring from oracle, so we do not need to flush the database.
+            // When removing this, also switch ItemNo of PunchItem from public set to init.
+            punchItem.ItemNo = busEvent.PunchItemNo;
         }
         else
         {
@@ -94,8 +98,11 @@ public class PunchItemEventConsumer(
             busEvent.Description!,
             raisedByOrg,
             clearingByOrg,
-            busEvent.ProCoSysGuid);
-        
+            busEvent.ProCoSysGuid)
+        {
+            ItemNo = busEvent.PunchItemNo
+        };
+
         await SetSyncProperties(punchItem, busEvent, cancellationToken);
         await MapPunchItemEventToPunchItem(busEvent, punchItem, cancellationToken);
 
@@ -206,6 +213,8 @@ public class PunchItemEventConsumer(
             punchItem.ClearOriginalWorkOrder();
             return;
         }
+
+        var exists = await woRepository.ExistsAsync(originalWorkOrderGuid.Value, cancellationToken);
 
         var wo = await woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);

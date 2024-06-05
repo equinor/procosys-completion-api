@@ -158,25 +158,7 @@ public class PunchItemTests : IModificationAuditableTests
                 new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE)));
 
     #endregion
-
-    #region ItemNo
-
-    [TestMethod]
-    public void ItemNo_ShouldReturnId()
-    {
-        // Arrange
-        var id = 5;
-        _dut.SetProtectedIdForTesting(id);
-
-        // Act
-        var itemNo = _dut.ItemNo;
-
-        // Assert
-        Assert.AreEqual(id, itemNo);
-    }
-
-    #endregion
-
+    
     #region Clear
 
     [TestMethod]

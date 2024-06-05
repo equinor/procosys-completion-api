@@ -3,11 +3,11 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
+using Person = Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
@@ -16,6 +16,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     private DateTime? _dueTimeUtc;
     private DateTime? _materialETAUtc;
     public const int IdentitySeed = 4000001;
+    public const string PunchItemItemNoSequence = "SEQ_PUNCHITEM_ITEMNO";
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
     public const int ExternalItemNoLengthMax = 100;
@@ -55,7 +56,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
     public Category Category { get; set; }
-    public int ItemNo => Id;
+    public long ItemNo { get; set; } // Initially keep 'set' public for updates in sync
     public string Description { get; set; }
     public LibraryItem RaisedByOrg { get; private set; } = null!;
     public int RaisedByOrgId { get; private set; }
