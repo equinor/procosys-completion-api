@@ -225,8 +225,6 @@ public class PunchItemEventConsumer(
             return;
         }
 
-        var exists = await woRepository.ExistsAsync(originalWorkOrderGuid.Value, cancellationToken);
-
         var wo = await woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);
     }

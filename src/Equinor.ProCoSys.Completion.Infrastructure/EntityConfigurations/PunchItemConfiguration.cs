@@ -70,6 +70,7 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
 
         builder.Property(x => x.ItemNo)
             .HasDefaultValueSql($"NEXT VALUE FOR {PunchItem.PunchItemItemNoSequence}");
+        builder.HasIndex(x => x.ItemNo).IsUnique();
 
         builder.Property(f => f.Category)
             .HasDefaultValue(Category.PA)
