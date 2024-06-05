@@ -43,6 +43,9 @@ public class PunchItemEventConsumer(
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
+            // Keep in initial stage of transferring from oracle, so we do not need to flush the database.
+            // When removing this, also switch ItemNo of PunchItem from public set to init.
+            punchItem.ItemNo = busEvent.PunchItemNo;
         }
         else
         {
@@ -106,8 +109,11 @@ public class PunchItemEventConsumer(
             busEvent.Description!,
             raisedByOrg,
             clearingByOrg,
-            busEvent.ProCoSysGuid);
-        
+            busEvent.ProCoSysGuid)
+        {
+            ItemNo = busEvent.PunchItemNo
+        };
+
         await SetSyncProperties(punchItem, busEvent, cancellationToken);
         await MapPunchItemEventToPunchItem(busEvent, punchItem, cancellationToken);
 

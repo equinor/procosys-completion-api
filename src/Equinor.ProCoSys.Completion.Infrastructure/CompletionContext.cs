@@ -72,6 +72,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasSequence<int>(PunchItem.PunchItemItemNoSequence)
+            .StartsAt(PunchItem.IdentitySeedItemNo).IncrementsBy(1);
+
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
         

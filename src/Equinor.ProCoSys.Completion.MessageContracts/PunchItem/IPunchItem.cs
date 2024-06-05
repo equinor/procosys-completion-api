@@ -10,7 +10,7 @@ public interface IPunchItem
     string ProjectDescription { get; }
     Guid CheckListGuid { get; }
     string Category { get; }
-    int ItemNo { get; }
+    long ItemNo { get; }
     string Description { get; }
     string RaisedByOrgCode { get; }
     Guid RaisedByOrgGuid { get; }

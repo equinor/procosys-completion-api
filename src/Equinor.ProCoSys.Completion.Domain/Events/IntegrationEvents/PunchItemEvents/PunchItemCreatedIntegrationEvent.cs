@@ -15,7 +15,7 @@ public record PunchItemCreatedIntegrationEvent
     string ProjectDescription,
     Guid CheckListGuid,
     string Category,
-    int ItemNo,
+    long ItemNo,
     string Description,
     string RaisedByOrgCode,
     Guid RaisedByOrgGuid,

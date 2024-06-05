@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20240604132815_AppendItemNoToPunchItem")]
+    partial class AppendItemNoToPunchItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -390,9 +393,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.Property<Guid?>("EventForParentGuid")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("Guid")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("PeriodEnd")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
@@ -404,9 +404,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnName("PeriodStart");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Guid")
-                        .IsUnique();
 
                     b.ToTable("History");
 
@@ -445,8 +442,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("OldValue")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PeriodEnd")
                         .ValueGeneratedOnAddOrUpdate()
@@ -459,8 +455,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnName("PeriodStart");
 
                     b.Property<string>("Value")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ValueDisplayType")
                         .IsRequired()
@@ -1155,9 +1150,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasDatabaseName("IX_PunchItems_Guid");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Guid"), new[] { "Id", "Category", "Description", "ProjectId", "CreatedById", "CreatedAtUtc", "ModifiedById", "ModifiedAtUtc", "ClearedById", "ClearedAtUtc", "VerifiedById", "VerifiedAtUtc", "RejectedById", "RejectedAtUtc", "RaisedByOrgId", "ClearingByOrgId", "SortingId", "TypeId", "PriorityId", "Estimate", "DueTimeUtc", "ExternalItemNo", "MaterialRequired", "MaterialExternalNo", "MaterialETAUtc", "WorkOrderId", "OriginalWorkOrderId", "DocumentId", "SWCRId", "ActionById", "RowVersion" });
-
-                    b.HasIndex("ItemNo")
-                        .IsUnique();
 
                     b.HasIndex("ModifiedById");
 
