@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.LinkEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -36,7 +37,7 @@ public class AttachmentServiceTests : TestsBase
     private Attachment _attachmentAddedToRepository;
     private Attachment _existingAttachment;
     private IAzureBlobService _azureBlobServiceMock;
-    private IMessageProducer _messageProducer;
+    private IMessageProducer _messageProducerMock;
     private readonly string _existingJpgFileName = "E-image.jpg";
     private readonly string _newJpgFileName = "N-image.jpg";
     private readonly string _rowVersion = "AAAAAAAAABA=";
@@ -79,7 +80,7 @@ public class AttachmentServiceTests : TestsBase
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
         var blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
 
-        _messageProducer = Substitute.For<IMessageProducer>();
+        _messageProducerMock = Substitute.For<IMessageProducer>();
         
         _modifiedEventServiceMock = Substitute.For<IModifiedEventService>();
         _modifiedEventServiceMock.GetModifiedEventAsync(default)
@@ -98,7 +99,7 @@ public class AttachmentServiceTests : TestsBase
             _unitOfWorkMock,
             _azureBlobServiceMock,
             blobStorageOptionsMock,
-            _messageProducer,
+            _messageProducerMock,
             Substitute.For<ILogger<AttachmentService>>(),
             _modifiedEventServiceMock,
             _syncToPCS4ServiceMock);
@@ -119,7 +120,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<Stream>(),
             Arg.Any<string>(),
             Arg.Any<bool>());
-       await _messageProducer.Received(0)
+       await _messageProducerMock.Received(0)
            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
        await _unitOfWorkMock.Received(0).SetAuditDataAsync();
        await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -175,7 +176,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentCreatedIntegrationEvent integrationEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -203,7 +204,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         HistoryCreatedIntegrationEvent historyEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -264,7 +265,7 @@ public class AttachmentServiceTests : TestsBase
             Arg.Any<Stream>(),
             Arg.Any<string>(),
             Arg.Any<bool>());
-        await _messageProducer.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
         await _unitOfWorkMock.Received(0).SetAuditDataAsync();
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -308,7 +309,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -338,7 +339,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var oldRevisionNumber = _existingAttachment.RevisionNumber;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -459,7 +460,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         AttachmentDeletedIntegrationEvent integrationEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -488,7 +489,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         HistoryDeletedIntegrationEvent historyEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryDeletedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -575,7 +576,7 @@ public class AttachmentServiceTests : TestsBase
             default);
 
         // Assert
-        await _messageProducer.Received(0)
+        await _messageProducerMock.Received(0)
             .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -585,7 +586,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var newTitle = Guid.NewGuid().ToString();
         AttachmentUpdatedIntegrationEvent integrationEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.PublishAsync(Arg.Any<AttachmentUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -620,7 +621,7 @@ public class AttachmentServiceTests : TestsBase
         // Arrange
         var oldDescription = _existingAttachment.Description;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
-        _messageProducer
+        _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
             .Do(Callback.First(callbackInfo =>
             {
@@ -664,5 +665,193 @@ public class AttachmentServiceTests : TestsBase
         Assert.AreEqual(_rowVersion, result);
         Assert.AreEqual(_rowVersion, _existingAttachment.RowVersion.ConvertToString());
     }
+    #endregion
+
+    #region Unit Tests which can be removed when no longer sync to pcs4
+    #region UploadNewAsync
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        AttachmentCreatedIntegrationEvent integrationEvent = null!;
+        _messageProducerMock
+            .When(x => x.PublishAsync(
+                Arg.Any<AttachmentCreatedIntegrationEvent>(),
+                default))
+            .Do(info =>
+            {
+                integrationEvent = info.Arg<AttachmentCreatedIntegrationEvent>();
+            });
+
+
+        // Act
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncNewAttachmentAsync(integrationEvent, default);
+    }
+
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldBeginTransaction()
+    {
+        // Act
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldCommitTransaction_WhenNoExceptions()
+    {
+        // Act
+        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    {
+        // Arrange
+        _unitOfWorkMock
+            .When(u => u.SaveChangesAsync())
+            .Do(_ => throw new Exception());
+
+        // Act
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default));
+
+        // Assert
+        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+        Assert.IsInstanceOfType(exception, typeof(Exception));
+    }
+    #endregion UploadNewAsync
+
+    #region UpdateAsync
+    [TestMethod]
+    public async Task UpdateAsync_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        AttachmentUpdatedIntegrationEvent integrationEvent = null!;
+        _messageProducerMock
+            .When(x => x.PublishAsync(
+                Arg.Any<AttachmentUpdatedIntegrationEvent>(),
+                default))
+            .Do(info =>
+            {
+                integrationEvent = info.Arg<AttachmentUpdatedIntegrationEvent>();
+            });
+
+
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncAttachmentUpdateAsync(integrationEvent, default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldBeginTransaction()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldCommitTransaction_WhenNoExceptions()
+    {
+        // Act
+        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    {
+        // Arrange
+        _unitOfWorkMock
+            .When(u => u.SaveChangesAsync())
+            .Do(_ => throw new Exception());
+
+        // Act
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default));
+
+        // Assert
+        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+        Assert.IsInstanceOfType(exception, typeof(Exception));
+    }
+    #endregion UpdateAsync
+
+    #region DeleteAsync
+    [TestMethod]
+    public async Task DeleteAsync_ShouldSyncWithPcs4()
+    {
+        // Arrange
+        AttachmentDeletedIntegrationEvent integrationEvent = null!;
+        _messageProducerMock
+            .When(x => x.PublishAsync(
+                Arg.Any<AttachmentDeletedIntegrationEvent>(),
+                default))
+            .Do(info =>
+            {
+                integrationEvent = info.Arg<AttachmentDeletedIntegrationEvent>();
+            });
+
+
+        // Act
+        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncAttachmentDeleteAsync(integrationEvent, default);
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldBeginTransaction()
+    {
+        // Act
+        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldCommitTransaction_WhenNoExceptions()
+    {
+        // Act
+        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
+
+        // Assert
+        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    {
+        // Arrange
+        _unitOfWorkMock
+            .When(u => u.SaveChangesAsync())
+            .Do(_ => throw new Exception());
+
+        // Act
+        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default));
+
+        // Assert
+        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
+        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
+        Assert.IsInstanceOfType(exception, typeof(Exception));
+    }
+    #endregion DeleteAsync
     #endregion
 }

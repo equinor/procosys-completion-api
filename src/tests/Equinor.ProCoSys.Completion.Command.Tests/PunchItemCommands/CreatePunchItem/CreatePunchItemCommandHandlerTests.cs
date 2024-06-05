@@ -395,6 +395,28 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
     #region Unit Tests which can be removed when no longer sync to pcs4
     [TestMethod]
+    public async Task HandlingCommand_ShouldRecalculateChecklist()
+    {
+        // Arrange
+        PunchItemCreatedIntegrationEvent integrationEvent = null!;
+        _messageProducerMock
+            .When(x => x.PublishAsync(
+                Arg.Any<PunchItemCreatedIntegrationEvent>(),
+                default))
+            .Do(info =>
+            {
+                integrationEvent = info.Arg<PunchItemCreatedIntegrationEvent>();
+            });
+
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, _command.CheckListGuid, default);
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSyncWithPcs4()
     {
         // Arrange

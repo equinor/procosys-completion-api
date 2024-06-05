@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
