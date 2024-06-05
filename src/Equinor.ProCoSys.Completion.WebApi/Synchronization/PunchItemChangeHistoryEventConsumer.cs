@@ -42,6 +42,11 @@ public class PunchItemChangeHistoryEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemChangeHistoryEvent)} is missing {nameof(PunchItemChangeHistoryEvent.ProCoSysGuid)}");
         }
+        
+        if (busEvent.PunchItemGuid == Guid.Empty)
+        {
+            throw new Exception($"{nameof(PunchItemChangeHistoryEvent)} is missing {nameof(PunchItemChangeHistoryEvent.PunchItemGuid)}");
+        }
     }
 
     private static HistoryItem CreateHistoryItemEntity(PunchItemChangeHistoryEvent busEvent)
@@ -52,7 +57,7 @@ public class PunchItemChangeHistoryEventConsumer(
         {
             busEventChangedAt = DateTime.SpecifyKind(busEventChangedAt, DateTimeKind.Utc);
         }
-        var historyItem = new HistoryItem(busEvent.PunchGuid,
+        var historyItem = new HistoryItem(busEvent.PunchItemGuid,
             $"'{property.Name}' change history imported form old ProCoSys punch item",
             Guid.Empty, // In PCS4 PUNCHLISTITEM_CHANGEHISTORY we don't have mapping to history records to Persons 
             busEvent.ChangedBy,
@@ -151,7 +156,7 @@ public class PunchItemChangeHistoryEventConsumer(
 
 public record PunchItemChangeHistoryEvent(
     Guid ProCoSysGuid,
-    Guid PunchGuid,
+    Guid PunchItemGuid,
     string FieldName,
     string? OldValue,
     string? OldValueLong,

@@ -52,7 +52,7 @@ public class PunchItemChangeHistoryEventConsumerTests
         Assert.IsNotNull(_historyItemAddedToRepository);
         Assert.AreEqual("'FN' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(bEvent.ProCoSysGuid, _historyItemAddedToRepository.Guid);
-        Assert.AreEqual(bEvent.PunchGuid, _historyItemAddedToRepository.EventForGuid);
+        Assert.AreEqual(bEvent.PunchItemGuid, _historyItemAddedToRepository.EventForGuid);
         Assert.IsNull(_historyItemAddedToRepository.EventForParentGuid);
         Assert.AreEqual(bEvent.ChangedAt.Ticks, _historyItemAddedToRepository.EventAtUtc.Ticks);
         Assert.AreEqual(bEvent.ChangedBy, _historyItemAddedToRepository.EventByFullName);
