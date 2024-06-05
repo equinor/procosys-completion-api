@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,6 +29,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected ISWCRRepository _swcrRepositoryMock;
         protected IDocumentRepository _documentRepositoryMock;
         protected IMessageProducer _messageProducerMock;
+        protected ICheckListApiService _checkListApiServiceMock;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
@@ -63,6 +65,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _swcrRepositoryMock = Substitute.For<ISWCRRepository>();
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
             _messageProducerMock = Substitute.For<IMessageProducer>();
+            _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
             var id = 5;
             _currentPerson = SetupPerson(++id);
             _personRepositoryMock.GetCurrentPersonAsync(default)

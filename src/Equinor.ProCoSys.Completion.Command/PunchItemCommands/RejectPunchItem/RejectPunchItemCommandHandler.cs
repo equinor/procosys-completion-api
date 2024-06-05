@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly IDeepLinkUtility _deepLinkUtility;
     private readonly IMessageProducer _messageProducer;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICheckListApiService _checkListApiService;
     private readonly ILogger<RejectPunchItemCommandHandler> _logger;
     private readonly IOptionsMonitor<ApplicationOptions> _options;
 
@@ -47,6 +49,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         IDeepLinkUtility deepLinkUtility,
         IMessageProducer messageProducer,
         IUnitOfWork unitOfWork,
+        ICheckListApiService checkListApiService,
         ILogger<RejectPunchItemCommandHandler> logger,
         IOptionsMonitor<ApplicationOptions> options)
     {
@@ -59,6 +62,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _deepLinkUtility = deepLinkUtility;
         _messageProducer = messageProducer;
         _unitOfWork = unitOfWork;
+        _checkListApiService = checkListApiService;
         _logger = logger;
         _options = options;
     }
@@ -92,6 +96,8 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 

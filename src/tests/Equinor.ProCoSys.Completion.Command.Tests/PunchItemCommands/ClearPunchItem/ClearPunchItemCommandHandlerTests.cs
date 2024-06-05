@@ -29,6 +29,7 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             _messageProducerMock,
+            _checkListApiServiceMock,
             Substitute.For<ILogger<ClearPunchItemCommandHandler>>());
     }
 

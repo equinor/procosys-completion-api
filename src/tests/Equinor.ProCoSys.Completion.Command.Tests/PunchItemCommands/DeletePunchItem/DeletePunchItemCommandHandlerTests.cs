@@ -31,6 +31,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
                 _syncToPCS4ServiceMock,
                 _unitOfWorkMock,
                 _messageProducerMock,
+                _checkListApiServiceMock,
                 _logger);
         }
 

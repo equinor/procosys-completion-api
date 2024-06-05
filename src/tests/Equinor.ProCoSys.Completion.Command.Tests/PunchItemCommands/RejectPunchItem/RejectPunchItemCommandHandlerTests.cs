@@ -79,6 +79,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _deepLinkUtilityMock,
             _messageProducerMock,
             _unitOfWorkMock,
+            _checkListApiServiceMock,
             Substitute.For<ILogger<RejectPunchItemCommandHandler>>(),
             _optionsMock);
     }

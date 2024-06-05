@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Client;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
@@ -28,5 +32,16 @@ public class MainApiCheckListService : ICheckListApiService
                   $"&api-version={_apiVersion}";
 
         return await _mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
+    }
+
+    public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
+    {
+        var url = $"{_baseAddress}CheckList/ForProCoSys5" +
+                  $"?plantId={plant}" +
+                  $"&api-version={_apiVersion}";
+
+        var requestBody = JsonConvert.SerializeObject(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        await _mainApiClient.PostAsync(url, content, cancellationToken);
     }
 }
