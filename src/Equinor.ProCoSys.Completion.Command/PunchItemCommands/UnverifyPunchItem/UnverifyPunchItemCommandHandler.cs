@@ -57,7 +57,6 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -68,7 +67,7 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on unverify of punch item with guid {PunchItemGuid}", request.PunchItemGuid);
+            _logger.LogError(e, "Error occurred on unverify of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

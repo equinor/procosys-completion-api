@@ -8,6 +8,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
@@ -30,6 +31,7 @@ public class AttachmentService : IAttachmentService
     private readonly IMessageProducer _messageProducer;
     private readonly ILogger<AttachmentService> _logger;
     private readonly IModifiedEventService _modifiedEventService;
+    private readonly ISyncToPCS4Service _syncToPCS4Service;
 
     public AttachmentService(
         IAttachmentRepository attachmentRepository,
@@ -39,7 +41,8 @@ public class AttachmentService : IAttachmentService
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
         IMessageProducer messageProducer,
         ILogger<AttachmentService> logger,
-        IModifiedEventService modifiedEventService)
+        IModifiedEventService modifiedEventService,
+        ISyncToPCS4Service syncToPCS4Service)
     {
         _attachmentRepository = attachmentRepository;
         _plantProvider = plantProvider;
@@ -49,6 +52,7 @@ public class AttachmentService : IAttachmentService
         _messageProducer = messageProducer;
         _logger = logger;
         _modifiedEventService = modifiedEventService;
+        _syncToPCS4Service = syncToPCS4Service;
     }
 
     public async Task<AttachmentDto> UploadNewAsync(
@@ -60,32 +64,44 @@ public class AttachmentService : IAttachmentService
         string contentType,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        if (attachment is not null)
+        try
         {
-            throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
+            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+            if (attachment is not null)
+            {
+                throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
+            }
+
+            attachment = new Attachment(
+                project,
+                parentType,
+                parentGuid,
+                fileName);
+            _attachmentRepository.Add(attachment);
+
+            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+            await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
+
+            // ReSharper disable once UnusedVariable
+            var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
         }
-
-        attachment = new Attachment(
-            project,
-            parentType,
-            parentGuid,
-            fileName);
-        _attachmentRepository.Add(attachment);
-
-        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
-        await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
-
-        // ReSharper disable once UnusedVariable
-        var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncNewObjectAsync(SyncToPCS4Service.Attachment, integrationEvent, attachment.Plant, cancellationToken);
-
-        return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on insertion of Attachment");
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<string> UploadOverwriteAsync(
@@ -97,32 +113,44 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
-
-        if (attachment is null)
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        
+        try
         {
-            throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
+            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+            if (attachment is null)
+            {
+                throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
+            }
+
+            var changes = SetRevisionNumber(attachment);
+
+            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+            await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
+
+            // ReSharper disable once UnusedVariable
+            var integrationEvent = await PublishUpdatedEventsAsync(
+                $"Attachment {attachment.FileName} uploaded again",
+                attachment,
+                changes,
+                cancellationToken);
+
+            attachment.SetRowVersion(rowVersion);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return attachment.RowVersion.ConvertToString();
         }
-
-        var changes = SetRevisionNumber(attachment);
-
-        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
-        await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
-
-        // ReSharper disable once UnusedVariable
-        var integrationEvent = await PublishUpdatedEventsAsync(
-            $"Attachment {attachment.FileName} uploaded again", 
-            attachment, 
-            changes, 
-            cancellationToken);
-
-        attachment.SetRowVersion(rowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.Attachment, integrationEvent, attachment.Plant, cancellationToken);
-
-        return attachment.RowVersion.ConvertToString();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on update of Attachment with parent guid {parentGuid}", parentGuid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<bool> FileNameExistsForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
@@ -136,29 +164,41 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var fullBlobPath = attachment.GetFullBlobPath();
-        await _azureBlobService.DeleteAsync(
-            _blobStorageOptions.Value.BlobContainer,
-            fullBlobPath,
-            cancellationToken);
+        try
+        {
+            var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
 
-        // ReSharper disable once UnusedVariable
-        var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
+            var fullBlobPath = attachment.GetFullBlobPath();
+            await _azureBlobService.DeleteAsync(
+                _blobStorageOptions.Value.BlobContainer,
+                fullBlobPath,
+                cancellationToken);
 
-        // Set correct Concurrency
-        attachment.SetRowVersion(rowVersion);
-        _attachmentRepository.Remove(attachment);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // ReSharper disable once UnusedVariable
+            var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
 
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Service.Attachment, integrationEvent, attachment.Plant, cancellationToken);
+            // Set correct Concurrency
+            attachment.SetRowVersion(rowVersion);
+            _attachmentRepository.Remove(attachment);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
-            attachment.FileName, 
-            attachment.Guid, 
-            attachment.ParentGuid);
+            await _syncToPCS4Service.SyncAttachmentDeleteAsync(integrationEvent, cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
+                attachment.FileName,
+                attachment.Guid,
+                attachment.ParentGuid);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on deletion of Attachment with guid {guid}", guid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<bool> ExistsAsync(Guid guid,
@@ -172,24 +212,39 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
-        attachment.UpdateLabels(labels.ToList());
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var changes = UpdateAttachment(attachment, description);
-        // ReSharper disable once NotAccessedVariable
-        AttachmentUpdatedIntegrationEvent integrationEvent;
-        if (changes.Any())
+        try
         {
-            // ReSharper disable once RedundantAssignment
-            integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
+            var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
+            attachment.UpdateLabels(labels.ToList());
+
+            var changes = UpdateAttachment(attachment, description);
+            // ReSharper disable once NotAccessedVariable
+            AttachmentUpdatedIntegrationEvent? integrationEvent = null;
+            if (changes.Any())
+            {
+                // ReSharper disable once RedundantAssignment
+                integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
+            }
+            attachment.SetRowVersion(rowVersion);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (integrationEvent != null)
+            {
+                await _syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
+            }
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return attachment.RowVersion.ConvertToString();
         }
-        attachment.SetRowVersion(rowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Todo 109496 sync with pcs4 goes here
-        // await _syncToPCS4Service.SyncObjectUpdateAsync(SyncToPCS4Service.Attachment, integrationEvent, attachment.Plant, cancellationToken);
-
-        return attachment.RowVersion.ConvertToString();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on update of Attachment with guid {guid}", guid);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     private List<IChangedProperty> UpdateAttachment(Attachment attachment, string description)

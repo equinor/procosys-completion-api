@@ -1,3 +1,3 @@
 ﻿namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 
-public interface IHistoryItemRepository : IRepository<HistoryItem>;
+public interface IHistoryItemRepository : IRepositoryWithGuid<HistoryItem>;

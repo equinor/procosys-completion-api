@@ -122,7 +122,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //await _syncToPCS4Service.SyncNewObjectAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
             await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -133,7 +132,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on insertion of punch item");
+            _logger.LogError(e, "Error occurred on insertion of PunchListItem");
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

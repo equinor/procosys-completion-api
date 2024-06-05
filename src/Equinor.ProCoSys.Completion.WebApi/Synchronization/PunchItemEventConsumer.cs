@@ -33,7 +33,6 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
-    
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
@@ -58,8 +57,8 @@ public class PunchItemEventConsumer(
         currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(PunchItemEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n {{No}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+            nameof(PunchItemEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
     private static void ValidateMessage(PunchItemEvent busEvent)
@@ -84,11 +83,24 @@ public class PunchItemEventConsumer(
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
-        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
-            busEvent.RaisedByOrgGuid.Value,
-            cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing RaisedByOrgGuid");
-        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
-            busEvent.ClearingByOrgGuid.Value, cancellationToken) : throw new Exception($"{nameof(PunchItemEvent)} is missing ClearingByOrgGuid");
+        LibraryItem? unknownOrg = null;
+        if (!busEvent.RaisedByOrgGuid.HasValue)
+        {
+            unknownOrg = await libraryItemRepository.GetOrCreateUnknownOrgAsync(busEvent.Plant, cancellationToken);
+        }
+        if(!busEvent.ClearingByOrgGuid.HasValue && unknownOrg is null)
+        {
+            unknownOrg = await libraryItemRepository.GetOrCreateUnknownOrgAsync(busEvent.Plant, cancellationToken);
+        }
+        
+        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue 
+            ? await libraryItemRepository.GetAsync(busEvent.RaisedByOrgGuid.Value, cancellationToken) 
+            : unknownOrg!;
+            
+        
+        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue 
+            ? await libraryItemRepository.GetAsync(busEvent.ClearingByOrgGuid.Value, cancellationToken) 
+            : unknownOrg!;
 
         var punchItem = new PunchItem(
             busEvent.Plant,
@@ -108,7 +120,7 @@ public class PunchItemEventConsumer(
 
         return punchItem;
     }
-
+    
     private async Task MapPunchItemEventToPunchItem(PunchItemEvent busEvent, PunchItem punchItem,
         CancellationToken cancellationToken)
     {

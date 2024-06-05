@@ -262,7 +262,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         //await _syncToPCS4ServiceMock.Received(1)
-        //    .SyncObjectUpdateAsync(SyncToPCS4Constants.PunchItem, integrationEvent, _testPlant, default);
         await _syncToPCS4ServiceMock.Received(1).SyncPunchListItemUpdateAsync(integrationEvent, default);
     }
 

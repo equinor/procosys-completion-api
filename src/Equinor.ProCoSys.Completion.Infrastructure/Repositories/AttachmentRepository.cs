@@ -11,12 +11,12 @@ public class AttachmentRepository(CompletionContext context)
     : EntityWithGuidRepository<Attachment>(context, context.Attachments), IAttachmentRepository
 {
     public Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
-        => DefaultQuery.SingleOrDefaultAsync(
+        => DefaultQueryable.SingleOrDefaultAsync(
             a => a.ParentGuid == parentGuid && a.FileName == fileName,
             cancellationToken);
 
     public async Task<Attachment> GetAttachmentWithLabelsAsync(Guid attachmentGuid, CancellationToken cancellationToken) 
-        => await DefaultQuery
+        => await DefaultQueryable
                .Include(a => a.Labels)
                .SingleOrDefaultAsync(a => a.Guid == attachmentGuid, cancellationToken)
            ?? throw new EntityNotFoundException<Attachment>(attachmentGuid);

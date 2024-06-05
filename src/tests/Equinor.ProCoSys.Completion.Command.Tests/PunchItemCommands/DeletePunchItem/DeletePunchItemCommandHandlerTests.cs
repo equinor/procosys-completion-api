@@ -147,7 +147,6 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunc
             await _dut.Handle(_command, default);
 
             // Assert
-            //await _syncToPCS4ServiceMock.Received(1).SyncObjectDeletionAsync(SyncToPCS4Constants.PunchItem, integrationEvent, _testPlant, default);
             await _syncToPCS4ServiceMock.Received(1).SyncPunchListItemDeleteAsync(integrationEvent, default);
         }
 

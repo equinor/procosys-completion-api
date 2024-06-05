@@ -19,13 +19,11 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     private readonly string _testPlant = TestPlantWithoutData;
 
     private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
-    private readonly LibraryType _otherThanSortingType = LibraryType.PUNCHLIST_PRIORITY;
     private readonly LibraryType _typeType = LibraryType.PUNCHLIST_TYPE;
 
     private LibraryItem _punchListSortingLibraryItemA;
     private LibraryItem _punchListSortingLibraryItemB;
     private LibraryItem _punchListSortingLibraryItemC;
-    private LibraryItem _punchListPriorityLibraryItem;
     private LibraryItem _punchListTypeLibraryItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
@@ -54,7 +52,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryDataToPlant(context);
+        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
 
         var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -73,7 +71,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryDataToPlant(context);
+        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
 
         var query = new GetLibraryItemsQuery([_sortingType, _typeType]);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -92,7 +90,7 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryDataToPlant(context);
+        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
 
         var query = new GetLibraryItemsQuery([_sortingType]);
         var dut = new GetLibraryItemsQueryHandler(context);
@@ -115,19 +113,24 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
     }
 
-    private void AddLibraryDataToPlant(CompletionContext context)
+    private void AddLibraryItemsToPlantInclusiveVoidedLibraryItem(CompletionContext context)
     {
         _punchListSortingLibraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", _sortingType);
         _punchListSortingLibraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", _sortingType);
         _punchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", _sortingType);
-        _punchListPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "O", "O Desc", _otherThanSortingType);
+        var voidedPunchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", _sortingType)
+            {IsVoided = true};
         _punchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "T", "T Desc", _typeType);
+        var voidedPunchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", _typeType)
+            { IsVoided = true };
 
         context.Library.Add(_punchListSortingLibraryItemC);
         context.Library.Add(_punchListSortingLibraryItemA);
         context.Library.Add(_punchListSortingLibraryItemB);
-        context.Library.Add(_punchListPriorityLibraryItem);
+        context.Library.Add(_punchListSortingLibraryItemB);
+        context.Library.Add(voidedPunchListSortingLibraryItemC);
         context.Library.Add(_punchListTypeLibraryItem);
+        context.Library.Add(voidedPunchListTypeLibraryItem);
 
         context.SaveChangesAsync().Wait();
     }

@@ -9,6 +9,7 @@ public static class QueueNames
     public static string DocumentCompletionTransferQueue = "documentCompletionTransferQueue";
     public static string WorkOrderCompletionTransferQueue = "workOrderCompletionTransferQueue";
     public static string PunchItemCompletionTransferQueue = "punchItemCompletionTransferQueue";
+    public static string PunchItemChangeHistoryCompletionTransferQueue = "punchItemChangeHistoryCompletionTransferQueue";
     public static string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
     public static string PersonCompletionTransferQueue = "personCompletionTransferQueue";
 }

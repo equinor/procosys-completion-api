@@ -57,7 +57,6 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //await _syncToPCS4Service.SyncObjectDeletionAsync(SyncToPCS4Constants.PunchItem, integrationEvent, punchItem.Plant, cancellationToken);
             await _syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -68,7 +67,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on deletion of punch item with guid {PunchItemGuid}", request.PunchItemGuid);
+            _logger.LogError(e, "Error occurred on deletion of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

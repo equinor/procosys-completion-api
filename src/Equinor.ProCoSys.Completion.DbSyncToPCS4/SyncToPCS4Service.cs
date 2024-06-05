@@ -31,100 +31,46 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
     }
-    public async Task SyncNewPunchListItemAsync(object updateEvent, CancellationToken cancellationToken)
+
+    public async Task SyncNewPunchListItemAsync(object addEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(addEvent, SyncToPCS4Constants.PunchListItemInsertEndpoint, SyncToPCS4Constants.PunchListItem, SyncToPCS4Constants.Post, cancellationToken);
+
+    public async Task SyncPunchListItemUpdateAsync(object updateEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(updateEvent, SyncToPCS4Constants.PunchListItemUpdateEndpoint, SyncToPCS4Constants.PunchListItem, SyncToPCS4Constants.Put, cancellationToken);
+
+    public async Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(deleteEvent, SyncToPCS4Constants.PunchListItemDeleteEndpoint, SyncToPCS4Constants.PunchListItem, SyncToPCS4Constants.Delete, cancellationToken);
+
+    public async Task SyncNewAttachmentAsync(object addEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(addEvent, SyncToPCS4Constants.AttachmentInsertEndpoint, SyncToPCS4Constants.Attachment, SyncToPCS4Constants.Post, cancellationToken);
+
+    public async Task SyncAttachmentUpdateAsync(object updateEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(updateEvent, SyncToPCS4Constants.AttachmentUpdateEndpoint, SyncToPCS4Constants.Attachment, SyncToPCS4Constants.Put, cancellationToken);
+
+    public async Task SyncAttachmentDeleteAsync(object deleteEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(deleteEvent, SyncToPCS4Constants.AttachmentDeleteEndpoint, SyncToPCS4Constants.Attachment, SyncToPCS4Constants.Delete, cancellationToken);
+
+    public async Task SyncNewLinkAsync(object addEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(addEvent, SyncToPCS4Constants.LinkInsertEndpoint, SyncToPCS4Constants.Link, SyncToPCS4Constants.Post, cancellationToken);
+
+    public async Task SyncLinkUpdateAsync(object updateEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(updateEvent, SyncToPCS4Constants.LinkUpdateEndpoint, SyncToPCS4Constants.Link, SyncToPCS4Constants.Put, cancellationToken);
+
+    public async Task SyncLinkDeleteAsync(object deleteEvent, CancellationToken cancellationToken) 
+        => await SynchronizeEventAsync(deleteEvent, SyncToPCS4Constants.LinkDeleteEndpoint, SyncToPCS4Constants.Link, SyncToPCS4Constants.Delete, cancellationToken);
+
+    private async Task SynchronizeEventAsync(object syncEvent, string endpoint, string objectName, string method, CancellationToken cancellationToken)
     {
         if (!_options.CurrentValue.Enabled)
         {
             return;
         }
 
-        var requestBody = JsonConvert.SerializeObject(updateEvent);
+        var requestBody = JsonConvert.SerializeObject(syncEvent);
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(new HttpMethod("POST"), SyncToPCS4Constants.PunchListItemInsertEndpoint) { Content = content };
-        await SendRequest(request, "Insert", "PunchListItem", cancellationToken);
-    }
-
-    public async Task SyncPunchListItemUpdateAsync(object updateEvent, CancellationToken cancellationToken)
-    {
-        if (!_options.CurrentValue.Enabled)
-        {
-            return;
-        }
-
-        var requestBody = JsonConvert.SerializeObject(updateEvent);
-        _logger.LogDebug(@"Serialized Request: {requestBody}",requestBody);
-        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(new HttpMethod("PUT"), SyncToPCS4Constants.PunchListItemUpdateEndpoint) { Content = content };
-        await SendRequest(request, "Update", "PunchListItem", cancellationToken);
-    }
-
-    public async Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken)
-    {
-        if (!_options.CurrentValue.Enabled)
-        {
-            return;
-        }
-
-        var requestBody = JsonConvert.SerializeObject(deleteEvent);
-        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(new HttpMethod("DELETE"), SyncToPCS4Constants.PunchListItemDeleteEndpoint) { Content = content };
-        await SendRequest(request, "Delete", "PunchListItem", cancellationToken);
-    }
-
-    /**
-     * Insert a new row in the PCS 4 database based on the sourceObject.
-     * Note: The endpoint must have support for the given sourceObjectName.
-     */
-    public async Task SyncNewObjectAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
-    {
-        if (!_options.CurrentValue.Enabled)
-        {
-            return;
-        }
-
-        var request = CreateRequest(SyncToPCS4Constants.InsertEndpoint, "POST", sourceObjectName, sourceObject, plant);
-        await SendRequest(request, "Insert", sourceObjectName, cancellationToken);
-    }
-
-    /**
-     * Updates the PCS 4 database with changes provided by the sourceObject. 
-     * Note: The endpoint must have support for the given sourceObjectName.
-     */
-    public async Task SyncObjectUpdateAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
-    {
-        if (!_options.CurrentValue.Enabled)
-        {
-            return;
-        }
-
-        var request = CreateRequest(SyncToPCS4Constants.UpdateEndpoint, "PUT", sourceObjectName, sourceObject, plant);
-        await SendRequest(request, "Update", sourceObjectName, cancellationToken);
-    }
-
-    /**
-     * Deletes the row in the PCS 4 database that correspond to the given source object. 
-     * Note: The endpoint must have support for the given sourceObjectName.
-     */
-    public async Task SyncObjectDeletionAsync(string sourceObjectName, object sourceObject, string plant, CancellationToken cancellationToken)
-    {
-        if (!_options.CurrentValue.Enabled)
-        {
-            return;
-        }
-
-        var request = CreateRequest(SyncToPCS4Constants.DeleteEndpoint, "DELETE", sourceObjectName, sourceObject, plant);
-        await SendRequest(request, "Delete", sourceObjectName, cancellationToken);
-    }
-
-    private static HttpRequestMessage CreateRequest(string url, string method, string sourceObjectName, object sourceObject, string plant)
-    {
-        var bodyObject = new SyncObjectDto { SyncObjectName = sourceObjectName, SyncObject = sourceObject, SyncPlant = plant };
-
-        var requestBody = JsonConvert.SerializeObject(bodyObject);
-        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(new HttpMethod(method), url) { Content = content };
-
-        return request;
+        var request = new HttpRequestMessage(new HttpMethod(method), endpoint) { Content = content };
+        _logger.LogInformation("Sending a request for a {method} method for an object of type {objectName}", method, objectName);
+        await SendRequest(request, method, objectName, cancellationToken);
     }
 
     private async Task SendRequest(HttpRequestMessage request, string method, string sourceObjectName, CancellationToken cancellationToken)

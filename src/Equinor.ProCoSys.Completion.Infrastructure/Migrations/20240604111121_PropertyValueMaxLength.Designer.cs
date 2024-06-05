@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20240604111121_PropertyValueMaxLength")]
+    partial class PropertyValueMaxLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,9 +24,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.HasSequence<int>("SEQ_PUNCHITEM_ITEMNO")
-                .StartsAt(5000000L);
 
             modelBuilder.Entity("AttachmentLabel", b =>
                 {
@@ -1058,11 +1058,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("ItemNo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValueSql("NEXT VALUE FOR SEQ_PUNCHITEM_ITEMNO");
 
                     b.Property<DateTime?>("MaterialETAUtc")
                         .HasColumnType("datetime2");

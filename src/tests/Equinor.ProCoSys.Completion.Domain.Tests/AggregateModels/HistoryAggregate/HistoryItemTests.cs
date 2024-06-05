@@ -14,6 +14,7 @@ public class HistoryItemTests
     private readonly string _eventByFullName = "Peter Pan";
     private readonly DateTime _eventAtUtc = DateTime.UtcNow;
     private readonly Guid _eventForParentGuid = Guid.NewGuid();
+    private readonly Guid _proCoSysGuid = Guid.NewGuid();
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()
@@ -34,7 +35,24 @@ public class HistoryItemTests
         Assert.AreEqual(_eventByFullName, dut.EventByFullName);
         Assert.AreEqual(_eventAtUtc, dut.EventAtUtc);
         Assert.AreEqual(_eventForParentGuid, dut.EventForParentGuid);
+        Assert.AreNotEqual(Guid.Empty, dut.Guid);
         Assert.AreEqual(0, dut.Properties.Count);
+    }
+
+    [TestMethod]
+    public void Constructor_ShouldSetProCoSysGuid_WhenGiven()
+    {
+        var dut = new HistoryItem(
+            _eventForGuid,
+            _eventDisplayName,
+            _eventByOid,
+            _eventByFullName,
+            _eventAtUtc,
+            _eventForParentGuid,
+            _proCoSysGuid);
+        
+        // Assert
+        Assert.AreEqual(_proCoSysGuid, dut.Guid);
     }
 
     [TestMethod]

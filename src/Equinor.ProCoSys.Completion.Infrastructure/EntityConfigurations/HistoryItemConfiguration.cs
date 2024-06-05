@@ -36,5 +36,9 @@ internal class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
             .OnDelete(DeleteBehavior.NoAction);
 
         // todo History: Create index
+
+        builder
+            .HasIndex(x => x.Guid)
+            .IsUnique();
     }
 }

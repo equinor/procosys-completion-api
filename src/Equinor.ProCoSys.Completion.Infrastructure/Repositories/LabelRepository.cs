@@ -18,7 +18,7 @@ public class LabelRepository : EntityRepository<Label>, ILabelRepository
     public Task<List<Label>> GetManyAsync(IEnumerable<string> texts, CancellationToken cancellationToken)
     {
         var textsLowerCase = texts.Select(l => l.ToLower()).ToList();
-        return DefaultQuery.Where(l => textsLowerCase.Contains(l.Text.ToLower()))
+        return DefaultQueryable.Where(l => textsLowerCase.Contains(l.Text.ToLower()))
             .ToListAsync(cancellationToken);
     }
 
