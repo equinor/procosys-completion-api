@@ -435,6 +435,25 @@ public class PunchItemChangeHistoryEventConsumerTests
             => _dut.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
 
+    [TestMethod]
+    public async Task Consume_ShouldAddNewHistoryItem_WhenBothOldAndNewValueIsNull()
+    {
+        //Arrange
+        var bEvent =
+            new PunchItemChangeHistoryEvent(Guid.NewGuid(), Guid.NewGuid(), "WO_ID", null, null, null, null, "by", DateTime.UtcNow);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        Assert.IsNotNull(_historyItemAddedToRepository);
+        Assert.AreEqual("'WO no' in punch item updated", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
+        AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
+            "WO no", null, null);
+    }
+
     private void AssertProperty(Property property, string fieldName, string? oldValue, string? newValue)
     {
         Assert.AreEqual(fieldName, property.Name);

@@ -42,10 +42,6 @@ public class PunchItemChangeHistoryEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemChangeHistoryEvent)} is missing {nameof(PunchItemChangeHistoryEvent.ProCoSysGuid)}");
         }
-        if (busEvent.OldValue is null && busEvent.NewValue is null)
-        {
-            throw new Exception($"{nameof(PunchItemChangeHistoryEvent)} is missing both {nameof(PunchItemChangeHistoryEvent.OldValue)} and {nameof(PunchItemChangeHistoryEvent.NewValue)}");
-        }
     }
 
     private static HistoryItem CreateHistoryItemEntity(PunchItemChangeHistoryEvent busEvent)
@@ -161,6 +157,6 @@ public record PunchItemChangeHistoryEvent(
     string? OldValueLong,
     string? NewValue,
     string? NewValueLong,
-    string ChangedBy,
-    DateTime ChangedAt
+    string ChangedBy, // Nullable in PCS4 DB, but pr June 5, 2024, no records exists with null
+    DateTime ChangedAt  // Nullable in PCS4 DB, but pr June 5, 2024, no records exists with null
 );
