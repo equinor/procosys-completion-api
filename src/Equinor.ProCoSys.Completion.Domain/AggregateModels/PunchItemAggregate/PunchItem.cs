@@ -16,6 +16,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     private DateTime? _dueTimeUtc;
     private DateTime? _materialETAUtc;
     public const int IdentitySeed = 4000001;
+    public const int IdentitySeedItemNo = 5000000;
     public const string PunchItemItemNoSequence = "SEQ_PUNCHITEM_ITEMNO";
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
