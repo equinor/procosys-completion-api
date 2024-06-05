@@ -36,7 +36,7 @@ public class ProjectEventConsumer(
             if (project.ProCoSys4LastUpdated == projectEvent.LastUpdated)
             {
                 logger.LogInformation("Project Message Ignored because LastUpdated is the same as in db\n" +
-                                   "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                   "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                    "EventLastUpdated: {LastUpdated} \n" +
                                    "SyncedToCompletion: {CreatedAtUtc} \n",
                     context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.SyncTimestamp );
@@ -46,7 +46,7 @@ public class ProjectEventConsumer(
             if (project.ProCoSys4LastUpdated > projectEvent.LastUpdated)
             {
                 logger.LogWarning("Project Message Ignored because a newer LastUpdated already exits in db\n" +
-                                       "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                       "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                        "EventLastUpdated: {LastUpdated} \n" +
                                        "LastUpdatedFromDb: {ProjectLastUpdated}",
                     context.MessageId, projectEvent.ProCoSysGuid, projectEvent.LastUpdated, project.ProCoSys4LastUpdated);

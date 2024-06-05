@@ -30,6 +30,7 @@ public class PunchItemTests : IModificationAuditableTests
     private readonly Category _itemCategory = Category.PA;
     private readonly string _itemDescription = "Item A";
     private readonly Guid _checkListGuid = Guid.NewGuid();
+    private readonly Guid _proCoSysGuid = Guid.NewGuid();
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
     protected override IModificationAuditable GetModificationAuditable() => _dut;
@@ -67,8 +68,15 @@ public class PunchItemTests : IModificationAuditableTests
         _actionBy = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
         _actionBy.SetProtectedIdForTesting(132);
 
-        _dut = new PunchItem(_testPlant, _project, _checkListGuid, _itemCategory, _itemDescription, _raisedByOrg,
-            _clearingByOrg);
+        _dut = new PunchItem(
+            _testPlant, 
+            _project, 
+            _checkListGuid, 
+            _itemCategory, 
+            _itemDescription, 
+            _raisedByOrg,
+            _clearingByOrg,
+            _proCoSysGuid);
     }
 
     #region Constructor
@@ -87,6 +95,28 @@ public class PunchItemTests : IModificationAuditableTests
         Assert.AreEqual(_raisedByOrg.Id, _dut.RaisedByOrgId);
         Assert.AreEqual(_clearingByOrg.Id, _dut.ClearingByOrgId);
         Assert.AreEqual(_clearingByOrg, _dut.ClearingByOrg);
+    }
+
+    [TestMethod]
+    public void Constructor_ShouldSetProCoSysGuid_WhenGiven() =>
+        // Assert
+        Assert.AreEqual(_proCoSysGuid, _dut.Guid);
+
+    [TestMethod]
+    public void Constructor_ShouldSetAGuid_WhenProCoSysGuidNotGiven()
+    {
+        // Arrange
+        var dut = new PunchItem(
+            _testPlant,
+            _project,
+            _checkListGuid,
+            _itemCategory,
+            _itemDescription,
+            _raisedByOrg,
+            _clearingByOrg);
+
+        // Assert
+        Assert.AreNotEqual(Guid.Empty, dut.Guid);
     }
 
     [TestMethod]

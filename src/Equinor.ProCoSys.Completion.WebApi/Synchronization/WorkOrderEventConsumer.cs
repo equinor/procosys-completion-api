@@ -29,7 +29,7 @@ public class WorkOrderEventConsumer(
             if (workOrder.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
                 logger.LogInformation("WorkOrder Message Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
                     context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, workOrder.SyncTimestamp );
@@ -39,7 +39,7 @@ public class WorkOrderEventConsumer(
             if (workOrder.ProCoSys4LastUpdated > busEvent.LastUpdated)
             {
                 logger.LogWarning("WorkOrder Message Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid {ProCoSysGuid} \n " +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
                                   "LastUpdatedFromDb: {LastUpdated}",
                     context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, workOrder.ProCoSys4LastUpdated);
@@ -56,8 +56,8 @@ public class WorkOrderEventConsumer(
 
         await unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation($"{nameof(WorkOrderEvent)} Message Consumed: {{MessageId}} \n Guid {{Guid}} \n No {{No}}",
-            context.MessageId, busEvent.ProCoSysGuid, busEvent.WoNo);
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
+            nameof(WorkOrderEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.WoNo);
     }
 
     private static void ValidateMessage(WorkOrderEvent busEvent)

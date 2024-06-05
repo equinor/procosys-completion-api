@@ -19,6 +19,16 @@ internal class PropertyConfiguration : IEntityTypeConfiguration<Property>
             .HasMaxLength(Property.ValueDisplayTypeLengthMax)
             .IsRequired();
 
+        builder.Property(x => x.Value)
+            .HasMaxLength(Property.ValueLengthMax);
+
+        builder.Property(x => x.OldValue)
+            .HasMaxLength(Property.ValueLengthMax);
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(Property.NameLengthMax)
+            .IsRequired();
+
         // todo History: Create index
     }
 }
