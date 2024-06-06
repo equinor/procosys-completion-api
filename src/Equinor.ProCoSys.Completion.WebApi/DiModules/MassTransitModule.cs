@@ -161,7 +161,7 @@ public static class MassTransitModule
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
-                    e.PrefetchCount = 20;
+                    e.PrefetchCount = 30;
                 });
                 cfg.ReceiveEndpoint(QueueNames.WorkOrderCompletionTransferQueue, e =>
                 {
