@@ -12,7 +12,7 @@ variables:
     value: 40
 
   - name: 'System.Debug'
-    value: 'true'
+    value: 'false'
 
   - name: 'Agent.Diagnostic'
     value: 'true'
