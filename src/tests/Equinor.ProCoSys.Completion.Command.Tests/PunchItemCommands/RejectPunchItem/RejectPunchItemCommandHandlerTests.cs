@@ -247,18 +247,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestMethod]
     public async Task HandlingCommand_ShouldRecalculateChecklist()
     {
-        // Arrange
-        PunchItemUpdatedIntegrationEvent integrationEvent = null!;
-        _messageProducerMock
-            .When(x => x.PublishAsync(
-                Arg.Any<PunchItemUpdatedIntegrationEvent>(),
-                default))
-            .Do(info =>
-            {
-                integrationEvent = info.Arg<PunchItemUpdatedIntegrationEvent>();
-            });
-
-
         // Act
         await _dut.Handle(_command, default);
 

@@ -132,18 +132,6 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestMethod]
     public async Task HandlingCommand_ShouldRecalculateChecklist()
     {
-        // Arrange
-        PunchItemDeletedIntegrationEvent integrationEvent = null!;
-        _messageProducerMock
-            .When(x => x.PublishAsync(
-                Arg.Any<PunchItemDeletedIntegrationEvent>(),
-                default))
-            .Do(info =>
-            {
-                integrationEvent = info.Arg<PunchItemDeletedIntegrationEvent>();
-            });
-
-
         // Act
         await _dut.Handle(_command, default);
 

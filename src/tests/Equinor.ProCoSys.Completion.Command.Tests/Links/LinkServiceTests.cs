@@ -13,7 +13,6 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using static Microsoft.Graph.Constants;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Links;
 
