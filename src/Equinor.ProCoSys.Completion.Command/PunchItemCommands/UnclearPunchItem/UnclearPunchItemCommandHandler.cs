@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -18,6 +19,7 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessageProducer _messageProducer;
+    private readonly ICheckListApiService _checkListApiService;
     private readonly ILogger<UnclearPunchItemCommandHandler> _logger;
 
     public UnclearPunchItemCommandHandler(
@@ -25,12 +27,14 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
+        ICheckListApiService checkListApiService,
         ILogger<UnclearPunchItemCommandHandler> logger)
     {
         _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _messageProducer = messageProducer;
+        _checkListApiService = checkListApiService;
         _logger = logger;
     }
 
@@ -58,6 +62,8 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

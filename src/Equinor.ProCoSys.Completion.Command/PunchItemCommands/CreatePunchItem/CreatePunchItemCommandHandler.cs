@@ -15,6 +15,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
@@ -36,6 +37,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessageProducer _messageProducer;
+    private readonly ICheckListApiService _checkListApiService;
     private readonly ILogger<CreatePunchItemCommandHandler> _logger;
 
     public CreatePunchItemCommandHandler(
@@ -50,6 +52,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
+        ICheckListApiService checkListApiService,
         ILogger<CreatePunchItemCommandHandler> logger)
     {
         _plantProvider = plantProvider;
@@ -63,6 +66,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _messageProducer = messageProducer;
+        _checkListApiService = checkListApiService;
         _logger = logger;
     }
 
@@ -123,6 +127,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
+
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

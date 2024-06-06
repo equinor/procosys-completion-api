@@ -30,6 +30,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             _messageProducerMock,
+            _checkListApiServiceMock,
             Substitute.For<ILogger<UnclearPunchItemCommandHandler>>());
     }
 
@@ -130,6 +131,17 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4
+    [TestMethod]
+    public async Task HandlingCommand_ShouldRecalculateChecklist()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        var punchItem = _existingPunchItem[_testPlant];
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+    }
+
     [TestMethod]
     public async Task HandlingCommand_ShouldSyncWithPcs4()
     {
