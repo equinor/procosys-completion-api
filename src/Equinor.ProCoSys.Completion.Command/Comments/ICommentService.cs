@@ -14,6 +14,7 @@ public interface ICommentService
     Task<CommentDto> AddAndSaveAsync(
         IUnitOfWork unitOfWork,
         IHaveGuid parentEntity,
+        string plant,
         string text,
         IEnumerable<Label> labels,
         IEnumerable<Person> mentions,
@@ -24,10 +25,12 @@ public interface ICommentService
          */
         string emailTemplateCode,
         CancellationToken cancellationToken);
-    
-    Guid Add(
+
+    Task<Guid> AddAsync(
         IHaveGuid parentEntity,
+        string plant,
         string text,
         IEnumerable<Label> labels,
-        IEnumerable<Person> mentions);
+        IEnumerable<Person> mentions,
+        CancellationToken cancellationToken);
 }

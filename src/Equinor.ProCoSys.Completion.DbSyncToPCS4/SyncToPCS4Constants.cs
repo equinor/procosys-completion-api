@@ -9,6 +9,7 @@ public class SyncToPCS4Constants
 
     // Sync Object Names
     public const string PunchListItem = "PunchListItem";
+    public const string Comment = "Comment";
     public const string Attachment = "Attachment";
     public const string Link = "Link";
 
@@ -16,6 +17,8 @@ public class SyncToPCS4Constants
     public const string PunchListItemInsertEndpoint = "PunchListItem/Add";
     public const string PunchListItemUpdateEndpoint = "PunchListItem/Update";
     public const string PunchListItemDeleteEndpoint = "PunchListItem/Delete";
+
+    public const string CommentInsertEndpoint = "PunchListItem/Comment/Add";
 
     public const string AttachmentInsertEndpoint = "Attachment/Add";
     public const string AttachmentUpdateEndpoint = "Attachment/Update";

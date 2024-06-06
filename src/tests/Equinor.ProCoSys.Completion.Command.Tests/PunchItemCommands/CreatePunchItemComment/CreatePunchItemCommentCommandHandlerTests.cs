@@ -52,6 +52,7 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
         _commentServiceMock.AddAndSaveAsync(
             _unitOfWorkMock,
             _punchItemMock,
+            Arg.Any<string>(),
             _command.Text,
             _labelList,
             _personList,
@@ -89,6 +90,7 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
             .AddAndSaveAsync(
                 _unitOfWorkMock,
                 _punchItemMock,
+                Arg.Any<string>(),
                 _command.Text,
                 _labelList,
                 _personList,

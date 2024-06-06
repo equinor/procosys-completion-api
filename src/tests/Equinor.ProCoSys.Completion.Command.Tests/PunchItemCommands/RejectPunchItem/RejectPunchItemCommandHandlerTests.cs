@@ -134,11 +134,13 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Arrange 
         List<Label> labelsAdded = null!;
         _commentServiceMock
-            .When(x => x.Add(
+            .When(x => x.AddAsync(
                 Arg.Any<IHaveGuid>(),
                 Arg.Any<string>(),
+                Arg.Any<string>(),
                 Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>()))
+                Arg.Any<IEnumerable<Person>>(),
+                Arg.Any<CancellationToken>()))
             .Do(info =>
             {
                 labelsAdded = info.Arg<IEnumerable<Label>>().ToList();
@@ -149,12 +151,14 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         var punchItem = _existingPunchItem[_testPlant];
-        _commentServiceMock.Received(1)
-            .Add(
+        await _commentServiceMock.Received(1)
+            .AddAsync(
                 punchItem,
+                Arg.Any<string>(),
                 _command.Comment,
                 Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>());
+                Arg.Any<IEnumerable<Person>>(),
+                Arg.Any<CancellationToken>());
         Assert.IsNotNull(labelsAdded);
         Assert.AreEqual(1, labelsAdded.Count);
         Assert.AreEqual(_rejectedLabel, labelsAdded.ElementAt(0));
