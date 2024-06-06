@@ -3,31 +3,30 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
-using Equinor.ProCoSys.Completion.WebApi.Synchronization;
+using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization.Services;
 
 [TestClass]
-public class DocumentEventConsumerTests
+public class DocumentConsumerServiceTests
 {
     private readonly IDocumentRepository _documentRepoMock = Substitute.For<IDocumentRepository>();
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly DocumentEventConsumer _dut;
+    private readonly DocumentConsumerService _dut;
     private readonly ConsumeContext<DocumentEvent> _contextMock = Substitute.For<ConsumeContext<DocumentEvent>>();
     private Document? _documentAddedToRepository;
 
     private const string DocumentNo = "112233";
     private const string Plant = "PCS$OSEBERG_C";
 
-    public DocumentEventConsumerTests() =>
-        _dut = new DocumentEventConsumer(
-            Substitute.For<ILogger<DocumentEventConsumer>>(), 
+    public DocumentConsumerServiceTests() =>
+        _dut = new DocumentConsumerService(
+            Substitute.For<ILogger<DocumentConsumerService>>(), 
             _plantSetter, 
             _documentRepoMock,
             _unitOfWorkMock);
@@ -52,7 +51,7 @@ public class DocumentEventConsumerTests
         _documentRepoMock.ExistsAsync(guid, default).Returns(false);
 
         //Act
-        await _dut.Consume(_contextMock);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
         Assert.IsNotNull(_documentAddedToRepository);
@@ -79,7 +78,7 @@ public class DocumentEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.Consume(_contextMock);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
         Assert.IsNull(_documentAddedToRepository);
@@ -109,7 +108,7 @@ public class DocumentEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.Consume(_contextMock);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -135,7 +134,7 @@ public class DocumentEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.Consume(_contextMock);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
@@ -151,7 +150,7 @@ public class DocumentEventConsumerTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.Consume(_contextMock), "Message is missing ProCoSysGuid");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing ProCoSysGuid");
     }
 
     [TestMethod]
@@ -163,7 +162,7 @@ public class DocumentEventConsumerTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _dut.Consume(_contextMock), "Message is missing Plant");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing Plant");
     }
 
     private static DocumentEvent GetTestEvent(Guid guid, string plant, string documentNo, DateTime lastUpdated) => new(
