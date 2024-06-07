@@ -16,7 +16,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     private DateTime? _dueTimeUtc;
     private DateTime? _materialETAUtc;
     public const int IdentitySeed = 4000001;
-    public const int IdentitySeedItemNo = 5000000;
+    public const int ItemNoStartsAtt = 5000000;
     public const string PunchItemItemNoSequence = "SEQ_PUNCHITEM_ITEMNO";
     public const int DescriptionLengthMin = 1;
     public const int DescriptionLengthMax = 2000;
@@ -57,7 +57,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
     public Category Category { get; set; }
-    public long ItemNo { get; set; } // Initially keep 'set' public for updates in sync
+    public long ItemNo { get; private set; }
     public string Description { get; set; }
     public LibraryItem RaisedByOrg { get; private set; } = null!;
     public int RaisedByOrgId { get; private set; }
@@ -404,7 +404,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         DateTime? rejectedAt,
         Person? verifiedBy,
         DateTime? verifiedAt,
-        Person? actionBy
+        Person? actionBy,
+        long itemNo
         )
     {
         if(createdBy != null)
@@ -422,6 +423,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         VerifiedBy = verifiedBy;
         VerifiedAtUtc = verifiedAt;
         ActionBy = actionBy;
+        ItemNo = itemNo;
     }
 
 }

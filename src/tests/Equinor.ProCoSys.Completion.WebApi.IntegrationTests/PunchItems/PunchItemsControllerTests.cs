@@ -56,6 +56,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(description, newPunchItem.Description);
         Assert.IsTrue(newPunchItem.ItemNo >= PunchItem.IdentitySeed);
         AssertCreatedBy(UserType.Writer, newPunchItem.CreatedBy);
+        Assert.IsTrue(PunchItem.ItemNoStartsAtt < newPunchItem.ItemNo);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, newPunchItem.ClearingByOrg.Guid);
         Assert.AreEqual(TestFactory.RaisedByOrgGuid, newPunchItem.RaisedByOrg!.Guid);
         Assert.AreEqual(TestFactory.PriorityGuid, newPunchItem.Priority!.Guid);

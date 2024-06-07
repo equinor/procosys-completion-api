@@ -73,7 +73,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasSequence<int>(PunchItem.PunchItemItemNoSequence)
-            .StartsAt(PunchItem.IdentitySeedItemNo).IncrementsBy(1);
+            .StartsAt(PunchItem.ItemNoStartsAtt).IncrementsBy(1);
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         SetGlobalPlantFilter(modelBuilder);
