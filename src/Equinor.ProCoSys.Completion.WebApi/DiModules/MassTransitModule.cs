@@ -169,7 +169,7 @@ public static class MassTransitModule
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
-                    e.PrefetchCount = 50;
+                    e.PrefetchCount = configuration.GetValue<int>("MassTransit:DocumentPrefetchCount");
                 });
                 cfg.ReceiveEndpoint(QueueNames.WorkOrderCompletionTransferQueue, e =>
                 {
@@ -192,6 +192,7 @@ public static class MassTransitModule
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
+                    e.PrefetchCount = configuration.GetValue<int>("MassTransit:PunchItemPrefetchCount");
                 });
                 cfg.ReceiveEndpoint(QueueNames.PunchItemChangeHistoryCompletionTransferQueue, e =>
                 {
