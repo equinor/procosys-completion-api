@@ -57,6 +57,14 @@ public static class MassTransitModule
                    e.Name = "completion_document";
                    e.Temporary = false;
                });
+                        
+            x.AddConsumer<QueryEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_query";
+                    e.Temporary = false;
+                });
 
             x.AddConsumer<SWCREventConsumer>()
                 .Endpoint(e =>
