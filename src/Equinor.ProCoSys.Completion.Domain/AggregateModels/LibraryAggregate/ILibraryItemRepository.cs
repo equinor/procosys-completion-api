@@ -7,5 +7,5 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 public interface ILibraryItemRepository : IRepositoryWithGuid<LibraryItem>
 {
     Task<LibraryItem> GetByGuidAndTypeAsync(Guid libraryGuid, LibraryType type, CancellationToken cancellationToken);
-    Task<LibraryItem> GetOrCreateUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken);
+    Task<LibraryItem> GetUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken);
 }

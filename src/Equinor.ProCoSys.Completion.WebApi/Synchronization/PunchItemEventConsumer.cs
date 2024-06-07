@@ -79,14 +79,20 @@ public class PunchItemEventConsumer(
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
+        //In case of bad data from Oracle, we need this due to constraint
+        if (busEvent.RejectedByGuid is not null && busEvent.RejectedAt is null)
+        {
+            busEvent = busEvent with { RejectedAt = DateTime.MinValue };
+        }
+        
         LibraryItem? unknownOrg = null;
         if (!busEvent.RaisedByOrgGuid.HasValue)
         {
-            unknownOrg = await libraryItemRepository.GetOrCreateUnknownOrgAsync(busEvent.Plant, cancellationToken);
+            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
         }
         if(!busEvent.ClearingByOrgGuid.HasValue && unknownOrg is null)
         {
-            unknownOrg = await libraryItemRepository.GetOrCreateUnknownOrgAsync(busEvent.Plant, cancellationToken);
+            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
         }
         
         var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue 

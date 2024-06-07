@@ -104,7 +104,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
             .Entity<T>()
-            .HasQueryFilter(e => e.Plant == _plantProvider.Plant);
+            .HasQueryFilter(e => e.Plant == _plantProvider.Plant || e.Plant == "N/A");
 
     public IQueryable<TEntity> QuerySet<TEntity>() where TEntity : class => Set<TEntity>().AsNoTracking();
 

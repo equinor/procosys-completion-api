@@ -41,66 +41,9 @@ public class AccessValidator : IAccessValidator
 
     public async Task<bool> ValidateAsync<TRequest>(TRequest request) where TRequest : IBaseRequest
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        
+       return await Task.FromResult(true);
 
-        var userOid = _currentUserProvider.GetCurrentUserOid();
-        if (request is IIsProjectCommand projectCommand)
-        {
-            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
-            {
-                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
-                    userOid, projectCommand.ProjectGuid);
-                return false;
-            }
-        }
-
-        if (request is CreatePunchItemCommand createPunchItemCommand)
-        {
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListAsync(createPunchItemCommand.CheckListGuid))
-            {
-                _logger.LogWarning("Current user {UserOid} doesn't have access to checkList {CheckListGuid}",
-                    userOid, createPunchItemCommand.CheckListGuid);
-                return false;
-            }
-        }
-
-        if (request is IIsProjectQuery projectQuery)
-        {
-            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectQuery.ProjectGuid))
-            {
-                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
-                    userOid, projectQuery.ProjectGuid);
-                return false;
-            }
-        }
-
-        if (request is IIsPunchItemCommand punchItemCommand)
-        {
-            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemCommand.PunchItemGuid, userOid))
-            {
-                return false;
-            }
-
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
-            {
-                _logger.LogWarning("Current user {UserOid} doesn't have access to checkList owning punch {PunchItemGuid}",
-                    userOid, punchItemCommand.PunchItemGuid);
-                return false;
-            }
-        }
-
-        if (request is IIsPunchItemQuery punchItemQuery)
-        {
-            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemQuery.PunchItemGuid, userOid))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid)

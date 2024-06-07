@@ -20,23 +20,12 @@ public class LibraryItemRepository(CompletionContext context)
            ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid);
 
 
-    public async Task<LibraryItem> GetOrCreateUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken)
+    public async Task<LibraryItem> GetUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken)
     {
         const string LibraryCodeForUnknownOrg = "UNKNOWN";
-        var libraryItem = await Set.SingleOrDefaultAsync(l
-            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Plant == busEventPlant && l.Code == LibraryCodeForUnknownOrg, cancellationToken);
+        var libraryItem = await Set.SingleAsync(l
+            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Code == LibraryCodeForUnknownOrg, cancellationToken);
 
-        if (libraryItem != null)
-        {
-            return libraryItem;
-        }
-       
-        var entity = new LibraryItem(busEventPlant, Guid.NewGuid(), LibraryCodeForUnknownOrg, "NullValue in Oracle Db", LibraryType.COMPLETION_ORGANIZATION)
-        {
-            IsVoided = true,
-            SyncTimestamp = DateTime.UtcNow
-        };
-        await Set.AddAsync(entity, cancellationToken);
-        return entity;
+        return libraryItem;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure.EntityConfigurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -12,6 +13,17 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
         builder.ConfigureSystemVersioning();
         builder.ConfigurePlant();
         builder.ConfigureConcurrencyToken();
+        builder.HasData(new {
+            Id = -1,
+            Plant = "N/A",
+            Guid = Guid.NewGuid(),
+            Code = "UNKNOWN",
+            Description = "Null value in oracle db",
+            Type = LibraryType.COMPLETION_ORGANIZATION,
+            IsVoided = true,
+            ProCoSys4LastUpdated = DateTime.Now,
+            SyncTimestamp = DateTime.Now
+        });
 
         builder.Property(x => x.Code)
             .HasMaxLength(LibraryItem.CodeLengthMax)
