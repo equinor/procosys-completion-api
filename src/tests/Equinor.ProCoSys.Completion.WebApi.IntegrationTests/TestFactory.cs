@@ -256,7 +256,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
     private void EnsureTestDatabaseDeletedAtTeardown(IServiceCollection services)
         => _teardownList.Add(() =>
         {
-            using var dbContext = DatabaseContext(services);
+            using var sp = services.BuildServiceProvider();
+            using var dbContext = sp.GetRequiredService<CompletionContext>();
                 
             dbContext.Database.EnsureDeleted();
         });

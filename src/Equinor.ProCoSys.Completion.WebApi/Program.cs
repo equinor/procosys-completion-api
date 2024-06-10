@@ -1,67 +1,80 @@
 ﻿using System;
+using System.Collections.Generic;
+using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.WebApi;
+using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Hosting;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
-namespace Equinor.ProCoSys.Completion.WebApi;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+var devOnLocalhost = builder.Configuration.IsDevOnLocalhost();
+
+// ChainedTokenCredential iterates through each credential passed to it in order, when running locally
+// DefaultAzureCredential will probably fail locally, so if an instance of Azure Cli is logged in, those credentials will be used
+// If those credentials fail, the next credentials will be those of the current user logged into the local Visual Studio Instance
+// which is also the most likely case
+TokenCredential credential = devOnLocalhost switch
 {
-    public static void Main(string[] args)
+    true
+        => new ChainedTokenCredential(
+            new AzureCliCredential(),
+            new VisualStudioCredential(),
+            new DefaultAzureCredential()
+        ),
+    false => new DefaultAzureCredential()
+};
+
+if (!builder.Environment.IsIntegrationTest())
+{
+    var azConfig = builder.Configuration.GetValue<bool>("UseAzureAppConfiguration");
+    if (azConfig)
     {
-        var host = CreateHostBuilder(args).Build();
-        host.Run();
-    }
-
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                if (context.HostingEnvironment.IsIntegrationTest())
+        builder.Configuration.AddAzureAppConfiguration(options =>
+        {
+            var connectionString = builder.Configuration["ConnectionStrings:AppConfig"];
+            options.Connect(connectionString)
+                .ConfigureKeyVault(kv =>
                 {
-                    return;
-                }
-
-                var settings = config.Build();
-                var azConfig = settings.GetValue<bool>("UseAzureAppConfiguration");
-                if (azConfig)
-                {
-                    config.AddAzureAppConfiguration(options =>
+                    if (builder.Configuration.IsDevOnLocalhost())
                     {
-                        var connectionString = settings["ConnectionStrings:AppConfig"];
-                        options.Connect(connectionString)
-                            .ConfigureKeyVault(kv =>
-                            {
-                                if (settings.IsDevOnLocalhost())
-                                {
-                                    kv.SetCredential(new DefaultAzureCredential());
-                                }
-                                else
-                                {
-                                    kv.SetCredential(new ManagedIdentityCredential());
-                                }
-                            })
-                            .Select(KeyFilter.Any)
-                            .Select(KeyFilter.Any, context.HostingEnvironment.EnvironmentName)
-                            .ConfigureRefresh(refreshOptions =>
-                            {
-                                refreshOptions.Register("Sentinel", true);
-                                refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
-                            });
-                    });
-                }
-            })
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseKestrel(options =>
+                        kv.SetCredential(new DefaultAzureCredential());
+                    }
+                    else
+                    {
+                        kv.SetCredential(new ManagedIdentityCredential());
+                    }
+                })
+                .Select(KeyFilter.Any)
+                .Select(KeyFilter.Any, builder.Environment.EnvironmentName)
+                .ConfigureRefresh(refreshOptions =>
                 {
-                    options.AddServerHeader = false;
-                    options.Limits.MaxRequestBodySize = null;
+                    refreshOptions.Register("Sentinel", true);
+                    refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
                 });
-                webBuilder.UseStartup<Startup>();
-            });
+        });
+    }
 }
+
+builder.WebHost.UseKestrel(options =>
+{
+    options.AddServerHeader = false;
+    options.Limits.MaxRequestBodySize = null;
+});
+
+var startup = new Startup(builder.Configuration, builder.Environment);
+startup.ConfigureServices(builder.Services, credential, devOnLocalhost);
+
+
+var app = builder.Build();
+
+startup.Configure(app, builder.Environment);
+
+app.Run();

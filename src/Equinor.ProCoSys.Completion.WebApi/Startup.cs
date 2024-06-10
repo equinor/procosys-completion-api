@@ -50,9 +50,9 @@ public class Startup
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services, TokenCredential credential, bool devOnLocalhost)
     {
-        var devOnLocalhost = Configuration.IsDevOnLocalhost();
+        // var devOnLocalhost = Configuration.IsDevOnLocalhost();
 
         if (devOnLocalhost && Configuration.GetValue<bool>("MigrateDatabase"))
         {
@@ -70,16 +70,16 @@ public class Startup
         // DefaultAzureCredential will probably fail locally, so if an instance of Azure Cli is logged in, those credentials will be used
         // If those credentials fail, the next credentials will be those of the current user logged into the local Visual Studio Instance
         // which is also the most likely case
-        TokenCredential credential = devOnLocalhost switch
-        {
-            true
-                => new ChainedTokenCredential(
-                    new AzureCliCredential(),
-                    new VisualStudioCredential(),
-                    new DefaultAzureCredential()
-                ),
-            false => new DefaultAzureCredential()
-        };
+        // TokenCredential credential = devOnLocalhost switch
+        // {
+        //     true
+        //         => new ChainedTokenCredential(
+        //             new AzureCliCredential(),
+        //             new VisualStudioCredential(),
+        //             new DefaultAzureCredential()
+        //         ),
+        //     false => new DefaultAzureCredential()
+        // };
         services.AddSingleton(credential);
 
         services.AddControllers().AddNewtonsoftJson();
