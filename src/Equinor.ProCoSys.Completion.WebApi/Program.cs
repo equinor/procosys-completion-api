@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Azure.Core;
+﻿using Azure.Core;
 using Azure.Identity;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi;
-using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Microsoft.Extensions.Hosting;
-using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,36 +25,7 @@ TokenCredential credential = devOnLocalhost switch
     false => new DefaultAzureCredential()
 };
 
-if (!builder.Environment.IsIntegrationTest())
-{
-    var azConfig = builder.Configuration.GetValue<bool>("UseAzureAppConfiguration");
-    if (azConfig)
-    {
-        builder.Configuration.AddAzureAppConfiguration(options =>
-        {
-            var connectionString = builder.Configuration["ConnectionStrings:AppConfig"];
-            options.Connect(connectionString)
-                .ConfigureKeyVault(kv =>
-                {
-                    if (builder.Configuration.IsDevOnLocalhost())
-                    {
-                        kv.SetCredential(new DefaultAzureCredential());
-                    }
-                    else
-                    {
-                        kv.SetCredential(new ManagedIdentityCredential());
-                    }
-                })
-                .Select(KeyFilter.Any)
-                .Select(KeyFilter.Any, builder.Environment.EnvironmentName)
-                .ConfigureRefresh(refreshOptions =>
-                {
-                    refreshOptions.Register("Sentinel", true);
-                    refreshOptions.SetCacheExpiration(TimeSpan.FromSeconds(30));
-                });
-        });
-    }
-}
+builder.ConfigureAppConfig();
 
 builder.WebHost.UseKestrel(options =>
 {
