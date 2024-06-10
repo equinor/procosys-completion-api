@@ -43,6 +43,7 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         var commentDto = await _commentService.AddAndSaveAsync(
             _unitOfWork,
             punchItem,
+            punchItem.Plant,
             request.Text,
             labels,
             mentions,

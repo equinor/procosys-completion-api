@@ -7,6 +7,9 @@ public interface ISyncToPCS4Service
     Task SyncPunchListItemUpdateAsync(object updateEvent, CancellationToken cancellationToken);
     Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken);
 
+    // Comment
+    Task SyncNewCommentAsync(object addEvent, CancellationToken cancellationToken);
+
     // Attachment
     Task SyncNewAttachmentAsync(object addEvent, CancellationToken cancellationToken);
     Task SyncAttachmentUpdateAsync(object updateEvent, CancellationToken cancellationToken);

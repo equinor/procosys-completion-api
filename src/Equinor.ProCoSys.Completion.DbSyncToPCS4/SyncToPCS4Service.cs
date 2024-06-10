@@ -41,6 +41,9 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     public async Task SyncPunchListItemDeleteAsync(object deleteEvent, CancellationToken cancellationToken) 
         => await SynchronizeEventAsync(deleteEvent, SyncToPCS4Constants.PunchListItemDeleteEndpoint, SyncToPCS4Constants.PunchListItem, SyncToPCS4Constants.Delete, cancellationToken);
 
+    public async Task SyncNewCommentAsync(object addEvent, CancellationToken cancellationToken)
+        => await SynchronizeEventAsync(addEvent, SyncToPCS4Constants.CommentInsertEndpoint, SyncToPCS4Constants.Comment, SyncToPCS4Constants.Post, cancellationToken);
+
     public async Task SyncNewAttachmentAsync(object addEvent, CancellationToken cancellationToken) 
         => await SynchronizeEventAsync(addEvent, SyncToPCS4Constants.AttachmentInsertEndpoint, SyncToPCS4Constants.Attachment, SyncToPCS4Constants.Post, cancellationToken);
 

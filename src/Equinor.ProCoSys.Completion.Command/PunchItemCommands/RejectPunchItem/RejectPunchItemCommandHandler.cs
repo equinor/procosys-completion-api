@@ -90,7 +90,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
                 [change],
                 cancellationToken);
 
-            _commentService.Add(punchItem, request.Comment, [rejectLabel], mentions);
+            await _commentService.AddAsync(punchItem, punchItem.Plant, request.Comment, [rejectLabel], mentions, cancellationToken);
 
             punchItem.SetRowVersion(request.RowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
