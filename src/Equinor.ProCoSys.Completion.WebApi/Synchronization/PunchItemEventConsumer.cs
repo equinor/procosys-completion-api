@@ -32,6 +32,8 @@ public class PunchItemEventConsumer(
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : IConsumer<PunchItemEvent>
 {
+    private const string DeleteBehavior = "delete";
+
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
@@ -39,7 +41,13 @@ public class PunchItemEventConsumer(
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
 
-        if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (DeleteBehavior.Equals(busEvent.Behavior, StringComparison.CurrentCultureIgnoreCase) 
+            && await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        {
+                var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+                punchItemRepository.Remove(punchItem);
+        } 
+        else if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
@@ -69,7 +77,8 @@ public class PunchItemEventConsumer(
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
         }
 
-        if (string.IsNullOrEmpty(busEvent.Description))
+        if (string.IsNullOrEmpty(busEvent.Description) 
+            && !DeleteBehavior.Equals(busEvent.Behavior, StringComparison.CurrentCultureIgnoreCase))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }
@@ -356,6 +365,7 @@ public record PunchItemEvent
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
     Guid? CreatedByGuid,
-    Guid? ActionByGuid
+    Guid? ActionByGuid,
+    string? Behavior
 ) : IPunchListItemEventV1;
 

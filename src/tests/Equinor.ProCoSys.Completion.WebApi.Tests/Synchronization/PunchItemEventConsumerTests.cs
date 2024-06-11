@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -112,7 +113,8 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             Guid.Empty,
             createdByGuid,
-            actionByGuid
+            actionByGuid,
+            string.Empty
             );
         _contextMock.Message.Returns(bEvent);
 
@@ -150,6 +152,7 @@ public class PunchItemEventConsumerTests
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.AreEqual(guid, _punchItemAddedToRepository.Guid);
         Assert.AreEqual(Plant, _punchItemAddedToRepository.Plant);
+        _punchItemRepoMock.Received(1).Add(Arg.Any<PunchItem>());
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
    
@@ -179,7 +182,8 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty
+            Guid.Empty,
+            string.Empty
         );
 
         _contextMock.Message.Returns(bEvent);
@@ -215,13 +219,50 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty
+            Guid.Empty,
+            string.Empty
         );
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
             => _dut.Consume(_contextMock), "Message is missing Plant");
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldDeletePunchItem_On_Delete_Behavior()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var punchItem = new PunchItem("PCS$OSEBERG_C",
+            new Project(Plant, Guid.NewGuid(), "ProjectName", "desc"),
+            Guid.Empty,
+            Category.PA,
+            "desc",
+            new LibraryItem(Plant, Guid.NewGuid(), "CODE", "desc", LibraryType.COMPLETION_ORGANIZATION),
+            new LibraryItem(Plant, Guid.NewGuid(), "CODE", "desc", LibraryType.COMPLETION_ORGANIZATION),
+            guid);
+
+        var json = $@"
+        {{
+            ""Plant"": ""{Plant}"",
+            ""ProCoSysGuid"": ""{guid}"",
+            ""PunchItemNo"": 1234,
+            ""PunchItemId"": 1234,
+            ""Behavior"": ""delete""
+        }}";
+
+        _punchItemRepoMock.ExistsAsync(guid, default).Returns(true);
+        _punchItemRepoMock.GetAsync(guid, Arg.Any<CancellationToken>()).Returns(punchItem);
+
+        var bEvent = JsonSerializer.Deserialize<PunchItemEvent>(json);
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        _punchItemRepoMock.Received(1).Remove(punchItem);
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     private static PunchItemEvent GetTestEvent(
@@ -249,7 +290,8 @@ public class PunchItemEventConsumerTests
         Guid rejectedByGuid,
         Guid verifiedByGuid,
         Guid createdByGuid,
-        Guid actionByGuid
+        Guid actionByGuid,
+        string behaviour
         ) => new (
         string.Empty,
         plant,
@@ -296,6 +338,7 @@ public class PunchItemEventConsumerTests
         rejectedByGuid,
         verifiedByGuid,
         createdByGuid,
-        actionByGuid
+        actionByGuid,
+        string.Empty
     );
 }
