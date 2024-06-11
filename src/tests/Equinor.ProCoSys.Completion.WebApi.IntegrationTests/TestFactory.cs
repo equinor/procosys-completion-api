@@ -27,7 +27,7 @@ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public sealed class TestFactory : WebApplicationFactory<Startup>
+public sealed class TestFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
     private readonly string _configPath;
@@ -353,7 +353,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         CreateAuthenticatedHttpClients(webHostBuilder);
     }
 
-    private void CreateAuthenticatedHttpClients(WebApplicationFactory<Startup> webHostBuilder)
+    private void CreateAuthenticatedHttpClients(WebApplicationFactory<Program> webHostBuilder)
     {
         foreach (var testUser in _testUsers.Values)
         {

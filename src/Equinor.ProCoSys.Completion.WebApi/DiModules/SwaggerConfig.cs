@@ -23,7 +23,7 @@ public static class SwaggerConfig
         var scopes = builder.Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ??
                      new Dictionary<string, string>();
 
-        builder.Services.AddSwaggerExamplesFromAssemblyOf<Startup>();
+        builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });

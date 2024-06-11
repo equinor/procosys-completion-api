@@ -1,16 +1,21 @@
 ﻿using Azure.Core;
 using Azure.Identity;
+using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
+using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Seeding;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,12 +49,58 @@ builder.ConfigureHostedJobs(devOnLocalhost);
 builder.ConfigureSwagger();
 builder.ConfigureHttp();
 
-var startup = new Startup(builder.Configuration, builder.Environment);
-startup.ConfigureServices(builder.Services, credential, devOnLocalhost);
+//TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        builder.Configuration.Bind("AzureAd", options);
+    });
+builder.Services.AddPcsAuthIntegration();
 
+builder.ConfigureValidators();
+builder.ConfigureTelemetry(credential, devOnLocalhost);
+
+builder.Services.AddMediatrModules();
+builder.Services.AddApplicationModules(builder.Configuration);
 
 var app = builder.Build();
 
-startup.Configure(app, builder.Environment);
+if (builder.Configuration.GetValue<bool>("UseAzureAppConfiguration"))
+{
+    app.UseAzureAppConfiguration();
+}
+
+if (builder.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseGlobalExceptionHandling();
+
+app.UseCors(AllowAllOriginsCorsPolicy); //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
+
+app.UseCompletionSwagger(builder.Configuration);
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+// order of adding middleware are crucial. Some depend that other has been run in advance
+app.UseCurrentPlant();
+app.UseCurrentBearerToken();
+app.UseAuthentication();
+app.UseCurrentUser();
+app.UsePersonValidator();
+app.UsePlantValidator();
+app.UseVerifyOidInDb();
+app.UseAuthorization();
+
+app.UseResponseCompression();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program { }
