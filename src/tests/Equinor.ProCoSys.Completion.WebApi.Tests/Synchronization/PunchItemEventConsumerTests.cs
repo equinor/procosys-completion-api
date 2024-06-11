@@ -37,15 +37,16 @@ public class PunchItemEventConsumerTests
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<PunchItemEvent> _contextMock = Substitute.For<ConsumeContext<PunchItemEvent>>();
     private PunchItem? _punchItemAddedToRepository;
-    
+
     private const string Plant = "PCS$OSEBERG_C";
     private static readonly Guid s_projectGuid = Guid.NewGuid();
     private readonly Project _project = new Project(Plant, s_projectGuid, "ProjectTitan", "Description");
     private static readonly Guid s_raisedByOrgGuid = Guid.NewGuid();
-    private readonly LibraryItem _raisedByOrg = new LibraryItem(Plant, s_raisedByOrgGuid, "COM", "COMMISSIONING",
-        LibraryType.COMPLETION_ORGANIZATION);
     private static readonly Guid s_clearingByOrgGuid = Guid.NewGuid();
-    private readonly LibraryItem _clearingByOrg = new LibraryItem(Plant, s_clearingByOrgGuid, "COM", "COMMISSIONING",
+
+    private readonly LibraryItem _raisedByOrg = new(Plant, s_raisedByOrgGuid, "COM", "COMMISSIONING",
+        LibraryType.COMPLETION_ORGANIZATION);
+    private readonly LibraryItem _clearingByOrg = new(Plant, s_clearingByOrgGuid, "COM", "COMMISSIONING",
         LibraryType.COMPLETION_ORGANIZATION);
 
     private readonly Guid _punchListPriorityGuid = Guid.NewGuid();
@@ -237,7 +238,7 @@ public class PunchItemEventConsumerTests
     {
         // Arrange
         var guid = Guid.NewGuid();
-        var punchItem = new PunchItem("PCS$OSEBERG_C",
+        var punchItem = new PunchItem(Plant,
             _project,
             Guid.Empty,
             Category.PA,
