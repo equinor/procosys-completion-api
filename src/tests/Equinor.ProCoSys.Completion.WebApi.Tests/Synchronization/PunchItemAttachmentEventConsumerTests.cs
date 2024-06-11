@@ -78,7 +78,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.Title, _attachmentAddedToRepository.Description);
         Assert.AreEqual(_createdByGuid, _attachmentAddedToRepository.CreatedBy.Guid);
         Assert.IsTrue(_attachmentAddedToRepository.BlobPath.Contains(bEvent.ProjectName));
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(bEvent.LastUpdated, existingAttachment.ProCoSys4LastUpdated);
         Assert.AreEqual(bEvent.Title, existingAttachment.Description);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]
@@ -122,6 +122,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(oldProCoSys4LastUpdated, existingAttachment.ProCoSys4LastUpdated);
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
@@ -145,7 +146,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.Title, _linkAddedToRepository.Title);
         Assert.AreEqual(bEvent.Uri, _linkAddedToRepository.Url);
         Assert.AreEqual(_createdByGuid, _linkAddedToRepository.CreatedBy.Guid);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]
@@ -167,6 +168,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(oldProCoSys4LastUpdated, existingLink.ProCoSys4LastUpdated);
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
         await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
@@ -190,6 +192,6 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.LastUpdated, existingLink.ProCoSys4LastUpdated);
         Assert.AreEqual(bEvent.Title, existingLink.Title);
         Assert.AreEqual(bEvent.Uri, existingLink.Url);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }

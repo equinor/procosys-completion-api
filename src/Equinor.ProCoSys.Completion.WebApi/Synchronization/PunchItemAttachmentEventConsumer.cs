@@ -45,7 +45,7 @@ public class PunchItemAttachmentEventConsumer(
             }
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Title {Title}",
             nameof(PunchItemAttachmentEvent), context.MessageId, busEvent.AttachmentGuid, busEvent.Title);
