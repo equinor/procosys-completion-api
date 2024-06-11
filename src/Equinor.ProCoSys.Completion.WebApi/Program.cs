@@ -1,13 +1,9 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.WebApi;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
-using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Equinor.ProCoSys.Completion.WebApi.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

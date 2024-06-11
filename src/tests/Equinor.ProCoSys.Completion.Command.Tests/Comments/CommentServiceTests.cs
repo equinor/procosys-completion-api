@@ -14,7 +14,6 @@ using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.Comments;
 

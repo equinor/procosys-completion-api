@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Query.History;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
 using Equinor.ProCoSys.Completion.Test.Common;

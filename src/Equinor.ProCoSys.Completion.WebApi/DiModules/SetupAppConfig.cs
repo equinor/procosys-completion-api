@@ -1,6 +1,5 @@
 using System;
 using Azure.Core;
-using Azure.Identity;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Builder;
