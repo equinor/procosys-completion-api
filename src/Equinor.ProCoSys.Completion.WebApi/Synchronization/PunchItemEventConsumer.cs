@@ -156,17 +156,17 @@ public class PunchItemEventConsumer(
     private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
         CancellationToken cancellationToken) =>
         punchItem.SetSyncProperties(
-            busEvent.CreatedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
+            busEvent.CreatedByGuid is not null ? await personRepository.GetAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
             busEvent.CreatedAt,
-            busEvent.ModifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
+            busEvent.ModifiedByGuid is not null ? await personRepository.GetAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
             busEvent.LastUpdated,
-            busEvent.ClearedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ClearedByGuid.Value, cancellationToken) : null,
+            busEvent.ClearedByGuid is not null ? await personRepository.GetAsync(busEvent.ClearedByGuid.Value, cancellationToken) : null,
             busEvent.ClearedAt,
-            busEvent.RejectedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.RejectedByGuid.Value, cancellationToken) : null,
+            busEvent.RejectedByGuid is not null ? await personRepository.GetAsync(busEvent.RejectedByGuid.Value, cancellationToken) : null,
             busEvent.RejectedAt,
-            busEvent.VerifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
+            busEvent.VerifiedByGuid is not null ? await personRepository.GetAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
             busEvent.VerifiedAt,
-            busEvent.ActionByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ActionByGuid.Value, cancellationToken) : null,
+            busEvent.ActionByGuid is not null ? await personRepository.GetAsync(busEvent.ActionByGuid.Value, cancellationToken) : null,
             busEvent.PunchItemNo
         );
 
