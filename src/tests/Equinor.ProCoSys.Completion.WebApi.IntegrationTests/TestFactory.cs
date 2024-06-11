@@ -371,12 +371,12 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         {
             if (testUser.AuthProCoSysPerson is not null)
             {
-                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid), false)
                     .Returns(Task.FromResult(testUser.AuthProCoSysPerson));
             }
             else
             {
-                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid))
+                _personApiServiceMock.TryGetPersonByOidAsync(new Guid(testUser.Profile.Oid), false)
                     .Returns(Task.FromResult((ProCoSysPerson)null));
             }
             _permissionApiServiceMock.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid))
@@ -390,7 +390,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         {
             throw new Exception("Config missing: Application:ObjectId");
         }
-        _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId))
+        _personApiServiceMock.TryGetPersonByOidAsync(new Guid(apiObjectId), false)
             .Returns(Task.FromResult(new ProCoSysPerson
             {
                 AzureOid = apiObjectId,
