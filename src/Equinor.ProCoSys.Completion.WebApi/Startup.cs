@@ -193,7 +193,10 @@ public class Startup
         {
             options.ConnectionString = Configuration.GetRequiredConfiguration("ApplicationInsights:ConnectionString");
         });
-        services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) => { module.EnableSqlCommandTextInstrumentation = true; });
+        services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
+        {
+            module.EnableSqlCommandTextInstrumentation = Configuration.GetValue("EnableSqlCommandTextInstrumentation", false);
+        });
 
         services.AddMediatrModules();
         services.AddApplicationModules(Configuration);
