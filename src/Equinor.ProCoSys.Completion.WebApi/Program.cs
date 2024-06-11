@@ -15,6 +15,8 @@ const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 var devOnLocalhost = builder.Configuration.IsDevOnLocalhost();
 
 // ChainedTokenCredential iterates through each credential passed to it in order, when running locally
@@ -31,6 +33,16 @@ TokenCredential credential = devOnLocalhost switch
         ),
     false => new DefaultAzureCredential()
 };
+
+builder.Services.AddHttpClient(
+    "equinor-procosys-databasesynctopcs4-api",
+    client =>
+{
+    // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+    // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+    client.BaseAddress = new("https+http://equinor-procosys-databasesynctopcs4-api");
+});
+
 
 builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
@@ -96,6 +108,7 @@ app.UseResponseCompression();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapDefaultEndpoints();
 
 app.Run();
 

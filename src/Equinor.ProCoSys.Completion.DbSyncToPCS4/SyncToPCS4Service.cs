@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
 
@@ -18,16 +19,10 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<SyncToPCS4Service> _logger;
 
-    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor, ILogger<SyncToPCS4Service> logger)
+    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor, ILogger<SyncToPCS4Service> logger, IHttpClientFactory httpClientFactory)
     {
         _options = options;
-
-        var baseUrl = options.CurrentValue.Endpoint;
-        var client = new HttpClient()
-        {
-            BaseAddress = new Uri(baseUrl)
-        };
-        _httpClient = client;
+        _httpClient = httpClientFactory.CreateClient("equinor-procosys-databasesynctopcs4-api");
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
     }
