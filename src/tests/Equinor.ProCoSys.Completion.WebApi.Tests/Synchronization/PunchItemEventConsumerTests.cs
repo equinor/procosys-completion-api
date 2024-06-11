@@ -39,9 +39,14 @@ public class PunchItemEventConsumerTests
     private PunchItem? _punchItemAddedToRepository;
     
     private const string Plant = "PCS$OSEBERG_C";
-    private readonly Guid _projectGuid = Guid.NewGuid();
-    private readonly Guid _raisedByOrgGuid = Guid.NewGuid();
-    private readonly Guid _clearingByOrgGuid = Guid.NewGuid();
+    private static readonly Guid s_projectGuid = Guid.NewGuid();
+    private readonly Project _project = new Project(Plant, s_projectGuid, "ProjectTitan", "Description");
+    private static readonly Guid s_raisedByOrgGuid = Guid.NewGuid();
+    private readonly LibraryItem _raisedByOrg = new LibraryItem(Plant, s_raisedByOrgGuid, "COM", "COMMISSIONING",
+        LibraryType.COMPLETION_ORGANIZATION);
+    private static readonly Guid s_clearingByOrgGuid = Guid.NewGuid();
+    private readonly LibraryItem _clearingByOrg = new LibraryItem(Plant, s_clearingByOrgGuid, "COM", "COMMISSIONING",
+        LibraryType.COMPLETION_ORGANIZATION);
 
     private readonly Guid _punchListPriorityGuid = Guid.NewGuid();
     private readonly Guid _punchListSortingGuid = Guid.NewGuid();
@@ -91,12 +96,12 @@ public class PunchItemEventConsumerTests
         var actionByGuid = Guid.NewGuid();
         var createdByGuid = Guid.NewGuid();
         
-        var bEvent = GetTestEvent(guid, Plant, _projectGuid, 
+        var bEvent = GetTestEvent(guid, Plant, s_projectGuid, 
             "description",
             Guid.NewGuid(),
             Category.PA,
-            _raisedByOrgGuid,
-            _clearingByOrgGuid,
+            s_raisedByOrgGuid,
+            s_clearingByOrgGuid,
             _punchListSortingGuid,
             _punchListTypeGuid,
             _punchListPriorityGuid,
@@ -119,11 +124,9 @@ public class PunchItemEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         _punchItemRepoMock.ExistsAsync(guid, default).Returns(false);
-        _projectRepoMock.GetAsync(_projectGuid, default).Returns(new Project(Plant, _projectGuid, "ProjectTitan", "Description"));
-        _libraryItemRepoMock.GetAsync(_raisedByOrgGuid, Arg.Any<CancellationToken>())
-            .Returns(new LibraryItem(Plant, _raisedByOrgGuid, "COM", "COMMISSIONING", LibraryType.COMPLETION_ORGANIZATION));
-        _libraryItemRepoMock.GetAsync(_clearingByOrgGuid, Arg.Any<CancellationToken>())
-            .Returns(new LibraryItem(Plant, _clearingByOrgGuid, "COM", "COMMISSIONING", LibraryType.COMPLETION_ORGANIZATION));
+        _projectRepoMock.GetAsync(s_projectGuid, default).Returns(_project);
+        _libraryItemRepoMock.GetAsync(s_raisedByOrgGuid, Arg.Any<CancellationToken>()).Returns(_raisedByOrg);
+        _libraryItemRepoMock.GetAsync(s_clearingByOrgGuid, Arg.Any<CancellationToken>()).Returns(_clearingByOrg);
 
         _libraryItemRepoMock.GetByGuidAndTypeAsync(_punchListPriorityGuid, LibraryType.PUNCHLIST_PRIORITY, Arg.Any<CancellationToken>())
             .Returns(new LibraryItem(Plant, _punchListPriorityGuid, "COM", "?", LibraryType.PUNCHLIST_PRIORITY));
@@ -160,7 +163,7 @@ public class PunchItemEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, _projectGuid,
+        var bEvent = GetTestEvent(Guid.Empty, Plant, s_projectGuid,
             "description",
             Guid.Empty,
             Category.PA,
@@ -197,7 +200,7 @@ public class PunchItemEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.NewGuid(), "", _projectGuid,
+        var bEvent = GetTestEvent(Guid.NewGuid(), "", s_projectGuid,
             "description",
             Guid.Empty,
             Category.PA,
@@ -235,12 +238,12 @@ public class PunchItemEventConsumerTests
         // Arrange
         var guid = Guid.NewGuid();
         var punchItem = new PunchItem("PCS$OSEBERG_C",
-            new Project(Plant, Guid.NewGuid(), "ProjectName", "desc"),
+            _project,
             Guid.Empty,
             Category.PA,
             "desc",
-            new LibraryItem(Plant, Guid.NewGuid(), "CODE", "desc", LibraryType.COMPLETION_ORGANIZATION),
-            new LibraryItem(Plant, Guid.NewGuid(), "CODE", "desc", LibraryType.COMPLETION_ORGANIZATION),
+            _raisedByOrg,
+            _clearingByOrg,
             guid);
 
         var json = $@"
