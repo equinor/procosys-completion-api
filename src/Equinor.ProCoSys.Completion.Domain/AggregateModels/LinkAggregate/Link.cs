@@ -12,6 +12,12 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public const int TitleLengthMax = 256;
     public const int UrlLengthMax = 2000;
 
+#pragma warning disable CS8618
+    public Link()
+#pragma warning restore CS8618
+    {
+    }
+
     public Link(string parentType, Guid parentGuid, string title, string url, Guid? proCoSysGuid = null)
     {
         ParentType = parentType;
