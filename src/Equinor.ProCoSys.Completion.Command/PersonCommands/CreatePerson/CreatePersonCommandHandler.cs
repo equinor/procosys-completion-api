@@ -42,7 +42,7 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
             return new SuccessResult<Unit>(Unit.Value);
         }
 
-        var pcsPerson = await _personCache.GetAsync(request.Oid);
+        var pcsPerson = await _personCache.GetAsync(request.Oid, cancellationToken: cancellationToken);
         if (pcsPerson is null)
         {
             throw new Exception($"Details for user with oid {request.Oid:D} not found in ProCoSys");
