@@ -16,7 +16,7 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
         builder.HasData(new {
             Id = -1,
             Plant = "N/A",
-            Guid = Guid.NewGuid(),
+            Guid = new Guid("A075D9C9-313E-49BE-B9D7-F6BD48ABB18C"),
             Code = "UNKNOWN",
             Description = "Null value in oracle db",
             Type = LibraryType.COMPLETION_ORGANIZATION,
