@@ -21,8 +21,8 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
             Description = "Null value in oracle db",
             Type = LibraryType.COMPLETION_ORGANIZATION,
             IsVoided = true,
-            ProCoSys4LastUpdated = DateTime.Now,
-            SyncTimestamp = DateTime.Now
+            ProCoSys4LastUpdated = new DateTime(1970, 1, 1),
+            SyncTimestamp = new DateTime(1970, 1, 1)
         });
 
         builder.Property(x => x.Code)
