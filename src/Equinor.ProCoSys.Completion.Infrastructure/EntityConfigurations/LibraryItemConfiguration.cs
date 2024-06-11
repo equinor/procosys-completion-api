@@ -16,13 +16,13 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
         builder.HasData(new {
             Id = -1,
             Plant = "N/A",
-            Guid = Guid.NewGuid(),
+            Guid = new Guid("DBD52718-A64E-45A8-B1C5-8779D6C7170B"),
             Code = "UNKNOWN",
             Description = "Null value in oracle db",
             Type = LibraryType.COMPLETION_ORGANIZATION,
             IsVoided = true,
-            ProCoSys4LastUpdated = DateTime.Now,
-            SyncTimestamp = DateTime.Now
+            ProCoSys4LastUpdated = new DateTime(1970, 1, 1),
+            SyncTimestamp = new DateTime(1970, 1, 1)
         });
 
         builder.Property(x => x.Code)
