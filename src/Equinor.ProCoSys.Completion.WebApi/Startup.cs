@@ -38,7 +38,7 @@ namespace Equinor.ProCoSys.Completion.WebApi;
 
 public class Startup
 {
-    private readonly string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
+    private static readonly string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
     private readonly IWebHostEnvironment _environment;
 
     public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
@@ -52,69 +52,12 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services, TokenCredential credential, bool devOnLocalhost)
     {
-        // var devOnLocalhost = Configuration.IsDevOnLocalhost();
-
-        if (devOnLocalhost && Configuration.GetValue<bool>("MigrateDatabase"))
-        {
-            services.AddHostedService<DatabaseMigrator>();
-
-            DebugOptions.DebugEntityFrameworkInDevelopment = Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
-        }
-
-        if (!_environment.IsProduction() && Configuration.GetValue<bool>("SeedDummyData"))
-        {
-            services.AddHostedService<Seeder>();
-        }
-
-        // ChainedTokenCredential iterates through each credential passed to it in order, when running locally
-        // DefaultAzureCredential will probably fail locally, so if an instance of Azure Cli is logged in, those credentials will be used
-        // If those credentials fail, the next credentials will be those of the current user logged into the local Visual Studio Instance
-        // which is also the most likely case
-        // TokenCredential credential = devOnLocalhost switch
-        // {
-        //     true
-        //         => new ChainedTokenCredential(
-        //             new AzureCliCredential(),
-        //             new VisualStudioCredential(),
-        //             new DefaultAzureCredential()
-        //         ),
-        //     false => new DefaultAzureCredential()
-        // };
-        services.AddSingleton(credential);
-
-        services.AddControllers().AddNewtonsoftJson();
-
         //TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 Configuration.Bind("AzureAd", options);
             });
-
-        services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
-        {
-            options.AddPolicy(AllowAllOriginsCorsPolicy,
-                builder =>
-                {
-                    builder
-                        .AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
-        });
-
-        services.AddMvc(config =>
-        {
-            var policy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
-            config.Filters.Add(new AuthorizeFilter(policy));
-        }).AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-        if (Configuration.GetValue<bool>("UseAzureAppConfiguration"))
-        {
-            services.AddAzureAppConfiguration();
-        }
 
         services.AddFluentValidationAutoValidation(fv =>
         {
@@ -126,60 +69,7 @@ public class Startup
             typeof(ICommandMarker).GetTypeInfo().Assembly,
             typeof(Startup).Assembly
         });
-
-        var scopes = Configuration.GetSection("Swagger:Scopes").Get<Dictionary<string, string>>() ??
-                     new Dictionary<string, string>();
-
-        services.AddSwaggerExamplesFromAssemblyOf<Startup>();
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProCoSys Completion API", Version = "v1" });
-            var authorizationUrl = Configuration.GetRequiredConfiguration("Swagger:AuthorizationUrl");
-
-            //Define the OAuth2.0 scheme that's in use (i.e. Implicit Flow)
-            c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-            {
-                Type = SecuritySchemeType.OAuth2,
-                Flows = new OpenApiOAuthFlows
-                {
-                    Implicit = new OpenApiOAuthFlow
-                    {
-                        AuthorizationUrl = new Uri(authorizationUrl),
-                        Scopes = scopes
-                    }
-                }
-            });
-
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
-                    },
-                    scopes.Keys.ToArray()
-                }
-            });
-
-            c.ExampleFilters();
-            c.OperationFilter<AddRoleDocumentation>();
-            c.OperationFilter<SwaggerPatchDocumentation>();
-            var filePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
-            c.IncludeXmlComments(filePath);
-        });
-
-        services.ConfigureSwaggerGen(options =>
-        {
-            options.CustomSchemaIds(x => x.FullName);
-        });
-
-        services.AddFluentValidationRulesToSwagger();
-
-        services.AddResponseCompression(options =>
-        {
-            options.EnableForHttps = true;
-        });
-
+        
         services.AddPcsAuthIntegration();
 
         if (!devOnLocalhost)
@@ -189,18 +79,18 @@ public class Startup
                 config.SetAzureTokenCredential(credential);
             });
         }
+
         services.AddApplicationInsightsTelemetry(options =>
         {
             options.ConnectionString = Configuration.GetRequiredConfiguration("ApplicationInsights:ConnectionString");
         });
-        services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) => { module.EnableSqlCommandTextInstrumentation = true; });
+        services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
+        {
+            module.EnableSqlCommandTextInstrumentation = true;
+        });
 
         services.AddMediatrModules();
         services.AddApplicationModules(Configuration);
-
-        services.AddHostedService<VerifyApplicationExistsAsPerson>();
-        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
-        services.AddHostedService<ConfigureRequiredLabels>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -220,19 +110,7 @@ public class Startup
 
         app.UseCors(AllowAllOriginsCorsPolicy); //TODO: CORS, dont allow all. Se better comment above
 
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProCoSys Completion API V1");
-            c.DocExpansion(DocExpansion.List);
-            c.DisplayRequestDuration();
-
-            c.OAuthClientId(Configuration["Swagger:ClientId"]);
-            c.OAuthAppName("ProCoSys Completion API V1");
-            c.OAuthScopeSeparator(" ");
-            var audience = Configuration.GetRequiredConfiguration("AzureAd:Audience");
-            c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "resource", audience } });
-        });
+        app.UseCompletionSwagger(Configuration);
 
         app.UseHttpsRedirection();
 

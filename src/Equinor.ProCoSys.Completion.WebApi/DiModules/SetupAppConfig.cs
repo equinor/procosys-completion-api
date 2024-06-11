@@ -1,4 +1,5 @@
 using System;
+using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
@@ -8,9 +9,10 @@ using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
-public static class SetupAppConfig
+public static class SetupAzureAppConfig
 {
-    public static WebApplicationBuilder ConfigureAppConfig(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder ConfigureAzureAppConfig(this WebApplicationBuilder builder,
+        TokenCredential credential)
     {
         if (!builder.Environment.IsIntegrationTest())
         {
@@ -25,11 +27,11 @@ public static class SetupAppConfig
                         {
                             if (builder.Configuration.IsDevOnLocalhost())
                             {
-                                kv.SetCredential(new DefaultAzureCredential());
+                                kv.SetCredential(credential);
                             }
                             else
                             {
-                                kv.SetCredential(new ManagedIdentityCredential());
+                                kv.SetCredential(credential);
                             }
                         })
                         .Select(KeyFilter.Any)
@@ -41,8 +43,13 @@ public static class SetupAppConfig
                         });
                 });
             }
+                    
+            if (builder.Configuration.GetValue<bool>("UseAzureAppConfiguration"))
+            {
+                builder.Services.AddAzureAppConfiguration();
+            }
         }
         
         return builder;
-    } 
+    }
 }

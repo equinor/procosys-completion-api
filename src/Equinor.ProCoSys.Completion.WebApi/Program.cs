@@ -1,10 +1,16 @@
 ﻿using Azure.Core;
 using Azure.Identity;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
+using Equinor.ProCoSys.Completion.WebApi.HostedServices;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Seeding;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,13 +31,18 @@ TokenCredential credential = devOnLocalhost switch
     false => new DefaultAzureCredential()
 };
 
-builder.ConfigureAppConfig();
+builder.Services.AddSingleton(credential);
+builder.ConfigureAzureAppConfig(credential);
 
 builder.WebHost.UseKestrel(options =>
 {
     options.AddServerHeader = false;
     options.Limits.MaxRequestBodySize = null;
 });
+
+builder.ConfigureHostedJobs(devOnLocalhost);
+builder.ConfigureSwagger();
+builder.ConfigureHttp();
 
 var startup = new Startup(builder.Configuration, builder.Environment);
 startup.ConfigureServices(builder.Services, credential, devOnLocalhost);
