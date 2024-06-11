@@ -13,7 +13,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -33,7 +32,6 @@ public class PunchItemEventConsumerTests
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly PunchItemEventConsumer _dut;
-    private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<PunchItemEvent> _contextMock = Substitute.For<ConsumeContext<PunchItemEvent>>();
     private PunchItem? _punchItemAddedToRepository;
     
@@ -64,16 +62,11 @@ public class PunchItemEventConsumerTests
             _documentRepoMock,
             _swcrRepoMock,
             _workOrderRepoMock,
-            _unitOfWorkMock, 
-            Substitute.For<ICurrentUserSetter>(), 
-            _applicationOptionsMock
-            );
+            _unitOfWorkMock);
 
     [TestInitialize]
     public void Setup()
     {
-        _applicationOptionsMock.CurrentValue.Returns(new ApplicationOptions { ObjectId = new Guid() });
-
         _punchItemRepoMock
             .When(x => x.Add(Arg.Any<PunchItem>()))
             .Do(callInfo =>

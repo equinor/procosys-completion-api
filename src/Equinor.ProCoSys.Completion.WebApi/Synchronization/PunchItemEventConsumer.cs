@@ -3,7 +3,6 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,9 +26,7 @@ public class PunchItemEventConsumer(
     IDocumentRepository documentRepository,
     ISWCRRepository swcrRepository,
     IWorkOrderRepository woRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<PunchItemEvent>
 {
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
@@ -50,7 +47,6 @@ public class PunchItemEventConsumer(
             punchItemRepository.Add(punchItem);
         }
         
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
