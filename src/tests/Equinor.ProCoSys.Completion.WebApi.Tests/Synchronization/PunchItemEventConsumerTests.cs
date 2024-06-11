@@ -40,7 +40,7 @@ public class PunchItemEventConsumerTests
 
     private const string Plant = "PCS$OSEBERG_C";
     private static readonly Guid s_projectGuid = Guid.NewGuid();
-    private readonly Project _project = new Project(Plant, s_projectGuid, "ProjectTitan", "Description");
+    private readonly Project _project = new(Plant, s_projectGuid, "ProjectTitan", "Description");
     private static readonly Guid s_raisedByOrgGuid = Guid.NewGuid();
     private static readonly Guid s_clearingByOrgGuid = Guid.NewGuid();
 
@@ -247,14 +247,15 @@ public class PunchItemEventConsumerTests
             _clearingByOrg,
             guid);
 
-        var json = $@"
-        {{
-            ""Plant"": ""{Plant}"",
-            ""ProCoSysGuid"": ""{guid}"",
-            ""PunchItemNo"": 1234,
-            ""PunchItemId"": 1234,
-            ""Behavior"": ""delete""
-        }}";
+        var json = $$"""
+                         {
+                             "Plant": "{{Plant}}",
+                             "ProCoSysGuid": "{{guid}}",
+                             "PunchItemNo": 1234,
+                             "PunchItemId": 1234,
+                             "Behavior": "delete"
+                         }
+                     """;
 
         _punchItemRepoMock.ExistsAsync(guid, default).Returns(true);
         _punchItemRepoMock.GetAsync(guid, Arg.Any<CancellationToken>()).Returns(punchItem);
@@ -265,6 +266,7 @@ public class PunchItemEventConsumerTests
         //Act
         await _dut.Consume(_contextMock);
 
+        //Assert
         _punchItemRepoMock.Received(1).Remove(punchItem);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
@@ -295,7 +297,7 @@ public class PunchItemEventConsumerTests
         Guid verifiedByGuid,
         Guid createdByGuid,
         Guid actionByGuid,
-        string behaviour
+        string behavior
         ) => new (
         string.Empty,
         plant,
@@ -343,6 +345,6 @@ public class PunchItemEventConsumerTests
         verifiedByGuid,
         createdByGuid,
         actionByGuid,
-        string.Empty
+        behavior
     );
 }
