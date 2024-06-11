@@ -12,13 +12,13 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public const int TitleLengthMax = 256;
     public const int UrlLengthMax = 2000;
 
-    public Link(string parentType, Guid parentGuid, string title, string url)
+    public Link(string parentType, Guid parentGuid, string title, string url, Guid? proCoSysGuid = null)
     {
         ParentType = parentType;
         ParentGuid = parentGuid;
         Title = title;
         Url = url;
-        Guid = MassTransit.NewId.NextGuid();
+        Guid = proCoSysGuid ?? MassTransit.NewId.NextGuid();
     }
 
     // private setters needed for Entity Framework
@@ -33,6 +33,8 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public int? ModifiedById { get; private set; }
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 
     public void SetCreated(Person createdBy)
     {
@@ -46,5 +48,12 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
         ModifiedAtUtc = TimeService.UtcNow;
         ModifiedById = modifiedBy.Id;
         ModifiedBy = modifiedBy;
+    }
+
+    public void SetSyncProperties(Person createdBy, DateTime createdAt)
+    {
+        CreatedAtUtc = createdAt;
+        CreatedById = createdBy.Id;
+        CreatedBy = createdBy;
     }
 }

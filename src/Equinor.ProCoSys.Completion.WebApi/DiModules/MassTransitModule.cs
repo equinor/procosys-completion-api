@@ -95,6 +95,13 @@ public static class MassTransitModule
                     e.Name = "completion_punchitem_changehistory";
                     e.Temporary = false;
                 });
+            x.AddConsumer<PunchItemAttachmentEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_attachment";
+                    e.Temporary = false;
+                });
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
@@ -136,7 +143,6 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-
                 cfg.ReceiveEndpoint(QueueNames.LibraryCompletionTransferQueue, e =>
                 {
                     e.ClearSerialization();
@@ -222,6 +228,17 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PersonEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.AttachmentCompletionTransferQueue, e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemAttachmentEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
