@@ -56,10 +56,13 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
         ModifiedBy = modifiedBy;
     }
 
-    public void SetSyncProperties(Person createdBy, DateTime createdAt)
+    public void SetSyncProperties(DateTime modifiedAt) => ModifiedAtUtc = modifiedAt;
+
+    public void SetSyncProperties(Person createdBy, DateTime createdAt, DateTime modifiedAt)
     {
         CreatedAtUtc = createdAt;
         CreatedById = createdBy.Id;
         CreatedBy = createdBy;
+        SetSyncProperties(modifiedAt);
     }
 }

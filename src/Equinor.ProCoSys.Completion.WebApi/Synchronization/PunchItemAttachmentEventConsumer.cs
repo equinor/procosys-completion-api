@@ -180,6 +180,7 @@ public class PunchItemAttachmentEventConsumer(
         {
             attachment.Description = busEvent.Title;
         }
+        attachment.SetSyncProperties(busEvent.LastUpdated);
     }
 
     private async Task<Attachment> CreateAttachmentEntityAsync(PunchItemAttachmentEvent busEvent, CancellationToken cancellationToken)
@@ -199,7 +200,7 @@ public class PunchItemAttachmentEventConsumer(
         }
 
         var person = await personRepository.GetAsync(busEvent.CreatedByGuid, cancellationToken);
-        attachment.SetSyncProperties(person, busEvent.CreatedAt);
+        attachment.SetSyncProperties(person, busEvent.CreatedAt, busEvent.LastUpdated);
 
         return attachment;
     }
@@ -210,6 +211,7 @@ public class PunchItemAttachmentEventConsumer(
         link.SyncTimestamp = DateTime.UtcNow;
         link.Title = busEvent.Title;
         link.Url = busEvent.Uri!;
+        link.SetSyncProperties(busEvent.LastUpdated);
     }
 
     private async Task<Link> CreateLinkEntityAsync(PunchItemAttachmentEvent busEvent, CancellationToken cancellationToken)
@@ -221,7 +223,7 @@ public class PunchItemAttachmentEventConsumer(
         };
 
         var person = await personRepository.GetAsync(busEvent.CreatedByGuid, cancellationToken);
-        link.SetSyncProperties(person, busEvent.CreatedAt);
+        link.SetSyncProperties(person, busEvent.CreatedAt, busEvent.LastUpdated);
 
         return link;
     }

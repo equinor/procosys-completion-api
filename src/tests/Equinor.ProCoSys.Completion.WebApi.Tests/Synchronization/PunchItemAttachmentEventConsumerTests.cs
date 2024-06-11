@@ -77,6 +77,8 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.FileName, _attachmentAddedToRepository.FileName);
         Assert.AreEqual(bEvent.Title, _attachmentAddedToRepository.Description);
         Assert.AreEqual(_createdByGuid, _attachmentAddedToRepository.CreatedBy.Guid);
+        Assert.AreEqual(bEvent.CreatedAt, _attachmentAddedToRepository.CreatedAtUtc);
+        Assert.AreEqual(bEvent.LastUpdated, _attachmentAddedToRepository.ModifiedAtUtc);
         Assert.IsTrue(_attachmentAddedToRepository.BlobPath.Contains(bEvent.ProjectName));
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
@@ -100,6 +102,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(bEvent.LastUpdated, existingAttachment.ProCoSys4LastUpdated);
         Assert.AreEqual(bEvent.Title, existingAttachment.Description);
+        Assert.AreEqual(bEvent.LastUpdated, existingAttachment.ModifiedAtUtc);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
@@ -146,6 +149,8 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.Title, _linkAddedToRepository.Title);
         Assert.AreEqual(bEvent.Uri, _linkAddedToRepository.Url);
         Assert.AreEqual(_createdByGuid, _linkAddedToRepository.CreatedBy.Guid);
+        Assert.AreEqual(bEvent.CreatedAt, _linkAddedToRepository.CreatedAtUtc);
+        Assert.AreEqual(bEvent.LastUpdated, _linkAddedToRepository.ModifiedAtUtc);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
@@ -192,6 +197,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(bEvent.LastUpdated, existingLink.ProCoSys4LastUpdated);
         Assert.AreEqual(bEvent.Title, existingLink.Title);
         Assert.AreEqual(bEvent.Uri, existingLink.Url);
+        Assert.AreEqual(bEvent.LastUpdated, existingLink.ModifiedAtUtc);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }
