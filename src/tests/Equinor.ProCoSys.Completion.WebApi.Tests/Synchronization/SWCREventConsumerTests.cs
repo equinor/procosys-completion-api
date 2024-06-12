@@ -60,7 +60,7 @@ public class SWCREventConsumerTests
         Assert.AreEqual(guid, _swcrAddedToRepository.Guid);
         Assert.AreEqual(false, _swcrAddedToRepository.IsVoided);
         Assert.AreEqual(int.Parse(SwcrNo), _swcrAddedToRepository.No);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -90,7 +90,7 @@ public class SWCREventConsumerTests
         Assert.AreEqual(true, swcrToUpdate.IsVoided);
         Assert.AreEqual(int.Parse(SwcrNo), swcrToUpdate.No);
 
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -117,7 +117,7 @@ public class SWCREventConsumerTests
 
         //Assert
         _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -144,7 +144,7 @@ public class SWCREventConsumerTests
 
         //Assert
         _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]
