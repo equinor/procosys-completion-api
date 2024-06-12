@@ -4,7 +4,7 @@ using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class DocumentEventConsumer(
+public abstract class DocumentEventConsumer(
     IDocumentConsumerService documentConsumerService)
     : IConsumer<DocumentEvent>
 {

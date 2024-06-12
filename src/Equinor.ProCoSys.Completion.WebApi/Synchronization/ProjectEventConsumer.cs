@@ -35,7 +35,7 @@ public class ProjectEventConsumer(
 
             if (project.ProCoSys4LastUpdated == projectEvent.LastUpdated)
             {
-                logger.LogInformation("Project Message Ignored because LastUpdated is the same as in db\n" +
+                logger.LogDebug("Project Message Ignored because LastUpdated is the same as in db\n" +
                                    "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                    "EventLastUpdated: {LastUpdated} \n" +
                                    "SyncedToCompletion: {CreatedAtUtc} \n",
@@ -61,7 +61,7 @@ public class ProjectEventConsumer(
         }
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
         
-        logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
+        logger.LogDebug("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
             context.MessageId, projectEvent.ProCoSysGuid, projectEvent.ProjectName);
     }
 

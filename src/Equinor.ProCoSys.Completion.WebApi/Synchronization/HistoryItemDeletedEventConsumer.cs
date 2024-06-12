@@ -21,7 +21,7 @@ public class HistoryItemDeletedEventConsumer(
         historyItemRepository.Add(historyItemEntity);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
         
-        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
+        logger.LogDebug("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
             nameof(IHistoryItemDeletedV1),
             context.MessageId, 
             historyItemDeletedV1.Guid, 

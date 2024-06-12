@@ -22,7 +22,7 @@ public class HistoryItemUpdatedEventConsumer(
         historyItemRepository.Add(historyItemEntity);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
         
-        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
+        logger.LogDebug("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}", 
             nameof(IHistoryItemUpdatedV1),
             context.MessageId, 
             historyItemUpdatedV1.Guid, 

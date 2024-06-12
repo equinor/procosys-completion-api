@@ -14,7 +14,6 @@ public class HistoryItemCreatedEventConsumer(
     IUnitOfWork unitOfWork)
     : IConsumer<IHistoryItemCreatedV1>
 {
-
     public async Task Consume(ConsumeContext<IHistoryItemCreatedV1> context)
     {
         var historyItemCreatedV1 = context.Message;
@@ -23,7 +22,7 @@ public class HistoryItemCreatedEventConsumer(
         historyItemRepository.Add(historyItemEntity);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}",
+        logger.LogDebug("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}",
             nameof(IHistoryItemCreatedV1),
             context.MessageId,
             historyItemCreatedV1.Guid,

@@ -22,13 +22,13 @@ public class PersonEventConsumer(
 
         if (personEvent.AzureOid is null || personEvent.AzureOid == Guid.Empty)
         {
-            logger.LogInformation("We currently ignore messages without Azure_Oid.");
+            logger.LogDebug("We currently ignore messages without Azure_Oid.");
             return;
         }
 
         if (personEvent.Behavior == "delete")
         {
-            logger.LogInformation("Delete behavior for person is currently not implemented.");
+            logger.LogDebug("Delete behavior for person is currently not implemented.");
             return;
         }
 
