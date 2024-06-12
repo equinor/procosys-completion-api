@@ -289,6 +289,7 @@ public class PunchItemEventConsumerTests
         rejectedByGuid,
         verifiedByGuid,
         createdByGuid,
-        actionByGuid
+        actionByGuid,
+        string.Empty
     );
 }
