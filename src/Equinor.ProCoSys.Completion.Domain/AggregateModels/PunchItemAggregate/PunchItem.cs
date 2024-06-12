@@ -37,7 +37,28 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Category category,
         string description,
         LibraryItem raisedByOrg,
-        LibraryItem clearingByOrg,
+        LibraryItem clearingByOrg)
+        : base(plant)
+    {
+        CheckListGuid = checkListGuid;
+        Category = category;
+        Description = description;
+        Guid = MassTransit.NewId.NextGuid();
+
+        SetProject(plant, project);
+        SetRaisedByOrg(raisedByOrg);
+        SetClearingByOrg(clearingByOrg);
+        
+    }
+    
+    public PunchItem(
+        string plant,
+        Project project,
+        Guid checkListGuid,
+        Category category,
+        string description,
+        LibraryItem? raisedByOrg,
+        LibraryItem? clearingByOrg,
         Guid? proCoSysGuid = null)
         : base(plant)
     {
@@ -47,22 +68,28 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         Guid = proCoSysGuid ?? MassTransit.NewId.NextGuid();
 
         SetProject(plant, project);
-        SetRaisedByOrg(raisedByOrg);
-        SetClearingByOrg(clearingByOrg);
+        if(raisedByOrg is not null)
+        {
+            SetRaisedByOrg(raisedByOrg);
+        }
+
+        if (clearingByOrg is not null)
+        {
+            SetClearingByOrg(clearingByOrg);
+        }
     }
 
     // private setters needed for Entity Framework
     public int ProjectId { get; private set; }
     public Project Project { get; private set; } = null!;
-    // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
     public Category Category { get; set; }
     public long ItemNo { get; private set; }
     public string Description { get; set; }
-    public LibraryItem RaisedByOrg { get; private set; } = null!;
-    public int RaisedByOrgId { get; private set; }
-    public LibraryItem ClearingByOrg { get; private set; } = null!;
-    public int ClearingByOrgId { get; private set; }
+    public LibraryItem? RaisedByOrg { get; private set; }
+    public int? RaisedByOrgId { get; private set; }
+    public LibraryItem? ClearingByOrg { get; private set; }
+    public int? ClearingByOrgId { get; private set; }
     public LibraryItem? Sorting { get; private set; }
     public int? SortingId { get; private set; }
     public LibraryItem? Type { get; private set; }
@@ -111,7 +138,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? SWCRId { get; private set; }
     public Person? ActionBy { get; private set; }
     public int? ActionById { get; private set; }
-
     public DateTime CreatedAtUtc { get; private set; }
     public int CreatedById { get; private set; }
     public Person CreatedBy { get; private set; } = null!;

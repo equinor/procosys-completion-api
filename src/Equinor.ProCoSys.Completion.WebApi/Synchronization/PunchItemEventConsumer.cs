@@ -86,30 +86,11 @@ public class PunchItemEventConsumer(
     {
         var project = await projectRepository.GetAsync(busEvent.ProjectGuid, cancellationToken);
 
-        //In case of bad data from Oracle, we need this due to constraint
-        if (busEvent.RejectedByGuid is not null && busEvent.RejectedAt is null)
-        {
-            busEvent = busEvent with { RejectedAt = DateTime.MinValue };
-        }
-        
-        LibraryItem? unknownOrg = null;
-        if (!busEvent.RaisedByOrgGuid.HasValue)
-        {
-            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
-        }
-        if(!busEvent.ClearingByOrgGuid.HasValue && unknownOrg is null)
-        {
-            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
-        }
-        
-        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue 
-            ? await libraryItemRepository.GetAsync(busEvent.RaisedByOrgGuid.Value, cancellationToken) 
-            : unknownOrg!;
-            
-        
-        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue 
-            ? await libraryItemRepository.GetAsync(busEvent.ClearingByOrgGuid.Value, cancellationToken) 
-            : unknownOrg!;
+        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
+            busEvent.RaisedByOrgGuid.Value,
+            cancellationToken) :null;
+        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue ? await libraryItemRepository.GetAsync(
+            busEvent.ClearingByOrgGuid.Value, cancellationToken) : null;
 
         var punchItem = new PunchItem(
             busEvent.Plant,
@@ -120,13 +101,13 @@ public class PunchItemEventConsumer(
             raisedByOrg,
             clearingByOrg,
             busEvent.ProCoSysGuid);
-
+        
         await SetSyncProperties(punchItem, busEvent, cancellationToken);
         await MapPunchItemEventToPunchItem(busEvent, punchItem, cancellationToken);
 
         return punchItem;
     }
-    
+
     private async Task MapPunchItemEventToPunchItem(PunchItemEvent busEvent, PunchItem punchItem,
         CancellationToken cancellationToken)
     {

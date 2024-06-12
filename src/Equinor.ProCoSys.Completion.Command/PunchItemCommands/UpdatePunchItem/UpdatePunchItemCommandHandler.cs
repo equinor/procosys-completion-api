@@ -448,7 +448,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         List<IChangedProperty> changes,
         CancellationToken cancellationToken)
     {
-        if (punchItem.ClearingByOrg.Guid == patchedPunchItem.ClearingByOrgGuid)
+        if (punchItem.ClearingByOrg?.Guid == patchedPunchItem.ClearingByOrgGuid)
         {
             return;
         }
@@ -458,7 +458,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
         changes.Add(new ChangedProperty<string>(nameof(punchItem.ClearingByOrg),
-            punchItem.ClearingByOrg.Code,
+            punchItem.ClearingByOrg?.Code,
             libraryItem.Code));
         punchItem.SetClearingByOrg(libraryItem);
     }
@@ -469,7 +469,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         List<IChangedProperty> changes,
         CancellationToken cancellationToken)
     {
-        if (punchItem.RaisedByOrg.Guid == patchedPunchItem.RaisedByOrgGuid)
+        if (punchItem.RaisedByOrg!.Guid == patchedPunchItem.RaisedByOrgGuid)
         {
             return;
         }

@@ -24,12 +24,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
 
         builder.HasOne(x => x.RaisedByOrg)
             .WithMany()
-            .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(x => x.ClearingByOrg)
             .WithMany()
-            .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(x => x.Sorting)

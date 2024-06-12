@@ -169,8 +169,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         [
             new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
             new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.Code),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.Code)
+            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg?.Code),
+            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg?.Code)
         ];
 
     private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo, List<IProperty> properties)
