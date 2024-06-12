@@ -32,11 +32,19 @@ public class PunchItemEventConsumer(
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
-
+        
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
-
-        if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior is not null && busEvent.Behavior == "delete")
+        {
+            if (!await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                logger.LogWarning("PunchItem with Guid {Guid} was not found and could not be deleted", 
+                    busEvent.ProCoSysGuid);
+            }
+        }
+        
+        else if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
@@ -49,7 +57,7 @@ public class PunchItemEventConsumer(
         
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             nameof(PunchItemEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
@@ -59,7 +67,10 @@ public class PunchItemEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ProCoSysGuid)}");
         }
-
+        if (busEvent.Behavior is not null)
+        {
+            return;
+        }
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
@@ -305,8 +316,7 @@ public class PunchItemEventConsumer(
 }
 
 
-public record PunchItemEvent
-(
+public record PunchItemEvent(
     string EventType,
     string Plant,
     Guid ProCoSysGuid,
@@ -352,6 +362,7 @@ public record PunchItemEvent
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
     Guid? CreatedByGuid,
-    Guid? ActionByGuid
-) : IPunchListItemEventV1;
+    Guid? ActionByGuid,
+    string? Behavior
+): IPunchListItemEventV1;
 

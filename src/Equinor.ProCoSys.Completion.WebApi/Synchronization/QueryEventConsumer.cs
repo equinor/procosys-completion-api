@@ -5,7 +5,7 @@ using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public class QueryEventConsumer(IDocumentConsumerService documentConsumerService)
+public abstract class QueryEventConsumer(IDocumentConsumerService documentConsumerService)
     : IConsumer<QueryEvent>
 {
     public async Task Consume(ConsumeContext<QueryEvent> context)
@@ -16,7 +16,8 @@ public class QueryEventConsumer(IDocumentConsumerService documentConsumerService
             busEvent.ProCoSysGuid,
             busEvent.QueryNo, //this is documentNo in oracle
             busEvent.IsVoided,
-            busEvent.LastUpdated);
+            busEvent.LastUpdated,
+            busEvent.Behavior);
         await documentConsumerService.ConsumeDocumentEvent(context, documentEvent);
     }
 }
@@ -26,4 +27,5 @@ public abstract record QueryEvent(
     string Plant, 
     DateTime LastUpdated,
     bool IsVoided,
-    string QueryNo);
+    string QueryNo,
+    string? Behavior);

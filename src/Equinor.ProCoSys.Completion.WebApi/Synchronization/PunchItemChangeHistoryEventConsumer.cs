@@ -25,13 +25,13 @@ public class PunchItemChangeHistoryEventConsumer(
         {
             var document = CreateHistoryItemEntity(busEvent);
             historyItemRepository.Add(document);
-            await unitOfWork.SaveChangesAsync(context.CancellationToken);
-            logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid}",
+            await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
+            logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid}",
                 nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.ProCoSysGuid);
         }
         else
         {
-            logger.LogInformation("{EventName} Message Message Ignored because it already exists: {MessageId} \n Guid {Guid}",
+            logger.LogDebug("{EventName} Message Message Ignored because it already exists: {MessageId} \n Guid {Guid}",
                 nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.ProCoSysGuid);
         }
     }

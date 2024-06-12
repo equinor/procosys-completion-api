@@ -39,7 +39,7 @@ public class LibraryEventConsumer(
             
             if (library.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
-                logger.LogInformation("{EventName} Ignored because LastUpdated is the same as in db\n" +
+                logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
                                       "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
@@ -67,9 +67,9 @@ public class LibraryEventConsumer(
             libraryRepository.Add(lib);
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Code {LibraryCode}",
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Code {LibraryCode}",
             nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
     }
 

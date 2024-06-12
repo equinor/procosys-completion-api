@@ -8,17 +8,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
-public abstract class EntityWithGuidRepository<TEntity> : EntityRepository<TEntity>
+public abstract class EntityWithGuidRepository<TEntity>(
+    CompletionContext context,
+    DbSet<TEntity> set,
+    IQueryable<TEntity> defaultQueryable)
+    : EntityRepository<TEntity>(context, set, defaultQueryable)
     where TEntity : EntityBase, IAggregateRoot, IHaveGuid
 {
     protected EntityWithGuidRepository(CompletionContext context, DbSet<TEntity> set)
         : this(context, set, set)
     {
     }
-
-    protected EntityWithGuidRepository(CompletionContext context, DbSet<TEntity> set, IQueryable<TEntity> defaultQueryable)
-        : base(context, set, defaultQueryable)
+    
+    public async Task<bool> RemoveByGuidAsync(Guid guid, CancellationToken cancellationToken)
     {
+        var entity = await Set.SingleOrDefaultAsync(e => e.Guid == guid, cancellationToken);
+        if (entity is null)
+        {
+            return false;
+        }
+
+        Set.Remove(entity);
+        return true;
     }
 
     public virtual async Task<TEntity> GetAsync(

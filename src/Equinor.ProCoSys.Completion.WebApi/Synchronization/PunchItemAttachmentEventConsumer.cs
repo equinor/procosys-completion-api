@@ -47,7 +47,7 @@ public class PunchItemAttachmentEventConsumer(
 
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Title {Title}",
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Title {Title}",
             nameof(PunchItemAttachmentEvent), context.MessageId, busEvent.AttachmentGuid, busEvent.Title);
     }
 
@@ -59,7 +59,7 @@ public class PunchItemAttachmentEventConsumer(
 
             if (attachment.ProCoSys4LastUpdated == busEvent.LastUpdated)
             {
-                logger.LogInformation("{EventName} Message Ignored because LastUpdated is the same as in db\n" +
+                logger.LogDebug("{EventName} Message Ignored because LastUpdated is the same as in db\n" +
                                       "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
                                       "SyncedToCompletion: {SyncedTimeStamp} \n",
