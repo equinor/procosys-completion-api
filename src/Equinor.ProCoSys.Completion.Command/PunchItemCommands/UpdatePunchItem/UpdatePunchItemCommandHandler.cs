@@ -469,7 +469,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         List<IChangedProperty> changes,
         CancellationToken cancellationToken)
     {
-        if (punchItem.RaisedByOrg!.Guid == patchedPunchItem.RaisedByOrgGuid)
+        if (punchItem.RaisedByOrg?.Guid == patchedPunchItem.RaisedByOrgGuid)
         {
             return;
         }
@@ -479,7 +479,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
         changes.Add(new ChangedProperty<string>(nameof(punchItem.RaisedByOrg),
-            punchItem.RaisedByOrg.Code,
+            punchItem.RaisedByOrg?.Code,
             libraryItem.Code));
         punchItem.SetRaisedByOrg(libraryItem);
     }
