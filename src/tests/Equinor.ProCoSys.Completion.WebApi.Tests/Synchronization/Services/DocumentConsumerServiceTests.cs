@@ -170,6 +170,7 @@ public class DocumentConsumerServiceTests
             guid,
             documentNo,
             false,
-            lastUpdated
+            lastUpdated,
+            string.Empty
         );
 }

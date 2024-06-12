@@ -57,7 +57,7 @@ public class PunchItemChangeHistoryEventConsumerTests
         Assert.AreEqual(bEvent.ChangedAt.Ticks, _historyItemAddedToRepository.EventAtUtc.Ticks);
         Assert.AreEqual(bEvent.ChangedBy, _historyItemAddedToRepository.EventByFullName);
         Assert.AreEqual(Guid.Empty, _historyItemAddedToRepository.EventByOid);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]

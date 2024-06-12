@@ -65,7 +65,7 @@ public class ProjectEventConsumerTests
         Assert.AreEqual(lastUpdated,_projectAddedToRepository.ProCoSys4LastUpdated);
         Assert.AreEqual(Description,_projectAddedToRepository.Description);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -94,7 +94,7 @@ public class ProjectEventConsumerTests
         Assert.AreEqual(lastUpdated,projectToUpdate.ProCoSys4LastUpdated);
         Assert.AreEqual(Description,projectToUpdate.Description);
         Assert.AreEqual(ProjectName,projectToUpdate.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -115,7 +115,7 @@ public class ProjectEventConsumerTests
         Assert.IsNotNull(_projectAddedToRepository);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Description);
         Assert.AreEqual(ProjectName,_projectAddedToRepository.Name);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class ProjectEventConsumerTests
         
         //Assert
         _projectRepoMock.Received(1).Remove(toDelete);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
         
     [TestMethod]
