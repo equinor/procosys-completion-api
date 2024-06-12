@@ -164,31 +164,7 @@ public class PunchItemEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, s_projectGuid,
-            "description",
-            Guid.Empty,
-            Category.PA,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            "55",
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            false,
-            false,
-            "NO123",
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            string.Empty
-        );
+        var bEvent = GetBusEvent(Guid.Empty, Plant, string.Empty);
 
         _contextMock.Message.Returns(bEvent);
 
@@ -201,31 +177,7 @@ public class PunchItemEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.NewGuid(), "", s_projectGuid,
-            "description",
-            Guid.Empty,
-            Category.PA,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            "55",
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            false,
-            false,
-            "NO123",
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            Guid.Empty,
-            string.Empty
-        );
+        var bEvent = GetBusEvent(Guid.NewGuid(), "", string.Empty);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
@@ -247,20 +199,10 @@ public class PunchItemEventConsumerTests
             _clearingByOrg,
             guid);
 
-        var json = $$"""
-                         {
-                             "Plant": "{{Plant}}",
-                             "ProCoSysGuid": "{{guid}}",
-                             "PunchItemNo": 1234,
-                             "PunchItemId": 1234,
-                             "Behavior": "delete"
-                         }
-                     """;
-
         _punchItemRepoMock.ExistsAsync(guid, default).Returns(true);
         _punchItemRepoMock.GetAsync(guid, Arg.Any<CancellationToken>()).Returns(punchItem);
 
-        var bEvent = JsonSerializer.Deserialize<PunchItemEvent>(json);
+        var bEvent = GetBusEvent(guid, Plant, "delete");
         _contextMock.Message.Returns(bEvent);
 
         //Act
@@ -270,6 +212,32 @@ public class PunchItemEventConsumerTests
         _punchItemRepoMock.Received(1).Remove(punchItem);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
+
+    private static PunchItemEvent GetBusEvent(Guid guid, string plant, string behavior) =>
+        GetTestEvent(guid, plant, s_projectGuid,
+            "description",
+            Guid.Empty,
+            Category.PA,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            "55",
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            false,
+            false,
+            "NO123",
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            Guid.Empty,
+            behavior);
 
     private static PunchItemEvent GetTestEvent(
         Guid guid, 

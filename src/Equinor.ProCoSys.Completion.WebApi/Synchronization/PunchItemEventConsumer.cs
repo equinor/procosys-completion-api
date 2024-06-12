@@ -41,13 +41,13 @@ public class PunchItemEventConsumer(
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
 
-        if (DeleteBehavior.Equals(busEvent.Behavior, StringComparison.CurrentCultureIgnoreCase) 
-            && await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        var existsAsync = await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+        if (existsAsync && DeleteBehavior.Equals(busEvent.Behavior, StringComparison.CurrentCultureIgnoreCase))
         {
                 var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
                 punchItemRepository.Remove(punchItem);
         } 
-        else if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        else if (existsAsync)
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
