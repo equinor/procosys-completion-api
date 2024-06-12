@@ -171,6 +171,6 @@ public class DocumentConsumerServiceTests
             documentNo,
             false,
             lastUpdated,
-            string.Empty
+            null
         );
 }
