@@ -64,7 +64,7 @@ public class LibraryEventConsumerTests
         Assert.AreEqual(Description,_libraryAddedToRepository.Description);
         Assert.AreEqual(Code,_libraryAddedToRepository.Code);
         Assert.AreEqual(Type, _libraryAddedToRepository.Type);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -94,7 +94,7 @@ public class LibraryEventConsumerTests
         Assert.AreEqual(Description,libraryItemToUpdate.Description);
         Assert.AreEqual(Code,libraryItemToUpdate.Code);
         Assert.AreEqual(Type, libraryItemToUpdate.Type);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
