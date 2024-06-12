@@ -38,8 +38,7 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .IsRequired();
 
         builder.Property(x => x.ProCoSys4LastUpdatedByUser)
-            .HasMaxLength(Attachment.ProCoSys4LastUpdatedByUserLengthMax)
-            .IsRequired();
+            .HasMaxLength(Attachment.ProCoSys4LastUpdatedByUserLengthMax);
 
         builder
             .HasMany(x => x.Labels)
