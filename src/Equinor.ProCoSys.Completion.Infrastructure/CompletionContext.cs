@@ -32,7 +32,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure;
 
 public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 {
-    public static string CompletionContextConnectionStringName = "CompletionContext";
+    public static string CompletionContextConnectionStringName = "CompletionDb";
 
     private readonly IPlantProvider _plantProvider;
     private readonly IEventDispatcher _eventDispatcher;
