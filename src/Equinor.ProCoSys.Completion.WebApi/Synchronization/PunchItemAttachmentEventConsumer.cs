@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using System;
@@ -173,11 +172,9 @@ public class PunchItemAttachmentEventConsumer(
     private void MapFromEventToAttachment(PunchItemAttachmentEvent busEvent, Attachment attachment)
     {
         attachment.ProCoSys4LastUpdated = busEvent.LastUpdated;
+        attachment.ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser;
         attachment.SyncTimestamp = DateTime.UtcNow;
-        if (!string.IsNullOrEmpty(busEvent.Title))
-        {
-            attachment.Description = busEvent.Title;
-        }
+        attachment.Description = busEvent.Title;
         attachment.SetSyncProperties(busEvent.LastUpdated);
     }
 
@@ -190,7 +187,9 @@ public class PunchItemAttachmentEventConsumer(
             busEvent.FileName!, 
             busEvent.AttachmentGuid)
         {
-            ProCoSys4LastUpdated = busEvent.LastUpdated, SyncTimestamp = DateTime.UtcNow
+            ProCoSys4LastUpdated = busEvent.LastUpdated,
+            ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser, 
+            SyncTimestamp = DateTime.UtcNow
         };
         if (!string.IsNullOrEmpty(busEvent.Title))
         {
@@ -206,6 +205,7 @@ public class PunchItemAttachmentEventConsumer(
     private void MapFromEventToLink(PunchItemAttachmentEvent busEvent, Link link)
     {
         link.ProCoSys4LastUpdated = busEvent.LastUpdated;
+        link.ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser;
         link.SyncTimestamp = DateTime.UtcNow;
         link.Title = busEvent.Title;
         link.Url = busEvent.Uri!;
@@ -217,6 +217,7 @@ public class PunchItemAttachmentEventConsumer(
         var link = new Link(nameof(PunchItem), busEvent.PunchItemGuid, busEvent.Title, busEvent.Uri!, busEvent.AttachmentGuid)
         {
             ProCoSys4LastUpdated = busEvent.LastUpdated,
+            ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser,
             SyncTimestamp = DateTime.UtcNow
         };
 
@@ -241,5 +242,6 @@ public record PunchItemAttachmentEvent
     int? FileId,
     Guid CreatedByGuid,
     DateTime CreatedAt,
-    DateTime LastUpdated
+    DateTime LastUpdated,
+    string? LastUpdatedByUser
 );

@@ -11,6 +11,7 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public const int ParentTypeLengthMax = 256;
     public const int TitleLengthMax = 256;
     public const int UrlLengthMax = 2000;
+    public const int ProCoSys4LastUpdatedByUserLengthMax = 120;
 
 #pragma warning disable CS8618
     public Link()
@@ -40,6 +41,7 @@ public class Link : EntityBase, IAggregateRoot, ICreationAuditable, IModificatio
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
+    public string? ProCoSys4LastUpdatedByUser { get; set; }
     public DateTime SyncTimestamp { get; set; }
 
     public void SetCreated(Person createdBy)
