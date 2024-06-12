@@ -14,7 +14,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PunchItemAttachmentEventConsumer(
     ILogger<PunchItemAttachmentEventConsumer> logger,
-    IPlantSetter plantSetter,
     IPersonRepository personRepository,
     IAttachmentRepository attachmentRepository,
     ILinkRepository linkRepository,
@@ -26,7 +25,6 @@ public class PunchItemAttachmentEventConsumer(
         var busEvent = context.Message;
 
         ValidateAttachmentMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
 
         if (EventIsAttachment(busEvent))
         {
