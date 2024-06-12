@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
