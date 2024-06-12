@@ -59,7 +59,7 @@ public class WorkOrderEventConsumerTests
         Assert.IsNotNull(_workOrderAddedToRepository);
         Assert.AreEqual(guid, _workOrderAddedToRepository.Guid);
         Assert.AreEqual(WoNo, _workOrderAddedToRepository.No);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -84,7 +84,7 @@ public class WorkOrderEventConsumerTests
         Assert.AreEqual(guid, workOrderToUpdate.Guid);
         Assert.AreEqual(WoNo, workOrderToUpdate.No);
 
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
