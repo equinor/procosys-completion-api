@@ -59,7 +59,7 @@ public class ProjectEventConsumer(
             var project = CreateProjectEntity(projectEvent);
             projectRepository.Add(project);
         }
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
         
         logger.LogInformation("Project Message Consumed: {MessageId} \n Guid {Guid} \n {ProjectName}", 
             context.MessageId, projectEvent.ProCoSysGuid, projectEvent.ProjectName);

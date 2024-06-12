@@ -67,7 +67,7 @@ public class LibraryEventConsumer(
             libraryRepository.Add(lib);
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Code {LibraryCode}",
             nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.Type);
@@ -89,7 +89,6 @@ public class LibraryEventConsumer(
         {
             throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Type)}");
         }
-        
     }
 
     private static LibraryItem CreateLibraryEntity(LibraryEvent libraryEvent)
