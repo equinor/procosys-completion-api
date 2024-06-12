@@ -54,9 +54,9 @@ public class WorkOrderEventConsumer(
             workOrderRepository.Add(workOrder);
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
             nameof(WorkOrderEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.WoNo);
     }
 
