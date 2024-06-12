@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-public abstract class QueryEventConsumer(IDocumentConsumerService documentConsumerService)
+public class QueryEventConsumer(IDocumentConsumerService documentConsumerService)
     : IConsumer<QueryEvent>
 {
     public async Task Consume(ConsumeContext<QueryEvent> context)
