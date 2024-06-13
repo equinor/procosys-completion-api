@@ -177,6 +177,10 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.Configure<SyncToPCS4Options>(options =>
             {
                 options.Endpoint = "https://localhost/test";
+                options.ClientId = new Guid().ToString();
+                options.TenantId = new Guid().ToString();
+                options.ClientSecret = "Secret";
+                options.Scope = "scope";
             });
         });
 
