@@ -96,6 +96,13 @@ public static class MassTransitModule
                     e.Name = "completion_attachment";
                     e.Temporary = false;
                 });
+            x.AddConsumer<PunchItemDeleteEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_punchitem_delete";
+                    e.Temporary = false;
+                });
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
@@ -301,6 +308,15 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_punchitem_delete", "punchitem_delete", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemDeleteEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
