@@ -102,6 +102,7 @@ public static class MassTransitModule
                     e.Name = "completion_attachment";
                     e.Temporary = false;
                 });
+            x.AddConsumer<PunchItemCommentEventConsumer>();
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
@@ -239,6 +240,17 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemAttachmentEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.PunchItemCommentTransferQueue, e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemCommentEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();

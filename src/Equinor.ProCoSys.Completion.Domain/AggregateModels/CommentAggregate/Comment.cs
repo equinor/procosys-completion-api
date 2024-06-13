@@ -24,6 +24,13 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
         Text = text;
         Guid = MassTransit.NewId.NextGuid();
     }
+    public Comment(string parentType, Guid parentGuid, string text, Guid guid)
+    {
+        ParentType = parentType;
+        ParentGuid = parentGuid;
+        Text = text;
+        Guid = guid;
+    }
 
     public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
     public IOrderedEnumerable<Label> GetOrderedNonVoidedLabels()
@@ -82,5 +89,19 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
                 _labels.RemoveAt(i);
             }
         }
+    }
+
+    public void SetSyncProperties(DateTime busEventCreatedAt, 
+        Person? createdBy
+        )
+    {
+        if(createdBy != null)
+        {
+            CreatedBy = createdBy;
+        }
+        
+        CreatedAtUtc = busEventCreatedAt;
+        
+       
     }
 }

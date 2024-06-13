@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using Azure.Core;
+﻿using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
