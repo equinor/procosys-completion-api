@@ -16,6 +16,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public const int FileNameLengthMax = 255;
     public const int DescriptionLengthMax = 255;
     public const int BlobPathLengthMax = 1024;
+    public const int ProCoSys4LastUpdatedByUserLengthMax = 120;
 
     private readonly List<Label> _labels = new();
 
@@ -55,6 +56,7 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public Guid Guid { get; private set; }
     public int RevisionNumber { get; private set; }
     public DateTime ProCoSys4LastUpdated { get; set; }
+    public string? ProCoSys4LastUpdatedByUser { get; set; }
     public DateTime SyncTimestamp { get; set; }
 
     public void IncreaseRevisionNumber() => RevisionNumber++;

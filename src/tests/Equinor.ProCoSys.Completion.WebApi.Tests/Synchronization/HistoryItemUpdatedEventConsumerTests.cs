@@ -126,6 +126,6 @@ public class HistoryItemUpdatedEventConsumerTests
         await _dut.Consume(_contextMock);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }

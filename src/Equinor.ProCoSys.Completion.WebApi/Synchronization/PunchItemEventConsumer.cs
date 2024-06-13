@@ -35,7 +35,7 @@ public class PunchItemEventConsumer(
         
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
-        if (busEvent.Behavior is not null && busEvent.Behavior == "delete")
+        if (busEvent.Behavior == "delete")
         {
             if (!await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
             {
@@ -76,7 +76,7 @@ public class PunchItemEventConsumer(
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
         }
 
-        if (string.IsNullOrEmpty(busEvent.Description))
+        if (string.IsNullOrEmpty(busEvent.Description) && busEvent.Behavior != "delete")
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }

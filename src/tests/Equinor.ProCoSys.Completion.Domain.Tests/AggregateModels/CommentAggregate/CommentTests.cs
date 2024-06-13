@@ -15,11 +15,12 @@ public class CommentTests : ICreationAuditableTests
     private readonly string _parentType = "X";
     private readonly Guid _parentGuid = Guid.NewGuid();
     private readonly string _text = "A";
+    private readonly Guid _proCoSysGuid = Guid.NewGuid();
 
     protected override ICreationAuditable GetCreationAuditable() => _dut;
 
     [TestInitialize]
-    public void Setup() => _dut = new Comment(_parentType, _parentGuid, _text);
+    public void Setup() => _dut = new Comment(_parentType, _parentGuid, _text, _proCoSysGuid);
 
     [TestMethod]
     public void Constructor_ShouldSetProperties()
@@ -34,6 +35,11 @@ public class CommentTests : ICreationAuditableTests
         Assert.IsNotNull(_dut.Mentions);
         Assert.AreEqual(0, _dut.Mentions.Count);
     }
+
+    [TestMethod]
+    public void Constructor_ShouldSetProCoSysGuid_WhenGiven() =>
+        // Assert
+        Assert.AreEqual(_proCoSysGuid, _dut.Guid);
 
     [TestMethod]
     public void SetMentions_ShouldSetMentions()

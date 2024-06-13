@@ -25,10 +25,12 @@ public class ProjectEventConsumer(
 
         if (projectEvent.Behavior == "delete")
         {
-            var project = await projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);
-            projectRepository.Remove(project);
+            if (!await projectRepository.RemoveByGuidAsync(projectEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                logger.LogWarning("Project with Guid {Guid} was not found and could not be deleted",
+                    projectEvent.ProCoSysGuid);
+            }
         }
-        
         else if(await projectRepository.ExistsAsync(projectEvent.ProCoSysGuid, context.CancellationToken))
         {
             var project = await projectRepository.GetAsync(projectEvent.ProCoSysGuid, context.CancellationToken);

@@ -61,6 +61,6 @@ public class HistoryItemDeletedEventConsumerTests
         Assert.IsNotNull(_historyItemAddedToRepository.Properties);
         Assert.AreEqual(0, _historyItemAddedToRepository.Properties.Count);
 
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }
