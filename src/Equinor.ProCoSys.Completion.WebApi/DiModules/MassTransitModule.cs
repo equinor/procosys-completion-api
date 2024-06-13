@@ -86,7 +86,7 @@ public static class MassTransitModule
                 .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_changehistory";
+                    e.Name = "completion_punchitem";
                     e.Temporary = false;
                 });
             x.AddConsumer<PunchItemAttachmentEventConsumer>()
@@ -329,7 +329,7 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                cfg.SubscriptionEndpoint("completion_punchitem_delete", "punchitem_delete", e =>
+                cfg.SubscriptionEndpoint("completion_punchitem", "punchlistitem", e =>
                 {
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
