@@ -107,7 +107,7 @@ public static class MassTransitModule
                 .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_delete";
+                    e.Name = "completion_punchitem";
                     e.Temporary = false;
                 });
 
