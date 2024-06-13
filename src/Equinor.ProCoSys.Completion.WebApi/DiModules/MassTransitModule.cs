@@ -93,7 +93,14 @@ public static class MassTransitModule
                 .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_attachment";
+                    e.Name = "completion_punchitem_attachment";
+                    e.Temporary = false;
+                });
+            x.AddConsumer<PunchItemCommentEventConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = "completion_punchitem_comment";
                     e.Temporary = false;
                 });
 
@@ -227,12 +234,23 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                cfg.ReceiveEndpoint(QueueNames.AttachmentCompletionTransferQueue, e =>
+                cfg.ReceiveEndpoint(QueueNames.PunchItemAttachmentCompletionTransferQueue, e =>
                 {
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemAttachmentEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+                cfg.ReceiveEndpoint(QueueNames.PunchItemCommentCompletionTransferQueue, e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<PunchItemCommentEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();

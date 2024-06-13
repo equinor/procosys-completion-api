@@ -37,6 +37,9 @@ internal class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .HasMaxLength(Attachment.BlobPathLengthMax)
             .IsRequired();
 
+        builder.Property(x => x.ProCoSys4LastUpdatedByUser)
+            .HasMaxLength(Attachment.ProCoSys4LastUpdatedByUserLengthMax);
+
         builder
             .HasMany(x => x.Labels)
             .WithMany();

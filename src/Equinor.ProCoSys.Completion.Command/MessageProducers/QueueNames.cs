@@ -12,5 +12,6 @@ public static class QueueNames
     public static string PunchItemChangeHistoryCompletionTransferQueue = "punchItemChangeHistoryCompletionTransferQueue";
     public static string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
     public static string PersonCompletionTransferQueue = "personCompletionTransferQueue";
-    public static string AttachmentCompletionTransferQueue = "attachmentCompletionTransferQueue";
+    public static string PunchItemAttachmentCompletionTransferQueue = "punchItemAttachmentCompletionTransferQueue";
+    public static string PunchItemCommentCompletionTransferQueue = "punchItemCommentCompletionTransferQueue";
 }

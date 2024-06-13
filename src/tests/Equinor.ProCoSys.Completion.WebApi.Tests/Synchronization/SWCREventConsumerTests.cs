@@ -144,7 +144,7 @@ public class SWCREventConsumerTests
 
         //Assert
         _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]

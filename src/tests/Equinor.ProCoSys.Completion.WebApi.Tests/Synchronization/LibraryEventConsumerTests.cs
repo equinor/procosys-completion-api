@@ -119,7 +119,7 @@ public class LibraryEventConsumerTests
         await _libraryEventConsumer.Consume(_contextMock);
         
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -144,7 +144,7 @@ public class LibraryEventConsumerTests
         await _libraryEventConsumer.Consume(_contextMock);
         
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]

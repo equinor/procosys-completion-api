@@ -23,8 +23,8 @@ public class PunchItemChangeHistoryEventConsumer(
 
         if (!await historyItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            var document = CreateHistoryItemEntity(busEvent);
-            historyItemRepository.Add(document);
+            var historyItem = CreateHistoryItemEntity(busEvent);
+            historyItemRepository.Add(historyItem);
             await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
             logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid}",
                 nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.ProCoSysGuid);

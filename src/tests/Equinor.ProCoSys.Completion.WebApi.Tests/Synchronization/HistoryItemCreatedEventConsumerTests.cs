@@ -70,6 +70,6 @@ public class HistoryItemCreatedEventConsumerTests
         Assert.AreEqual(s_propertyInEvent.Value!.ToString(), property.Value);
         Assert.AreEqual(s_propertyInEvent.ValueDisplayType.ToString(), property.ValueDisplayType);
 
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }

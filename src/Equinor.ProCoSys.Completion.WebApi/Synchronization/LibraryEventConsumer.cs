@@ -89,7 +89,6 @@ public class LibraryEventConsumer(
         {
             throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Type)}");
         }
-        
     }
 
     private static LibraryItem CreateLibraryEntity(LibraryEvent libraryEvent)

@@ -184,7 +184,7 @@ public class ProjectEventConsumerTests
         await _projectRepoMock.Received(1).GetAsync(guid, default);
         _projectRepoMock.Received(0).Remove(project);
         _projectRepoMock.Received(0).Add(project);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -211,6 +211,6 @@ public class ProjectEventConsumerTests
         await _projectRepoMock.Received(1).GetAsync(guid, default);
         _projectRepoMock.Received(0).Remove(project);
         _projectRepoMock.Received(0).Add(project);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 }

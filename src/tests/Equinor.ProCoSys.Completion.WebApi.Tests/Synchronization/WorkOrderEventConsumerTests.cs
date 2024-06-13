@@ -108,7 +108,7 @@ public class WorkOrderEventConsumerTests
         await _workOrderEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -132,7 +132,7 @@ public class WorkOrderEventConsumerTests
         await _workOrderEventConsumer.Consume(_contextMock);
 
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]

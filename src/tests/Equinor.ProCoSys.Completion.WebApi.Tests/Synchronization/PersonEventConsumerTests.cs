@@ -63,7 +63,7 @@ public class PersonEventConsumerTests
         Assert.AreEqual(guid, personToUpdate.Guid);
         Assert.AreEqual("Average Max", personToUpdate.FirstName);
         Assert.AreEqual(true, personToUpdate.Superuser);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -103,9 +103,9 @@ public class PersonEventConsumerTests
         await _personRepoMock.Received(1).GetAsync(azureOid, default);
         _personRepoMock.Received(0).Remove(person);
         _personRepoMock.Received(0).Add(person);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
-    
+
     [TestMethod]
     public async Task Consume_ShouldIgnoreMessage_IfLastUpdatedHasNotChanged()
     {
@@ -131,7 +131,7 @@ public class PersonEventConsumerTests
         await _personRepoMock.Received(1).GetAsync(azureOid, default);
         _personRepoMock.Received(0).Remove(person);
         _personRepoMock.Received(0).Add(person);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class PersonEventConsumerTests
         //Assert
         await _personRepoMock.Received(1).ExistsAsync(azureOid, default);
         await _personRepoMock.Received(0).GetAsync(azureOid, default);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]

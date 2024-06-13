@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -63,7 +63,7 @@ public class DocumentConsumerService(
             documentRepository.Add(document);
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+            await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
             nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
