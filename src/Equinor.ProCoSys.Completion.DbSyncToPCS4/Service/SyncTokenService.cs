@@ -20,9 +20,15 @@ public class SyncTokenService : ISyncTokenService
 
     public async Task<string> GetAccessTokenAsync()
     {
-        var optionValues = _options.CurrentValue;
-        var result = await _app.AcquireTokenForClient([optionValues.Scope]).ExecuteAsync();
+        try
+        {
+            var optionValues = _options.CurrentValue;
+            var result = await _app.AcquireTokenForClient([optionValues.Scope]).ExecuteAsync();
 
-        return result.AccessToken;
+            return result.AccessToken;
+        }
+        catch (Exception ex) {
+            throw new Exception("There was a problem fetching the PCS4 Database Sync Bearer Token", ex);
+        }
     }
 }

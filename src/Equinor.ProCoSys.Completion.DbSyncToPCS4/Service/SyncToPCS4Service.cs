@@ -20,7 +20,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         _options = options;
         _logger = logger;
 
-        _httpClient = httpClientFactory.CreateClient("SyncToPCS4Client");
+        _httpClient = httpClientFactory.CreateClient("SyncHttpClient");
     }
 
     public async Task SyncNewPunchListItemAsync(object addEvent, CancellationToken cancellationToken)
