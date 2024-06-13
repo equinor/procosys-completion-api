@@ -173,15 +173,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.AddScoped(_ => CheckListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _emailServiceMock);
-
-            services.Configure<SyncToPCS4Options>(options =>
-            {
-                options.Endpoint = "https://localhost/test";
-                options.ClientId = new Guid().ToString();
-                options.TenantId = new Guid().ToString();
-                options.ClientSecret = "Secret";
-                options.Scope = "scope";
-            });
         });
 
         builder.ConfigureServices(services =>
