@@ -419,7 +419,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNull(_historyItemAddedToRepository);
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 
     [TestMethod]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -18,7 +19,7 @@ public class SWCREventConsumerTests
     private readonly ISWCRRepository _swcrRepoMock = Substitute.For<ISWCRRepository>();
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly SWCREventConsumer _swcrEventConsumer;
+    private readonly SWCREventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<SWCREvent> _contextMock = Substitute.For<ConsumeContext<SWCREvent>>();
     private SWCR? _swcrAddedToRepository;
@@ -26,7 +27,7 @@ public class SWCREventConsumerTests
     private const string Plant = "PCS$OSEBERG_C";
 
     public SWCREventConsumerTests() =>
-        _swcrEventConsumer = new SWCREventConsumer(Substitute.For<ILogger<SWCREventConsumer>>(), _plantSetter, _swcrRepoMock,
+        _dut = new SWCREventConsumer(Substitute.For<ILogger<SWCREventConsumer>>(), _plantSetter, _swcrRepoMock,
             _unitOfWorkMock);
 
     [TestInitialize]
@@ -47,13 +48,13 @@ public class SWCREventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, false, DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, false, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         _swcrRepoMock.ExistsAsync(guid, default).Returns(false);
 
         //Act
-        await _swcrEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         Assert.IsNotNull(_swcrAddedToRepository);
@@ -68,7 +69,7 @@ public class SWCREventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true,DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true,DateTime.Now, null);
 
 
         var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
@@ -82,7 +83,7 @@ public class SWCREventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _swcrEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         Assert.IsNull(_swcrAddedToRepository);
@@ -99,7 +100,7 @@ public class SWCREventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var bEventLastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated, null);
 
 
         var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
@@ -113,7 +114,7 @@ public class SWCREventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _swcrEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
@@ -126,7 +127,7 @@ public class SWCREventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var bEventLastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, true, bEventLastUpdated, null);
 
 
         var swcrToUpdate = new SWCR(Plant, guid, int.Parse(SwcrNo))
@@ -140,24 +141,24 @@ public class SWCREventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _swcrEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         _swcrRepoMock.Received(0).Remove(Arg.Any<SWCR>());
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, SwcrNo, false, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, SwcrNo, false, DateTime.Now, null);
 
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _swcrEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
+            => _dut.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
 
     
@@ -165,15 +166,34 @@ public class SWCREventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, string.Empty, SwcrNo, false, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.Empty, string.Empty, SwcrNo, false, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _swcrEventConsumer.Consume(_contextMock), "Message is missing Plant");
+            => _dut.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided, DateTime lastUpdated) => new (
+    [TestMethod]
+    public async Task Consume_ShouldDeleteSWCR_On_Delete_Behavior()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+
+        var bEvent = GetTestEvent(guid, Plant, SwcrNo, false, DateTime.UtcNow, "delete");
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        await _swcrRepoMock.Received(1).RemoveByGuidAsync(guid, Arg.Any<CancellationToken>());
+        await _swcrRepoMock.Received(0).GetAsync(guid, Arg.Any<CancellationToken>());
+        _swcrRepoMock.Received(0).Add(Arg.Any<SWCR>());
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
+    }
+
+    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided, DateTime lastUpdated, string? behavior) => new (
             string.Empty,
             plant,
             guid,
@@ -196,6 +216,7 @@ public class SWCREventConsumerTests
             isVoided,
             lastUpdated,
             DateOnly.MinValue,
-            float.MinValue
+            float.MinValue, 
+            behavior
         );
 }

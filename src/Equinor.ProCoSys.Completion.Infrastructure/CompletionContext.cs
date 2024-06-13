@@ -108,7 +108,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 
     public IQueryable<TEntity> QuerySet<TEntity>() where TEntity : class => Set<TEntity>().AsNoTracking();
 
-    public async Task<int> SaveChangesFromSyncAsync(CancellationToken cancellationToken = default) 
+    public async Task<int> SaveChangesFromSyncAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

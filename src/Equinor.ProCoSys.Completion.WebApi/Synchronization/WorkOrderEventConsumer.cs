@@ -22,7 +22,15 @@ public class WorkOrderEventConsumer(
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
 
-        if (await workOrderRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior == "delete")
+        {
+            if (!await workOrderRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                logger.LogWarning("WorkOrder with Guid {Guid} was not found and could not be deleted",
+                    busEvent.ProCoSysGuid);
+            }
+        }
+        else if (await workOrderRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var workOrder = await workOrderRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             
@@ -99,5 +107,6 @@ public record WorkOrderEvent
     Guid ProCoSysGuid,
     string WoNo,
     bool IsVoided,
-    DateTime LastUpdated
+    DateTime LastUpdated,
+    string? Behavior
 );// :using fields from IWorkOrderEventV1;

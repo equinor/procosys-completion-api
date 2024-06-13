@@ -65,7 +65,7 @@ public class PunchItemEventConsumer(
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
         }
 
-        if (string.IsNullOrEmpty(busEvent.Description))
+        if (string.IsNullOrEmpty(busEvent.Description) && busEvent.Behavior != "delete")
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }
