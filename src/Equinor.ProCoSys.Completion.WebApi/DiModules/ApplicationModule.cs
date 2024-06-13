@@ -142,14 +142,5 @@ public static class ApplicationModule
 
         // Transient - Created each time it is requested from the service container
         services.AddTransient<SyncBearerTokenHandler>();
-
-        // HttpClient - Creates a specifically configured HttpClient
-        services.AddHttpClient("SyncHttpClient")
-        .ConfigureHttpClient((serviceProvider, client) =>
-        {
-            var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
-            client.BaseAddress = new Uri(options.Endpoint);
-        })
-        .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }
 }

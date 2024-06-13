@@ -16,7 +16,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
     private readonly HttpClient _httpClient;
     private readonly ILogger<SyncToPCS4Service> _logger;
 
-    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, IHttpContextAccessor httpContextAccessor, ILogger<SyncToPCS4Service> logger, IHttpClientFactory httpClientFactory)
+    public SyncToPCS4Service(IOptionsMonitor<SyncToPCS4Options> options, ILogger<SyncToPCS4Service> logger, IHttpClientFactory httpClientFactory)
     {
         _options = options;
         _logger = logger;
