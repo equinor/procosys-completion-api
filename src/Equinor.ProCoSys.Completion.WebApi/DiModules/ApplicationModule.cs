@@ -136,9 +136,10 @@ public static class ApplicationModule
         services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();
         services.AddScoped<IDocumentConsumerService, DocumentConsumerService>();
 
+        services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();
+        services.AddScoped<ISyncTokenService, SyncTokenService>();
+
         // Singleton - Created the first time they are requested
-        services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
-        services.AddSingleton<ISyncTokenService, SyncTokenService>();
 
         // Transient - Created each time it is requested from the service container
         services.AddTransient<SyncBearerTokenHandler>();
