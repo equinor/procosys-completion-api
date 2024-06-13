@@ -18,7 +18,7 @@ public class SyncTokenService : ISyncTokenService
             .Build();
     }
 
-    public async Task<string> GetAccessTokenAsync()
+    public async Task<string> AquireTokenAsync()
     {
         try
         {
