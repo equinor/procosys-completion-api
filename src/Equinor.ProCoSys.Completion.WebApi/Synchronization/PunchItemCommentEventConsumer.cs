@@ -22,40 +22,40 @@ public class PunchItemCommentEventConsumer(
         var busEvent = context.Message;
         ValidateMessage(busEvent);
 
-        if (!await commentRepository.ExistsAsync(busEvent.CommentGuid, context.CancellationToken))
+        if (!await commentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var comment = await CreateCommentEntityAsync(busEvent, context.CancellationToken);
             commentRepository.Add(comment);
             await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
             logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid}",
-                nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.CommentGuid);
+                nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.ProCoSysGuid);
         }
         else
         {
             logger.LogInformation("{EventName} Message Message Ignored because it already exists: {MessageId} \n Guid {Guid}",
-                nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.CommentGuid);
+                nameof(PunchItemChangeHistoryEvent), context.MessageId, busEvent.ProCoSysGuid);
         }
     }
 
     private void ValidateMessage(PunchItemCommentEvent busEvent)
     {
-        if (busEvent.CommentGuid == Guid.Empty)
+        if (busEvent.ProCoSysGuid == Guid.Empty)
         {
-            throw new Exception($"{nameof(PunchItemCommentEvent)} is missing {nameof(PunchItemCommentEvent.CommentGuid)}");
+            throw new Exception($"{nameof(PunchItemCommentEvent)} is missing {nameof(PunchItemCommentEvent.ProCoSysGuid)}");
         }
         if (busEvent.PunchItemGuid == Guid.Empty)
         {
             throw new Exception($"{nameof(PunchItemCommentEvent)} is missing {nameof(PunchItemCommentEvent.PunchItemGuid)}");
         }
-        if (string.IsNullOrEmpty(busEvent.Comment))
+        if (string.IsNullOrEmpty(busEvent.Text))
         {
-            throw new Exception($"{nameof(PunchItemCommentEvent)} is missing {nameof(PunchItemCommentEvent.Comment)}");
+            throw new Exception($"{nameof(PunchItemCommentEvent)} is missing {nameof(PunchItemCommentEvent.Text)}");
         }
     }
 
     private async Task<Comment> CreateCommentEntityAsync(PunchItemCommentEvent busEvent, CancellationToken cancellationToken)
     {
-        var comment = new Comment(nameof(PunchItem), busEvent.PunchItemGuid, busEvent.Comment, busEvent.CommentGuid);
+        var comment = new Comment(nameof(PunchItem), busEvent.PunchItemGuid, busEvent.Text, busEvent.ProCoSysGuid);
 
         var person = await personRepository.GetAsync(busEvent.CreatedByGuid, cancellationToken);
         comment.SetSyncProperties(person, busEvent.CreatedAt);
@@ -67,8 +67,8 @@ public class PunchItemCommentEventConsumer(
 public record PunchItemCommentEvent
 (
     Guid PunchItemGuid,
-    Guid CommentGuid,
-    string Comment,
+    Guid ProCoSysGuid,
+    string Text,
     Guid CreatedByGuid,
     DateTime CreatedAt
 );

@@ -54,9 +54,9 @@ public class PunchItemCommentEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_commentAddedToRepository);
-        Assert.AreEqual(_bEvent.CommentGuid, _commentAddedToRepository.Guid);
+        Assert.AreEqual(_bEvent.ProCoSysGuid, _commentAddedToRepository.Guid);
         Assert.AreEqual(_bEvent.PunchItemGuid, _commentAddedToRepository.ParentGuid);
-        Assert.AreEqual(_bEvent.Comment, _commentAddedToRepository.Text);
+        Assert.AreEqual(_bEvent.Text, _commentAddedToRepository.Text);
         Assert.AreEqual(_createdByGuid, _commentAddedToRepository.CreatedBy.Guid);
         Assert.AreEqual(_bEvent.CreatedAt, _commentAddedToRepository.CreatedAtUtc);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
@@ -66,7 +66,7 @@ public class PunchItemCommentEventConsumerTests
     public async Task Consume_ShouldNotAddNewComment_WhenCommentExists()
     {
         //Arrange
-        _commentRepositoryMock.ExistsAsync(_bEvent.CommentGuid, _contextMock.CancellationToken).Returns(true);
+        _commentRepositoryMock.ExistsAsync(_bEvent.ProCoSysGuid, _contextMock.CancellationToken).Returns(true);
         
         //Act
         await _dut.Consume(_contextMock);
