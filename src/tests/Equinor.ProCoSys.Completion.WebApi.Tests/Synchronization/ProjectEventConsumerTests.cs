@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -159,7 +160,10 @@ public class ProjectEventConsumerTests
         await _projectEventConsumer.Consume(_contextMock);
         
         //Assert
-        _projectRepoMock.Received(1).Remove(toDelete);
+        await _projectRepoMock.Received(1).RemoveByGuidAsync(guid, Arg.Any<CancellationToken>());
+        await _projectRepoMock.Received(0).ExistsAsync(guid, Arg.Any<CancellationToken>());
+        await _projectRepoMock.Received(0).GetAsync(guid, Arg.Any<CancellationToken>());
+        _projectRepoMock.Received(0).Add(Arg.Any<Project>());
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
         
