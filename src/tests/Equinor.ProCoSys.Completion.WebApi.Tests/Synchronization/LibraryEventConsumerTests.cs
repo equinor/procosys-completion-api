@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -18,7 +19,7 @@ public class LibraryEventConsumerTests
     private readonly ILibraryItemRepository _libraryItemRepoMock = Substitute.For<ILibraryItemRepository>();
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly LibraryEventConsumer _libraryEventConsumer;
+    private readonly LibraryEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<LibraryEvent> _contextMock = Substitute.For<ConsumeContext<LibraryEvent>>();
     private LibraryItem? _libraryAddedToRepository;
@@ -28,7 +29,7 @@ public class LibraryEventConsumerTests
     private const LibraryType Type = LibraryType.COMPLETION_ORGANIZATION;
 
     public LibraryEventConsumerTests() =>
-        _libraryEventConsumer = new LibraryEventConsumer(Substitute.For<ILogger<LibraryEventConsumer>>(), _plantSetter, _libraryItemRepoMock, 
+        _dut = new LibraryEventConsumer(Substitute.For<ILogger<LibraryEventConsumer>>(), _plantSetter, _libraryItemRepoMock, 
             _unitOfWorkMock);
 
     [TestInitialize]
@@ -49,13 +50,13 @@ public class LibraryEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
         
         _libraryItemRepoMock.ExistsAsync(guid, default).Returns(false);
         
         //Act
-        await _libraryEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
         
         //Assert
         Assert.IsNotNull(_libraryAddedToRepository);
@@ -72,7 +73,7 @@ public class LibraryEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, DateTime.Now, null);
         
 
         var libraryItemToUpdate = new LibraryItem(Plant, guid, Code, Description, Type)
@@ -85,7 +86,7 @@ public class LibraryEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _libraryEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
         
         //Assert
         Assert.IsNull(_libraryAddedToRepository);
@@ -103,7 +104,7 @@ public class LibraryEventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var lastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, lastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, lastUpdated, null);
         
         var libraryItemToUpdate = new LibraryItem(Plant, guid, Code, Description, Type)
         {
@@ -116,7 +117,7 @@ public class LibraryEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _libraryEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
         
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -128,7 +129,7 @@ public class LibraryEventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var lastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, lastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), true, lastUpdated, null);
         
         var libraryItemToUpdate = new LibraryItem(Plant, guid, Code, Description, Type)
         {
@@ -141,7 +142,7 @@ public class LibraryEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _libraryEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
         
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -151,45 +152,65 @@ public class LibraryEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now, null);
 
         _contextMock.Message.Returns(bEvent);
         
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(() 
-            => _libraryEventConsumer.Consume(_contextMock),"Message is missing ProCoSysGuid");
+            => _dut.Consume(_contextMock),"Message is missing ProCoSysGuid");
     }
 
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.NewGuid(), string.Empty, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.NewGuid(), string.Empty, Description, LibraryType.COMPLETION_ORGANIZATION.ToString(), false, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _libraryEventConsumer.Consume(_contextMock), "Message is missing Plant");
+            => _dut.Consume(_contextMock), "Message is missing Plant");
     }
 
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoType()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.NewGuid(), Plant, Description, string.Empty, false, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.NewGuid(), Plant, Description, string.Empty, false, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _libraryEventConsumer.Consume(_contextMock), "Message is missing Type");
+            => _dut.Consume(_contextMock), "Message is missing Type");
     }
-    
-    private static LibraryEvent GetTestEvent(Guid guid, string plant, string description, string type, bool isVoided, DateTime lastUpdated) => new (
+
+    [TestMethod]
+    public async Task Consume_ShouldDeleteSWCR_On_Delete_Behavior()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+
+        var bEvent = GetTestEvent(guid, Plant, Description, string.Empty,false, DateTime.UtcNow, "delete");
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        await _libraryItemRepoMock.Received(1).RemoveByGuidAsync(guid, Arg.Any<CancellationToken>());
+        await _libraryItemRepoMock.Received(0).GetAsync(guid, Arg.Any<CancellationToken>());
+        _libraryItemRepoMock.Received(0).Add(Arg.Any<LibraryItem>());
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
+    }
+
+    private static LibraryEvent GetTestEvent(Guid guid, string plant, string description, string type, bool isVoided, DateTime lastUpdated, string? behavior) => new (
             plant,
             guid,
             Code,
             description,
             isVoided,
             type,
-            lastUpdated);
+            lastUpdated,
+            behavior);
 }

@@ -22,49 +22,61 @@ public class LibraryEventConsumer(
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-
-        // Test if message library type is not present in LibraryType enum
-        if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals(CommPriority))
-        {
-            logger.LogInformation("{EventName} not in scope of import: {LibraryType}", 
-                nameof(LibraryEvent), busEvent.Type );
-            return;
-        }
-
         plantSetter.SetPlant(busEvent.Plant);
 
-        if (await libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior == "delete")
         {
-            var library = await libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-            
-            if (library.ProCoSys4LastUpdated == busEvent.LastUpdated)
+            if (!await libraryRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
             {
-                logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                      "EventLastUpdated: {LastUpdated} \n" +
-                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.SyncTimestamp );
-                return;
+                logger.LogWarning("Library with Guid {Guid} was not found and could not be deleted",
+                    busEvent.ProCoSysGuid);
             }
-
-            if (library.ProCoSys4LastUpdated > busEvent.LastUpdated)
-            {
-                logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                  "EventLastUpdated: {EventLastUpdated} \n" +
-                                  "LastUpdatedFromDb: {LastUpdated}",
-                    nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated, library.ProCoSys4LastUpdated);
-                return;
-            }
-            
-            MapFromEventToLibrary(busEvent, library);
-            library.SyncTimestamp = DateTime.UtcNow;
         }
         else
         {
-            var lib = CreateLibraryEntity(busEvent);
-            lib.SyncTimestamp = DateTime.UtcNow;
-            libraryRepository.Add(lib);
+            // Test if message library type is not present in LibraryType enum
+            if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals(CommPriority))
+            {
+                logger.LogInformation("{EventName} not in scope of import: {LibraryType}",
+                    nameof(LibraryEvent), busEvent.Type);
+                return;
+            }
+
+            if (await libraryRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                var library = await libraryRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+
+                if (library.ProCoSys4LastUpdated == busEvent.LastUpdated)
+                {
+                    logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
+                                    "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+                                    "EventLastUpdated: {LastUpdated} \n" +
+                                    "SyncedToCompletion: {SyncedTimeStamp} \n",
+                        nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                        library.SyncTimestamp);
+                    return;
+                }
+
+                if (library.ProCoSys4LastUpdated > busEvent.LastUpdated)
+                {
+                    logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+                                      "EventLastUpdated: {EventLastUpdated} \n" +
+                                      "LastUpdatedFromDb: {LastUpdated}",
+                        nameof(LibraryEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                        library.ProCoSys4LastUpdated);
+                    return;
+                }
+
+                MapFromEventToLibrary(busEvent, library);
+                library.SyncTimestamp = DateTime.UtcNow;
+            }
+            else
+            {
+                var lib = CreateLibraryEntity(busEvent);
+                lib.SyncTimestamp = DateTime.UtcNow;
+                libraryRepository.Add(lib);
+            }
         }
 
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
@@ -85,7 +97,7 @@ public class LibraryEventConsumer(
             throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Plant)}");
         }
 
-        if (string.IsNullOrEmpty(busEvent.Type))
+        if (string.IsNullOrEmpty(busEvent.Type) && busEvent.Behavior != "delete")
         {
             throw new Exception($"{nameof(LibraryEvent)} is missing {nameof(LibraryEvent.Type)}");
         }
@@ -123,6 +135,7 @@ public record LibraryEvent(
     string? Description,
     bool IsVoided,
     string Type,
-    DateTime LastUpdated
+    DateTime LastUpdated,
+    string? Behavior
 ); // all these fields adhere to LibraryEventV1
 

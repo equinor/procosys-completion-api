@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
@@ -18,7 +19,7 @@ public class WorkOrderEventConsumerTests
     private readonly IWorkOrderRepository _workOrderRepoMock = Substitute.For<IWorkOrderRepository>();
     private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-    private readonly WorkOrderEventConsumer _workOrderEventConsumer;
+    private readonly WorkOrderEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
     private readonly ConsumeContext<WorkOrderEvent> _contextMock = Substitute.For<ConsumeContext<WorkOrderEvent>>();
     private WorkOrder? _workOrderAddedToRepository;
@@ -26,7 +27,7 @@ public class WorkOrderEventConsumerTests
     private const string Plant = "PCS$OSEBERG_C";
 
     public WorkOrderEventConsumerTests() =>
-        _workOrderEventConsumer = new WorkOrderEventConsumer(Substitute.For<ILogger<WorkOrderEventConsumer>>(), _plantSetter, _workOrderRepoMock,
+        _dut = new WorkOrderEventConsumer(Substitute.For<ILogger<WorkOrderEventConsumer>>(), _plantSetter, _workOrderRepoMock,
             _unitOfWorkMock);
 
     [TestInitialize]
@@ -47,13 +48,13 @@ public class WorkOrderEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         _workOrderRepoMock.ExistsAsync(guid, default).Returns(false);
 
         //Act
-        await _workOrderEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         Assert.IsNotNull(_workOrderAddedToRepository);
@@ -67,7 +68,7 @@ public class WorkOrderEventConsumerTests
     {
         //Arrange
         var guid = Guid.NewGuid();
-        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.Now, null);
 
 
         var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo);
@@ -77,7 +78,7 @@ public class WorkOrderEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _workOrderEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         Assert.IsNull(_workOrderAddedToRepository);
@@ -93,7 +94,7 @@ public class WorkOrderEventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var lastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated, null);
         
         var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo)
         {
@@ -105,7 +106,7 @@ public class WorkOrderEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _workOrderEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -117,7 +118,7 @@ public class WorkOrderEventConsumerTests
         //Arrange
         var guid = Guid.NewGuid();
         var lastUpdated = DateTime.Now;
-        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated);
+        var bEvent = GetTestEvent(guid, Plant, WoNo, lastUpdated, null);
         
         var workOrderToUpdate = new WorkOrder(Plant, guid, WoNo)
         {
@@ -129,7 +130,7 @@ public class WorkOrderEventConsumerTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _workOrderEventConsumer.Consume(_contextMock);
+        await _dut.Consume(_contextMock);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -139,32 +140,52 @@ public class WorkOrderEventConsumerTests
     public async Task Consume_ShouldThrowException_IfNoProCoSysGuid()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, Plant, WoNo, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.Empty, Plant, WoNo, DateTime.Now, null);
 
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _workOrderEventConsumer.Consume(_contextMock), "Message is missing ProCoSysGuid");
+            => _dut.Consume(_contextMock), "Message is missing ProCoSysGuid");
     }
     
     [TestMethod]
     public async Task Consume_ShouldThrowException_IfNoPlant()
     {
         //Arrange
-        var bEvent = GetTestEvent(Guid.Empty, string.Empty, WoNo, DateTime.Now);
+        var bEvent = GetTestEvent(Guid.Empty, string.Empty, WoNo, DateTime.Now, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            => _workOrderEventConsumer.Consume(_contextMock), "Message is missing Plant");
+            => _dut.Consume(_contextMock), "Message is missing Plant");
     }
 
-    private static WorkOrderEvent GetTestEvent(Guid guid, string plant, string woNo, DateTime lastUpdated) => new (
+    [TestMethod]
+    public async Task Consume_ShouldDeleteWorkOrder_On_Delete_Behavior()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+
+        var bEvent = GetTestEvent(guid, Plant, WoNo, DateTime.UtcNow, "delete");
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        await _workOrderRepoMock.Received(1).RemoveByGuidAsync(guid, Arg.Any<CancellationToken>());
+        await _workOrderRepoMock.Received(0).GetAsync(guid, Arg.Any<CancellationToken>());
+        _workOrderRepoMock.Received(0).Add(Arg.Any<WorkOrder>());
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
+    }
+
+    private static WorkOrderEvent GetTestEvent(Guid guid, string plant, string woNo, DateTime lastUpdated, string? behavior) => new (
             plant,
             guid,
             woNo, 
             false, 
-            lastUpdated
+            lastUpdated,
+            behavior
         );
 }
