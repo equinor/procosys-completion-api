@@ -47,13 +47,23 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
 
     public async Task<Person> GetOrCreateAsync(Guid oid, CancellationToken cancellationToken)
     {
+        // don't bother to check neither local db nor cache for person without real oid
+        if (oid == Guid.Empty)
+        {
+            throw new Exception($"Illegal to get or create person with empty oid {oid}");
+        }
+
         var personExists = await ExistsAsync(oid, cancellationToken);
         if (personExists)
         {
             return await GetAsync(oid, cancellationToken);
         }
 
-        var pcsPerson = await _personCache.GetAsync(oid);
+        var pcsPerson = await _personCache.GetAsync(oid, cancellationToken: cancellationToken);
+        if (pcsPerson is null)
+        {
+            throw new Exception($"Could not get or create person with oid {oid}");
+        }
         var person = new Person(
             oid,
             pcsPerson.FirstName,

@@ -3,7 +3,6 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,19 +26,25 @@ public class PunchItemEventConsumer(
     IDocumentRepository documentRepository,
     ISWCRRepository swcrRepository,
     IWorkOrderRepository woRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IUnitOfWork unitOfWork)
     : IConsumer<PunchItemEvent>
 {
     public async Task Consume(ConsumeContext<PunchItemEvent> context)
     {
         var busEvent = context.Message;
-
+        
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
-
-        if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior is not null && busEvent.Behavior == "delete")
+        {
+            if (!await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                logger.LogWarning("PunchItem with Guid {Guid} was not found and could not be deleted", 
+                    busEvent.ProCoSysGuid);
+            }
+        }
+        
+        else if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
@@ -50,10 +55,9 @@ public class PunchItemEventConsumer(
             punchItemRepository.Add(punchItem);
         }
         
-        currentUserSetter.SetCurrentUserOid(applicationOptions.CurrentValue.ObjectId);
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n {No}",
             nameof(PunchItemEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.PunchItemNo);
     }
 
@@ -63,7 +67,10 @@ public class PunchItemEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ProCoSysGuid)}");
         }
-
+        if (busEvent.Behavior is not null)
+        {
+            return;
+        }
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
@@ -156,17 +163,17 @@ public class PunchItemEventConsumer(
     private async Task SetSyncProperties(PunchItem punchItem, PunchItemEvent busEvent,
         CancellationToken cancellationToken) =>
         punchItem.SetSyncProperties(
-            busEvent.CreatedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
+            busEvent.CreatedByGuid is not null ? await personRepository.GetAsync(busEvent.CreatedByGuid.Value, cancellationToken) : null,
             busEvent.CreatedAt,
-            busEvent.ModifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
+            busEvent.ModifiedByGuid is not null ? await personRepository.GetAsync(busEvent.ModifiedByGuid.Value, cancellationToken) : null,
             busEvent.LastUpdated,
-            busEvent.ClearedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ClearedByGuid.Value, cancellationToken) : null,
+            busEvent.ClearedByGuid is not null ? await personRepository.GetAsync(busEvent.ClearedByGuid.Value, cancellationToken) : null,
             busEvent.ClearedAt,
-            busEvent.RejectedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.RejectedByGuid.Value, cancellationToken) : null,
+            busEvent.RejectedByGuid is not null ? await personRepository.GetAsync(busEvent.RejectedByGuid.Value, cancellationToken) : null,
             busEvent.RejectedAt,
-            busEvent.VerifiedByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
+            busEvent.VerifiedByGuid is not null ? await personRepository.GetAsync(busEvent.VerifiedByGuid.Value, cancellationToken) : null,
             busEvent.VerifiedAt,
-            busEvent.ActionByGuid is not null ? await personRepository.GetOrCreateAsync(busEvent.ActionByGuid.Value, cancellationToken) : null,
+            busEvent.ActionByGuid is not null ? await personRepository.GetAsync(busEvent.ActionByGuid.Value, cancellationToken) : null,
             busEvent.PunchItemNo
         );
 
@@ -309,8 +316,7 @@ public class PunchItemEventConsumer(
 }
 
 
-public record PunchItemEvent
-(
+public record PunchItemEvent(
     string EventType,
     string Plant,
     Guid ProCoSysGuid,
@@ -356,6 +362,7 @@ public record PunchItemEvent
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
     Guid? CreatedByGuid,
-    Guid? ActionByGuid
-) : IPunchListItemEventV1;
+    Guid? ActionByGuid,
+    string? Behavior
+): IPunchListItemEventV1;
 

@@ -16,48 +16,57 @@ public class DocumentConsumerService(
 { 
     public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent)
     {
-             ValidateMessage(busEvent);
-            plantSetter.SetPlant(busEvent.Plant);
+        ValidateMessage(busEvent);
+        plantSetter.SetPlant(busEvent.Plant);
 
-            if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior == "delete")
+        {
+            if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
             {
-                var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-                if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
-                {
-                    logger.LogInformation("{EventName} Ignored because LastUpdated is the same as in db\n" +
-                                          "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                          "EventLastUpdated: {LastUpdated} \n" +
-                                          "SyncedToCompletion: {SyncedTimeStamp} \n",
-                        nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                        document.SyncTimestamp);
-                    return;
-                }
-
-                if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
-                {
-                    logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted",
+                    busEvent.ProCoSysGuid);
+            }
+        }
+   
+        else if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        {
+            var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+            if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
+            {
+                logger.LogInformation("{EventName} Ignored because LastUpdated is the same as in db\n" +
                                       "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                      "EventLastUpdated: {EventLastUpdated} \n" +
-                                      "LastUpdatedFromDb: {LastUpdated}",
-                        nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                        document.ProCoSys4LastUpdated);
-                    return;
-                }
-
-                MapFromEventToDocument(busEvent, document);
-                document.SyncTimestamp = DateTime.UtcNow;
+                                      "EventLastUpdated: {LastUpdated} \n" +
+                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
+                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                    document.SyncTimestamp);
+                return;
             }
-            else
+
+            if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
             {
-                var document = CreateDocumentEntity(busEvent);
-                document.SyncTimestamp = DateTime.UtcNow;
-                documentRepository.Add(document);
+                logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {EventLastUpdated} \n" +
+                                  "LastUpdatedFromDb: {LastUpdated}",
+                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                    document.ProCoSys4LastUpdated);
+                return;
             }
 
-            await unitOfWork.SaveChangesAsync(context.CancellationToken);
+            MapFromEventToDocument(busEvent, document);
+            document.SyncTimestamp = DateTime.UtcNow;
+        }
+        else
+        {
+            var document = CreateDocumentEntity(busEvent);
+            document.SyncTimestamp = DateTime.UtcNow;
+            documentRepository.Add(document);
+        }
 
-            logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
-                nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
+        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+
+        logger.LogInformation("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
+            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
         }
     
     private static void ValidateMessage(DocumentEvent busEvent)
@@ -65,6 +74,11 @@ public class DocumentConsumerService(
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
             throw new Exception($"{nameof(DocumentEvent)} is missing {nameof(DocumentEvent.ProCoSysGuid)}");
+        }
+        
+        if(busEvent.Behavior == "delete")
+        {
+            return;
         }
 
         if (string.IsNullOrEmpty(busEvent.Plant))
@@ -90,6 +104,5 @@ public class DocumentConsumerService(
         document.IsVoided = busEvent.IsVoided;
     }
 }
-
 //: using fields from IDocumentEventV1;
 

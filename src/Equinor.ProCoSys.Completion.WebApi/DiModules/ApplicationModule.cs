@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Auth.Authentication;
+﻿using System;
+using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Auth.Client;
@@ -14,6 +15,7 @@ using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.Validators;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
@@ -43,6 +45,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -73,8 +76,6 @@ public static class ApplicationModule
         services.AddHttpClient();
 
         // Hosted services
-
-        // Transient - Created each time it is requested from the service container
 
         // Scoped - Created once per client request (connection)
         services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
@@ -137,5 +138,18 @@ public static class ApplicationModule
 
         // Singleton - Created the first time they are requested
         services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
+        services.AddSingleton<ISyncTokenService, SyncTokenService>();
+
+        // Transient - Created each time it is requested from the service container
+        services.AddTransient<SyncBearerTokenHandler>();
+
+        // HttpClient - Creates a specifically configured HttpClient
+        services.AddHttpClient("SyncHttpClient")
+        .ConfigureHttpClient((serviceProvider, client) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
+            client.BaseAddress = new Uri(options.Endpoint);
+        })
+        .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }
 }

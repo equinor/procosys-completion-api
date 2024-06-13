@@ -25,13 +25,13 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     {
     }
 
-    public Attachment(string project, string parentType, Guid parentGuid, string fileName)
+    public Attachment(string project, string parentType, Guid parentGuid, string fileName, Guid? proCoSysGuid = null)
     {
         ParentType = parentType;
         ParentGuid = parentGuid;
         FileName = fileName;
         Description = fileName;
-        Guid = MassTransit.NewId.NextGuid();
+        Guid = proCoSysGuid ?? MassTransit.NewId.NextGuid();
         BlobPath = Path.Combine(project, ParentType, Guid.ToString()).Replace("\\", "/");
         RevisionNumber = 1;
     }
@@ -54,6 +54,8 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
     public Person? ModifiedBy { get; private set; }
     public Guid Guid { get; private set; }
     public int RevisionNumber { get; private set; }
+    public DateTime ProCoSys4LastUpdated { get; set; }
+    public DateTime SyncTimestamp { get; set; }
 
     public void IncreaseRevisionNumber() => RevisionNumber++;
 
@@ -101,5 +103,15 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
                 _labels.RemoveAt(i);
             }
         }
+    }
+
+    public void SetSyncProperties(DateTime modifiedAt) => ModifiedAtUtc = modifiedAt;
+
+    public void SetSyncProperties(Person createdBy, DateTime createdAt, DateTime modifiedAt)
+    {
+        CreatedAtUtc = createdAt;
+        CreatedById = createdBy.Id;
+        CreatedBy = createdBy;
+        SetSyncProperties(modifiedAt);
     }
 }

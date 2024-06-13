@@ -1,8 +1,10 @@
-﻿using Azure.Core;
+﻿using System.Configuration;
+using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -25,7 +27,7 @@ public static class TelemetryConfig
         });
         builder.Services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
         {
-            module.EnableSqlCommandTextInstrumentation = true;
+            module.EnableSqlCommandTextInstrumentation = builder.Configuration.GetValue("EnableSqlCommandTextInstrumentation", false);
         });
         
         return builder;

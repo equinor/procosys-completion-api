@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4;
+﻿namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 
 public interface ISyncToPCS4Service
 {

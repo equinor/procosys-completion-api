@@ -7,5 +7,6 @@ public record DocumentEvent(
     Guid ProCoSysGuid,
     string DocumentNo,
     bool IsVoided,
-    DateTime LastUpdated
+    DateTime LastUpdated,
+    string? Behavior
 );
