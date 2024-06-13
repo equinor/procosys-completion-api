@@ -35,16 +35,8 @@ public class PunchItemEventConsumer(
         
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
-        if (busEvent.Behavior == "delete")
-        {
-            if (!await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
-            {
-                logger.LogWarning("PunchItem with Guid {Guid} was not found and could not be deleted", 
-                    busEvent.ProCoSysGuid);
-            }
-        }
         
-        else if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var punchItem = await punchItemRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             await MapPunchItemEventToPunchItem(busEvent, punchItem, context.CancellationToken);
@@ -67,16 +59,13 @@ public class PunchItemEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ProCoSysGuid)}");
         }
-        if (busEvent.Behavior is not null)
-        {
-            return;
-        }
+
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Plant)}");
         }
 
-        if (string.IsNullOrEmpty(busEvent.Description) && busEvent.Behavior != "delete")
+        if (string.IsNullOrEmpty(busEvent.Description))
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }
@@ -362,7 +351,6 @@ public record PunchItemEvent(
     Guid? RejectedByGuid,
     Guid? VerifiedByGuid,
     Guid? CreatedByGuid,
-    Guid? ActionByGuid,
-    string? Behavior
+    Guid? ActionByGuid
 ): IPunchListItemEventV1;
 
