@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Client;
+using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -14,14 +15,17 @@ public class MainApiCheckListService : ICheckListApiService
     private readonly string _apiVersion;
     private readonly Uri _baseAddress;
     private readonly IMainApiClient _mainApiClient;
+    private readonly bool _recalculateStatusInPcs4;
 
     public MainApiCheckListService(
         IMainApiClient mainApiClient,
-        IOptionsSnapshot<MainApiOptions> options)
+        IOptionsMonitor<MainApiOptions> mainApiOptions,
+        IOptionsMonitor<ApplicationOptions> applicationOptions)
     {
         _mainApiClient = mainApiClient;
-        _apiVersion = options.Value.ApiVersion;
-        _baseAddress = new Uri(options.Value.BaseAddress);
+        _apiVersion = mainApiOptions.CurrentValue.ApiVersion;
+        _baseAddress = new Uri(mainApiOptions.CurrentValue.BaseAddress);
+        _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
     }
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid)
@@ -36,6 +40,11 @@ public class MainApiCheckListService : ICheckListApiService
 
     public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
     {
+        if (!_recalculateStatusInPcs4)
+        {
+            return;
+        }
+
         var url = $"{_baseAddress}CheckList/ForProCoSys5" +
                   $"?plantId={plant}" +
                   $"&api-version={_apiVersion}";
