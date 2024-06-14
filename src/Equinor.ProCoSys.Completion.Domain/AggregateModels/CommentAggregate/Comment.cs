@@ -17,12 +17,18 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     private readonly List<Label> _labels = new();
     private readonly List<Person> _mentions = new();
 
-    public Comment(string parentType, Guid parentGuid, string text)
+#pragma warning disable CS8618
+    public Comment()
+#pragma warning restore CS8618
+    {
+    }
+
+    public Comment(string parentType, Guid parentGuid, string text, Guid? proCoSysGuid = null)
     {
         ParentType = parentType;
         ParentGuid = parentGuid;
         Text = text;
-        Guid = MassTransit.NewId.NextGuid();
+        Guid = proCoSysGuid ?? MassTransit.NewId.NextGuid();
     }
 
     public IReadOnlyCollection<Label> Labels => _labels.AsReadOnly();
@@ -59,6 +65,13 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
     {
         _mentions.Clear();
         _mentions.AddRange(mentions);
+    }
+
+    public void SetSyncProperties(Person createdBy, DateTime createdAt)
+    {
+        CreatedAtUtc = createdAt;
+        CreatedById = createdBy.Id;
+        CreatedBy = createdBy;
     }
 
     private void AddNewLabels(IList<Label> labels)

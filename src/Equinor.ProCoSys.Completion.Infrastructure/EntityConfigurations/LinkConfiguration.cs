@@ -30,6 +30,9 @@ internal class LinkConfiguration : IEntityTypeConfiguration<Link>
             .HasMaxLength(Link.UrlLengthMax)
             .IsRequired();
 
+        builder.Property(x => x.ProCoSys4LastUpdatedByUser)
+            .HasMaxLength(Link.ProCoSys4LastUpdatedByUserLengthMax);
+
         builder
             .HasIndex(x => x.ParentGuid)
             .HasDatabaseName("IX_Links_ParentGuid")

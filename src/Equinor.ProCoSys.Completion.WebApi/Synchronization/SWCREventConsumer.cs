@@ -23,7 +23,15 @@ public class SWCREventConsumer(
         ValidateMessage(busEvent);
         plantSetter.SetPlant(busEvent.Plant);
 
-        if (await swcrRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        if (busEvent.Behavior is not null && busEvent.Behavior == "delete")
+        {
+            if (!await swcrRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+            {
+                logger.LogWarning("SWCR with Guid {Guid} was not found and could not be deleted",
+                    busEvent.ProCoSysGuid);
+            }
+        }
+        else if (await swcrRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
             var swcr = await swcrRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
             
@@ -120,5 +128,6 @@ public record SWCREvent
     bool IsVoided,
     DateTime LastUpdated,
     DateOnly? DueDate,
-    float? EstimatedManHours
+    float? EstimatedManHours,
+    string? Behavior
 ) : ISwcrEventV1;

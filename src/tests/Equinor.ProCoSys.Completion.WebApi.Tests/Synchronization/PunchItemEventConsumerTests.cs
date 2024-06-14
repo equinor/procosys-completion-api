@@ -116,8 +116,7 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             Guid.Empty,
             createdByGuid,
-            actionByGuid,
-            string.Empty
+            actionByGuid
             );
         _contextMock.Message.Returns(bEvent);
 
@@ -181,37 +180,7 @@ public class PunchItemEventConsumerTests
         await Assert.ThrowsExceptionAsync<Exception>(()
             => _dut.Consume(_contextMock), "Message is missing Plant");
     }
-
-    [TestMethod]
-    public async Task Consume_ShouldDeletePunchItem_On_Delete_Behavior()
-    {
-        // Arrange
-        var guid = Guid.NewGuid();
-        var punchItem = new PunchItem(Plant,
-            _project,
-            Guid.Empty,
-            Category.PA,
-            "desc",
-            _raisedByOrg,
-            _clearingByOrg,
-            guid);
-
-        _punchItemRepoMock.ExistsAsync(guid, default).Returns(true);
-        _punchItemRepoMock.GetAsync(guid, Arg.Any<CancellationToken>()).Returns(punchItem);
-
-        var bEvent = GetBusEvent(guid, Plant, "delete");
-        _contextMock.Message.Returns(bEvent);
-
-        //Act
-        await _dut.Consume(_contextMock);
-
-        //Assert
-        await _punchItemRepoMock.Received(1).RemoveByGuidAsync(guid, Arg.Any<CancellationToken>());
-        await _punchItemRepoMock.Received(0).GetAsync(guid, Arg.Any<CancellationToken>());
-        _punchItemRepoMock.Received(0).Add(punchItem);
-        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
-    }
-
+    
     private static PunchItemEvent GetBusEvent(Guid guid, string plant, string? behavior) =>
         GetTestEvent(guid, plant, s_projectGuid,
             "description",
@@ -235,8 +204,7 @@ public class PunchItemEventConsumerTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
-            behavior);
+            Guid.Empty);
 
     private static PunchItemEvent GetTestEvent(
         Guid guid,
@@ -263,8 +231,7 @@ public class PunchItemEventConsumerTests
         Guid rejectedByGuid,
         Guid verifiedByGuid,
         Guid createdByGuid,
-        Guid actionByGuid,
-        string? behavior
+        Guid actionByGuid
         ) => new(
         string.Empty,
         plant,
@@ -311,7 +278,6 @@ public class PunchItemEventConsumerTests
         rejectedByGuid,
         verifiedByGuid,
         createdByGuid,
-        actionByGuid,
-        behavior
+        actionByGuid
     );
 }

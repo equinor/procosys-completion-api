@@ -20,7 +20,7 @@ public class HistoryItemCreatedEventConsumer(
 
         var historyItemEntity = CreateHistoryItemEntity(historyItemCreatedV1);
         historyItemRepository.Add(historyItemEntity);
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogDebug("{MessageType} message consumed: {MessageId}\n For Guid {Guid} \n {DisplayName}",
             nameof(IHistoryItemCreatedV1),

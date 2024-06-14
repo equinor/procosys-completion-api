@@ -68,7 +68,11 @@ public static class ApplicationModule
             options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).CommandTimeout(60).EnableRetryOnFailure());
         });
 
-        services.AddLogging(configure => configure.AddConsole());
+        services.AddLogging(configure =>
+        {
+            configure.AddConsole();
+            configure.AddApplicationInsights();
+        });
 
         services.AddMassTransitModule(configuration);
 
@@ -136,11 +140,21 @@ public static class ApplicationModule
         services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();
         services.AddScoped<IDocumentConsumerService, DocumentConsumerService>();
 
+        services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();
+        services.AddScoped<ISyncTokenService, SyncTokenService>();
+
         // Singleton - Created the first time they are requested
-        services.AddSingleton<ISyncToPCS4Service, SyncToPCS4Service>();
-        services.AddSingleton<ISyncTokenService, SyncTokenService>();
 
         // Transient - Created each time it is requested from the service container
         services.AddTransient<SyncBearerTokenHandler>();
+
+        // HttpClient - Creates a specifically configured HttpClient
+        services.AddHttpClient("equinor-procosys-databasesynctopcs4-api")
+        .ConfigureHttpClient((serviceProvider, client) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
+             client.BaseAddress = new("https+http://equinor-procosys-databasesynctopcs4-api");
+        })
+        .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }
 }

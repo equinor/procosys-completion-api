@@ -57,7 +57,7 @@ public class DocumentConsumerServiceTests
         Assert.IsNotNull(_documentAddedToRepository);
         Assert.AreEqual(guid, _documentAddedToRepository.Guid);
         Assert.AreEqual(DocumentNo, _documentAddedToRepository.No);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -85,7 +85,7 @@ public class DocumentConsumerServiceTests
         Assert.AreEqual(guid, documentToUpdate.Guid);
         Assert.AreEqual(DocumentNo, documentToUpdate.No);
 
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -111,7 +111,7 @@ public class DocumentConsumerServiceTests
         await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
     
     [TestMethod]
@@ -137,7 +137,7 @@ public class DocumentConsumerServiceTests
         await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
 
         //Assert
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
    
     [TestMethod]

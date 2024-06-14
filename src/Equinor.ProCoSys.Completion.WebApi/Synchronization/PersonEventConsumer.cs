@@ -85,7 +85,7 @@ public class PersonEventConsumer(
             person.SyncTimestamp = DateTime.UtcNow;
         }
 
-        await unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
         logger.LogInformation("Person Message Consumed: {MessageId} \n Guid {Guid} \n {UserName}",
             context.MessageId, personEvent.AzureOid, personEvent.UserName);

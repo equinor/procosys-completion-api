@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
 
@@ -72,6 +73,8 @@ builder.Services.AddPcsAuthIntegration();
 
 builder.ConfigureValidators();
 builder.ConfigureTelemetry(credential, devOnLocalhost);
+
+builder.Logging.AddApplicationInsights();
 
 builder.Services.AddMediatrModules();
 builder.Services.AddApplicationModules(builder.Configuration);

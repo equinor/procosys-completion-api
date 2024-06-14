@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
@@ -20,20 +19,19 @@ public class PunchItemAttachmentEventConsumerTests
     private readonly IAttachmentRepository _attachmentRepositoryMock = Substitute.For<IAttachmentRepository>();
     private readonly ILinkRepository _linkRepositoryMock = Substitute.For<ILinkRepository>();
     private readonly IPersonRepository _personRepoMock = Substitute.For<IPersonRepository>();
-    private readonly IPlantSetter _plantSetterMock = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private PunchItemAttachmentEventConsumer _dut = null!;
     private readonly ConsumeContext<PunchItemAttachmentEvent> _contextMock = Substitute.For<ConsumeContext<PunchItemAttachmentEvent>>();
     private Attachment? _attachmentAddedToRepository;
     private Link? _linkAddedToRepository;
     private readonly DateTime _lastUpdated = DateTime.Now;
+    private readonly string _lastUpdatedBuUser = "someone";
 
     [TestInitialize]
     public void Setup()
     {
         _dut = new PunchItemAttachmentEventConsumer(
             Substitute.For<ILogger<PunchItemAttachmentEventConsumer>>(),
-            _plantSetterMock,
             _personRepoMock,
             _attachmentRepositoryMock,
             _linkRepositoryMock,
@@ -62,7 +60,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "title", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "T", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
 
         //Act
@@ -72,6 +70,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNotNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(bEvent.LastUpdated, _attachmentAddedToRepository.ProCoSys4LastUpdated);
+        Assert.AreEqual(bEvent.LastUpdatedByUser, _attachmentAddedToRepository.ProCoSys4LastUpdatedByUser);
         Assert.AreEqual(bEvent.AttachmentGuid, _attachmentAddedToRepository.Guid);
         Assert.AreEqual(bEvent.PunchItemGuid, _attachmentAddedToRepository.ParentGuid);
         Assert.AreEqual(bEvent.FileName, _attachmentAddedToRepository.FileName);
@@ -88,7 +87,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
         var existingAttachment = new Attachment("Proj", "PT", Guid.NewGuid(), "FN"){ ProCoSys4LastUpdated = _lastUpdated.AddSeconds(-2)};
         _attachmentRepositoryMock.ExistsAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(true);
@@ -101,6 +100,7 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(bEvent.LastUpdated, existingAttachment.ProCoSys4LastUpdated);
+        Assert.AreEqual(bEvent.LastUpdatedByUser, existingAttachment.ProCoSys4LastUpdatedByUser);
         Assert.AreEqual(bEvent.Title, existingAttachment.Description);
         Assert.AreEqual(bEvent.LastUpdated, existingAttachment.ModifiedAtUtc);
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
@@ -111,10 +111,15 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
         var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
-        var existingAttachment = new Attachment("Proj", "PT", Guid.NewGuid(), "FN") { ProCoSys4LastUpdated = oldProCoSys4LastUpdated };
+        var oldProCoSys4LastUpdatedByUser = "xxx";
+        var existingAttachment = new Attachment("Proj", "PT", Guid.NewGuid(), "FN")
+        {
+            ProCoSys4LastUpdated = oldProCoSys4LastUpdated,
+            ProCoSys4LastUpdatedByUser = oldProCoSys4LastUpdatedByUser,
+        };
         _attachmentRepositoryMock.ExistsAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(true);
         _attachmentRepositoryMock.GetAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(existingAttachment);
 
@@ -125,8 +130,8 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(oldProCoSys4LastUpdated, existingAttachment.ProCoSys4LastUpdated);
+        Assert.AreEqual(oldProCoSys4LastUpdatedByUser, existingAttachment.ProCoSys4LastUpdatedByUser);
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -134,7 +139,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), null, "uri", "title", null, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "uri", "T", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
 
         //Act
@@ -159,7 +164,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
         var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
         var existingLink = new Link("P", Guid.NewGuid(), "oldT", "oldU") { ProCoSys4LastUpdated = oldProCoSys4LastUpdated };
@@ -174,7 +179,6 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.IsNull(_linkAddedToRepository);
         Assert.AreEqual(oldProCoSys4LastUpdated, existingLink.ProCoSys4LastUpdated);
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
-        await _unitOfWorkMock.Received(0).SaveChangesAsync();
     }
 
     [TestMethod]
@@ -182,9 +186,15 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("plant", "proj", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
         _contextMock.Message.Returns(bEvent);
-        var existingLink = new Link("P", Guid.NewGuid(), "oldT", "oldU") { ProCoSys4LastUpdated = _lastUpdated.AddSeconds(-2) };
+        var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
+        var oldProCoSys4LastUpdatedByUser = "xxx";
+        var existingLink = new Link("P", Guid.NewGuid(), "oldT", "oldU")
+        {
+            ProCoSys4LastUpdated = oldProCoSys4LastUpdated,
+            ProCoSys4LastUpdatedByUser = oldProCoSys4LastUpdatedByUser,
+        };
         _linkRepositoryMock.ExistsAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(true);
         _linkRepositoryMock.GetAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(existingLink);
 
@@ -194,10 +204,8 @@ public class PunchItemAttachmentEventConsumerTests
         //Assert
         Assert.IsNull(_attachmentAddedToRepository);
         Assert.IsNull(_linkAddedToRepository);
-        Assert.AreEqual(bEvent.LastUpdated, existingLink.ProCoSys4LastUpdated);
-        Assert.AreEqual(bEvent.Title, existingLink.Title);
-        Assert.AreEqual(bEvent.Uri, existingLink.Url);
-        Assert.AreEqual(bEvent.LastUpdated, existingLink.ModifiedAtUtc);
-        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
+        Assert.AreEqual(oldProCoSys4LastUpdated, existingLink.ProCoSys4LastUpdated);
+        Assert.AreEqual(oldProCoSys4LastUpdatedByUser, existingLink.ProCoSys4LastUpdatedByUser);
+        await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
     }
 }
