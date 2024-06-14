@@ -65,7 +65,7 @@ public static class ApplicationModule
         services.AddDbContext<CompletionContext>(options =>
         {
             var connectionString = configuration.GetConnectionString(CompletionContext.CompletionContextConnectionStringName);
-            options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).CommandTimeout(60).EnableRetryOnFailure());
         });
 
         services.AddLogging(configure => configure.AddConsole());

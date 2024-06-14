@@ -55,7 +55,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         
         // Do not set AccessToken during in-memory tests or on localhost
         if (database is { ProviderName: "Microsoft.EntityFrameworkCore.SqlServer" }
-            && database.GetDbConnection() is SqlConnection connection and not {DataSource: "127.0.0.1" })
+            && database.GetDbConnection() is SqlConnection connection and not {DataSource: "127.0.0.1" or "127.0.0.1,1433"})
         {
             connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;
         }
