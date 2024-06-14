@@ -65,7 +65,11 @@ public static class ApplicationModule
             options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
 
-        services.AddLogging(configure => configure.AddConsole());
+        services.AddLogging(configure =>
+        {
+            configure.AddConsole();
+            configure.AddApplicationInsights();
+        });
 
         services.AddMassTransitModule(configuration);
 
