@@ -69,6 +69,16 @@ public class PunchItemEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.Description)}");
         }
+        
+        if (!busEvent.RaisedByOrgGuid.HasValue)
+        {
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.RaisedByOrgGuid)}");
+        }
+        
+        if (!busEvent.ClearingByOrgGuid.HasValue)
+        {
+            throw new Exception($"{nameof(PunchItemEvent)} is missing {nameof(PunchItemEvent.ClearingByOrgGuid)}");
+        }
     }
 
     private async Task<PunchItem> CreatePunchItem(PunchItemEvent busEvent, CancellationToken cancellationToken)
@@ -80,25 +90,10 @@ public class PunchItemEventConsumer(
         {
             busEvent = busEvent with { RejectedAt = DateTime.MinValue };
         }
+
+        var raisedByOrg = await libraryItemRepository.GetAsync(busEvent.RaisedByOrgGuid!.Value, cancellationToken);
         
-        LibraryItem? unknownOrg = null;
-        if (!busEvent.RaisedByOrgGuid.HasValue)
-        {
-            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
-        }
-        if(!busEvent.ClearingByOrgGuid.HasValue && unknownOrg is null)
-        {
-            unknownOrg = await libraryItemRepository.GetUnknownOrgAsync(busEvent.Plant, cancellationToken);
-        }
-        
-        var raisedByOrg = busEvent.RaisedByOrgGuid.HasValue 
-            ? await libraryItemRepository.GetAsync(busEvent.RaisedByOrgGuid.Value, cancellationToken) 
-            : unknownOrg!;
-            
-        
-        var clearingByOrg = busEvent.ClearingByOrgGuid.HasValue 
-            ? await libraryItemRepository.GetAsync(busEvent.ClearingByOrgGuid.Value, cancellationToken) 
-            : unknownOrg!;
+        var clearingByOrg = await libraryItemRepository.GetAsync(busEvent.ClearingByOrgGuid!.Value, cancellationToken);
 
         var punchItem = new PunchItem(
             busEvent.Plant,
