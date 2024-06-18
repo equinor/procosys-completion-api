@@ -82,7 +82,7 @@ public static class ApplicationModule
         // Hosted services
 
         // Scoped - Created once per client request (connection)
-        services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
+        // services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
         services.AddScoped<IContentAccessChecker, ContentAccessChecker>();
