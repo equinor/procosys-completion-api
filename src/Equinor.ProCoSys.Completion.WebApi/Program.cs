@@ -57,8 +57,6 @@ builder.Services.AddPcsAuthIntegration();
 builder.ConfigureValidators();
 builder.ConfigureTelemetry(credential, devOnLocalhost);
 
-builder.Logging.AddApplicationInsights();
-
 builder.Services.AddMediatrModules();
 builder.Services.AddApplicationModules(builder.Configuration);
 
