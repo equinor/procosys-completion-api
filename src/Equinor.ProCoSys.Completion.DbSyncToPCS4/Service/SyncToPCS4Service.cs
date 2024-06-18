@@ -73,7 +73,9 @@ public class SyncToPCS4Service : ISyncToPCS4Service
 
         if (!result.IsSuccessStatusCode)
         {
-            throw new Exception($"Error occured when trying to execute a ({method}) sync statement to PCS4 for data of type ({sourceObjectName}).");
+            var responseContent = await result.Content.ReadAsStringAsync();
+            _logger.LogError("Error occurred when trying to execute a {Method} sync statement to PCS4 for data of type {SourceObjectName}. Status code: {StatusCode}, Response: {ResponseContent}", method, sourceObjectName, result.StatusCode, responseContent);
+            throw new Exception($"Error occurred when trying to execute a ({method}) sync statement to PCS4 for data of type ({sourceObjectName}). Status code: {result.StatusCode}, Response: {responseContent}");
         }
     }
 }
