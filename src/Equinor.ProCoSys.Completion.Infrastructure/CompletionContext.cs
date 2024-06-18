@@ -32,7 +32,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure;
 
 public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
 {
-    public static string CompletionContextConnectionStringName = "CompletionContext";
+    public static string CompletionContextConnectionStringName = "CompletionDb";
 
     private readonly IPlantProvider _plantProvider;
     private readonly IEventDispatcher _eventDispatcher;
@@ -55,7 +55,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
         
         // Do not set AccessToken during in-memory tests or on localhost
         if (database is { ProviderName: "Microsoft.EntityFrameworkCore.SqlServer" }
-            && database.GetDbConnection() is SqlConnection connection and not {DataSource: "127.0.0.1" })
+            && database.GetDbConnection() is SqlConnection connection and not {DataSource: "127.0.0.1" or "127.0.0.1,1433"})
         {
             connection.AccessToken = MsiAccessTokenProvider.GetAccessTokenAsync(credential).Result;
         }

@@ -65,7 +65,7 @@ public static class ApplicationModule
         services.AddDbContext<CompletionContext>(options =>
         {
             var connectionString = configuration.GetConnectionString(CompletionContext.CompletionContextConnectionStringName);
-            options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).CommandTimeout(60).EnableRetryOnFailure());
         });
 
         services.AddLogging(configure =>
@@ -149,11 +149,11 @@ public static class ApplicationModule
         services.AddTransient<SyncBearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
-        services.AddHttpClient("SyncHttpClient")
+        services.AddHttpClient("equinor-procosys-databasesynctopcs4-api")
         .ConfigureHttpClient((serviceProvider, client) =>
         {
             var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
-            client.BaseAddress = new Uri(options.Endpoint);
+             client.BaseAddress = new("https+http://equinor-procosys-databasesynctopcs4-api");
         })
         .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }

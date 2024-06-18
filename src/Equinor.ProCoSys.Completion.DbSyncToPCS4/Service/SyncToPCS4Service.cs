@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 
@@ -20,7 +21,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
         _options = options;
         _logger = logger;
 
-        _httpClient = httpClientFactory.CreateClient("SyncHttpClient");
+        _httpClient = httpClientFactory.CreateClient("equinor-procosys-databasesynctopcs4-api");
     }
 
     public async Task SyncNewPunchListItemAsync(object addEvent, CancellationToken cancellationToken)

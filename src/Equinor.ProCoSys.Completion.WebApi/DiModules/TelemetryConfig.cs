@@ -13,13 +13,13 @@ public static class TelemetryConfig
 {
     public static WebApplicationBuilder ConfigureTelemetry(this WebApplicationBuilder builder, TokenCredential credential, bool devOnLocalhost)
     {
-        if (!devOnLocalhost)
+        builder.Services.AddSingleton<TelemetryConfiguration>(sp =>
         {
-            builder.Services.Configure<TelemetryConfiguration>(config =>
-            {
-                config.SetAzureTokenCredential(credential);
-            });
-        }
+            var config = TelemetryConfiguration.CreateDefault();
+            config.ConnectionString = builder.Configuration.GetRequiredConfiguration("ApplicationInsights:ConnectionString");
+            config.SetAzureTokenCredential(sp.GetRequiredService<TokenCredential>());
+            return config;
+        });
 
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {

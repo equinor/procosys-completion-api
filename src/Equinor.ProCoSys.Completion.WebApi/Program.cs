@@ -1,6 +1,8 @@
-﻿using Azure.Core;
+﻿using System;
+using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
@@ -10,11 +12,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
 const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 var devOnLocalhost = builder.Configuration.IsDevOnLocalhost();
 
@@ -32,6 +37,18 @@ TokenCredential credential = devOnLocalhost switch
         ),
     false => new DefaultAzureCredential()
 };
+
+builder.Services.AddHttpClient(
+    "equinor-procosys-databasesynctopcs4-api",
+    client =>
+{
+    // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+    // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+    client.BaseAddress = new("https+http://equinor-procosys-databasesynctopcs4-api");
+})
+.AddHttpMessageHandler<SyncBearerTokenHandler>();
+
+
 
 builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
@@ -99,6 +116,7 @@ app.UseResponseCompression();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapDefaultEndpoints();
 
 app.Run();
 
