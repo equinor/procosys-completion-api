@@ -22,10 +22,18 @@ public class PunchItemAttachmentEventConsumer(
     public async Task Consume(ConsumeContext<PunchItemAttachmentEvent> context)
     {
         var busEvent = context.Message;
-
         ValidateAttachmentMessage(busEvent);
 
-        if (EventIsAttachment(busEvent))
+        if (busEvent.Behavior == "delete")
+        {
+            if (!await attachmentRepository.RemoveByGuidAsync(busEvent.AttachmentGuid, context.CancellationToken)
+                && !await linkRepository.RemoveByGuidAsync(busEvent.AttachmentGuid, context.CancellationToken))
+            {
+                logger.LogWarning("Attachment with Guid {Guid} was not found and could not be deleted",
+                    busEvent.AttachmentGuid);
+            }
+        }
+        else if (EventIsAttachment(busEvent))
         {
             ValidateAttachmentMessageAsCompletionAttachment(busEvent);
             if (!await HandleAttachmentEventAsync(context, busEvent))
@@ -135,13 +143,13 @@ public class PunchItemAttachmentEventConsumer(
         {
             throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.AttachmentGuid)}");
         }
-        if (busEvent.PunchItemGuid == Guid.Empty)
-        {
-            throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.PunchItemGuid)}");
-        }
         if (string.IsNullOrEmpty(busEvent.Plant))
         {
             throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.Plant)}");
+        }
+        if (busEvent.PunchItemGuid == Guid.Empty && busEvent.Behavior != "delete")
+        {
+            throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.PunchItemGuid)}");
         }
     }
 
@@ -243,5 +251,6 @@ public record PunchItemAttachmentEvent
     Guid CreatedByGuid,
     DateTime CreatedAt,
     DateTime LastUpdated,
-    string? LastUpdatedByUser
+    string? LastUpdatedByUser,
+    string? Behavior
 );

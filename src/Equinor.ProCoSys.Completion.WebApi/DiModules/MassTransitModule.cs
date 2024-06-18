@@ -86,7 +86,7 @@ public static class MassTransitModule
                 .Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem";
+                    e.Name = "completion_punchitem_changehistory";
                     e.Temporary = false;
                 });
             x.AddConsumer<PunchItemAttachmentEventConsumer>()

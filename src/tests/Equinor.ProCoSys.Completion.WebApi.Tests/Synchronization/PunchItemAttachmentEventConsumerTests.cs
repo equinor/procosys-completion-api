@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
@@ -25,7 +26,7 @@ public class PunchItemAttachmentEventConsumerTests
     private Attachment? _attachmentAddedToRepository;
     private Link? _linkAddedToRepository;
     private readonly DateTime _lastUpdated = DateTime.Now;
-    private readonly string _lastUpdatedBuUser = "someone";
+    private readonly string _lastUpdatedByUser = "someone";
 
     [TestInitialize]
     public void Setup()
@@ -60,7 +61,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "T", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "T", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act
@@ -87,7 +88,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
         var existingAttachment = new Attachment("Proj", "PT", Guid.NewGuid(), "FN"){ ProCoSys4LastUpdated = _lastUpdated.AddSeconds(-2)};
         _attachmentRepositoryMock.ExistsAsync(bEvent.AttachmentGuid, _contextMock.CancellationToken).Returns(true);
@@ -111,7 +112,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), "fn", null, "newTitle", 2, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
         var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
         var oldProCoSys4LastUpdatedByUser = "xxx";
@@ -139,7 +140,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "uri", "T", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "uri", "T", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
 
         //Act
@@ -164,7 +165,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
         var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
         var existingLink = new Link("P", Guid.NewGuid(), "oldT", "oldU") { ProCoSys4LastUpdated = oldProCoSys4LastUpdated };
@@ -186,7 +187,7 @@ public class PunchItemAttachmentEventConsumerTests
     {
         //Arrange
         var bEvent =
-            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedBuUser);
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "newUri", "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
         _contextMock.Message.Returns(bEvent);
         var oldProCoSys4LastUpdated = _lastUpdated.AddSeconds(2);
         var oldProCoSys4LastUpdatedByUser = "xxx";
@@ -207,5 +208,28 @@ public class PunchItemAttachmentEventConsumerTests
         Assert.AreEqual(oldProCoSys4LastUpdated, existingLink.ProCoSys4LastUpdated);
         Assert.AreEqual(oldProCoSys4LastUpdatedByUser, existingLink.ProCoSys4LastUpdatedByUser);
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
+    }
+
+    [TestMethod]
+    public async Task Consume_Should_Call_Remove()
+    {
+        //Arrange
+        var bEvent =
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, null, "newTitle", null, _createdByGuid, DateTime.UtcNow, _lastUpdated, null, "delete");
+        _contextMock.Message.Returns(bEvent);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        await _attachmentRepositoryMock.Received(1).RemoveByGuidAsync(bEvent.AttachmentGuid, Arg.Any<CancellationToken>());
+        await _linkRepositoryMock.Received(1).RemoveByGuidAsync(bEvent.AttachmentGuid, Arg.Any<CancellationToken>());
+        await _attachmentRepositoryMock.Received(0).ExistsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _attachmentRepositoryMock.Received(0).GetAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        _attachmentRepositoryMock.Received(0).Add(Arg.Any<Attachment>());
+        await _linkRepositoryMock.Received(0).ExistsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _linkRepositoryMock.Received(0).GetAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        _linkRepositoryMock.Received(0).Add(Arg.Any<Link>());
+        await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 }
