@@ -12,12 +12,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Misc;
 public class HeartbeatController : ControllerBase
 {
     private readonly ILogger<HeartbeatController> _logger;
-    private readonly ITelemetryClient _telemetryClient;
 
-    public HeartbeatController(ILogger<HeartbeatController> logger, ITelemetryClient telemetryClient)
+    public HeartbeatController(ILogger<HeartbeatController> logger)
     {
         _logger = logger;
-        _telemetryClient = telemetryClient;
     }
 
     [AllowAnonymous]
@@ -35,7 +33,7 @@ public class HeartbeatController : ControllerBase
 
     [HttpPost("LogTrace")]
     public void LogTrace()
-        => _telemetryClient.TrackEvent("Heartbeat");
+        => _logger.LogTrace("Heartbeat");
 
     [HttpPost("LogInfo")]
     public void LogInfo([Required] string info)

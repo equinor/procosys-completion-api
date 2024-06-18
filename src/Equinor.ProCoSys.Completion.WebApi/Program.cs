@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,7 @@ TokenCredential credential = devOnLocalhost switch
 
 builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
+builder.Services.AddHealthChecks();
 
 builder.WebHost.UseKestrel(options =>
 {

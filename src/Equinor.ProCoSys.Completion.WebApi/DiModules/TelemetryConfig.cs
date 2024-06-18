@@ -31,8 +31,11 @@ public static class TelemetryConfig
         // {
         //     module.EnableSqlCommandTextInstrumentation = builder.Configuration.GetValue("EnableSqlCommandTextInstrumentation", false);
         // });
-        
-        builder.Services.AddOpenTelemetry().UseAzureMonitor();
+
+        if (!devOnLocalhost)
+        {
+            builder.Services.AddOpenTelemetry().UseAzureMonitor();
+        }
         
         return builder;
     }
