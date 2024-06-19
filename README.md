@@ -106,9 +106,16 @@ This will pull the necessary images, build the services, and start the applicati
 
 ![visualstudio-compose.PNG](visualstudio-compose.PNG)
 
-### 03.11.2023: Create the Database inside the container 
-Until the sandbox image is updated with the completion database,
-you will have to create the database manually after spinning up the container.
-This means the application may not run correct the first time.
-To create it, connect to Sql server using MsSql Management Studio, right click Databases folder and select New Database.
-Create a db called pcs-completion-dev-db, then rerun docker compose up.
+### Sandbox image
+There is a sandbox image available at procosys.azurecr.io/completion/sandbox:latest. IDs in this image matches IDs in
+the main sandbox image. This sandbox image is based on this backup [pcsdevsa/sql-db-backup-sandbox/pcs-completion-dev-db](https://pcsdevsa.blob.core.windows.net/sql-db-backup-sandbox/pcs-completion-dev-db.bacpac)
+
+### One Team
+The [One Team Documentation](https://docs-procosys-one-team-docs-prod.radix.equinor.com/) has higher level documentation
+for the program. Please familiarize yourself with it.
+
+### Handy
+Deleting all local branches except for main
+```Bash
+git for-each-ref --format '%(refname:short)' refs/heads | grep -v "main" | xargs git branch -D 
+```
