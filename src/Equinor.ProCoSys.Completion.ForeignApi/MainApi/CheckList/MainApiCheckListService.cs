@@ -56,4 +56,14 @@ public class MainApiCheckListService(
             mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
         }
     }
+
+    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid)
+    {
+        var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
+                  $"?plantId={plant}" +
+                  $"&proCoSysGuid={punchItemGuid:N}" +
+                  $"&api-version={_apiVersion}";
+
+        return await _mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url);
+    }
 }
