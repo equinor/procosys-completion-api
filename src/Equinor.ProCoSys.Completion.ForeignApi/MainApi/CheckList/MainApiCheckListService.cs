@@ -53,4 +53,14 @@ public class MainApiCheckListService : ICheckListApiService
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         await _mainApiClient.PostAsync(url, content, cancellationToken);
     }
+
+    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid)
+    {
+        var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
+                  $"?plantId={plant}" +
+                  $"&proCoSysGuid={punchItemGuid:N}" +
+                  $"&api-version={_apiVersion}";
+
+        return await _mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url);
+    }
 }

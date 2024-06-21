@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.GetCheckListsByPunchItemGuid;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
@@ -107,6 +108,28 @@ public class PunchItemsController : ControllerBase
         [Required] [FromQuery] Guid projectGuid)
     {
         var result = await _mediator.Send(new GetPunchItemsInProjectQuery(projectGuid), cancellationToken);
+        return this.FromResult(result);
+    }
+
+    /// <summary>
+    /// Get a CheckLists By PunchItem Guid
+    /// </summary>
+    ///  /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem</param>
+    /// <returns>Found CheckLists</returns>
+    /// <response code="404">CheckLists not found</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
+    [HttpGet("{guid}/CheckLists")]
+    public async Task<ActionResult<PunchItemDetailsDto>> GetCheckListsByPunchItemGuid(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [FromRoute] Guid guid)
+    {
+        var result = await _mediator.Send(new GetCheckListsByPIGuidCommand(guid), cancellationToken);
         return this.FromResult(result);
     }
 
