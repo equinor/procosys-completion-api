@@ -64,6 +64,6 @@ public class MainApiCheckListService(
                   $"&proCoSysGuid={punchItemGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await _mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url);
+        return await mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url);
     }
 }
