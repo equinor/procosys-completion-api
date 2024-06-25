@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -10,10 +9,8 @@ namespace Equinor.ProCoSys.Completion.ForeignApiTests.MainApi.CheckList;
 [TestClass]
 public class CheckListValidatorTests
 {
-    private readonly string _plant = "P";
     private ProCoSys4CheckListValidator _dut = null!;
     private ICheckListCache _checkListCacheMock = null!;
-    private IPlantProvider _plantProviderMock = null!;
     private static readonly Guid s_projectGuid = Guid.NewGuid();
     private readonly ProCoSys4CheckList _proCoSys4CheckList = new("RC", false, s_projectGuid);
     private readonly Guid _checkListGuid = Guid.NewGuid();
@@ -22,11 +19,9 @@ public class CheckListValidatorTests
     public void Setup()
     {
         _checkListCacheMock = Substitute.For<ICheckListCache>();
-        _checkListCacheMock.GetCheckListAsync(_plant, _checkListGuid).Returns(_proCoSys4CheckList);
-        _plantProviderMock = Substitute.For<IPlantProvider>();
-        _plantProviderMock.Plant.Returns(_plant);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
 
-        _dut = new ProCoSys4CheckListValidator(_checkListCacheMock, _plantProviderMock);
+        _dut = new ProCoSys4CheckListValidator(_checkListCacheMock);
     }
 
     #region ExistsAsync
@@ -66,7 +61,7 @@ public class CheckListValidatorTests
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnTrue_WhenCheckListExistsAndTagIsVoided()
     {
         // Arrange
-        _checkListCacheMock.GetCheckListAsync(_plant, _checkListGuid).Returns(new ProCoSys4CheckList("RC", true, Guid.NewGuid()));
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(new ProCoSys4CheckList("RC", true, Guid.NewGuid()));
 
         // Act
         var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid);

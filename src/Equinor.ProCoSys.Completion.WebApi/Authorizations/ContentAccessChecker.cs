@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 
@@ -11,18 +10,15 @@ public class ContentAccessChecker : IContentAccessChecker
 {
     private readonly IRestrictionRolesChecker _restrictionRolesChecker;
     private readonly ICheckListCache _checkListCache;
-    private readonly IPlantProvider _plantProvider;
     private readonly IPunchItemHelper _punchItemHelper;
 
     public ContentAccessChecker(
         IRestrictionRolesChecker restrictionRolesChecker,
         ICheckListCache checkListCache,
-        IPunchItemHelper punchItemHelper,
-        IPlantProvider plantProvider)
+        IPunchItemHelper punchItemHelper)
     {
         _restrictionRolesChecker = restrictionRolesChecker;
         _checkListCache = checkListCache;
-        _plantProvider = plantProvider;
         _punchItemHelper = punchItemHelper;
     }
 
@@ -55,11 +51,10 @@ public class ContentAccessChecker : IContentAccessChecker
 
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid)
     {
-        var plant = _plantProvider.Plant;
-        var checkList = await _checkListCache.GetCheckListAsync(plant, checkListGuid);
+        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid);
         if (checkList is null)
         {
-            throw new Exception($"CheckList '{checkListGuid}' not found in '{plant}'");
+            throw new Exception($"CheckList '{checkListGuid}' not found");
         }
 
         return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);

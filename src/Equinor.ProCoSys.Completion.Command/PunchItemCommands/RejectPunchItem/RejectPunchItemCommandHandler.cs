@@ -97,7 +97,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
 
             await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 

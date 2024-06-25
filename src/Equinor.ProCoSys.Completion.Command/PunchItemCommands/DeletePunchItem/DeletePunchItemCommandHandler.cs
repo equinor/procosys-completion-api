@@ -63,7 +63,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
             await _syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

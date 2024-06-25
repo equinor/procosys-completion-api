@@ -15,12 +15,12 @@ public class CheckListCache : ICheckListCache
         _checkListApiService = checkListApiService;
     }
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
         => await _cacheManager.GetOrCreate(
             CheckListGuidCacheKey(checkListGuid),
             async () =>
             {
-                var checkList = await _checkListApiService.GetCheckListAsync(plant, checkListGuid);
+                var checkList = await _checkListApiService.GetCheckListAsync(checkListGuid);
                 return checkList;
             },
             CacheDuration.Minutes,
