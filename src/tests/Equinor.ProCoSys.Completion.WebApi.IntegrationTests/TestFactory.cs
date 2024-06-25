@@ -12,7 +12,6 @@ using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
@@ -410,9 +409,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidNotRestricted)
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted)
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(PlantWithAccess, CheckListGuidRestricted)
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted)
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
     }
 

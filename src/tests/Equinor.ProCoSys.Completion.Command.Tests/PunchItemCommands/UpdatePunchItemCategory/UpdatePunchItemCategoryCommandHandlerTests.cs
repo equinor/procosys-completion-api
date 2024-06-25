@@ -138,7 +138,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
 
         // Assert
         var punchItem = await _punchItemRepositoryMock.GetAsync(_command.PunchItemGuid, default);
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(punchItem.CheckListGuid, default);
     }
 
     [TestMethod]

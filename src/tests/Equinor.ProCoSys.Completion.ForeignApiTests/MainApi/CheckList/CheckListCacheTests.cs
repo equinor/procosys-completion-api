@@ -16,7 +16,6 @@ public class CheckListCacheTests
     private ProCoSys4CheckList _checkList;
     private readonly Guid _checkListGuid = new("{3BFB54C7-91E2-422E-833F-951AD07FE37F}");
     private ICheckListApiService _checkListApiServiceMock;
-    private readonly string _testPlant = "PA";
 
     [TestInitialize]
     public void Setup()
@@ -25,7 +24,7 @@ public class CheckListCacheTests
 
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
-        _checkListApiServiceMock.GetCheckListAsync(_testPlant, _checkListGuid).Returns(_checkList);
+        _checkListApiServiceMock.GetCheckListAsync(_checkListGuid).Returns(_checkList);
 
         _dut = new CheckListCache(new CacheManager(), _checkListApiServiceMock);
     }
@@ -34,25 +33,25 @@ public class CheckListCacheTests
     public async Task GetCheckList_ShouldReturnCheckListFromCheckListApiServiceFirstTime()
     {
         // Act
-        var result = await _dut.GetCheckListAsync(_testPlant, _checkListGuid);
+        var result = await _dut.GetCheckListAsync(_checkListGuid);
 
         // Assert
         AssertCheckList(result);
-        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_testPlant, _checkListGuid);
+        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid);
     }
 
     [TestMethod]
     public async Task GetCheckList_ShouldReturnCheckListsFromCacheSecondTime()
     {
-        await _dut.GetCheckListAsync(_testPlant, _checkListGuid);
+        await _dut.GetCheckListAsync(_checkListGuid);
 
         // Act
-        var result = await _dut.GetCheckListAsync(_testPlant, _checkListGuid);
+        var result = await _dut.GetCheckListAsync(_checkListGuid);
 
         // Assert
         AssertCheckList(result);
         // since GetCheckListAsync has been called twice, but TryGetCheckListByOidAsync has been called once, the second Get uses cache
-        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_testPlant, _checkListGuid);
+        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid);
     }
 
     private void AssertCheckList(ProCoSys4CheckList checkList)
