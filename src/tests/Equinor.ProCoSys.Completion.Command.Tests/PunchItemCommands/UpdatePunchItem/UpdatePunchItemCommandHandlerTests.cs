@@ -334,8 +334,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         var oldDescription = _existingPunchItem[_testPlant].Description;
-        var oldRaisedByCode = _existingPunchItem[_testPlant].RaisedByOrg.Code;
-        var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.Code;
+        var oldRaisedByOrg = _existingPunchItem[_testPlant].RaisedByOrg.ToString();
+        var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.ToString();
         var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
         _messageProducerMock
@@ -370,28 +370,28 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
-            oldRaisedByCode,
-            _existingRaisedByOrg1[_testPlant].Code);
+            oldRaisedByOrg,
+            _existingRaisedByOrg1[_testPlant].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             oldClearingByOrg,
-            _existingClearingByOrg1[_testPlant].Code);
+            _existingClearingByOrg1[_testPlant].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
             null,
-            _existingPriority1[_testPlant].Code);
+            _existingPriority1[_testPlant].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
             null,
-            _existingSorting1[_testPlant].Code);
+            _existingSorting1[_testPlant].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             null,
-            _existingType1[_testPlant].Code);
+            _existingType1[_testPlant].ToString());
         AssertPersonChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
@@ -515,17 +515,17 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
-            _existingPriority1[_testPlant].Code,
+            _existingPriority1[_testPlant].ToString(),
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
-            _existingSorting1[_testPlant].Code,
+            _existingSorting1[_testPlant].ToString(),
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
-            _existingType1[_testPlant].Code,
+            _existingType1[_testPlant].ToString(),
             null);
         AssertPersonChange(
             changedProperties

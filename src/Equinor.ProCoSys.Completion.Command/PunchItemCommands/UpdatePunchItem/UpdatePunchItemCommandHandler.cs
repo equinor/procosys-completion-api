@@ -367,14 +367,14 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
                 LibraryType.PUNCHLIST_TYPE,
                 cancellationToken);
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Type),
-                punchItem.Type?.Code,
-                libraryItem.Code));
+                punchItem.Type?.ToString(),
+                libraryItem.ToString()));
             punchItem.SetType(libraryItem);
         }
         else
         {
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Type),
-                punchItem.Type!.Code,
+                punchItem.Type!.ToString(),
                 null));
             punchItem.ClearType();
         }
@@ -398,14 +398,14 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
                 LibraryType.PUNCHLIST_SORTING,
                 cancellationToken);
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Sorting),
-                punchItem.Sorting?.Code,
-                libraryItem.Code));
+                punchItem.Sorting?.ToString(),
+                libraryItem.ToString()));
             punchItem.SetSorting(libraryItem);
         }
         else
         {
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Sorting),
-                punchItem.Sorting!.Code,
+                punchItem.Sorting!.ToString(),
                 null));
             punchItem.ClearSorting();
         }
@@ -429,14 +429,14 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
                 LibraryType.PUNCHLIST_PRIORITY,
                 cancellationToken);
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Priority),
-                punchItem.Priority?.Code,
-                libraryItem.Code));
+                punchItem.Priority?.ToString(),
+                libraryItem.ToString()));
             punchItem.SetPriority(libraryItem);
         }
         else
         {
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Priority),
-                punchItem.Priority!.Code,
+                punchItem.Priority!.ToString(),
                 null));
             punchItem.ClearPriority();
         }
@@ -458,8 +458,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
         changes.Add(new ChangedProperty<string>(nameof(punchItem.ClearingByOrg),
-            punchItem.ClearingByOrg.Code,
-            libraryItem.Code));
+            punchItem.ClearingByOrg.ToString(),
+            libraryItem.ToString()));
         punchItem.SetClearingByOrg(libraryItem);
     }
 
@@ -479,8 +479,8 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
         changes.Add(new ChangedProperty<string>(nameof(punchItem.RaisedByOrg),
-            punchItem.RaisedByOrg.Code,
-            libraryItem.Code));
+            punchItem.RaisedByOrg.ToString(),
+            libraryItem.ToString()));
         punchItem.SetRaisedByOrg(libraryItem);
     }
 
