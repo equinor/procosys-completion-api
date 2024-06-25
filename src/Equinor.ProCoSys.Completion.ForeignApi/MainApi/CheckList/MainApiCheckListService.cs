@@ -22,17 +22,25 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
     {
-        var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                  $"?plantId={plant}" +
-                  $"&proCoSysGuid={checkListGuid:N}" +
-                  $"&api-version={_apiVersion}";
+        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
+        try
+        {
+            mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+            var url = $"{_baseAddress}CheckList/ForProCoSys5" +
+                      $"?proCoSysGuid={checkListGuid:N}" +
+                      $"&api-version={_apiVersion}";
 
-        return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
+            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
+        }
+        finally
+        {
+            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
+        }
     }
 
-    public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task RecalculateCheckListStatus(Guid checkListGuid, CancellationToken cancellationToken)
     {
         if (!_recalculateStatusInPcs4)
         {
@@ -44,8 +52,7 @@ public class MainApiCheckListService(
         {
             mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
             var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                      $"?plantId={plant}" +
-                      $"&api-version={_apiVersion}";
+                      $"?api-version={_apiVersion}";
 
             var requestBody = JsonConvert.SerializeObject(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
             var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
