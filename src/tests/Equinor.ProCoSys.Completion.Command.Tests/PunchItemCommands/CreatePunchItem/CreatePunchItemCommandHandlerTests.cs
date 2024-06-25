@@ -249,11 +249,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
-            _punchItemAddedToRepository.RaisedByOrg.Code);
+            _punchItemAddedToRepository.RaisedByOrg.ToString());
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
-            _punchItemAddedToRepository.ClearingByOrg.Code);
+            _punchItemAddedToRepository.ClearingByOrg.ToString());
         AssertPerson(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
@@ -266,15 +266,15 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
-            _punchItemAddedToRepository.Priority!.Code);
+            _punchItemAddedToRepository.Priority!.ToString());
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
-            _punchItemAddedToRepository.Sorting!.Code);
+            _punchItemAddedToRepository.Sorting!.ToString());
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
-            _punchItemAddedToRepository.Type!.Code);
+            _punchItemAddedToRepository.Type!.ToString());
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Estimate)),
@@ -386,11 +386,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
-            _punchItemAddedToRepository.RaisedByOrg.Code);
+            _punchItemAddedToRepository.RaisedByOrg.ToString());
         AssertProperty(
             properties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
-            _punchItemAddedToRepository.ClearingByOrg.Code);
+            _punchItemAddedToRepository.ClearingByOrg.ToString());
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4
