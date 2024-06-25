@@ -169,8 +169,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         [
             new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
             new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.Code),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.Code)
+            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.ToString()),
+            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.ToString())
         ];
 
     private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo, List<IProperty> properties)
@@ -334,15 +334,15 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         {
             case LibraryType.PUNCHLIST_PRIORITY:
                 punchItem.SetPriority(libraryItem);
-                properties.Add(new Property(nameof(PunchItem.Priority), punchItem.Priority!.Code));
+                properties.Add(new Property(nameof(PunchItem.Priority), punchItem.Priority!.ToString()));
                 break;
             case LibraryType.PUNCHLIST_SORTING:
                 punchItem.SetSorting(libraryItem);
-                properties.Add(new Property(nameof(PunchItem.Sorting), punchItem.Sorting!.Code));
+                properties.Add(new Property(nameof(PunchItem.Sorting), punchItem.Sorting!.ToString()));
                 break;
             case LibraryType.PUNCHLIST_TYPE:
                 punchItem.SetType(libraryItem);
-                properties.Add(new Property(nameof(PunchItem.Type), punchItem.Type!.Code));
+                properties.Add(new Property(nameof(PunchItem.Type), punchItem.Type!.ToString()));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(libraryType), libraryType, null);
