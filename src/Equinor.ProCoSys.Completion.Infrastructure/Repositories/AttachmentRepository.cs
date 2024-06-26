@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
@@ -20,4 +22,7 @@ public class AttachmentRepository(CompletionContext context)
                .Include(a => a.Labels)
                .SingleOrDefaultAsync(a => a.Guid == attachmentGuid, cancellationToken)
            ?? throw new EntityNotFoundException<Attachment>(attachmentGuid);
+
+    public async Task<IEnumerable<Attachment>> GetAllByParentGuidAsync(Guid parentGuid, CancellationToken cancellationToken) 
+        => await DefaultQueryable.Where(a => a.ParentGuid == parentGuid).ToListAsync(cancellationToken);
 }

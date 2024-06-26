@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,4 +9,5 @@ public interface IAttachmentRepository : IRepositoryWithGuid<Attachment>
 {
     Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken);
     Task<Attachment> GetAttachmentWithLabelsAsync(Guid attachmentGuid, CancellationToken cancellationToken);
+    Task<IEnumerable<Attachment>> GetAllByParentGuidAsync(Guid parentGuid, CancellationToken cancellationToken);
 }
