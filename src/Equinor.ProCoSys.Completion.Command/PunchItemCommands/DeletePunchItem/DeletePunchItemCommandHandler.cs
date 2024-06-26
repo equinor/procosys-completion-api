@@ -66,7 +66,7 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
             
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
 

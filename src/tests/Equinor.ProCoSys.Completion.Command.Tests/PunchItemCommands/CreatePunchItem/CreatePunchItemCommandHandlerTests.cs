@@ -401,7 +401,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_command.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, _command.CheckListGuid, default);
     }
 
     [TestMethod]

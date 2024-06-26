@@ -64,8 +64,8 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
+           
+             await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
 

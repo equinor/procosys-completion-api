@@ -135,8 +135,8 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
-
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo,
                 punchItem.Guid);
 

@@ -67,7 +67,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
             
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
                 punchItem.ItemNo,

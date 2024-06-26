@@ -99,7 +99,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 

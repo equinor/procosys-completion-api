@@ -69,9 +69,9 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
-            
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
 
+             await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} cleared", punchItem.ItemNo, punchItem.Guid);
 
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());

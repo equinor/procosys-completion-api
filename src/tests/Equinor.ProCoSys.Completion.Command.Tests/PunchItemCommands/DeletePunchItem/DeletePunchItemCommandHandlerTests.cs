@@ -137,7 +137,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         var punchItem = _existingPunchItem[_testPlant];
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
     }
 
     [TestMethod]
