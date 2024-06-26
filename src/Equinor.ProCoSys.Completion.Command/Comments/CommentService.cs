@@ -52,16 +52,16 @@ public class CommentService : ICommentService
         string emailTemplateCode,
         CancellationToken cancellationToken)
     {
+        var comment = AddToRepository(parentEntity, text, labels, mentions);
+
+        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
+        var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var comment = AddToRepository(parentEntity, text, labels, mentions);
-
             await unitOfWork.SaveChangesAsync(cancellationToken);
-
-            var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
-            var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
 
             var commentEvent = new CommentEventDto
             {
@@ -76,9 +76,9 @@ public class CommentService : ICommentService
 
             await _syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
 
-            await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
-
             await unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
 
             _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
                 comment.Guid,

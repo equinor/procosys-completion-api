@@ -69,18 +69,18 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var rejectLabel = await _labelRepository.GetByTextAsync(_options.CurrentValue.RejectLabel, cancellationToken);
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
+
+        var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var rejectLabel = await _labelRepository.GetByTextAsync(_options.CurrentValue.RejectLabel, cancellationToken);
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
-
-            var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
-
-            // AuditData must be set before publishing events due to use of Created- and Modified-properties
+           // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
             var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
@@ -97,11 +97,11 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            
             await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
 
             await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
 

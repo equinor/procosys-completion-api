@@ -40,19 +40,19 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     public async Task<Result<string>> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        if (punchItem is null)
+        {
+            throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
+        }
+
+        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
+        punchItem.Verify(currentPerson);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-            if (punchItem is null)
-            {
-                throw new Exception($"Entity {nameof(PunchItem)} {request.PunchItemGuid} not found");
-            }
-
-            var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
-            punchItem.Verify(currentPerson);
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 

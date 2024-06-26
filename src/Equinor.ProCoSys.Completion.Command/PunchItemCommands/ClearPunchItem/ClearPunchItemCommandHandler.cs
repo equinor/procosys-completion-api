@@ -44,15 +44,15 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
 
     public async Task<Result<string>> Handle(ClearPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
+        punchItem.Clear(currentPerson);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
-            punchItem.Clear(currentPerson);
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
@@ -68,9 +68,9 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
-
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} cleared", punchItem.ItemNo, punchItem.Guid);
 

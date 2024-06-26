@@ -42,14 +42,14 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
 
     public async Task<Result<string>> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        var change = UpdateCategory(punchItem, request.Category);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            var change = UpdateCategory(punchItem, request.Category);
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
@@ -64,10 +64,10 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+            
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
                 punchItem.ItemNo,

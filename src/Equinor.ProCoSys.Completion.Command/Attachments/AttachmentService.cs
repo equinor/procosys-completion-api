@@ -64,25 +64,26 @@ public class AttachmentService : IAttachmentService
         string contentType,
         CancellationToken cancellationToken)
     {
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+        if (attachment is not null)
+        {
+            throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
+        }
+
+        attachment = new Attachment(
+            project,
+            parentType,
+            parentGuid,
+            fileName);
+        
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
-
-            if (attachment is not null)
-            {
-                throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
-            }
-
-            attachment = new Attachment(
-                project,
-                parentType,
-                parentGuid,
-                fileName);
             _attachmentRepository.Add(attachment);
-
-            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
             await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
             // ReSharper disable once UnusedVariable
@@ -113,22 +114,22 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+        if (attachment is null)
+        {
+            throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
+        }
+
+        var changes = SetRevisionNumber(attachment);
+
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+        await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
-
-            if (attachment is null)
-            {
-                throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
-            }
-
-            var changes = SetRevisionNumber(attachment);
-
-            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
-            await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
-
             // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishUpdatedEventsAsync(
                 $"Attachment {attachment.FileName} uploaded again",
@@ -164,13 +165,14 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
+
+        var fullBlobPath = attachment.GetFullBlobPath();
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
-
-            var fullBlobPath = attachment.GetFullBlobPath();
             await _azureBlobService.DeleteAsync(
                 _blobStorageOptions.Value.BlobContainer,
                 fullBlobPath,
@@ -212,14 +214,15 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
+        attachment.UpdateLabels(labels.ToList());
+
+        var changes = UpdateAttachment(attachment, description);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
-            attachment.UpdateLabels(labels.ToList());
-
-            var changes = UpdateAttachment(attachment, description);
             // ReSharper disable once NotAccessedVariable
             AttachmentUpdatedIntegrationEvent? integrationEvent = null;
             if (changes.Any())

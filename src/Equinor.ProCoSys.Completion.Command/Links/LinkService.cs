@@ -90,21 +90,21 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var link = await _linkRepository.GetAsync(guid, cancellationToken);
+
+        var changes = UpdateLink(link, title, url);
+        // ReSharper disable once NotAccessedVariable
+        LinkUpdatedIntegrationEvent? integrationEvent = null;
+        if (changes.Any())
+        {
+            // ReSharper disable once RedundantAssignment
+            integrationEvent = await PublishUpdatedEventsAsync(link, changes, cancellationToken);
+        }
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var link = await _linkRepository.GetAsync(guid, cancellationToken);
-
-            var changes = UpdateLink(link, title, url);
-            // ReSharper disable once NotAccessedVariable
-            LinkUpdatedIntegrationEvent? integrationEvent = null;
-            if (changes.Any())
-            {
-                // ReSharper disable once RedundantAssignment
-                integrationEvent = await PublishUpdatedEventsAsync(link, changes, cancellationToken);
-            }
-
             link.SetRowVersion(rowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -136,13 +136,13 @@ public class LinkService : ILinkService
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var link = await _linkRepository.GetAsync(guid, cancellationToken);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var link = await _linkRepository.GetAsync(guid, cancellationToken);
-
-            _linkRepository.Remove(link);
+          _linkRepository.Remove(link);
 
             // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);

@@ -42,16 +42,17 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
 
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        // Setting RowVersion before delete has 2 missions:
+        // 1) Set correct Concurrency
+        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+        punchItem.SetRowVersion(request.RowVersion);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            // Setting RowVersion before delete has 2 missions:
-            // 1) Set correct Concurrency
-            // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
-            punchItem.SetRowVersion(request.RowVersion);
             _punchItemRepository.Remove(punchItem);
 
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
@@ -62,10 +63,10 @@ public class DeletePunchItemCommandHandler : IRequestHandler<DeletePunchItemComm
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
+            
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
 

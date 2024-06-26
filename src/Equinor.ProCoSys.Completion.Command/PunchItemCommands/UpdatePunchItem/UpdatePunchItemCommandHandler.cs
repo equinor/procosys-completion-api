@@ -64,14 +64,14 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
