@@ -40,7 +40,7 @@ public class MainApiCheckListService(
         }
     }
 
-    public async Task RecalculateCheckListStatus(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
     {
         if (!_recalculateStatusInPcs4)
         {
@@ -52,7 +52,8 @@ public class MainApiCheckListService(
         {
             mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
             var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                      $"?api-version={_apiVersion}";
+                      $"?plantId={plant}" +
+                      $"&api-version={_apiVersion}";
 
             var requestBody = JsonConvert.SerializeObject(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
             var content = new StringContent(requestBody, Encoding.UTF8, "application/json");

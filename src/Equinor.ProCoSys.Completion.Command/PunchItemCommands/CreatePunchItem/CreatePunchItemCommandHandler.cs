@@ -128,7 +128,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
             await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
