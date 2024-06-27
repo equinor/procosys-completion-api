@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 
 const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
 
@@ -63,11 +64,11 @@ builder.ConfigureSwagger();
 builder.ConfigureHttp();
 
 //TODO: PBI #104224 "Ensure using Auth Code Grant flow and add token validation"
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        builder.Configuration.Bind("AzureAd", options);
-    });
+builder.Services
+    .AddMicrosoftIdentityWebApiAuthentication(builder.Configuration)
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddDistributedTokenCaches();
+
 builder.Services.AddPcsAuthIntegration();
 
 builder.ConfigureValidators();
