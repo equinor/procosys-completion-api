@@ -3,6 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Microsoft.Extensions.Logging;
@@ -18,6 +21,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private DeletePunchItemCommand _command;
     private DeletePunchItemCommandHandler _dut;
     private ILogger<DeletePunchItemCommandHandler> _logger;
+    
 
     [TestInitialize]
     public void Setup()
@@ -32,7 +36,10 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _unitOfWorkMock,
             _messageProducerMock,
             _checkListApiServiceMock,
-            _logger);
+            _logger,
+            Substitute.For<ICommentRepository>(),
+            Substitute.For<IAttachmentRepository>(),
+            Substitute.For<ILinkRepository>());
     }
 
     [TestMethod]

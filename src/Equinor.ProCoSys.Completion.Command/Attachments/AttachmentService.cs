@@ -21,40 +21,18 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Command.Attachments;
 
-public class AttachmentService : IAttachmentService
+public class AttachmentService(
+    IAttachmentRepository attachmentRepository,
+    IPlantProvider plantProvider,
+    IUnitOfWork unitOfWork,
+    IAzureBlobService azureBlobService,
+    IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
+    IMessageProducer messageProducer,
+    ILogger<AttachmentService> logger,
+    IModifiedEventService modifiedEventService,
+    ISyncToPCS4Service syncToPCS4Service)
+    : IAttachmentService
 {
-    private readonly IAttachmentRepository _attachmentRepository;
-    private readonly IPlantProvider _plantProvider;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IAzureBlobService _azureBlobService;
-    private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IMessageProducer _messageProducer;
-    private readonly ILogger<AttachmentService> _logger;
-    private readonly IModifiedEventService _modifiedEventService;
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-
-    public AttachmentService(
-        IAttachmentRepository attachmentRepository,
-        IPlantProvider plantProvider,
-        IUnitOfWork unitOfWork,
-        IAzureBlobService azureBlobService,
-        IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IMessageProducer messageProducer,
-        ILogger<AttachmentService> logger,
-        IModifiedEventService modifiedEventService,
-        ISyncToPCS4Service syncToPCS4Service)
-    {
-        _attachmentRepository = attachmentRepository;
-        _plantProvider = plantProvider;
-        _unitOfWork = unitOfWork;
-        _azureBlobService = azureBlobService;
-        _blobStorageOptions = blobStorageOptions;
-        _messageProducer = messageProducer;
-        _logger = logger;
-        _modifiedEventService = modifiedEventService;
-        _syncToPCS4Service = syncToPCS4Service;
-    }
-
     public async Task<AttachmentDto> UploadNewAsync(
         string project,
         string parentType,
@@ -64,11 +42,11 @@ public class AttachmentService : IAttachmentService
         string contentType,
         CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+            var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
             if (attachment is not null)
             {
@@ -80,7 +58,7 @@ public class AttachmentService : IAttachmentService
                 parentType,
                 parentGuid,
                 fileName);
-            _attachmentRepository.Add(attachment);
+            attachmentRepository.Add(attachment);
 
             var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
             await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
@@ -88,18 +66,18 @@ public class AttachmentService : IAttachmentService
             // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
             return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on insertion of Attachment");
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            logger.LogError(e, "Error occurred on insertion of Attachment");
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
@@ -113,11 +91,11 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
         
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+            var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
 
             if (attachment is null)
             {
@@ -137,25 +115,25 @@ public class AttachmentService : IAttachmentService
                 cancellationToken);
 
             attachment.SetRowVersion(rowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
             return attachment.RowVersion.ConvertToString();
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Attachment with parent guid {parentGuid}", parentGuid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            logger.LogError(e, "Error occurred on update of Attachment with parent guid {parentGuid}", parentGuid);
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
 
     public async Task<bool> FileNameExistsForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
     {
-        var attachment = await _attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+        var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
         return attachment is not null;
     }
 
@@ -164,46 +142,39 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAsync(guid, cancellationToken);
-
-            var fullBlobPath = attachment.GetFullBlobPath();
-            await _azureBlobService.DeleteAsync(
-                _blobStorageOptions.Value.BlobContainer,
-                fullBlobPath,
-                cancellationToken);
-
+            var attachment = await attachmentRepository.GetAsync(guid, cancellationToken);
             // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
 
             // Set correct Concurrency
             attachment.SetRowVersion(rowVersion);
-            _attachmentRepository.Remove(attachment);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            attachmentRepository.Remove(attachment);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncAttachmentDeleteAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncAttachmentDeleteAsync(integrationEvent, cancellationToken);
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
+            logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
                 attachment.FileName,
                 attachment.Guid,
                 attachment.ParentGuid);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on deletion of Attachment with guid {guid}", guid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            logger.LogError(e, "Error occurred on deletion of Attachment with guid {guid}", guid);
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
 
     public async Task<bool> ExistsAsync(Guid guid,
         CancellationToken cancellationToken)
-        => await _attachmentRepository.ExistsAsync(guid, cancellationToken);
+        => await attachmentRepository.ExistsAsync(guid, cancellationToken);
 
     public async Task<string> UpdateAsync(
         Guid guid,
@@ -212,11 +183,11 @@ public class AttachmentService : IAttachmentService
         string rowVersion,
         CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await _attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
+            var attachment = await attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
             attachment.UpdateLabels(labels.ToList());
 
             var changes = UpdateAttachment(attachment, description);
@@ -228,21 +199,21 @@ public class AttachmentService : IAttachmentService
                 integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
             }
             attachment.SetRowVersion(rowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             if (integrationEvent != null)
             {
-                await _syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
+                await syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
             }
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
             return attachment.RowVersion.ConvertToString();
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Attachment with guid {guid}", guid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            logger.LogError(e, "Error occurred on update of Attachment with guid {guid}", guid);
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
@@ -271,15 +242,15 @@ public class AttachmentService : IAttachmentService
         CancellationToken cancellationToken)
     {
         var fullBlobPath = attachment.GetFullBlobPath();
-        await _azureBlobService.UploadAsync(
-            _blobStorageOptions.Value.BlobContainer,
+        await azureBlobService.UploadAsync(
+            blobStorageOptions.Value.BlobContainer,
             fullBlobPath,
             content,
             contentType,
             overwriteIfExists,
             cancellationToken);
 
-        _logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}",
+        logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} uploaded for {AttachmentParentGuid}",
             attachment.FileName,
             attachment.Guid,
             attachment.ParentGuid);
@@ -288,10 +259,10 @@ public class AttachmentService : IAttachmentService
     private async Task<AttachmentCreatedIntegrationEvent> PublishCreatedEventsAsync(Attachment attachment, CancellationToken cancellationToken)
     {
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
-        var integrationEvent = new AttachmentCreatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
+        var integrationEvent = new AttachmentCreatedIntegrationEvent(attachment, plantProvider.Plant);
+        await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var properties = new List<IProperty>
         {
@@ -304,7 +275,7 @@ public class AttachmentService : IAttachmentService
             new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),
             attachment.CreatedAtUtc,
             properties);
-        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
+        await messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
@@ -315,10 +286,10 @@ public class AttachmentService : IAttachmentService
         CancellationToken cancellationToken)
     {
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
-        var integrationEvent = new AttachmentUpdatedIntegrationEvent(attachment, _plantProvider.Plant);
-        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
+        var integrationEvent = new AttachmentUpdatedIntegrationEvent(attachment, plantProvider.Plant);
+        await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(
             displayName,
@@ -327,17 +298,17 @@ public class AttachmentService : IAttachmentService
             new User(attachment.ModifiedBy!.Guid, attachment.ModifiedBy!.GetFullName()),
             attachment.ModifiedAtUtc!.Value,
             changes);
-        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
+        await messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 
     private async Task<AttachmentDeletedIntegrationEvent> PublishDeletedEventsAsync(Attachment attachment, CancellationToken cancellationToken)
     {
-        var modifiedEvent = await _modifiedEventService.GetModifiedEventAsync(cancellationToken);
-        var integrationEvent = new AttachmentDeletedIntegrationEvent(_plantProvider.Plant, attachment.Guid,
-            attachment.ParentGuid, modifiedEvent.User, modifiedEvent.ModifiedAtUtc);
+        var modifiedEvent = await modifiedEventService.GetModifiedEventAsync(cancellationToken);
+        var integrationEvent = new AttachmentDeletedIntegrationEvent(plantProvider.Plant, attachment.Guid,
+            attachment.ParentGuid, attachment.GetFullBlobPath(), modifiedEvent.User, modifiedEvent.ModifiedAtUtc);
         
-        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
+        await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryDeletedIntegrationEvent(
             $"Attachment {attachment.FileName} deleted",
@@ -345,7 +316,7 @@ public class AttachmentService : IAttachmentService
             attachment.ParentGuid,
             modifiedEvent.User,
             modifiedEvent.ModifiedAtUtc);
-        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
+        await messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
         return integrationEvent;
     }
 

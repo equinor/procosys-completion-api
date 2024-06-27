@@ -321,6 +321,61 @@ public class PunchItemsControllerTests : TestBase
         // Assert
         await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
     }
+    
+    [TestMethod]
+    public async Task DeletePunchItemWithRelatedEntities_ShouldDeletePunchItemAndAllRelatedEntities()
+    {
+        // Arrange
+        var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            Guid.NewGuid().ToString(),
+            TestFactory.ProjectGuidWithAccess,
+            TestFactory.CheckListGuidNotRestricted,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
+        Assert.IsNotNull(punchItem);
+
+        await PunchItemsControllerTestsHelper.CreatePunchItemCommentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItem.Guid,
+            "tull og tøys",
+            [],
+            []);
+        
+        await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItem.Guid,
+            "Some title",
+            "http://www.google.com");
+
+        await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItem.Guid,
+            new TestFile("asdf", "fun file name")
+        );
+       
+        // Act
+        await PunchItemsControllerTestsHelper.DeletePunchItemAsync(
+            UserType.Writer, TestFactory.PlantWithAccess,
+            guidAndRowVersion.Guid,
+            guidAndRowVersion.RowVersion);
+
+        // Assert
+        await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
+        await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
+        await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
+        await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
+        
+        //Checking that Blobstorage got a call to delete, via published message
+        await TestFactory.Instance.BlobStorageMock.ReceivedWithAnyArgs(1).DeleteAsync(default, default);
+    
+    }
 
     [TestMethod]
     public async Task CreatePunchItemLink_AsWriter_ShouldCreatePunchItemLink()

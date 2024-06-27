@@ -4,6 +4,7 @@ using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DocumentEventConsumer(
     IDocumentConsumerService documentConsumerService)
     : IConsumer<DocumentEvent>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
@@ -8,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
@@ -44,6 +46,7 @@ public class DeletePunchItemCommandHandler(
             var attachments = await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken);
             foreach (var attachment in attachments)
             {
+                await messageProducer.PublishAsync(new AttachmentDeletedByPunchItemIntegrationEvent(attachment.Guid,attachment.GetFullBlobPath()), cancellationToken);
                 attachmentRepository.Remove(attachment);
             }
 

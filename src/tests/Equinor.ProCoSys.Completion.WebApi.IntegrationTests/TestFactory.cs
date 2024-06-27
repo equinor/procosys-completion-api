@@ -15,6 +15,8 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
+using MassTransit;
+using MassTransit.Testing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -99,6 +101,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 }
             }
 
+            
             return s_instance;
         }
     }
@@ -112,6 +115,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         _configPath = Path.Combine(projectDir, "appsettings.json");
 
         SetupTestUsers();
+       
     }
 
     #endregion
@@ -163,7 +167,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.AddAuthentication()
                 .AddScheme<IntegrationTestAuthOptions, IntegrationTestAuthHandler>(
                     IntegrationTestAuthHandler.TestAuthenticationScheme, _ => { });
-
             services.PostConfigureAll<JwtBearerOptions>(jwtBearerOptions =>
                 jwtBearerOptions.ForwardAuthenticate = IntegrationTestAuthHandler.TestAuthenticationScheme);
 
@@ -177,6 +180,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         builder.ConfigureServices(services =>
         {
             ReplaceRealDbContextWithTestDbContext(services);
+        
+            //replace Azure ServiceBus with in memory MassTransit
+            services.AddMassTransitTestHarness();
 
             ReplaceRealTokenCredentialsWithTestCredentials(services);
                 
@@ -185,6 +191,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             EnsureTestDatabaseDeletedAtTeardown(services);
         });
     }
+
+    
 
     private void ReplaceRealDbContextWithTestDbContext(IServiceCollection services)
     {

@@ -13,6 +13,8 @@ public static class PunchItemsControllerTestsHelper
 {
     private const string Route = "PunchItems";
 
+    public static TestFactory GetTestFactory() => TestFactory.Instance;
+
     public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
         UserType userType,
         string plant,
