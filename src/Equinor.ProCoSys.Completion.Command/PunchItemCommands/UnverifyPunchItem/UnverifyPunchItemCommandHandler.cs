@@ -36,14 +36,14 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
 
     public async Task<Result<string>> Handle(UnverifyPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        punchItem.Unverify();
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            punchItem.Unverify();
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
