@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Time;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Caching.Distributed;
@@ -30,12 +31,14 @@ public class CheckListCacheTests
             new MemoryDistributedCacheOptions()
         );
         
+        var applicationOptionsMock = Substitute.For<IOptionsSnapshot<ApplicationOptions>>();
+        applicationOptionsMock.Value.Returns(new ApplicationOptions { CheckListCacheExpirationMinutes = 1 });
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
         _distributedCache = new MemoryDistributedCache(options);
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid).Returns(_checkList);
 
-        _dut = new CheckListCache(_checkListApiServiceMock, _distributedCache, default);
+        _dut = new CheckListCache(_checkListApiServiceMock, _distributedCache, applicationOptionsMock, default);
     }
 
     [TestMethod]

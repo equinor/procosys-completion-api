@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class CheckListCache(
     ICheckListApiService checkListApiService,
     IDistributedCache distributedCache,
+    IOptionsSnapshot<ApplicationOptions> applicationOptions,
     ILogger<CheckListCache> logger)
     : ICheckListCache
 {
-    private readonly DistributedCacheEntryOptions _options = new() { SlidingExpiration = TimeSpan.FromMinutes(20) };
+    private readonly DistributedCacheEntryOptions _options = new() { SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.Value.CheckListCacheExpirationMinutes) };
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
     {
