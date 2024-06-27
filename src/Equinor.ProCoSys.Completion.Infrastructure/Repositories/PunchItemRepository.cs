@@ -22,7 +22,12 @@ public class PunchItemRepository(CompletionContext context) : EntityWithGuidRepo
         .Include(p => p.ClearingByOrg)
         .Include(p => p.Priority)
         .Include(p => p.Sorting)
-        .Include(p => p.Type)), IPunchItemRepository
+        .Include(p => p.Type)
+        .Include(p => p.OriginalWorkOrder)
+        .Include(p => p.WorkOrder)
+        .Include(p => p.SWCR)
+        .Include(p => p.Document)
+    ), IPunchItemRepository
 {
     public async Task<Project> GetProjectAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {

@@ -95,6 +95,10 @@ public static class PunchItemsControllerTestsHelper
         Guid? priorityGuid = null,
         Guid? sortingGuid = null,
         Guid? typeGuid = null,
+        Guid? originalWorkOrderGuid = null,
+        Guid? workOrderGuid = null,
+        Guid? swcrGuid = null,
+        Guid? documentGuid = null,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
@@ -109,7 +113,11 @@ public static class PunchItemsControllerTestsHelper
             dueTimeUtc = dueTimeUtc?.ToString("O"),
             priorityGuid = priorityGuid?.ToString(),
             sortingGuid = sortingGuid?.ToString(),
-            typeGuid = typeGuid?.ToString()
+            typeGuid = typeGuid?.ToString(),
+            originalWorkOrderGuid = originalWorkOrderGuid?.ToString(),
+            workOrderGuid = workOrderGuid?.ToString(),
+            swcrGuid = swcrGuid?.ToString(),
+            documentGuid = documentGuid?.ToString()
         };
 
         var serializePayload = JsonConvert.SerializeObject(bodyPayload);

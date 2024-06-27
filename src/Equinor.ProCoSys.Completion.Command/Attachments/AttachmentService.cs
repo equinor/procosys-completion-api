@@ -42,28 +42,28 @@ public class AttachmentService(
         string contentType,
         CancellationToken cancellationToken)
     {
+        var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+        if (attachment is not null)
+        {
+            throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
+        }
+
+        attachment = new Attachment(
+            project,
+            parentType,
+            parentGuid,
+            fileName);
+        
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
-
-            if (attachment is not null)
-            {
-                throw new Exception($"{parentType} {parentGuid} already has an attachment with filename {fileName}");
-            }
-
-            attachment = new Attachment(
-                project,
-                parentType,
-                parentGuid,
-                fileName);
             attachmentRepository.Add(attachment);
-
-            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
             await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -91,23 +91,22 @@ public class AttachmentService(
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
+
+        if (attachment is null)
+        {
+            throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
+        }
+
+        var changes = SetRevisionNumber(attachment);
+
+        var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
+        await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         
         try
         {
-            var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
-
-            if (attachment is null)
-            {
-                throw new Exception($"{parentType} {parentGuid} don't have an attachment with filename {fileName}");
-            }
-
-            var changes = SetRevisionNumber(attachment);
-
-            var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
-            await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
-
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishUpdatedEventsAsync(
                 $"Attachment {attachment.FileName} uploaded again",
                 attachment,
@@ -125,7 +124,7 @@ public class AttachmentService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on update of Attachment with parent guid {parentGuid}", parentGuid);
+            logger.LogError(e, "Error occurred on update of Attachment with parent guid {ParentGuid}", parentGuid);
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
@@ -142,12 +141,12 @@ public class AttachmentService(
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await attachmentRepository.GetAsync(guid, cancellationToken);
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await attachmentRepository.GetAsync(guid, cancellationToken);
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
 
             // Set correct Concurrency
@@ -166,7 +165,7 @@ public class AttachmentService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on deletion of Attachment with guid {guid}", guid);
+            logger.LogError(e, "Error occurred on deletion of Attachment with guid {Guid}", guid);
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
@@ -183,19 +182,18 @@ public class AttachmentService(
         string rowVersion,
         CancellationToken cancellationToken)
     {
+        var attachment = await attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
+        attachment.UpdateLabels(labels.ToList());
+
+        var changes = UpdateAttachment(attachment, description);
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var attachment = await attachmentRepository.GetAttachmentWithLabelsAsync(guid, cancellationToken);
-            attachment.UpdateLabels(labels.ToList());
-
-            var changes = UpdateAttachment(attachment, description);
-            // ReSharper disable once NotAccessedVariable
             AttachmentUpdatedIntegrationEvent? integrationEvent = null;
-            if (changes.Any())
+            if (changes.Count != 0)
             {
-                // ReSharper disable once RedundantAssignment
                 integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
             }
             attachment.SetRowVersion(rowVersion);
@@ -212,7 +210,7 @@ public class AttachmentService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on update of Attachment with guid {guid}", guid);
+            logger.LogError(e, "Error occurred on update of Attachment with guid {Guid}", guid);
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

@@ -40,14 +40,14 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
 
     public async Task<Result<string>> Handle(UnclearPunchItemCommand request, CancellationToken cancellationToken)
     {
+        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+
+        punchItem.Unclear();
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
-
-            punchItem.Unclear();
-
             // AuditData must be set before publishing events due to use of Created- and Modified-properties
             await _unitOfWork.SetAuditDataAsync();
 
@@ -63,9 +63,9 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
 
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
+           
+             await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
 
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
 

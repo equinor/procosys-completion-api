@@ -71,11 +71,14 @@ public class DeletePunchItemCommandHandler(
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             await syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
-
-            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-
+            
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
+            await syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
+            
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
+            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            
             logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
 
             return new SuccessResult<Unit>(Unit.Value);
