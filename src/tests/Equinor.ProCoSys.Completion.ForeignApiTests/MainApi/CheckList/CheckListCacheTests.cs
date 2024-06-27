@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Test.Common;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
 namespace Equinor.ProCoSys.Completion.ForeignApiTests.MainApi.CheckList;
 
@@ -15,22 +20,27 @@ public class CheckListCacheTests
     private ProCoSys4CheckList _checkList;
     private readonly Guid _checkListGuid = new("{3BFB54C7-91E2-422E-833F-951AD07FE37F}");
     private ICheckListApiService _checkListApiServiceMock;
+    private IDistributedCache _distributedCache;
 
     [TestInitialize]
     public void Setup()
     {
         TimeService.SetProvider(new ManualTimeProvider(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
-
+        var options = new OptionsWrapper<MemoryDistributedCacheOptions>(
+            new MemoryDistributedCacheOptions()
+        );
+        
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+        _distributedCache = new MemoryDistributedCache(options);
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid).Returns(_checkList);
 
-        _dut = new CheckListCache(_checkListApiServiceMock);
+        _dut = new CheckListCache(_checkListApiServiceMock, _distributedCache, default);
     }
 
     [TestMethod]
     public async Task GetCheckList_ShouldReturnCheckListFromCheckListApiServiceFirstTime()
-    {
+    {   
         // Act
         var result = await _dut.GetCheckListAsync(_checkListGuid);
 

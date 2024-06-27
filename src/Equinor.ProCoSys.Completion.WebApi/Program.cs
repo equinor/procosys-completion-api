@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
@@ -38,10 +39,18 @@ builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
 builder.Services.AddHealthChecks();
 
-builder.Services.AddStackExchangeRedisCache(options =>
+// Dont use Redis for integration test. Use the memory implementation
+if (!builder.Environment.IsIntegrationTest())
 {
-    options.Configuration = builder.Configuration.GetConnectionString("RedisCache");
-});
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = builder.Configuration.GetConnectionString("RedisCache");
+    });
+} else if (builder.Environment.IsIntegrationTest())
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
 
 builder.WebHost.UseKestrel(options =>
 {
