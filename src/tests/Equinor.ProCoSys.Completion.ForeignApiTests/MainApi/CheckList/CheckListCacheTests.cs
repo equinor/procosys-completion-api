@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -26,7 +25,7 @@ public class CheckListCacheTests
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid).Returns(_checkList);
 
-        _dut = new CheckListCache(new CacheManager(), _checkListApiServiceMock);
+        _dut = new CheckListCache(_checkListApiServiceMock);
     }
 
     [TestMethod]

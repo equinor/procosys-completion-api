@@ -1,31 +1,43 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Caches;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-public class CheckListCache : ICheckListCache
-{
-    private readonly ICacheManager _cacheManager;
-    private readonly ICheckListApiService _checkListApiService;
-    private readonly int _checkListCacheInMinutes = 20;
 
-    public CheckListCache(ICacheManager cacheManager, ICheckListApiService checkListApiService)
-    {
-        _cacheManager = cacheManager;
-        _checkListApiService = checkListApiService;
-    }
+public class CheckListCache(
+    ICheckListApiService checkListApiService,
+    IDistributedCache distributedCache,
+    ILogger<CheckListCache> logger)
+    : ICheckListCache
+{
+    private readonly DistributedCacheEntryOptions _options = new() { SlidingExpiration = TimeSpan.FromMinutes(20) };
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
-        => await _cacheManager.GetOrCreate(
-            CheckListGuidCacheKey(checkListGuid),
-            async () =>
-            {
-                var checkList = await _checkListApiService.GetCheckListAsync(checkListGuid);
-                return checkList;
-            },
-            CacheDuration.Minutes,
-            _checkListCacheInMinutes);
+    {
+        var checkListGuidCacheKey = CheckListGuidCacheKey(checkListGuid);
 
-    private string CheckListGuidCacheKey(Guid checkListGuid)
+        var cachedChecklist = await distributedCache.GetStringAsync(checkListGuidCacheKey);
+        if (string.IsNullOrEmpty(cachedChecklist))
+        {
+            var checkList = await checkListApiService.GetCheckListAsync(checkListGuid);
+            await distributedCache.SetStringAsync(checkListGuidCacheKey, JsonSerializer.Serialize(checkList), _options);
+            return checkList;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ProCoSys4CheckList?>(cachedChecklist);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to Deserialize CheckList {CacheKey}", checkListGuidCacheKey);
+        }
+
+        return null;
+    }
+
+    private static string CheckListGuidCacheKey(Guid checkListGuid)
         => $"CHECKLIST_{checkListGuid.ToString().ToUpper()}";
 }

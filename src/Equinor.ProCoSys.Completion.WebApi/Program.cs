@@ -38,6 +38,11 @@ builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
 builder.Services.AddHealthChecks();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisCache");
+});
+
 builder.WebHost.UseKestrel(options =>
 {
     options.AddServerHeader = false;
