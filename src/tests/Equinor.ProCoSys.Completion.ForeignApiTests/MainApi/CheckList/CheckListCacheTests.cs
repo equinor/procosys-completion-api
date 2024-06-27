@@ -31,8 +31,8 @@ public class CheckListCacheTests
             new MemoryDistributedCacheOptions()
         );
         
-        var applicationOptionsMock = Substitute.For<IOptionsSnapshot<ApplicationOptions>>();
-        applicationOptionsMock.Value.Returns(new ApplicationOptions { CheckListCacheExpirationMinutes = 1 });
+        var applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
+        applicationOptionsMock.CurrentValue.Returns(new ApplicationOptions { CheckListCacheExpirationMinutes = 1 });
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
         _distributedCache = new MemoryDistributedCache(options);
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());

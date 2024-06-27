@@ -11,11 +11,14 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 public class CheckListCache(
     ICheckListApiService checkListApiService,
     IDistributedCache distributedCache,
-    IOptionsSnapshot<ApplicationOptions> applicationOptions,
+    IOptionsMonitor<ApplicationOptions> applicationOptions,
     ILogger<CheckListCache> logger)
     : ICheckListCache
 {
-    private readonly DistributedCacheEntryOptions _options = new() { SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.Value.CheckListCacheExpirationMinutes) };
+    private readonly DistributedCacheEntryOptions _options = new()
+    {
+        SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.CurrentValue.CheckListCacheExpirationMinutes)
+    };
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
     {
