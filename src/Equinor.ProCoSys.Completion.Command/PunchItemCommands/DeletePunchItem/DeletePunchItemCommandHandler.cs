@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
@@ -73,10 +72,7 @@ public class DeletePunchItemCommandHandler(
             await syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
             
             await unitOfWork.CommitTransactionAsync(cancellationToken);
-            await syncToPCS4Service.SyncPunchListItemDeleteAsync(integrationEvent, cancellationToken);
             
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
             await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
             
             logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} deleted", punchItem.ItemNo, punchItem.Guid);
