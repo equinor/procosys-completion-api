@@ -187,18 +187,32 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.ClearingByOrgGuid,
             priorityGuid: TestFactory.PriorityGuid,
             sortingGuid: TestFactory.SortingGuid,
-            typeGuid: TestFactory.TypeGuid);
+            typeGuid: TestFactory.TypeGuid,
+            originalWorkOrderGuid: TestFactory.OriginalWorkOrderGuid,
+            workOrderGuid:TestFactory.WorkOrderGuid,
+            swcrGuid: TestFactory.SWCRGuid,
+            documentGuid: TestFactory.DocumentGuid
+            );
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid);
         Assert.AreEqual(TestFactory.ClearingByOrgGuid, punchItem.ClearingByOrg.Guid);
         Assert.AreEqual(TestFactory.RaisedByOrgGuid, punchItem.RaisedByOrg!.Guid);
         Assert.AreEqual(TestFactory.PriorityGuid, punchItem.Priority!.Guid);
         Assert.AreEqual(TestFactory.SortingGuid, punchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, punchItem.Type!.Guid);
+        Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
+        Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
+        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
+
         var initialRowVersion = punchItem.RowVersion;
         var patchDocument = new JsonPatchDocument();
         patchDocument.Replace("PriorityGuid", null);
         patchDocument.Replace("SortingGuid", null);
         patchDocument.Replace("TypeGuid", null);
+        patchDocument.Replace("OriginalWorkOrderGuid", null);
+        patchDocument.Replace("WorkOrderGuid", null);
+        patchDocument.Replace("SWCRGuid", null);
+        patchDocument.Replace("DocumentGuid", null);
 
         // Act
         var newRowVersion = await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
@@ -217,6 +231,10 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNull(punchItem.Priority);
         Assert.IsNull(punchItem.Sorting);
         Assert.IsNull(punchItem.Type);
+        Assert.IsNull(punchItem.OriginalWorkOrder);
+        Assert.IsNull(punchItem.WorkOrder);
+        Assert.IsNull(punchItem.SWCR);
+        Assert.IsNull(punchItem.Document);
     }
 
     [TestMethod]
