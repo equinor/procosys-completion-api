@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -48,14 +47,13 @@ public class LinkService : ILinkService
         string url,
         CancellationToken cancellationToken)
     {
+        var link = new Link(parentType, parentGuid, title, url);
+        _linkRepository.Add(link);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var link = new Link(parentType, parentGuid, title, url);
-            _linkRepository.Add(link);
-
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishCreatedEventsAsync(link, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -93,19 +91,19 @@ public class LinkService : ILinkService
         var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
         var changes = UpdateLink(link, title, url);
-        // ReSharper disable once NotAccessedVariable
+
         LinkUpdatedIntegrationEvent? integrationEvent = null;
-        if (changes.Any())
+        if (changes.Count != 0)
         {
-            // ReSharper disable once RedundantAssignment
             integrationEvent = await PublishUpdatedEventsAsync(link, changes, cancellationToken);
         }
         
+        link.SetRowVersion(rowVersion);
+
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            link.SetRowVersion(rowVersion);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             if (integrationEvent != null)
@@ -125,7 +123,7 @@ public class LinkService : ILinkService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Link with guid {guid}", guid);
+            _logger.LogError(e, "Error occurred on update of Link with guid {Guid}", guid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
@@ -139,12 +137,10 @@ public class LinkService : ILinkService
         var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
+        _linkRepository.Remove(link);
+        
         try
         {
-          _linkRepository.Remove(link);
-
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);
 
             // Setting RowVersion before delete has 2 missions:
@@ -165,7 +161,7 @@ public class LinkService : ILinkService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on deletion of Link with guid {guid}", guid);
+            _logger.LogError(e, "Error occurred on deletion of Link with guid {Guid}", guid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

@@ -86,7 +86,6 @@ public class AttachmentService : IAttachmentService
             _attachmentRepository.Add(attachment);
             await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -130,7 +129,6 @@ public class AttachmentService : IAttachmentService
         
         try
         {
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishUpdatedEventsAsync(
                 $"Attachment {attachment.FileName} uploaded again",
                 attachment,
@@ -148,7 +146,7 @@ public class AttachmentService : IAttachmentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Attachment with parent guid {parentGuid}", parentGuid);
+            _logger.LogError(e, "Error occurred on update of Attachment with parent guid {ParentGuid}", parentGuid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
@@ -169,16 +167,15 @@ public class AttachmentService : IAttachmentService
 
         var fullBlobPath = attachment.GetFullBlobPath();
         
+        await _azureBlobService.DeleteAsync(
+            _blobStorageOptions.Value.BlobContainer,
+            fullBlobPath,
+            cancellationToken);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            await _azureBlobService.DeleteAsync(
-                _blobStorageOptions.Value.BlobContainer,
-                fullBlobPath,
-                cancellationToken);
-
-            // ReSharper disable once UnusedVariable
             var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
 
             // Set correct Concurrency
@@ -197,7 +194,7 @@ public class AttachmentService : IAttachmentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on deletion of Attachment with guid {guid}", guid);
+            _logger.LogError(e, "Error occurred on deletion of Attachment with guid {Guid}", guid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
@@ -223,11 +220,9 @@ public class AttachmentService : IAttachmentService
 
         try
         {
-            // ReSharper disable once NotAccessedVariable
             AttachmentUpdatedIntegrationEvent? integrationEvent = null;
-            if (changes.Any())
+            if (changes.Count != 0)
             {
-                // ReSharper disable once RedundantAssignment
                 integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
             }
             attachment.SetRowVersion(rowVersion);
@@ -244,7 +239,7 @@ public class AttachmentService : IAttachmentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Attachment with guid {guid}", guid);
+            _logger.LogError(e, "Error occurred on update of Attachment with guid {Guid}", guid);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
