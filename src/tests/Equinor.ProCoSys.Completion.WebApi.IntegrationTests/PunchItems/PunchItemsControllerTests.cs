@@ -704,6 +704,9 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(0, attachments.Count);
+        
+        //Checking that Blobstorage got a call to delete, via published message
+        await TestFactory.Instance.BlobStorageMock.ReceivedWithAnyArgs(1).DeleteAsync(default, default);
     }
 
     [TestMethod]

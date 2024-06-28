@@ -9,4 +9,5 @@ public interface IAttachmentDeletedV1 : IIntegrationEvent
     Guid ParentGuid { get; }
     User DeletedBy { get; }
     DateTime DeletedAtUtc { get; }
+    string FullBlobPath { get; }
 }
