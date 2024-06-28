@@ -429,20 +429,7 @@ public class AttachmentServiceTests : TestsBase
         // Assert
         _attachmentRepositoryMock.Received(1).Remove(_existingAttachment);
     }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldDeleteAttachmentFromBlobStorage_WhenKnownAttachment()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
-
-        // Assert
-        var p = _existingAttachment.GetFullBlobPath();
-        await _azureBlobServiceMock.Received(1).DeleteAsync(
-                _blobContainer,
-                p);
-    }
-
+    
     [TestMethod]
     public async Task DeleteAsync_ShouldSaveOnce()
     {

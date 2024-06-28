@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Runtime.Intrinsics.X86;
+using System.Text.Json.Serialization;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
@@ -16,7 +17,7 @@ public static class MassTransitModule
     {
         services.AddMassTransit(x =>
         {
-            x.AddEntityFrameworkOutbox<CompletionContext>(o =>
+        x.AddEntityFrameworkOutbox<CompletionContext>(o =>
             {
                 o.UseSqlServer();
                 o.UseBusOutbox();
@@ -25,6 +26,7 @@ public static class MassTransitModule
             x.AddConsumer<HistoryItemCreatedEventConsumer>();
             x.AddConsumer<HistoryItemUpdatedEventConsumer>();
             x.AddConsumer<HistoryItemDeletedEventConsumer>();
+            x.AddConsumer<AttachmentDeletedConsumer>();
 
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
@@ -118,6 +120,7 @@ public static class MassTransitModule
                 cfg.Host(connectionString);
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
+                
                 cfg.ConfigureJsonSerializerOptions(opts =>
                 {
                     opts.Converters.Add(new OracleGuidConverter());
@@ -338,6 +341,8 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
+                
+                cfg.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("completion"));
                 #endregion
 
                 cfg.AutoStart = true;
