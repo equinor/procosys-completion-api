@@ -151,43 +151,5 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncPunchListItemUpdateAsync(integrationEvent, default);
     }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
     #endregion
 }

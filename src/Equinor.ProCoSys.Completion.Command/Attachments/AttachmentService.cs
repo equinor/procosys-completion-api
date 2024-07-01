@@ -12,6 +12,7 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
@@ -56,30 +57,24 @@ public class AttachmentService(
             fileName);
         
         var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
-        
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        attachmentRepository.Add(attachment);
+        await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
+
+        var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         try
         {
-            attachmentRepository.Add(attachment);
-            await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
-
-            var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
             await syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
-
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on insertion of Attachment");
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            logger.LogError(e, "Error occurred while trying to Sync Update on Attachment with guid {guid}", attachment.Guid);
         }
+
+        return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
     }
 
     public async Task<string> UploadOverwriteAsync(
@@ -102,32 +97,26 @@ public class AttachmentService(
 
         var verifiedContentType = await DetermineContentTypeAsync(content, fileName, cancellationToken);
         await UploadAsync(attachment, content, true, verifiedContentType, cancellationToken);
-        
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
-        
+
+        var integrationEvent = await PublishUpdatedEventsAsync(
+            $"Attachment {attachment.FileName} uploaded again",
+            attachment,
+            changes,
+            cancellationToken);
+
+        attachment.SetRowVersion(rowVersion);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
         try
         {
-            var integrationEvent = await PublishUpdatedEventsAsync(
-                $"Attachment {attachment.FileName} uploaded again",
-                attachment,
-                changes,
-                cancellationToken);
-
-            attachment.SetRowVersion(rowVersion);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
             await syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
-
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            return attachment.RowVersion.ConvertToString();
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on update of Attachment with parent guid {ParentGuid}", parentGuid);
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            logger.LogError(e, "Error occurred while trying to Sync Upload Overwrite on Attachment with guid {guid}", attachment.Guid);
         }
+
+        return attachment.RowVersion.ConvertToString();
     }
 
     public async Task<bool> FileNameExistsForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken)
@@ -142,32 +131,26 @@ public class AttachmentService(
         CancellationToken cancellationToken)
     {
         var attachment = await attachmentRepository.GetAsync(guid, cancellationToken);
-        
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
+
+        // Set correct Concurrency
+        attachment.SetRowVersion(rowVersion);
+        attachmentRepository.Remove(attachment);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
+            attachment.FileName,
+            attachment.Guid,
+            attachment.ParentGuid);
 
         try
         {
-            var integrationEvent = await PublishDeletedEventsAsync(attachment, cancellationToken);
-
-            // Set correct Concurrency
-            attachment.SetRowVersion(rowVersion);
-            attachmentRepository.Remove(attachment);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
             await syncToPCS4Service.SyncAttachmentDeleteAsync(integrationEvent, cancellationToken);
-
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            logger.LogInformation("Attachment '{AttachmentFileName}' with guid {AttachmentGuid} deleted for {AttachmentParentGuid}",
-                attachment.FileName,
-                attachment.Guid,
-                attachment.ParentGuid);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on deletion of Attachment with guid {Guid}", guid);
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            logger.LogError(e, "Error occurred while trying to Sync Create on Attachment with guid {guid}", attachment.Guid);
         }
     }
 
@@ -186,34 +169,28 @@ public class AttachmentService(
         attachment.UpdateLabels(labels.ToList());
 
         var changes = UpdateAttachment(attachment, description);
-        
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        AttachmentUpdatedIntegrationEvent? integrationEvent = null;
+        if (changes.Count != 0)
+        {
+            integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
+        }
+        attachment.SetRowVersion(rowVersion);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         try
         {
-            AttachmentUpdatedIntegrationEvent? integrationEvent = null;
-            if (changes.Count != 0)
-            {
-                integrationEvent = await PublishUpdatedEventsAsync($"Attachment {attachment.FileName} updated", attachment, changes, cancellationToken);
-            }
-            attachment.SetRowVersion(rowVersion);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
             if (integrationEvent != null)
             {
                 await syncToPCS4Service.SyncAttachmentUpdateAsync(integrationEvent, cancellationToken);
             }
-
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            return attachment.RowVersion.ConvertToString();
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on update of Attachment with guid {Guid}", guid);
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            logger.LogError(e, "Error occurred while trying to Sync Update on Attachment with guid {guid}", attachment.Guid);
         }
+
+        return attachment.RowVersion.ConvertToString();
     }
 
     private List<IChangedProperty> UpdateAttachment(Attachment attachment, string description)

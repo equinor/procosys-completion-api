@@ -75,44 +75,46 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
 
         var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
-        
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await _unitOfWork.SetAuditDataAsync();
+
+        var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+            _messageProducer,
+            punchItem,
+            "Punch item rejected",
+            [change],
+            cancellationToken);
+
+        await _commentService.AddAsync(punchItem, punchItem.Plant, request.Comment, [rejectLabel], mentions, cancellationToken);
+
+        punchItem.SetRowVersion(request.RowVersion);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
+
+        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
 
         try
         {
-           // AuditData must be set before publishing events due to use of Created- and Modified-properties
-            await _unitOfWork.SetAuditDataAsync();
-
-            var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _messageProducer,
-                punchItem,
-                "Punch item rejected",
-                [change],
-                cancellationToken);
-
-            await _commentService.AddAsync(punchItem, punchItem.Plant, request.Comment, [rejectLabel], mentions, cancellationToken);
-
-            punchItem.SetRowVersion(request.RowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-            
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-
-            await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
-
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
-
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on reject of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
+
+        try
+        {
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+        }
+
+        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 
     private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)

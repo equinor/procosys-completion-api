@@ -46,42 +46,45 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
 
         var change = UpdateCategory(punchItem, request.Category);
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await _unitOfWork.SetAuditDataAsync();
+
+        var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+            _messageProducer,
+            punchItem,
+            $"Punch item category changed to {request.Category}",
+            [change],
+            cancellationToken);
+
+        punchItem.SetRowVersion(request.RowVersion);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+
+        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
+            punchItem.ItemNo,
+            punchItem.Guid,
+            punchItem.Category);
 
         try
         {
-            // AuditData must be set before publishing events due to use of Created- and Modified-properties
-            await _unitOfWork.SetAuditDataAsync();
-
-            var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _messageProducer,
-                punchItem,
-                $"Punch item category changed to {request.Category}",
-                [change],
-                cancellationToken);
-
-            punchItem.SetRowVersion(request.RowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
-            
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
-                punchItem.ItemNo,
-                punchItem.Guid,
-                punchItem.Category);
-
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update category of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Update Category on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
+
+        try
+        {
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+        }
+
+        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 
     private IChangedProperty UpdateCategory(PunchItem punchItem, Category category)

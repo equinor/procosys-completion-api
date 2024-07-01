@@ -49,36 +49,30 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Verify(currentPerson);
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await _unitOfWork.SetAuditDataAsync();
+
+        var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+            _messageProducer,
+            punchItem,
+            "Punch item verified",
+            [],
+            cancellationToken);
+
+        punchItem.SetRowVersion(request.RowVersion);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} verified", punchItem.ItemNo, punchItem.Guid);
 
         try
         {
-            // AuditData must be set before publishing events due to use of Created- and Modified-properties
-            await _unitOfWork.SetAuditDataAsync();
-
-            var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _messageProducer,
-                punchItem,
-                "Punch item verified",
-                [],
-                cancellationToken);
-
-            punchItem.SetRowVersion(request.RowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} verified", punchItem.ItemNo, punchItem.Guid);
-
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on verify of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Verify on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
         }
+
+        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 }

@@ -653,7 +653,6 @@ public class AttachmentServiceTests : TestsBase
     #endregion
 
     #region Unit Tests which can be removed when no longer sync to pcs4
-    #region UploadNewAsync
     [TestMethod]
     public async Task UploadNewAsync_ShouldSyncWithPcs4()
     {
@@ -677,46 +676,6 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UploadNewAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UploadNewAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UploadNewAsync_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
-    #endregion UploadNewAsync
-
-    #region UpdateAsync
-    [TestMethod]
     public async Task UpdateAsync_ShouldSyncWithPcs4()
     {
         // Arrange
@@ -739,46 +698,6 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
-    #endregion UpdateAsync
-
-    #region DeleteAsync
-    [TestMethod]
     public async Task DeleteAsync_ShouldSyncWithPcs4()
     {
         // Arrange
@@ -799,44 +718,5 @@ public class AttachmentServiceTests : TestsBase
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncAttachmentDeleteAsync(integrationEvent, default);
     }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
-    #endregion DeleteAsync
     #endregion
 }
