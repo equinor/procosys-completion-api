@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.AspNetCore.JsonPatch;
@@ -371,13 +372,13 @@ public class PunchItemsControllerTests : TestBase
             "Some title",
             "http://www.google.com");
 
-        await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
+       var attachmentGuidAndRowVersion = await PunchItemsControllerTestsHelper.UploadNewPunchItemAttachmentAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
             punchItem.Guid,
             new TestFile("asdf", "fun file name")
         );
-       
+        var blobPath = $"ProjectNameA/PunchItem/{attachmentGuidAndRowVersion.Guid}/fun file name";
         // Act
         await PunchItemsControllerTestsHelper.DeletePunchItemAsync(
             UserType.Writer, TestFactory.PlantWithAccess,
@@ -391,7 +392,7 @@ public class PunchItemsControllerTests : TestBase
         await PunchItemsControllerTestsHelper.GetPunchItemLinksAsync(UserType.Writer, TestFactory.PlantWithAccess, guidAndRowVersion.Guid, HttpStatusCode.NotFound);
         
         //Checking that Blobstorage got a call to delete, via published message
-        await TestFactory.Instance.BlobStorageMock.ReceivedWithAnyArgs(1).DeleteAsync(default, default);
+        await TestFactory.Instance.BlobStorageMock.Received(1).DeleteAsync("procosys-attachments", blobPath, Arg.Any<CancellationToken>());
     
     }
 
@@ -690,6 +691,7 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             punchItemGuidAndRowVersion.Guid);
         Assert.AreEqual(1, attachments.Count);
+        var blobPath = attachments.First().FullBlobPath;
 
         // Act
         await PunchItemsControllerTestsHelper.DeletePunchItemAttachmentAsync(
@@ -706,7 +708,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(0, attachments.Count);
         
         //Checking that Blobstorage got a call to delete, via published message
-        await TestFactory.Instance.BlobStorageMock.ReceivedWithAnyArgs(1).DeleteAsync(default, default);
+        await TestFactory.Instance.BlobStorageMock.Received(1).DeleteAsync("procosys-attachments", blobPath, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
