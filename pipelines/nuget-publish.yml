@@ -23,22 +23,15 @@ stages:
             displayName: Restore
             inputs:
               command: restore
-              projects: '**/*.csproj'
-              arguments: '--configfile **/nuget.config'
+              projects: 'Equinor.ProCoSys.Completion.MessageContracts.csproj'
+              arguments: '--configfile $(Build.SourcesDirectory)/nuget.config'
 
           - task: DotNetCoreCLI@2
             displayName: Build
             inputs:
               command: build
-              projects: '**/*.csproj'
-              arguments: '--configuration $(buildConfiguration)'
-
-          - task: DotNetCoreCLI@2
-            displayName: 'dotnet test $(buildConfiguration)'
-            inputs:
-              command: test
-              projects: '**/*[Tt]ests/*.csproj'
-              arguments: '--configuration $(buildConfiguration)'
+              projects: 'Equinor.ProCoSys.Completion.MessageContracts.csproj'
+              arguments: '--configuration $(buildConfiguration) --configfile $(Build.SourcesDirectory)/nuget.config'
 
   - stage: "PublishAndPack"
     displayName: 'Publish and Pack'
@@ -60,7 +53,7 @@ stages:
             displayName: Restore
             inputs:
               command: restore
-              projects: '**/*.csproj'
+              projects: '/Equinor.ProCoSys.Completion.MessageContracts.csproj'
 
           - task: PowerShell@2
             name: getVersion # Name of the pipeline variable used as prefix in referenace. Example $(getVersion.packageVersion)
@@ -70,7 +63,7 @@ stages:
               pwsh: true
               script: |
                 # Set powershell variables
-                $path = "src/Equinor.ProCoSys.PcsBus/Equinor.ProCoSys.PcsServiceBus.csproj"
+                $path = "src/Equinor.ProCoSys.Completion.MessageContracts/Equinor.ProCoSys.Completion.MessageContracts.csproj"
                 $xPath = "/Project/PropertyGroup"
                 $element = "VersionPrefix"
                 $variableName = "packageVersion" # Name of the pipeline variable used as suffix in referenace. Example $(getVersion.packageVersion)
