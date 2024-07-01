@@ -10,7 +10,7 @@ variables:
 
 stages:
   - stage: "Build"
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/nugetPush')
     jobs:
       - job:
         workspace:
