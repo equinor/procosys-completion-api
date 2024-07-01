@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public interface IContentAccessChecker
+public interface IAccessChecker
 {
-    Task<bool> HasCurrentUserAccessToCheckListAsync(Guid checkListGuid);
+    Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid);
+    Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid);
     Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid);
 }

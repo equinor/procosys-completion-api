@@ -21,7 +21,7 @@ public class AccessValidatorTestBase
     protected readonly Guid PunchItemGuidWithAccessToProjectButNotContent = new("77777777-7777-7777-7777-777777777777");
 
     private IProjectAccessChecker _projectAccessCheckerMock = null!;
-    private IContentAccessChecker _contentAccessCheckerMock = null!;
+    private IAccessChecker _accessCheckerMock = null!;
     private ILogger<AccessValidator> _loggerMock = null!;
     private ICurrentUserProvider _currentUserProviderMock = null!;
 
@@ -35,14 +35,14 @@ public class AccessValidatorTestBase
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess).Returns(false);
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
-        _contentAccessCheckerMock = Substitute.For<IContentAccessChecker>();
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListAsync(CheckListGuidWithoutAccessToContent)
+        _accessCheckerMock = Substitute.For<IAccessChecker>();
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent)
             .Returns(false);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListAsync(CheckListGuidWithAccessToContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent)
             .Returns(true);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
+        _accessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
             .Returns(false);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+        _accessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
             .Returns(true);
 
         var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
@@ -58,7 +58,7 @@ public class AccessValidatorTestBase
         _dut = new AccessValidator(
             _currentUserProviderMock,
             _projectAccessCheckerMock,
-            _contentAccessCheckerMock,
+            _accessCheckerMock,
             punchItemHelperMock,
             _loggerMock);
     }

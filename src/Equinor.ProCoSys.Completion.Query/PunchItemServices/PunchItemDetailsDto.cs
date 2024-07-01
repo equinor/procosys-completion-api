@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
+namespace Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
 public sealed record PunchItemDetailsDto(
     Guid Guid,
@@ -40,4 +40,5 @@ public sealed record PunchItemDetailsDto(
     DocumentDto? Document,
     SWCRDto? SWCR,
     int AttachmentCount,
-    string RowVersion);
+    string RowVersion,
+    Guid? CheckListGuid);

@@ -5,14 +5,14 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.GetCheckListsByPunchItemGuid;
+namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunchItemGuid;
 
-public class GetCheckListsByPIGuidCommandHandler : IRequestHandler<GetCheckListsByPIGuidCommand, Result<ChecklistsByPunchGuidInstance>>
+public class GetCheckListsByPIGuidQueryHandler : IRequestHandler<GetCheckListsByPIGuidQuery, Result<ChecklistsByPunchGuidInstance>>
 {
     private readonly ICheckListApiService _checkListApiService;
     private readonly IPlantProvider _plantProvider;
 
-    public GetCheckListsByPIGuidCommandHandler(
+    public GetCheckListsByPIGuidQueryHandler(
         IPlantProvider plantProvider,
         ICheckListApiService checkListApiService
         )
@@ -21,7 +21,7 @@ public class GetCheckListsByPIGuidCommandHandler : IRequestHandler<GetCheckLists
         _checkListApiService = checkListApiService;
     }
 
-    public async Task<Result<ChecklistsByPunchGuidInstance>> Handle(GetCheckListsByPIGuidCommand request,
+    public async Task<Result<ChecklistsByPunchGuidInstance>> Handle(GetCheckListsByPIGuidQuery request,
     CancellationToken cancellationToken)
     {
         var res = await _checkListApiService.GetByPunchItemGuidAsync(_plantProvider.Plant, request.PunchItemGuid);

@@ -21,20 +21,20 @@ public class AccessValidator : IAccessValidator
 {
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly IProjectAccessChecker _projectAccessChecker;
-    private readonly IContentAccessChecker _contentAccessChecker;
+    private readonly IAccessChecker _accessChecker;
     private readonly IPunchItemHelper _punchItemHelper;
     private readonly ILogger<AccessValidator> _logger;
 
     public AccessValidator(
         ICurrentUserProvider currentUserProvider,
         IProjectAccessChecker projectAccessChecker,
-        IContentAccessChecker contentAccessChecker,
+        IAccessChecker accessChecker,
         IPunchItemHelper punchItemHelper,
         ILogger<AccessValidator> logger)
     {
         _currentUserProvider = currentUserProvider;
         _projectAccessChecker = projectAccessChecker;
-        _contentAccessChecker = contentAccessChecker;
+        _accessChecker = accessChecker;
         _punchItemHelper = punchItemHelper;
         _logger = logger;
     }
@@ -59,7 +59,7 @@ public class AccessValidator : IAccessValidator
 
         if (request is CreatePunchItemCommand createPunchItemCommand)
         {
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListAsync(createPunchItemCommand.CheckListGuid))
+            if (!await _accessChecker.HasCurrentUserWriteAccessToCheckListAsync(createPunchItemCommand.CheckListGuid))
             {
                 _logger.LogWarning("Current user {UserOid} doesn't have access to checkList {CheckListGuid}",
                     userOid, createPunchItemCommand.CheckListGuid);
@@ -84,7 +84,7 @@ public class AccessValidator : IAccessValidator
                 return false;
             }
 
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
+            if (!await _accessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
             {
                 _logger.LogWarning("Current user {UserOid} doesn't have access to checkList owning punch {PunchItemGuid}",
                     userOid, punchItemCommand.PunchItemGuid);
@@ -96,6 +96,16 @@ public class AccessValidator : IAccessValidator
         {
             if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemQuery.PunchItemGuid, userOid))
             {
+                return false;
+            }
+        }
+
+        if (request is IIsCheckListQuery getPunchItemsByCheckListGuidQuery)
+        {
+            if (!await _accessChecker.HasCurrentUserReadAccessToCheckListAsync(getPunchItemsByCheckListGuidQuery.CheckListGuid))
+            {
+                _logger.LogWarning("Current user {UserOid} doesn't have read access to checkList {CheckListGuid}",
+                    userOid, getPunchItemsByCheckListGuidQuery.CheckListGuid);
                 return false;
             }
         }
