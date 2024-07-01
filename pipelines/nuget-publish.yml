@@ -24,7 +24,7 @@ stages:
             inputs:
               command: restore
               projects: '**/*.csproj'
-              arguments: '--configfile $(Build.SourcesDirectory)../nuget.config'
+              arguments: '--configfile **/nuget.config'
 
           - task: DotNetCoreCLI@2
             displayName: Build
@@ -113,4 +113,4 @@ stages:
               packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
               publishVstsFeed: 'ProCoSysOfficial'
               allowPackageConflicts: true
-              arguments: '--configfile $(Build.SourcesDirectory)../nuget.config'
+              arguments: '--configfile **/nuget.config'
