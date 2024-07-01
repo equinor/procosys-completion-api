@@ -11,7 +11,7 @@
       <PackageDescription>Message Contracts for procosys-completion</PackageDescription>
       <Authors>ProCoSys</Authors>
       <Company>Equinor</Company>
-      <PackageId>CompletionApi</PackageId>
+      <PackageId>CompletionApi-MessagContracts</PackageId>
     </PropertyGroup>
 
 </Project>
