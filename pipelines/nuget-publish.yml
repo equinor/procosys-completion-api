@@ -23,8 +23,8 @@ stages:
             displayName: Restore
             inputs:
               command: restore
-              projects: 'Equinor.ProCoSys.Completion.MessageContracts.csproj'
-              arguments: '--configfile $(Build.SourcesDirectory)/nuget.config'
+              projects: 'src/Equinor.ProCoSys.Completion.MessageContracts.csproj'
+              arguments: '--configfile $(Build.SourcesDirectory)/src/nuget.config'
 
           - task: DotNetCoreCLI@2
             displayName: Build
