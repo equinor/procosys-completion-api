@@ -86,7 +86,7 @@ public class CommentService : ICommentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Update on PunchItem Comment with guid {guid}", commentEvent.Guid);
+            _logger.LogError(e, "Error occurred while trying to Add on PunchItem Comment with guid {guid}", commentEvent.Guid);
         }
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
