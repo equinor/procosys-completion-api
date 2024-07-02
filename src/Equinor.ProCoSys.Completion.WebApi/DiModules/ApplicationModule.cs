@@ -8,7 +8,6 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
-using Equinor.ProCoSys.Common.Telemetry;
 using Equinor.ProCoSys.Common.TemplateTransforming;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;

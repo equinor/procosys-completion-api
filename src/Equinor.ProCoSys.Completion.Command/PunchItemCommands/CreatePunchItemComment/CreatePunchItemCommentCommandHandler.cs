@@ -40,7 +40,7 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
         var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
-        var commentDto = await _commentService.AddAndSaveAsync(
+        var commentDto = await _commentService.AddAsync(
             _unitOfWork,
             punchItem,
             punchItem.Plant,

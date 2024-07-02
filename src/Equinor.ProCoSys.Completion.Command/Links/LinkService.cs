@@ -49,33 +49,27 @@ public class LinkService : ILinkService
     {
         var link = new Link(parentType, parentGuid, title, url);
         _linkRepository.Add(link);
-        
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        var integrationEvent = await PublishCreatedEventsAsync(link, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {ParentType} : {LinkParentGuid}",
+            link.Title,
+            link.Guid,
+            link.ParentType,
+            link.ParentGuid);
 
         try
         {
-            var integrationEvent = await PublishCreatedEventsAsync(link, cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncNewLinkAsync(integrationEvent, cancellationToken);
-
-            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} created for {ParentType} : {LinkParentGuid}",
-                link.Title,
-                link.Guid,
-                link.ParentType,
-                link.ParentGuid);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on insertion of Link");
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Create on Link with guid {guid}", link.Guid);
         }
+
+        return new LinkDto(link.Guid, link.RowVersion.ConvertToString());
     }
 
     public async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
@@ -100,33 +94,27 @@ public class LinkService : ILinkService
         
         link.SetRowVersion(rowVersion);
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {ParentType} : {LinkParentGuid}",
+            link.Title,
+            link.Guid,
+            link.ParentType,
+            link.ParentGuid);
 
         try
         {
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             if (integrationEvent != null)
             {
                 await _syncToPCS4Service.SyncLinkUpdateAsync(integrationEvent, cancellationToken);
             }
-
-            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} updated for {ParentType} : {LinkParentGuid}",
-                link.Title,
-                link.Guid,
-                link.ParentType,
-                link.ParentGuid);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            return link.RowVersion.ConvertToString();
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on update of Link with guid {Guid}", guid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Update on Link with guid {guid}", link.Guid);
         }
+
+        return link.RowVersion.ConvertToString();
     }
 
     public async Task DeleteAsync(
@@ -136,34 +124,29 @@ public class LinkService : ILinkService
     {
         var link = await _linkRepository.GetAsync(guid, cancellationToken);
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         _linkRepository.Remove(link);
-        
+
+        var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);
+
+        // Setting RowVersion before delete has 2 missions:
+        // 1) Set correct Concurrency
+        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+        link.SetRowVersion(rowVersion);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {ParentType} : {LinkParentGuid}",
+            link.Title,
+            link.Guid,
+            link.ParentType,
+            link.ParentGuid);
+
         try
         {
-            var integrationEvent = await PublishDeletedEventsAsync(link, cancellationToken);
-
-            // Setting RowVersion before delete has 2 missions:
-            // 1) Set correct Concurrency
-            // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
-            link.SetRowVersion(rowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncLinkDeleteAsync(integrationEvent, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            _logger.LogInformation("Link '{LinkTitle}' with guid: {LinkGuid} deleted for {ParentType} : {LinkParentGuid}",
-                link.Title,
-                link.Guid,
-                link.ParentType,
-                link.ParentGuid);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on deletion of Link with guid {Guid}", guid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Delete on Link with guid {guid}", link.Guid);
         }
     }
 

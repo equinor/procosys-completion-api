@@ -1,10 +1,5 @@
-﻿using System.Configuration;
-using Azure.Core;
-using Equinor.ProCoSys.Common.Misc;
-using Microsoft.ApplicationInsights.DependencyCollector;
-using Microsoft.ApplicationInsights.Extensibility;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 
