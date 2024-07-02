@@ -56,43 +56,40 @@ public class CommentService : ICommentService
 
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
+        // This should be replaced with an actual Service Bus Integration Comment event
+        // As well the publish call to publish the comment to the service bus
+        var commentEvent = new CommentEventDto
+        {
+            Guid = comment.Guid,
+            Plant = plant,
+            ParentGuid = comment.ParentGuid,
+            CreatedBy = createdBy,
+            CreatedAtUtc = TimeService.UtcNow,
+            Text = comment.Text,
+            Labels = comment.Labels.Select(x => x.Text).ToList()
+        };
+
+
+        await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
+
+        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
+            comment.Guid,
+            comment.ParentType,
+            comment.ParentGuid);
 
         try
         {
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-
-            var commentEvent = new CommentEventDto
-            {
-                Guid = comment.Guid,
-                Plant = plant,
-                ParentGuid = comment.ParentGuid,
-                CreatedBy = createdBy,
-                CreatedAtUtc = TimeService.UtcNow,
-                Text = comment.Text,
-                Labels = comment.Labels.Select(x => x.Text).ToList()
-            };
-
             await _syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
-
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
-
-            _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
-                comment.Guid,
-                comment.ParentType,
-                comment.ParentGuid);
-
-            return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on insertion of Comment (with saving)");
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Update on PunchItem Comment with guid {guid}", commentEvent.Guid);
         }
+
+        return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
     }
 
     public async Task<Guid> AddAsync(IHaveGuid parentEntity, string plant, string text, IEnumerable<Label> labels, IEnumerable<Person> mentions, CancellationToken cancellationToken)
