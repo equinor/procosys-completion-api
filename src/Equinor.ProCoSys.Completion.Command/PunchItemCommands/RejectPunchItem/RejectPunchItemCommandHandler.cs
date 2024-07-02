@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -22,99 +26,109 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
-public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<RejectPunchItemCommand, Result<string>>
+public class RejectPunchItemCommandHandler(
+    IPunchItemRepository punchItemRepository,
+    ILabelRepository labelRepository,
+    ICommentRepository commentRepository,
+    IPersonRepository personRepository,
+    ISyncToPCS4Service syncToPCS4Service,
+    ICompletionMailService completionMailService,
+    IDeepLinkUtility deepLinkUtility,
+    IMessageProducer messageProducer,
+    IUnitOfWork unitOfWork,
+    ICheckListApiService checkListApiService,
+    ILogger<RejectPunchItemCommandHandler> logger,
+    IOptionsMonitor<ApplicationOptions> options)
+    : PunchUpdateCommandBase, IRequestHandler<RejectPunchItemCommand, Result<string>>
 {
     public const string RejectReasonPropertyName = "Reject reason";
 
-    private readonly IPunchItemRepository _punchItemRepository;
-    private readonly ILabelRepository _labelRepository;
-    private readonly ICommentService _commentService;
-    private readonly IPersonRepository _personRepository;
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly ICompletionMailService _completionMailService;
-    private readonly IDeepLinkUtility _deepLinkUtility;
-    private readonly IMessageProducer _messageProducer;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICheckListApiService _checkListApiService;
-    private readonly ILogger<RejectPunchItemCommandHandler> _logger;
-    private readonly IOptionsMonitor<ApplicationOptions> _options;
-
-    public RejectPunchItemCommandHandler(
-        IPunchItemRepository punchItemRepository,
-        ILabelRepository labelRepository,
-        ICommentService commentService,
-        IPersonRepository personRepository,
-        ISyncToPCS4Service syncToPCS4Service,
-        ICompletionMailService completionMailService,
-        IDeepLinkUtility deepLinkUtility,
-        IMessageProducer messageProducer,
-        IUnitOfWork unitOfWork,
-        ICheckListApiService checkListApiService,
-        ILogger<RejectPunchItemCommandHandler> logger,
-        IOptionsMonitor<ApplicationOptions> options)
-    {
-        _punchItemRepository = punchItemRepository;
-        _labelRepository = labelRepository;
-        _commentService = commentService;
-        _personRepository = personRepository;
-        _syncToPCS4Service = syncToPCS4Service;
-        _completionMailService = completionMailService;
-        _deepLinkUtility = deepLinkUtility;
-        _messageProducer = messageProducer;
-        _unitOfWork = unitOfWork;
-        _checkListApiService = checkListApiService;
-        _logger = logger;
-        _options = options;
-    }
 
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var rejectLabel = await _labelRepository.GetByTextAsync(_options.CurrentValue.RejectLabel, cancellationToken);
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var rejectLabel = await labelRepository.GetByTextAsync(options.CurrentValue.RejectLabel, cancellationToken);
+        var punchItem = await punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
 
         var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
 
-        var mentions = await _personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
+        var mentions = await personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-            _messageProducer,
+            messageProducer,
             punchItem,
             "Punch item rejected",
             [change],
             cancellationToken);
+        
+         var comment = AddToCommentRepository(punchItem, request.Comment, [rejectLabel], mentions);
+         var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
+         var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
 
-        await _commentService.AddAsync(punchItem, punchItem.Plant, request.Comment, [rejectLabel], mentions, cancellationToken);
+         //TODO issue 208 rewrite to be integrationEvent and publish said integration event
+         var commentEvent = new CommentEventDto
+         {
+             Guid = comment.Guid,
+             Plant = punchItem.Plant,
+             ParentGuid = comment.ParentGuid,
+             CreatedBy = createdBy,
+             CreatedAtUtc = TimeService.UtcNow,
+             Text = comment.Text,
+             Labels = comment.Labels.Select(x => x.Text).ToList()
+         };
 
         punchItem.SetRowVersion(request.RowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
-
+        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
+        
         try
         {
-            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Reject comment on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        }
+
+        try
+        {
+            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+    }
+    
+    private Comment AddToCommentRepository(
+        IHaveGuid parentEntity,
+        string text,
+        IEnumerable<Label> labels,
+        IEnumerable<Person> mentions)
+    {
+        var comment = new Comment(parentEntity.GetContextName(), parentEntity.Guid, text);
+        comment.UpdateLabels(labels.ToList());
+        comment.SetMentions(mentions.ToList());
+        commentRepository.Add(comment);
+        return comment;
     }
 
     private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
@@ -122,7 +136,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         var emailContext = GetEmailContext(punchItem, comment);
         var emailAddresses = mentions.Select(m => m.Email).ToList();
 
-        await _completionMailService.SendEmailAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
+        await completionMailService.SendEmailAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
     }
 
     private dynamic GetEmailContext(PunchItem punchItem, string comment)
@@ -130,7 +144,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         var emailContext = punchItem.GetEmailContext();
         
         emailContext.Comment = comment;
-        emailContext.Url = _deepLinkUtility.CreateUrl(punchItem.GetContextName(), punchItem.Guid);
+        emailContext.Url = deepLinkUtility.CreateUrl(punchItem.GetContextName(), punchItem.Guid);
 
         return emailContext;
     }
@@ -140,7 +154,7 @@ public class RejectPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         string comment,
         CancellationToken cancellationToken)
     {
-        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
+        var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
         var change = new ChangedProperty<string?>(RejectReasonPropertyName, null, comment);
         punchItem.Reject(currentPerson);
 

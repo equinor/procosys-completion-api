@@ -1,5 +1,4 @@
-﻿using System.Runtime.Intrinsics.X86;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;

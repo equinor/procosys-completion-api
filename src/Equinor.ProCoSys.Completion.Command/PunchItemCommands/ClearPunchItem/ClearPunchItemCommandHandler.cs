@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;

@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -27,7 +28,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private RejectPunchItemCommand _command;
     private RejectPunchItemCommandHandler _dut;
     private ILabelRepository _labelRepositoryMock;
-    private ICommentService _commentServiceMock;
+    private ICommentRepository _commentRepositoryMock;
     private IDeepLinkUtility _deepLinkUtilityMock;
     private ICompletionMailService _completionMailServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
@@ -48,12 +49,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             new List<Guid> { person.Guid },
             RowVersion);
 
-        var rejectLabelText = "Reject";
+        const string rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
         _rejectedLabel = new Label(rejectLabelText);
         _labelRepositoryMock.GetByTextAsync(rejectLabelText, default).Returns(_rejectedLabel);
 
-        _commentServiceMock = Substitute.For<ICommentService>();
+        _commentRepositoryMock = Substitute.For<ICommentRepository>();
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
 
@@ -72,7 +73,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _dut = new RejectPunchItemCommandHandler(
             _punchItemRepositoryMock,
             _labelRepositoryMock,
-            _commentServiceMock,
+            _commentRepositoryMock,
             _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _completionMailServiceMock,
@@ -132,36 +133,23 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldAddComment_WithCorrectLabel()
     {
         // Arrange 
-        List<Label> labelsAdded = null!;
-        _commentServiceMock
-            .When(x => x.AddAsync(
-                Arg.Any<IHaveGuid>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>(),
-                Arg.Any<CancellationToken>()))
+        Comment addedComment = null!;
+        _commentRepositoryMock
+            .When(x => x.Add(Arg.Any<Comment>()))
             .Do(info =>
             {
-                labelsAdded = info.Arg<IEnumerable<Label>>().ToList();
+                addedComment = info.Arg<Comment>();
             });
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _commentServiceMock.Received(1)
-            .AddAsync(
-                punchItem,
-                Arg.Any<string>(),
-                _command.Comment,
-                Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>(),
-                Arg.Any<CancellationToken>());
-        Assert.IsNotNull(labelsAdded);
-        Assert.AreEqual(1, labelsAdded.Count);
-        Assert.AreEqual(_rejectedLabel, labelsAdded.ElementAt(0));
+        _commentRepositoryMock.Received(1)
+            .Add(Arg.Any<Comment>());
+        Assert.IsNotNull(addedComment);
+        Assert.AreEqual(1, addedComment.Labels.Count);
+        Assert.AreEqual(_rejectedLabel, addedComment.Labels.ElementAt(0));
     }
 
     [TestMethod]
