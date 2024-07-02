@@ -161,4 +161,46 @@ public class AccessCheckerTests
         await Assert.ThrowsExceptionAsync<Exception>(
             () => _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid));
     }
+
+    [TestMethod]
+    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _projectAccessCheckerMock.HasCurrentUserAccessToProject(_proCoSys4CheckList.ProjectGuid).Returns(true);
+
+        // Act
+        var result = await _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldReturnFalse_WhenUserHasNoAccessToCheckList()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _projectAccessCheckerMock.HasCurrentUserAccessToProject(_proCoSys4CheckList.ProjectGuid).Returns(false);
+
+        // Act
+        var result = await _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldThrowException_WhenCheckListNotFound()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(null as ProCoSys4CheckList);
+
+        // Act and Assert
+        await Assert.ThrowsExceptionAsync<Exception>(
+            () => _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid));
+    }
 }

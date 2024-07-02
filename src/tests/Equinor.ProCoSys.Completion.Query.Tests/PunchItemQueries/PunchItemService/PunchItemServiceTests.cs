@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
@@ -95,6 +95,12 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         context.PunchItems.Add(_rejectedPunchItem);
         context.SaveChangesAsync().Wait();
 
+        context.Attachments.Add(new Attachment(projectA.Name, nameof(PunchItem), _createdPunchItem.Guid, "file.txt",
+            Guid.NewGuid()));
+        context.Attachments.Add(new Attachment(projectA.Name, nameof(PunchItem), _createdPunchItem.Guid, "pic.img",
+            Guid.NewGuid()));
+        context.SaveChangesAsync().Wait();
+
         // Elapse some time between each update and save to be able to that 
         // timestamps of Created, Modified, Cleared and Verified differ
         _timeProvider.Elapse(new TimeSpan(0, 1, 0));
@@ -123,7 +129,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task GetByCheckListGuid_ShouldReturnPunchItems_WithGivenCheckListGuid()
+    public async Task GetByCheckListGuid_ShouldReturnPunchItems_WithCorrectAttachmentCount_ForGivenCheckListGuid()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -134,18 +140,8 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsTrue(2 == result.Count(x => x.CheckListGuid == _checkListGuid));
-    }
-
-    [TestMethod]
-    public async Task Handle_ShouldThrowException_WhenUnknownPunch()
-    {
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-
-        var dut = new PunchItemServices.PunchItemService(context);
-        
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<EntityNotFoundException<PunchItem>>(()
-            => dut.GetByGuid(Guid.NewGuid(), default));
+        Assert.IsTrue(2 == result.First(x => x.Guid == _createdPunchItem.Guid).AttachmentCount);
+        Assert.IsTrue(0 == result.First(x => x.Guid == _modifiedPunchItem.Guid).AttachmentCount);
     }
     
     [TestMethod]
@@ -178,6 +174,8 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
 
         AssertRaisedByOrg(punchItemDetailsDto);
         AssertClearingByOrg(punchItemDetailsDto);
+
+        Assert.AreEqual(2, punchItemDetailsDto.AttachmentCount);
     }
 
     [TestMethod]
@@ -209,6 +207,8 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         AssertNotRejected(punchItemDetailsDto);
 
         Assert.AreNotEqual(punchItemDetailsDto.ModifiedAtUtc, punchItemDetailsDto.CreatedAtUtc);
+
+        Assert.AreEqual(0, punchItemDetailsDto.AttachmentCount);
     }
 
     [TestMethod]

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -43,8 +42,9 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         var attachmentCounts = await context.QuerySet<Attachment>()
             .Where(a => punchItemGuids.Contains(a.ParentGuid))
             .GroupBy(a => a.ParentGuid)
-            .ToDictionaryAsync(k => k.Key, v => v.Count()
-                , cancellationToken: cancellationToken);
+            .Select(g => new { PunchItemGuid = g.Key, AttachmentCount = g.Count() })
+            .ToDictionaryAsync(k => k.PunchItemGuid, v => v.AttachmentCount
+                , cancellationToken);
 
         return punchItems.Select(p => MapPunchToDto(p, 
             attachmentCounts.GetValueOrDefault(p.Guid, 0))).ToImmutableList();
