@@ -12,7 +12,6 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
@@ -71,7 +70,7 @@ public class AttachmentService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Update on Attachment with guid {guid}", attachment.Guid);
+            logger.LogError(e, "Error occurred while trying to Sync Upload New on Attachment with guid {guid}", attachment.Guid);
         }
 
         return new AttachmentDto(attachment.Guid, attachment.RowVersion.ConvertToString());
@@ -150,7 +149,7 @@ public class AttachmentService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Create on Attachment with guid {guid}", attachment.Guid);
+            logger.LogError(e, "Error occurred while trying to Sync Delete on Attachment with guid {guid}", attachment.Guid);
         }
     }
 

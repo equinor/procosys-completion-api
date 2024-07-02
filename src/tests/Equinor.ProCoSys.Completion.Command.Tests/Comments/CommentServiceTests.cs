@@ -212,7 +212,6 @@ public class CommentServiceTests : TestsBase
 
 
     #region Unit Tests which can be removed when no longer sync to pcs4
-    #region AddAndSaveAsync
     [TestMethod]
     public async Task AddAndSaveAsync_ShouldCall_GetCurrentPersonAsync()
     {
@@ -234,44 +233,6 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
-    #endregion AddAndSaveAsync
-    [TestMethod]
     public async Task AddAsync_ShouldCall_GetCurrentPersonAsync()
     {
         // Act
@@ -290,10 +251,6 @@ public class CommentServiceTests : TestsBase
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
     }
-
-    #region AddAsync
-
-    #endregion AddAsync
     #endregion
 
     private class TestableEntity : IHaveGuid
