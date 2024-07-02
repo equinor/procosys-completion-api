@@ -22,7 +22,8 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid,
+        CancellationToken cancellationToken = default)
     {
         var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
         try
@@ -32,7 +33,8 @@ public class MainApiCheckListService(
                       $"?proCoSysGuid={checkListGuid:N}" +
                       $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url);
+            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url,
+                cancellationToken: cancellationToken);
         }
         finally
         {

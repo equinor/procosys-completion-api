@@ -43,7 +43,7 @@ public class PunchItemValidator : IPunchItemValidator
             return false;
         }
 
-        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(punchItem.CheckListGuid);
+        return await _checkListValidator.TagOwningCheckListIsVoidedAsync(punchItem.CheckListGuid, cancellationToken);
     }
 
     public async Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken)

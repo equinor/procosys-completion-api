@@ -24,7 +24,7 @@ public class CheckAccessBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
         _logger.LogInformation("----- Checking access for {TypeName}", typeName);
 
-        if (!await _accessValidator.ValidateAsync(request as IBaseRequest))
+        if (!await _accessValidator.ValidateAsync(request as IBaseRequest, cancellationToken))
         {
             _logger.LogWarning("User do not have access - {TypeName}", typeName);
 
