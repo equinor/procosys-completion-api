@@ -180,7 +180,42 @@ public class CommentServiceTests : TestsBase
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
     }
-    
+
+    [TestMethod]
+    public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
+            .Do(x => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
+        _unitOfWorkMock.ClearReceivedCalls();
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewCommentAsync(Arg.Any<object>(), default))
+            .Do(x => throw new Exception("SyncNewCommentAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
     #endregion
 
     private class TestableEntity : IHaveGuid

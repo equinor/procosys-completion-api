@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
@@ -149,6 +150,42 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
 
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncPunchListItemUpdateAsync(integrationEvent, default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
+            .Do(x => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncPunchListItemUpdateAsync(Arg.Any<object>(), default);
+        _unitOfWorkMock.ClearReceivedCalls();
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemUpdateAsync(Arg.Any<object>(), default))
+            .Do(x => throw new Exception("SyncPunchListItemUpdateAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
     }
     #endregion
 }

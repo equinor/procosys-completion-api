@@ -112,7 +112,7 @@ public class RejectPunchItemCommandHandler(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());

@@ -160,7 +160,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while attempting to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
         return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,

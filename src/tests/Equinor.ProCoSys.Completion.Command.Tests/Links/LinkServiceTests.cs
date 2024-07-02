@@ -439,6 +439,42 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
+    public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
+            .Do(x => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewLinkAsync(Arg.Any<object>(), default);
+        _unitOfWorkMock.ClearReceivedCalls();
+    }
+
+    [TestMethod]
+    public async Task AddAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewLinkAsync(Arg.Any<object>(), default))
+            .Do(x => throw new Exception("SyncNewLinkAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
     public async Task UpdateAsync_ShouldSyncWithPcs4()
     {
         // Arrange
@@ -461,6 +497,42 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
+    public async Task UpdateAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
+            .Do(x => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkUpdateAsync(Arg.Any<object>(), default);
+        _unitOfWorkMock.ClearReceivedCalls();
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncLinkUpdateAsync(Arg.Any<object>(), default))
+            .Do(x => throw new Exception("SyncLinkUpdateAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
     public async Task DeleteAsync_ShouldSyncWithPcs4()
     {
         // Arrange
@@ -480,6 +552,42 @@ public class LinkServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncLinkDeleteAsync(integrationEvent, default);
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
+            .Do(x => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkDeleteAsync(Arg.Any<object>(), default);
+        _unitOfWorkMock.ClearReceivedCalls();
+    }
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncLinkDeleteAsync(Arg.Any<object>(), default))
+            .Do(x => throw new Exception("SyncLinkDeleteAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
     }
     #endregion
 }
