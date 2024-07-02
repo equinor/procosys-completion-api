@@ -8,9 +8,9 @@ namespace Equinor.ProCoSys.Completion.Query.CacheQueries;
 
 public readonly record struct PrefetchCheckListQuery(Guid CheckListGuid) : IRequest;
 
-public sealed class PrefetchCheckListQueryHandler(ICheckListApiService checkListApiService)
+public sealed class PrefetchCheckListQueryHandler(ICheckListCache checkListCache)
     : IRequestHandler<PrefetchCheckListQuery>
 {
     public async Task Handle(PrefetchCheckListQuery request, CancellationToken cancellationToken) =>
-        await checkListApiService.GetCheckListAsync(request.CheckListGuid, cancellationToken);
+        await checkListCache.GetCheckListAsync(request.CheckListGuid, cancellationToken);
 }
