@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         return MapPunchToDto(punchItem, attCount);
     }
 
-    public async Task<List<PunchItemDetailsDto>> GetByCheckListGuid(Guid guid, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetByCheckListGuid(Guid guid, CancellationToken cancellationToken)
     {
         var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
             query.Where(pi => pi.CheckListGuid == guid)
@@ -43,12 +44,11 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         var attachmentCounts = await context.QuerySet<Attachment>()
             .Where(a => punchItemGuids.Contains(a.ParentGuid))
             .GroupBy(a => a.ParentGuid)
-            .Select(g => new { PunchItemGuid = g.Key, AttachmentCount = g.Count() })
-            .ToListAsync(cancellationToken);
+            .ToDictionaryAsync(k => k.Key, v => v.Count()
+                , cancellationToken: cancellationToken);
 
-        return punchItems.Select(pi => MapPunchToDto(pi, 
-                attachmentCounts.FirstOrDefault(x => x.PunchItemGuid == pi.Guid)?.AttachmentCount ?? 0))
-            .ToList();
+        return punchItems.Select(p => MapPunchToDto(p, 
+            attachmentCounts.GetValueOrDefault(p.Guid, 0))).ToImmutableList();
     }
 
     private async Task<List<PunchItem>> GetPunchItems(Func<IQueryable<PunchItem>, IQueryable<PunchItem>> whereClause, CancellationToken cancellationToken)
