@@ -7,14 +7,14 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
 
-public class GetPunchItemsByCheckListGuidQueryHandler : IRequestHandler<GetPunchItemsByCheckListGuidQuery, Result<List<PunchItemDetailsDto>>>
+public class GetPunchItemsByCheckListGuidQueryHandler : IRequestHandler<GetPunchItemsByCheckListGuidQuery, Result<IReadOnlyCollection<PunchItemDetailsDto>>>
 {
     private readonly IPunchItemService _punchItemService;
 
     public GetPunchItemsByCheckListGuidQueryHandler(IPunchItemService punchItemService) => _punchItemService = punchItemService;
-    public async Task<Result<List<PunchItemDetailsDto>>> Handle(GetPunchItemsByCheckListGuidQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyCollection<PunchItemDetailsDto>>> Handle(GetPunchItemsByCheckListGuidQuery request, CancellationToken cancellationToken)
     {
         var punchItems = await _punchItemService.GetByCheckListGuid(request.CheckListGuid, cancellationToken);
-        return new SuccessResult<List<PunchItemDetailsDto>>(punchItems);
+        return new SuccessResult<IReadOnlyCollection<PunchItemDetailsDto>>(punchItems);
     }
 }
