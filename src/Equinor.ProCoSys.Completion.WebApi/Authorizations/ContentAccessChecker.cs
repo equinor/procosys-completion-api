@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
@@ -22,17 +23,19 @@ public class ContentAccessChecker : IContentAccessChecker
         _punchItemHelper = punchItemHelper;
     }
 
-    public async Task<bool> HasCurrentUserAccessToCheckListAsync(Guid checkListGuid)
+    public async Task<bool> HasCurrentUserAccessToCheckListAsync(Guid checkListGuid,
+        CancellationToken cancellationToken = default)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
             return true;
         }
 
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid);
+        return await HasCurrentUserExplicitAccessToContent(checkListGuid, cancellationToken);
     }
 
-    public async Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid)
+    public async Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid,
+        CancellationToken cancellationToken = default)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
@@ -46,12 +49,13 @@ public class ContentAccessChecker : IContentAccessChecker
             throw new Exception($"CheckListGuid for PunchItem '{punchItemGuid}' not found");
         }
 
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid.Value);
+        return await HasCurrentUserExplicitAccessToContent(checkListGuid.Value, cancellationToken);
     }
 
-    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid)
+    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid,
+        CancellationToken cancellationToken = default)
     {
-        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         if (checkList is null)
         {
             throw new Exception($"CheckList '{checkListGuid}' not found");

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 
@@ -18,9 +19,10 @@ public class ProCoSys4CheckListValidator : ICheckListValidator
         return proCoSys4CheckList is not null;
     }
 
-    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid)
+    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid,
+        CancellationToken cancellationToken = default)
     {
-        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         return proCoSys4CheckList is not null && proCoSys4CheckList.IsVoided;
     }
 
