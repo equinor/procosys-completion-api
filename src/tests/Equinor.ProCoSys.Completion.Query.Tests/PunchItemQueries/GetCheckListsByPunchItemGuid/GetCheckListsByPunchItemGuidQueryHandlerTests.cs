@@ -30,6 +30,7 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
             new List<CheckListDto>(){new(Guid.NewGuid(), 3, 4, "ASD543", "OK")});
 
         _plantProviderMock = Substitute.For<IPlantProvider>();
+        _plantProviderMock.Plant.Returns(Plant);
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
         _checkListApiServiceMock.GetByPunchItemGuidAsync(Plant, _punchItemGuid).Returns(result);
 
