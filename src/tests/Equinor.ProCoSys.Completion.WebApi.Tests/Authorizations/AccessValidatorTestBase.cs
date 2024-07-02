@@ -40,9 +40,9 @@ public class AccessValidatorTestBase
             .Returns(false);
         _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent)
             .Returns(true);
-        _accessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
             .Returns(false);
-        _accessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
             .Returns(true);
 
         var punchItemHelperMock = Substitute.For<IPunchItemHelper>();

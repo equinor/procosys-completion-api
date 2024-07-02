@@ -20,26 +20,25 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
 public class PunchItemService(IReadOnlyContext context) : IPunchItemService
 {
-    public async Task<PunchItemDetailsDto> GetByGuid(Guid guid, CancellationToken cancellationToken)
+    public async Task<PunchItemDetailsDto> GetByGuid(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
-            query.Where(pi => pi.Guid == guid)
+            query.Where(pi => pi.Guid == punchItemGuid)
         );
-        var punchItem = (await GetPunchItems(whereClause, cancellationToken)).FirstOrDefault() 
-                        ?? throw new EntityNotFoundException<PunchItem>(guid);
+        var punchItem = (await GetPunchItems(whereClause, cancellationToken)).First();
         var attCount = await context.QuerySet<Attachment>()
            .Where(x => x.ParentGuid == punchItem.Guid).CountAsync(cancellationToken);
 
         return MapPunchToDto(punchItem, attCount);
     }
 
-    public async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetByCheckListGuid(Guid guid, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid, CancellationToken cancellationToken)
     {
         var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
-            query.Where(pi => pi.CheckListGuid == guid)
+            query.Where(pi => pi.CheckListGuid == checkListGuid)
         );
         var punchItems = await GetPunchItems(whereClause, cancellationToken);
-        var punchItemGuids = punchItems.Select(y => y.Guid);
+        var punchItemGuids = punchItems.Select(p => p.Guid);
 
         var attachmentCounts = await context.QuerySet<Attachment>()
             .Where(a => punchItemGuids.Contains(a.ParentGuid))
@@ -97,6 +96,7 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
 
         return new PunchItemDetailsDto(
             punchItem.Guid,
+            punchItem.CheckListGuid,
             punchItem.Project.Name,
             punchItem.ItemNo,
             punchItem.Category.ToString(),
@@ -133,8 +133,8 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             documentDto,
             swcrDto,
             attachmentCount,
-            punchItem.RowVersion.ConvertToString(),
-            punchItem.CheckListGuid);
+            punchItem.RowVersion.ConvertToString()
+            );
     }
 
     private static SWCRDto? MapToSWCRDto(SWCR? swcr)

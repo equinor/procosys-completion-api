@@ -36,7 +36,7 @@ public class AccessChecker : IAccessChecker
         return await HasCurrentUserExplicitAccessToContent(checkListGuid);
     }
 
-    public async Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid)
+    public async Task<bool> HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {

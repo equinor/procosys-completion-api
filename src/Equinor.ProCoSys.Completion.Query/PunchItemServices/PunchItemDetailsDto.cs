@@ -4,6 +4,7 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
 public sealed record PunchItemDetailsDto(
     Guid Guid,
+    Guid CheckListGuid,
     string ProjectName,
     long ItemNo,
     string Category,
@@ -40,5 +41,4 @@ public sealed record PunchItemDetailsDto(
     DocumentDto? Document,
     SWCRDto? SWCR,
     int AttachmentCount,
-    string RowVersion,
-    Guid? CheckListGuid);
+    string RowVersion);

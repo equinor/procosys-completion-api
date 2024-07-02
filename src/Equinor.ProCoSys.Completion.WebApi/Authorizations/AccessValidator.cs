@@ -61,7 +61,7 @@ public class AccessValidator : IAccessValidator
         {
             if (!await _accessChecker.HasCurrentUserWriteAccessToCheckListAsync(createPunchItemCommand.CheckListGuid))
             {
-                _logger.LogWarning("Current user {UserOid} doesn't have access to checkList {CheckListGuid}",
+                _logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid}",
                     userOid, createPunchItemCommand.CheckListGuid);
                 return false;
             }
@@ -84,9 +84,9 @@ public class AccessValidator : IAccessValidator
                 return false;
             }
 
-            if (!await _accessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
+            if (!await _accessChecker.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
             {
-                _logger.LogWarning("Current user {UserOid} doesn't have access to checkList owning punch {PunchItemGuid}",
+                _logger.LogWarning("Current user {UserOid} doesn't have write access to checkList owning punch {PunchItemGuid}",
                     userOid, punchItemCommand.PunchItemGuid);
                 return false;
             }
@@ -100,12 +100,12 @@ public class AccessValidator : IAccessValidator
             }
         }
 
-        if (request is IIsCheckListQuery getPunchItemsByCheckListGuidQuery)
+        if (request is IIsCheckListQuery checkListQuery)
         {
-            if (!await _accessChecker.HasCurrentUserReadAccessToCheckListAsync(getPunchItemsByCheckListGuidQuery.CheckListGuid))
+            if (!await _accessChecker.HasCurrentUserReadAccessToCheckListAsync(checkListQuery.CheckListGuid))
             {
                 _logger.LogWarning("Current user {UserOid} doesn't have read access to checkList {CheckListGuid}",
-                    userOid, getPunchItemsByCheckListGuidQuery.CheckListGuid);
+                    userOid, checkListQuery.CheckListGuid);
                 return false;
             }
         }

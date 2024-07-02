@@ -7,5 +7,5 @@ public interface IAccessChecker
 {
     Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid);
     Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid);
-    Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid);
+    Task<bool> HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid);
 }

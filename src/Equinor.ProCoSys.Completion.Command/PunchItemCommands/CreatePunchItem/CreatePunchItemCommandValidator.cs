@@ -189,7 +189,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             => !await projectValidator.IsClosedAsync(command.ProjectGuid, cancellationToken);
 
         async Task<bool> BeAnExistingCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
-            => await checkListValidator.ExistsAsync(command.CheckListGuid);
+            => await checkListValidator.ExistsAsync(command.CheckListGuid, cancellationToken);
 
         async Task<bool> NotBeInAVoidedTagForCheckListAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
             => !await checkListValidator.TagOwningCheckListIsVoidedAsync(command.CheckListGuid);

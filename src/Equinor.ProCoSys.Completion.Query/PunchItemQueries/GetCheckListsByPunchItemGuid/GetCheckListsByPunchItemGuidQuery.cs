@@ -5,7 +5,7 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunchItemGuid;
 
-public class GetCheckListsByPIGuidQuery(Guid punchItemGuid) : IRequest<Result<ChecklistsByPunchGuidInstance>>
+public class GetCheckListsByPunchItemGuidQuery(Guid punchItemGuid) : IRequest<Result<ChecklistsByPunchGuidInstance>>, IIsPunchItemQuery
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
 }

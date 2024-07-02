@@ -153,7 +153,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetCheckListsByPIGuidQuery(guid), cancellationToken);
+        var result = await _mediator.Send(new GetCheckListsByPunchItemGuidQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 

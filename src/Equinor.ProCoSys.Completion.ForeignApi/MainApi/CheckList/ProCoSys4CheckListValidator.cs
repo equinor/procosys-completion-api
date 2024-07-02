@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 
@@ -12,7 +13,7 @@ public class ProCoSys4CheckListValidator : ICheckListValidator
 
     public ProCoSys4CheckListValidator(ICheckListCache checkListCache) => _checkListCache = checkListCache;
 
-    public async Task<bool> ExistsAsync(Guid checkListGuid)
+    public async Task<bool> ExistsAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
         var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid);
         return proCoSys4CheckList is not null;

@@ -99,7 +99,7 @@ public class AccessCheckerTests
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(true);
 
         // Act
-        var result = await _dut.HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid.Empty);
+        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid.Empty);
 
         // Assert
         Assert.IsTrue(result);
@@ -115,7 +115,7 @@ public class AccessCheckerTests
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
 
         // Act
-        var result = await _dut.HasCurrentUserAccessToCheckListOwningPunchItemAsync(_punchItemGuid);
+        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid);
 
         // Assert
         Assert.IsTrue(result);
@@ -131,7 +131,7 @@ public class AccessCheckerTests
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
 
         // Act
-        var result = await _dut.HasCurrentUserAccessToCheckListOwningPunchItemAsync(_punchItemGuid);
+        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid);
 
         // Assert
         Assert.IsFalse(result);
@@ -146,7 +146,7 @@ public class AccessCheckerTests
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserAccessToCheckListOwningPunchItemAsync(_punchItemGuid));
+            () => _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid));
     }
 
     [TestMethod]
@@ -159,6 +159,6 @@ public class AccessCheckerTests
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserAccessToCheckListOwningPunchItemAsync(_punchItemGuid));
+            () => _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid));
     }
 }
