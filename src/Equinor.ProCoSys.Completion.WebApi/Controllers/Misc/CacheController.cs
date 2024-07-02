@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Caches;
@@ -8,6 +10,9 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Query.CacheQueries;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Misc;
 
@@ -19,15 +24,21 @@ public class CacheController : ControllerBase
     private readonly IPermissionCache _permissionCache;
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly IPermissionApiService _permissionApiService;
+    private readonly IMediator _mediator;
+    private readonly ILogger<CacheController> _logger;
 
     public CacheController(
         IPermissionCache permissionCache,
         ICurrentUserProvider currentUserProvider,
-        IPermissionApiService permissionApiService)
+        IPermissionApiService permissionApiService,
+        IMediator mediator,
+        ILogger<CacheController> logger)
     {
         _permissionCache = permissionCache;
         _currentUserProvider = currentUserProvider;
         _permissionApiService = permissionApiService;
+        _mediator = mediator;
+        _logger = logger;
     }
 
     [HttpPut("Clear")]
@@ -87,5 +98,22 @@ public class CacheController : ControllerBase
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
         var plants = await _permissionApiService.GetAllPlantsForUserAsync(currentUserOid);
         return plants;
+    }
+    
+    [HttpGet("PrefetchCheckListByGuid/{checkListGuid}")]
+    public async Task<ActionResult> PrefetchCheckListByGuid(
+        [FromRoute] Guid checkListGuid,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            await _mediator.Send(new PrefetchCheckListQuery(checkListGuid), cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "an exception occured when prefetching Check List '{CheckListGuid}'", checkListGuid);
+        }
+        return Ok();
     }
 }
