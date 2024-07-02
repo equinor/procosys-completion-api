@@ -85,7 +85,7 @@ public static class ApplicationModule
         // services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
-        services.AddScoped<IContentAccessChecker, ContentAccessChecker>();
+        services.AddScoped<IAccessChecker, AccessChecker>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
@@ -117,6 +117,7 @@ public static class ApplicationModule
         services.AddScoped<Command.Attachments.IAttachmentService, Command.Attachments.AttachmentService>();
         services.AddScoped<Query.Attachments.IAttachmentService, Query.Attachments.AttachmentService>();
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
+        services.AddScoped<Query.PunchItemServices.IPunchItemService, Query.PunchItemServices.PunchItemService>();
 
         services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
 

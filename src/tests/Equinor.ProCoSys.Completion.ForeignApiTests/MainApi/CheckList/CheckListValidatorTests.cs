@@ -29,7 +29,7 @@ public class CheckListValidatorTests
     public async Task ExistsAsync_ShouldReturnTrue_WhenCheckListExists()
     {
         // Act
-        var result = await _dut.ExistsAsync(_checkListGuid);
+        var result = await _dut.ExistsAsync(_checkListGuid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -39,7 +39,7 @@ public class CheckListValidatorTests
     public async Task ExistsAsync_ShouldReturnFalse_WhenCheckListNotExist()
     {
         // Act
-        var result = await _dut.ExistsAsync(Guid.Empty);
+        var result = await _dut.ExistsAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -74,7 +74,7 @@ public class CheckListValidatorTests
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnFalse_WhenCheckListNotExist()
     {
         // Act
-        var result = await _dut.ExistsAsync(Guid.Empty);
+        var result = await _dut.ExistsAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -105,7 +105,7 @@ public class CheckListValidatorTests
     public async Task InProjectAsync_ShouldReturnFalse_WhenCheckListNotExist()
     {
         // Act
-        var result = await _dut.ExistsAsync(Guid.Empty);
+        var result = await _dut.ExistsAsync(Guid.Empty, default);
 
         // Assert
         Assert.IsFalse(result);

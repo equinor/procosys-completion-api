@@ -17,11 +17,12 @@ public class AccessValidatorTestBase
     protected readonly Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
     protected readonly Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
     protected readonly Guid CheckListGuidWithAccessToContent = new("55555555-5555-5555-5555-555555555555");
+    protected readonly Guid CheckListGuidWithAccessToProjectAndContent = new("99999999-9999-9999-9999-999999999999");
     protected readonly Guid CheckListGuidWithoutAccessToContent = new("66666666-6666-6666-6666-666666666666");
     protected readonly Guid PunchItemGuidWithAccessToProjectButNotContent = new("77777777-7777-7777-7777-777777777777");
 
     private IProjectAccessChecker _projectAccessCheckerMock = null!;
-    private IContentAccessChecker _contentAccessCheckerMock = null!;
+    private IAccessChecker _accessCheckerMock = null!;
     private ILogger<AccessValidator> _loggerMock = null!;
     private ICurrentUserProvider _currentUserProviderMock = null!;
 
@@ -35,14 +36,16 @@ public class AccessValidatorTestBase
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess).Returns(false);
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
-        _contentAccessCheckerMock = Substitute.For<IContentAccessChecker>();
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListAsync(CheckListGuidWithoutAccessToContent)
+        _accessCheckerMock = Substitute.For<IAccessChecker>();
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent)
             .Returns(false);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListAsync(CheckListGuidWithAccessToContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent)
             .Returns(true);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
             .Returns(false);
-        _contentAccessCheckerMock.HasCurrentUserAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+            .Returns(true);
+        _accessCheckerMock.HasCurrentUserReadAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent)
             .Returns(true);
 
         var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
@@ -58,7 +61,7 @@ public class AccessValidatorTestBase
         _dut = new AccessValidator(
             _currentUserProviderMock,
             _projectAccessCheckerMock,
-            _contentAccessCheckerMock,
+            _accessCheckerMock,
             punchItemHelperMock,
             _loggerMock);
     }
