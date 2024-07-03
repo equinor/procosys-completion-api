@@ -16,7 +16,6 @@ public class LibraryEventConsumer(
     : IConsumer<LibraryEvent>
 {
     
-    private const string CommPriority = "COMM_PRIORITY";
     public async Task Consume(ConsumeContext<LibraryEvent> context)
     {
         var busEvent = context.Message;
@@ -35,7 +34,7 @@ public class LibraryEventConsumer(
         else
         {
             // Test if message library type is not present in LibraryType enum
-            if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type) && !busEvent.Type.ToUpper().Equals(CommPriority))
+            if (!Enum.IsDefined(typeof(LibraryType), busEvent.Type))
             {
                 logger.LogInformation("{EventName} not in scope of import: {LibraryType}",
                     nameof(LibraryEvent), busEvent.Type);
@@ -109,9 +108,7 @@ public class LibraryEventConsumer(
             libraryEvent.ProCoSysGuid,
             libraryEvent.Code,
             libraryEvent.Description!,
-            !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType)
-                && libraryEvent.Type.Equals(CommPriority, StringComparison.CurrentCultureIgnoreCase)
-                ? LibraryType.PUNCHLIST_PRIORITY : libType
+            libraryEvent.Type.ToLibraryType()
             ) { IsVoided = libraryEvent.IsVoided, ProCoSys4LastUpdated = libraryEvent.LastUpdated };
         return library;
     }
@@ -121,9 +118,7 @@ public class LibraryEventConsumer(
         library.IsVoided = libraryEvent.IsVoided;
         library.Description = libraryEvent.Description!;
         library.Code = libraryEvent.Code;
-        library.Type = !Enum.TryParse(libraryEvent.Type, true, out LibraryType libType) 
-                       && libraryEvent.Type.Equals(CommPriority, StringComparison.CurrentCultureIgnoreCase) 
-                       ? LibraryType.PUNCHLIST_PRIORITY : libType;
+        library.Type = libraryEvent.Type.ToLibraryType();
         library.ProCoSys4LastUpdated = libraryEvent.LastUpdated;
     }
 }

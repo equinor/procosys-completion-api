@@ -85,10 +85,10 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .MustAsync((command, cancellationToken)
                 => BeALibraryItemOfTypeAsync(
                     command.PriorityGuid!.Value,
-                    LibraryType.PUNCHLIST_PRIORITY,
+                    LibraryType.COMM_PRIORITY,
                     cancellationToken))
             .WithMessage(command =>
-                $"Priority library item is not a {LibraryType.PUNCHLIST_PRIORITY}! " +
+                $"Priority library item is not a {LibraryType.COMM_PRIORITY}! " +
                 $"Guid={command.PriorityGuid!.Value}")
             .When(command => command.PriorityGuid.HasValue, ApplyConditionTo.CurrentValidator)
 

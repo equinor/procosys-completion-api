@@ -97,7 +97,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
         SetDueTime(punchItem, request.DueTimeUtc, properties);
-        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.PUNCHLIST_PRIORITY, properties,
+        await SetLibraryItemAsync(punchItem, request.PriorityGuid, LibraryType.COMM_PRIORITY, properties,
             cancellationToken);
         await SetLibraryItemAsync(punchItem, request.SortingGuid, LibraryType.PUNCHLIST_SORTING, properties,
             cancellationToken);
@@ -349,7 +349,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         switch (libraryType)
         {
-            case LibraryType.PUNCHLIST_PRIORITY:
+            case LibraryType.COMM_PRIORITY:
                 punchItem.SetPriority(libraryItem);
                 properties.Add(new Property(nameof(PunchItem.Priority), punchItem.Priority!.ToString()));
                 break;

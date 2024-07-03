@@ -93,6 +93,7 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<Comment> Comments => Set<Comment>();
     public virtual DbSet<Attachment> Attachments => Set<Attachment>();
     public virtual DbSet<LibraryItem> Library => Set<LibraryItem>();
+    public virtual DbSet<Classification> Classifications => Set<Classification>();
     public virtual DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public virtual DbSet<Document> Documents => Set<Document>();
     public virtual DbSet<SWCR> SWCRs => Set<SWCR>();

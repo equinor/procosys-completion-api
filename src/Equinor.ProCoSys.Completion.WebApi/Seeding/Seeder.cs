@@ -77,8 +77,8 @@ public class Seeder : IHostedService
             Guid.NewGuid(),
             "01",
             "Low priority",
-            LibraryType.PUNCHLIST_PRIORITY));
-        libraryRepository.AddLibraryItems(_testPlant, LibraryType.PUNCHLIST_PRIORITY, 50);
+            LibraryType.COMM_PRIORITY));
+        libraryRepository.AddLibraryItems(_testPlant, LibraryType.COMM_PRIORITY, 50);
 
         libraryRepository.Add(new LibraryItem(
             _testPlant,
