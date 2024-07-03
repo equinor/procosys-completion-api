@@ -49,7 +49,7 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
             .Returns(_personList);
 
         _commentServiceMock = Substitute.For<ICommentService>();
-        _commentServiceMock.AddAndSaveAsync(
+        _commentServiceMock.AddAsync(
             _unitOfWorkMock,
             _punchItemMock,
             Arg.Any<string>(),
@@ -87,7 +87,7 @@ public class CreatePunchItemCommentCommandHandlerTests : TestsBase
 
         // Assert
         await _commentServiceMock.Received(1)
-            .AddAndSaveAsync(
+            .AddAsync(
                 _unitOfWorkMock,
                 _punchItemMock,
                 Arg.Any<string>(),

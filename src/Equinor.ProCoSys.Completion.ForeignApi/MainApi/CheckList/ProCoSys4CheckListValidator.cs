@@ -19,7 +19,8 @@ public class ProCoSys4CheckListValidator : ICheckListValidator
         return proCoSys4CheckList is not null;
     }
 
-    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid,
+        CancellationToken cancellationToken)
     {
         var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         return proCoSys4CheckList is not null && proCoSys4CheckList.IsVoided;

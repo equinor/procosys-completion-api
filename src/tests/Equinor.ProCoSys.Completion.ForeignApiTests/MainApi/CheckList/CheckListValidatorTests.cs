@@ -52,7 +52,7 @@ public class CheckListValidatorTests
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnFalse_WhenCheckListExistsAndTagNotVoided()
     {
         // Act
-        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid);
+        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -65,7 +65,7 @@ public class CheckListValidatorTests
         _checkListCacheMock.GetCheckListAsync(_checkListGuid, Arg.Any<CancellationToken>()).Returns(new ProCoSys4CheckList("RC", true, Guid.NewGuid()));
 
         // Act
-        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid);
+        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -87,7 +87,7 @@ public class CheckListValidatorTests
     public async Task InProjectAsync_ShouldReturnTrue_WhenCheckListExistsAndProjectMatch()
     {
         // Act
-        var result = await _dut.InProjectAsync(_checkListGuid, s_projectGuid);
+        var result = await _dut.InProjectAsync(_checkListGuid, s_projectGuid, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -96,7 +96,7 @@ public class CheckListValidatorTests
     public async Task InProjectAsync_ShouldReturnFalse_WhenCheckListExistsAndProjectMismatch()
     {
         // Act
-        var result = await _dut.InProjectAsync(_checkListGuid, Guid.NewGuid());
+        var result = await _dut.InProjectAsync(_checkListGuid, Guid.NewGuid(), default);
 
         // Assert
         Assert.IsFalse(result);

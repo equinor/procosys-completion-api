@@ -139,7 +139,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnTrue_WhenPunchItemOwnedByVoidedTag()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(true);
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid, default).Returns(true);
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
@@ -154,7 +154,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemOwnedByNonVoidedTag()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(false);
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid, default).Returns(false);
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 
@@ -169,7 +169,7 @@ public class PunchItemValidatorTests : ReadOnlyTestsBase
     public async Task TagOwningPunchItemIsVoided_ShouldReturnFalse_WhenPunchItemNotExist()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid).Returns(false);
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_punchItemInOpenProject.CheckListGuid, default).Returns(false);
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
         var dut = new PunchItemValidator(context, _checkListValidatorMock, _currentUserProviderMock);
 

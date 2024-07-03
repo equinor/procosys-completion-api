@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -27,7 +26,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private RejectPunchItemCommand _command;
     private RejectPunchItemCommandHandler _dut;
     private ILabelRepository _labelRepositoryMock;
-    private ICommentService _commentServiceMock;
+    private ICommentRepository _commentRepositoryMock;
     private IDeepLinkUtility _deepLinkUtilityMock;
     private ICompletionMailService _completionMailServiceMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
@@ -48,12 +47,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             new List<Guid> { person.Guid },
             RowVersion);
 
-        var rejectLabelText = "Reject";
+        const string rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
         _rejectedLabel = new Label(rejectLabelText);
         _labelRepositoryMock.GetByTextAsync(rejectLabelText, default).Returns(_rejectedLabel);
 
-        _commentServiceMock = Substitute.For<ICommentService>();
+        _commentRepositoryMock = Substitute.For<ICommentRepository>();
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
 
@@ -72,7 +71,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _dut = new RejectPunchItemCommandHandler(
             _punchItemRepositoryMock,
             _labelRepositoryMock,
-            _commentServiceMock,
+            _commentRepositoryMock,
             _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _completionMailServiceMock,
@@ -132,36 +131,23 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldAddComment_WithCorrectLabel()
     {
         // Arrange 
-        List<Label> labelsAdded = null!;
-        _commentServiceMock
-            .When(x => x.AddAsync(
-                Arg.Any<IHaveGuid>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>(),
-                Arg.Any<CancellationToken>()))
+        Comment addedComment = null!;
+        _commentRepositoryMock
+            .When(x => x.Add(Arg.Any<Comment>()))
             .Do(info =>
             {
-                labelsAdded = info.Arg<IEnumerable<Label>>().ToList();
+                addedComment = info.Arg<Comment>();
             });
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _commentServiceMock.Received(1)
-            .AddAsync(
-                punchItem,
-                Arg.Any<string>(),
-                _command.Comment,
-                Arg.Any<IEnumerable<Label>>(),
-                Arg.Any<IEnumerable<Person>>(),
-                Arg.Any<CancellationToken>());
-        Assert.IsNotNull(labelsAdded);
-        Assert.AreEqual(1, labelsAdded.Count);
-        Assert.AreEqual(_rejectedLabel, labelsAdded.ElementAt(0));
+        _commentRepositoryMock.Received(1)
+            .Add(Arg.Any<Comment>());
+        Assert.IsNotNull(addedComment);
+        Assert.AreEqual(1, addedComment.Labels.Count);
+        Assert.AreEqual(_rejectedLabel, addedComment.Labels.ElementAt(0));
     }
 
     [TestMethod]
@@ -282,41 +268,160 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+            .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncPunchListItemUpdateAsync(Arg.Any<object>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldSyncCommentWithPcs4()
+    {
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<object>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncCommentWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+            .Do(_ => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<object>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncCommentWithPcs4_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemUpdateAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncPunchListItemUpdateAsync error"));
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<object>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+            .Do(_ => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
+
+        // Assert
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemUpdateAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncPunchListItemUpdateAsync error"));
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSyncingCommentWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewCommentAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncNewCommentAsync error"));
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemUpdateAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncPunchListItemUpdateAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingCommentWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewCommentAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncNewCommentAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenRecalculatingFails()
+    {
+        // Arrange
+        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default))
+            .Do(_ => throw new Exception("RecalculateCheckListStatus error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
     }
     #endregion
 }

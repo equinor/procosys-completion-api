@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
-using Equinor.ProCoSys.Auth.Authentication;
 using Microsoft.Identity.Web;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;

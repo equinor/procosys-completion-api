@@ -27,7 +27,8 @@ public class AccessChecker : IAccessChecker
 
     }
 
-    public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid,
+        CancellationToken cancellationToken)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
@@ -62,7 +63,8 @@ public class AccessChecker : IAccessChecker
             : _projectAccessChecker.HasCurrentUserAccessToProject(checkList.ProjectGuid);
     }
 
-    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid, CancellationToken cancellationToken)
+    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid,
+        CancellationToken cancellationToken)
     {
         var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         if (checkList is null)

@@ -54,15 +54,15 @@ public class CommentServiceTests : TestsBase
             Substitute.For<ILogger<CommentService>>());
     }
 
-    #region AddAndSaveAsync
+
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldAddCommentToRepository()
+    public async Task AddAsync_ShouldAddCommentToRepository()
     {
         // Arrange 
         var text = "T";
 
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, text, [], [], "Whatever", default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, text, [], [], "Whatever", default);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
@@ -72,10 +72,10 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldAddCommentToRepository_WithoutLabelsAndMentions()
+    public async Task AddAsync_ShouldAddCommentToRepository_WithoutLabelsAndMentions()
     {
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [], "Whatever", default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [], "Whatever", default);
 
         // Assert
         Assert.IsNotNull(_commentAddedToRepository);
@@ -84,14 +84,14 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldAddCommentToRepository_WithLabels()
+    public async Task AddAsync_ShouldAddCommentToRepository_WithLabels()
     {
         // Arrange 
         var labelA = new Label("a");
         var labelB = new Label("b");
 
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "T", [labelA, labelB], [], "Whatever", default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "T", [labelA, labelB], [], "Whatever", default);
 
         // Assert
         Assert.AreEqual(2, _commentAddedToRepository.Labels.Count);
@@ -101,14 +101,14 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldAddCommentToRepository_WithMentions()
+    public async Task AddAsync_ShouldAddCommentToRepository_WithMentions()
     {
         // Arrange 
         var personA = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
         var personB = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
 
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [personB, personA], "Whatever", default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [personB, personA], "Whatever", default);
 
         // Assert
         Assert.AreEqual(2, _commentAddedToRepository.Mentions.Count);
@@ -118,17 +118,17 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldSaveOnce()
+    public async Task AddAsync_ShouldSaveOnce()
     {
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [], "Whatever", default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [], "Whatever", default);
 
         // Assert
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
-    public async Task AddAndSaveAsync_ShouldSendEmailToCorrectEmails()
+    public async Task AddAsync_ShouldSendEmailToCorrectEmails()
     {
         // Arrange
         var person = new Person(Guid.NewGuid(), null!, null!, null!, "p1@pcs.no", false);
@@ -146,7 +146,7 @@ public class CommentServiceTests : TestsBase
             });
 
         // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [person], emailTemplateCode, default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "T", [], [person], emailTemplateCode, default);
 
         // Assert
         await _completionMailServiceMock.Received(1)
@@ -158,124 +158,14 @@ public class CommentServiceTests : TestsBase
         Assert.AreEqual(1, emailSentTo.Count);
         Assert.AreEqual(person.Email, emailSentTo.ElementAt(0));
     }
-    #endregion
 
-    #region AddAsync
-    [TestMethod]
-    public async Task AddAsync_ShouldAddCommentToRepository()
-    {
-        // Arrange 
-        var text = "T";
-
-        // Act
-        await _dut.AddAsync(_parent, _testPlant, text, [new Label("L")], [], default);
-
-        // Assert
-        Assert.IsNotNull(_commentAddedToRepository);
-        Assert.AreEqual(_parent.Guid, _commentAddedToRepository.ParentGuid);
-        Assert.AreEqual(_parent.GetContextName(), _commentAddedToRepository.ParentType);
-        Assert.AreEqual(text, _commentAddedToRepository.Text);
-    }
-
-    [TestMethod]
-    public async Task AddAsync_ShouldAddCommentToRepository_WithLabel()
-    {
-        // Arrange 
-        var labelA = new Label("a");
-
-        // Act
-        await _dut.AddAsync(_parent, _testPlant, "T", [labelA], [], default);
-
-        // Assert
-        Assert.AreEqual(1, _commentAddedToRepository.Labels.Count);
-        Assert.AreEqual(1, _commentAddedToRepository.GetOrderedNonVoidedLabels().Count());
-        Assert.IsTrue(_commentAddedToRepository.Labels.Any(l => l.Text == labelA.Text));
-    }
-
-    [TestMethod]
-    public async Task AddAsync_ShouldAddCommentToRepository_WithMentions()
-    {
-        // Arrange 
-        var personA = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
-        var personB = new Person(Guid.NewGuid(), null!, null!, null!, null!, false);
-
-        // Act
-        await _dut.AddAsync(_parent, _testPlant, "T", [], [personB, personA], default);
-
-        // Assert
-        Assert.AreEqual(2, _commentAddedToRepository.Mentions.Count);
-        Assert.AreEqual(2, _commentAddedToRepository.GetOrderedMentions().Count());
-        Assert.IsTrue(_commentAddedToRepository.Mentions.Any(p => p.Guid == personA.Guid));
-        Assert.IsTrue(_commentAddedToRepository.Mentions.Any(p => p.Guid == personB.Guid));
-    }
-    #endregion
-
-
+    
     #region Unit Tests which can be removed when no longer sync to pcs4
-    #region AddAndSaveAsync
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldCall_GetCurrentPersonAsync()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _personRepositoryMock.Received(1).GetCurrentPersonAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldSyncWithPcs4()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAndSaveAsync_ShouldRollbackTransaction_WhenExceptionThrown()
-    {
-        // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
-
-        // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.AddAndSaveAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default));
-
-        // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
-    }
-    #endregion AddAndSaveAsync
     [TestMethod]
     public async Task AddAsync_ShouldCall_GetCurrentPersonAsync()
     {
         // Act
-        await _dut.AddAsync(_parent, _testPlant, "text", [new Label("L")], [], default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
 
         // Assert
         await _personRepositoryMock.Received(1).GetCurrentPersonAsync(default);
@@ -285,15 +175,46 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldSyncWithPcs4()
     {
         // Act
-        await _dut.AddAsync(_parent, _testPlant, "text", [new Label("L")], [], default);
+        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
 
         // Assert
         await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
     }
 
-    #region AddAsync
+    [TestMethod]
+    public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
-    #endregion AddAsync
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
+        });
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewCommentAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncNewCommentAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
     #endregion
 
     private class TestableEntity : IHaveGuid

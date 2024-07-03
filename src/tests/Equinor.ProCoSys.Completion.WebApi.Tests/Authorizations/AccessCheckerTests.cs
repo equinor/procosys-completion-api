@@ -168,7 +168,7 @@ public class AccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(_proCoSys4CheckList.ProjectGuid).Returns(true);
 
         // Act
