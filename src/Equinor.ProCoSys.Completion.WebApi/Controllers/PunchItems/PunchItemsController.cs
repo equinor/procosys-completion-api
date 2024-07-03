@@ -24,6 +24,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCateg
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Query.Links;
@@ -145,7 +146,7 @@ public class PunchItemsController : ControllerBase
     /// <response code="404">CheckLists not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/CheckLists")]
-    public async Task<ActionResult> GetCheckListsByPunchItemGuid(
+    public async Task<ActionResult<ChecklistsByPunchGuidInstance>> GetCheckListsByPunchItemGuid(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]

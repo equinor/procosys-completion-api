@@ -153,7 +153,7 @@ public static class CompletionContextExtension
             KnownData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
-        SeedPunchItem(
+        knownTestData.PunchItemB = SeedPunchItem(
             dbContext,
             plant,
             project,

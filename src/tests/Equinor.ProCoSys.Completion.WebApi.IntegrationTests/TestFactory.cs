@@ -423,6 +423,13 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
+
+        CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(
+                new ChecklistsByPunchGuidInstance(
+                    new PICheckListDto(CheckListGuidNotRestricted, "projectA", string.Empty, string.Empty),
+                    new List<CheckListDto>() { new(Guid.NewGuid(), 3, 4, "ASD543", "OK") })
+            );
     }
 
     // Authenticated client without any roles

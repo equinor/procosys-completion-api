@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -15,14 +16,12 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public class PunchItemsControllerTests : TestBase
 {
     private Guid _punchItemGuidUnderTest;
-    private Guid _checkListGuidUnderTest;
     private List<PunchItemDto> _initialPunchItemsInProject;
 
     [TestInitialize]
     public async Task TestInitialize()
     {
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
-        _checkListGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.CheckListGuid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
@@ -907,7 +906,18 @@ public class PunchItemsControllerTests : TestBase
             );
 
         // Assert
-        Assert.IsTrue(punchItems.Count > 0);
+        Assert.IsTrue(0 < punchItems.Count);
+    }
+
+    [TestMethod]
+    public async Task GetCheckListsByPunchItemGuid_AsReader_ShouldGetCheckLists()
+    {
+        var res = await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest);
+
+        Assert.IsInstanceOfType(res, typeof(ChecklistsByPunchGuidInstance));
     }
 
     private async Task<(

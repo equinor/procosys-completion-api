@@ -15,6 +15,7 @@ public class KnownTestData
 
     public string Plant { get; }
     public PunchItem PunchItem { get; set; }
+    public PunchItem PunchItemB { get; set; }
     public Guid LinkInPunchItemAGuid { get; set; }
     public Guid CommentInPunchItemAGuid { get; set; }
     public Guid AttachmentInPunchItemAGuid { get; set; }
