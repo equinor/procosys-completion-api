@@ -13,16 +13,15 @@ public static class LibraryItemsControllerTestsHelper
     public static async Task<List<LibraryItemDto>> GetLibraryItemsAsync(
         UserType userType,
         string plant,
-        LibraryType[] libraryType,
+        LibraryType[] libraryTypes,
         HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
         string expectedMessageOnBadRequest = null)
     {
-        var parameters = new ParameterCollection
+        var parameters = new ParameterCollection();
+        foreach (var libraryType in libraryTypes)
         {
-            { "libraryTypes", libraryType[0].ToString()},
-            { "libraryTypes", libraryType[1].ToString()}
-
-        };
+            parameters.Add("libraryTypes", libraryType.ToString());
+        }
         var url = $"{Route}{parameters}";
 
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync(url);
