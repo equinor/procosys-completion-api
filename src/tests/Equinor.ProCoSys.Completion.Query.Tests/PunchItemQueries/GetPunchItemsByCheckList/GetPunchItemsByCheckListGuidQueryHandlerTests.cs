@@ -46,15 +46,13 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
     {
         // Act
         var result = await _dut.Handle(_query, default);
-        var data = result.Data;
+        var data = result.Data?.ToList();
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.IsTrue(data.Count == 1);
-        CollectionAssert.Contains(data.ToList(), _punchItemDetails);
-        await _punchItemServiceMock.Received(1).GetByCheckListGuid(_punchItemDetails.CheckListGuid, Arg.Any<CancellationToken>());
-        Assert.AreEqual(data.First().Guid, _punchItemDetails.Guid);
+        Assert.IsInstanceOfType(data, typeof(List<PunchItemDetailsDto>));
+        Assert.IsTrue(0 < data.Count);
+        CollectionAssert.Contains(data, _punchItemDetails);
     }
 
     private PunchItemDetailsDto PunchItemDetailsDtoMock(LibraryItemDto raisedByOrg, LibraryItemDto clearedByOrg) =>

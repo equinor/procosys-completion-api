@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
@@ -20,6 +19,7 @@ public class GetPunchItemsByCheckListGuidQueryValidator : AbstractValidator<GetP
             .MustAsync(BeAnExistingCheckListAsync)
             .WithMessage(query => $"CheckList does not exist with Guid '{query.CheckListGuid}'")
             .WithState(_ => new EntityNotFoundException());
+
         async Task<bool> BeAnExistingCheckListAsync(GetPunchItemsByCheckListGuidQuery query, CancellationToken cancellationToken)
             => await checkListValidator.ExistsAsync(query.CheckListGuid, cancellationToken);
     }

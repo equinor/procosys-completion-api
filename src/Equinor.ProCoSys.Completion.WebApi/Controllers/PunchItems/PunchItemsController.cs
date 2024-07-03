@@ -123,7 +123,7 @@ public class PunchItemsController : ControllerBase
     /// <response code="404">Project not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("CheckList/{checkListGuid}")]
-    public async Task<ActionResult<IReadOnlyCollection<PunchItemDetailsDto>>> GetPunchItemsByCheckListGuid(
+    public async Task<ActionResult<IEnumerable<PunchItemDetailsDto>>> GetPunchItemsByCheckListGuid(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]

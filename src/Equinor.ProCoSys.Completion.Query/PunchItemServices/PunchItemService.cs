@@ -31,7 +31,7 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         return MapPunchToDto(punchItem, attCount);
     }
 
-    public async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task<IEnumerable<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid, CancellationToken cancellationToken)
     {
         var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
             query.Where(pi => pi.CheckListGuid == checkListGuid)
@@ -46,8 +46,8 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             .ToDictionaryAsync(k => k.PunchItemGuid, v => v.AttachmentCount
                 , cancellationToken);
 
-        return punchItems.Select(p => MapPunchToDto(p, 
-            attachmentCounts.GetValueOrDefault(p.Guid, 0))).ToImmutableList();
+        return punchItems.Select(p => MapPunchToDto(p,
+            attachmentCounts.GetValueOrDefault(p.Guid, 0)));
     }
 
     private async Task<List<PunchItem>> GetPunchItems(Func<IQueryable<PunchItem>, IQueryable<PunchItem>> whereClause, CancellationToken cancellationToken)
