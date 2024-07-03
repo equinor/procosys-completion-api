@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Query.CacheQueries;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Misc;
 
@@ -25,20 +24,17 @@ public class CacheController : ControllerBase
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly IPermissionApiService _permissionApiService;
     private readonly IMediator _mediator;
-    private readonly ILogger<CacheController> _logger;
 
     public CacheController(
         IPermissionCache permissionCache,
         ICurrentUserProvider currentUserProvider,
         IPermissionApiService permissionApiService,
-        IMediator mediator,
-        ILogger<CacheController> logger)
+        IMediator mediator)
     {
         _permissionCache = permissionCache;
         _currentUserProvider = currentUserProvider;
         _permissionApiService = permissionApiService;
         _mediator = mediator;
-        _logger = logger;
     }
 
     [HttpPut("Clear")]
@@ -103,14 +99,7 @@ public class CacheController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            await _mediator.Send(new PrefetchCheckListQuery(checkListGuid), cancellationToken);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "an exception occured when prefetching Check List '{CheckListGuid}'", checkListGuid);
-        }
+        await _mediator.Send(new PrefetchCheckListQuery(checkListGuid), cancellationToken);
         return Ok();
     }
 }
