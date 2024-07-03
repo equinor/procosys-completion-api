@@ -19,7 +19,7 @@ public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : Ac
         var query = GetProjectQueryWithAccessToProjectToTest();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -32,7 +32,7 @@ public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : Ac
         var query = GetProjectQueryWithoutAccessToProjectToTest();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsFalse(result);

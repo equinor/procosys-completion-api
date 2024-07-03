@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
@@ -39,7 +40,7 @@ public class AccessValidator : IAccessValidator
         _logger = logger;
     }
 
-    public async Task<bool> ValidateAsync<TRequest>(TRequest request) where TRequest : IBaseRequest
+    public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IBaseRequest
     {
         if (request is null)
         {
@@ -59,7 +60,7 @@ public class AccessValidator : IAccessValidator
 
         if (request is CreatePunchItemCommand createPunchItemCommand)
         {
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListAsync(createPunchItemCommand.CheckListGuid))
+            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListAsync(createPunchItemCommand.CheckListGuid, cancellationToken))
             {
                 _logger.LogWarning("Current user {UserOid} doesn't have access to checkList {CheckListGuid}",
                     userOid, createPunchItemCommand.CheckListGuid);
@@ -84,7 +85,7 @@ public class AccessValidator : IAccessValidator
                 return false;
             }
 
-            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid))
+            if (!await _contentAccessChecker.HasCurrentUserAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid, cancellationToken))
             {
                 _logger.LogWarning("Current user {UserOid} doesn't have access to checkList owning punch {PunchItemGuid}",
                     userOid, punchItemCommand.PunchItemGuid);
