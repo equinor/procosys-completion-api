@@ -51,6 +51,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
     public static Guid CheckListGuidNotRestricted => KnownData.CheckListGuidA[KnownData.PlantA];
     public static Guid CheckListGuidRestricted => KnownData.CheckListGuidB[KnownData.PlantA];
+    public static Guid CheckListGuidRestrictedProject => KnownData.CheckListGuidB[KnownData.PlantB];
     public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
     public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
     public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
@@ -420,6 +421,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject)
+            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
     }
 
     // Authenticated client without any roles

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -43,13 +42,12 @@ public class GetPunchItemQueryHandlerTests
     {
         // Act
         var result = await _dut.Handle(_query, default);
-        var data = result.Data;
+        var punchItemDetails = result.Data;
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
-        await _punchItemServiceMock.Received(1).GetByGuid(_punchItemDetails.Guid, Arg.Any<CancellationToken>());
-        Assert.AreEqual(data.Guid, _punchItemDetails.Guid);
+        Assert.AreEqual(punchItemDetails, _punchItemDetails);
     }
 
     private PunchItemDetailsDto PunchItemDetailsDtoMock(LibraryItemDto raisedByOrg, LibraryItemDto clearedByOrg) =>

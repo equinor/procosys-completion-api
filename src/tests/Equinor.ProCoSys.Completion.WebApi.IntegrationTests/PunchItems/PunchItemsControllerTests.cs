@@ -15,12 +15,14 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public class PunchItemsControllerTests : TestBase
 {
     private Guid _punchItemGuidUnderTest;
+    private Guid _checkListGuidUnderTest;
     private List<PunchItemDto> _initialPunchItemsInProject;
 
     [TestInitialize]
     public async Task TestInitialize()
     {
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
+        _checkListGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.CheckListGuid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
@@ -892,6 +894,20 @@ public class PunchItemsControllerTests : TestBase
         AssertRowVersionChange(rowVersionAfterVerify, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldGetPunchItems()
+    {
+        // Act
+        var punchItems = await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            TestFactory.CheckListGuidNotRestricted
+            );
+
+        // Assert
+        Assert.IsTrue(punchItems.Count > 0);
     }
 
     private async Task<(
