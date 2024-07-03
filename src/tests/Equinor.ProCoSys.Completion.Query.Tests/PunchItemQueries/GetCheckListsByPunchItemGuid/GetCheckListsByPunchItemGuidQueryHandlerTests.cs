@@ -23,16 +23,18 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
     private const string ProjectName = "gooseberry_c";
     private const string Plant = "plant_a";
 
+    private ChecklistsByPunchGuidInstance _checkList;
+
     [TestInitialize]
     public void Setup_OkState()
     {
-        var result = new ChecklistsByPunchGuidInstance(new PICheckListDto(_checkListGuid, ProjectName, string.Empty, string.Empty), 
+        _checkList = new ChecklistsByPunchGuidInstance(new PICheckListDto(_checkListGuid, ProjectName, string.Empty, string.Empty), 
             new List<CheckListDto>(){new(Guid.NewGuid(), 3, 4, "ASD543", "OK")});
 
         _plantProviderMock = Substitute.For<IPlantProvider>();
         _plantProviderMock.Plant.Returns(Plant);
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-        _checkListApiServiceMock.GetByPunchItemGuidAsync(Plant, _punchItemGuid).Returns(result);
+        _checkListApiServiceMock.GetByPunchItemGuidAsync(Plant, _punchItemGuid).Returns(_checkList);
 
         _query = new GetCheckListsByPunchItemGuidQuery(_punchItemGuid);
         _dut = new GetCheckListsByPunchItemGuidQueryHandler(_plantProviderMock, _checkListApiServiceMock);
@@ -43,16 +45,12 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
     {
         // Act
         var result = await _dut.Handle(_query, default);
-        var data = result.Data;
+        var checkList = result.Data;
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.IsNotNull(data.PunchItemCheckList);
-        Assert.AreEqual(_checkListGuid, data.PunchItemCheckList.ProCoSysGuid);
-        Assert.IsTrue(_checkListGuid == data.PunchItemCheckList.ProCoSysGuid);
-        Assert.IsTrue(1 == data.CheckLists.Count);
-        await _checkListApiServiceMock.Received(1).GetByPunchItemGuidAsync(Plant, _punchItemGuid);
+        Assert.AreEqual(_checkList, checkList);
     }
 }
 
