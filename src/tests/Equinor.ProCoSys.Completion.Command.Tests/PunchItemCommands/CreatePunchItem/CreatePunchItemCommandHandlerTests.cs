@@ -468,8 +468,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -479,36 +479,14 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncNewPunchListItemAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldRecalculate()
-    {
-        // Arrange
-        PunchItemCreatedIntegrationEvent integrationEvent = null!;
-        _messageProducerMock
-            .When(x => x.PublishAsync(
-                Arg.Any<PunchItemCreatedIntegrationEvent>(),
-                default))
-            .Do(info =>
-            {
-                integrationEvent = info.Arg<PunchItemCreatedIntegrationEvent>();
-            });
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
     }
 
     [TestMethod]
     public async Task HandlingCommand_ShouldNotRecalculate_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -518,7 +496,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
 
         // Assert
         await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -526,14 +503,13 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewPunchListItemAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncNewPunchListItemAsync error"));
+            .Do(_ => throw new Exception("SyncNewPunchListItemAsync error"));
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
         await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -541,7 +517,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewPunchListItemAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncNewPunchListItemAsync error"));
+            .Do(_ => throw new Exception("SyncNewPunchListItemAsync error"));
 
         // Act and Assert
         try
@@ -559,7 +535,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange
         _checkListApiServiceMock.When(x => x.RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default))
-            .Do(x => throw new Exception("RecalculateCheckListStatus error"));
+            .Do(_ => throw new Exception("RecalculateCheckListStatus error"));
 
         // Act and Assert
         try

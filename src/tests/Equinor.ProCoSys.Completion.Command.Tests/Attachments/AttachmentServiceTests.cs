@@ -679,8 +679,8 @@ public class AttachmentServiceTests : TestsBase
     public async Task UploadNewAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -690,7 +690,6 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncNewAttachmentAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -698,7 +697,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewAttachmentAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncNewAttachmentAsync error"));
+            .Do(_ => throw new Exception("SyncNewAttachmentAsync error"));
 
         // Act and Assert
         try
@@ -737,8 +736,8 @@ public class AttachmentServiceTests : TestsBase
     public async Task UpdateAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -748,7 +747,6 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncAttachmentUpdateAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -756,7 +754,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncAttachmentUpdateAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncAttachmentUpdateAsync error"));
+            .Do(_ => throw new Exception("SyncAttachmentUpdateAsync error"));
 
         // Act and Assert
         try
@@ -795,8 +793,8 @@ public class AttachmentServiceTests : TestsBase
     public async Task DeleteAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -806,7 +804,6 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncAttachmentDeleteAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -814,7 +811,7 @@ public class AttachmentServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncAttachmentDeleteAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncAttachmentDeleteAsync error"));
+            .Do(_ => throw new Exception("SyncAttachmentDeleteAsync error"));
 
         // Act and Assert
         try

@@ -185,8 +185,8 @@ public class CommentServiceTests : TestsBase
     public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -196,7 +196,6 @@ public class CommentServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -204,7 +203,7 @@ public class CommentServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewCommentAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncNewCommentAsync error"));
+            .Do(_ => throw new Exception("SyncNewCommentAsync error"));
 
         // Act and Assert
         try

@@ -442,8 +442,8 @@ public class LinkServiceTests : TestsBase
     public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -453,7 +453,6 @@ public class LinkServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncNewLinkAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -461,7 +460,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewLinkAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncNewLinkAsync error"));
+            .Do(_ => throw new Exception("SyncNewLinkAsync error"));
 
         // Act and Assert
         try
@@ -500,8 +499,8 @@ public class LinkServiceTests : TestsBase
     public async Task UpdateAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -511,7 +510,6 @@ public class LinkServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkUpdateAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -519,7 +517,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncLinkUpdateAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncLinkUpdateAsync error"));
+            .Do(_ => throw new Exception("SyncLinkUpdateAsync error"));
 
         // Act and Assert
         try
@@ -558,8 +556,8 @@ public class LinkServiceTests : TestsBase
     public async Task DeleteAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -569,7 +567,6 @@ public class LinkServiceTests : TestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkDeleteAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -577,7 +574,7 @@ public class LinkServiceTests : TestsBase
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncLinkDeleteAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncLinkDeleteAsync error"));
+            .Do(_ => throw new Exception("SyncLinkDeleteAsync error"));
 
         // Act and Assert
         try

@@ -156,8 +156,8 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock.When(x => x.SaveChangesAsync(default))
-            .Do(x => throw new Exception("SaveChangesAsync error"));
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+            .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
         await Assert.ThrowsExceptionAsync<Exception>(async () =>
@@ -167,7 +167,6 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncPunchListItemUpdateAsync(Arg.Any<object>(), default);
-        _unitOfWorkMock.ClearReceivedCalls();
     }
 
     [TestMethod]
@@ -175,7 +174,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemUpdateAsync(Arg.Any<object>(), default))
-            .Do(x => throw new Exception("SyncPunchListItemUpdateAsync error"));
+            .Do(_ => throw new Exception("SyncPunchListItemUpdateAsync error"));
 
         // Act and Assert
         try
