@@ -15,19 +15,20 @@ public class ProCoSys4CheckListValidator : ICheckListValidator
 
     public async Task<bool> ExistsAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
-        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid, default);
         return proCoSys4CheckList is not null;
     }
 
-    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid)
+    public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid,
+        CancellationToken cancellationToken)
     {
-        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         return proCoSys4CheckList is not null && proCoSys4CheckList.IsVoided;
     }
 
     public async Task<bool> InProjectAsync(Guid checkListGuid, Guid projectGuid)
     {
-        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var proCoSys4CheckList = await _checkListCache.GetCheckListAsync(checkListGuid, default);
         return proCoSys4CheckList is not null && proCoSys4CheckList.ProjectGuid == projectGuid;
     }
 }

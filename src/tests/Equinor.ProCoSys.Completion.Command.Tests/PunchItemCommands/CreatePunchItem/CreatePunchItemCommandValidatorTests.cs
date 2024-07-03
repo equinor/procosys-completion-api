@@ -384,7 +384,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningCheckListIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.CheckListGuid).Returns(true);
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.CheckListGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

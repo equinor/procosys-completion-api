@@ -16,7 +16,6 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
-using MassTransit.Testing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -417,9 +416,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted)
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted)
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
     }
 

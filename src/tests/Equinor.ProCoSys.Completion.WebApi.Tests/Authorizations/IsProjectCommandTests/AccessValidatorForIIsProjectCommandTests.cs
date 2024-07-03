@@ -20,7 +20,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
         var command = GetProjectCommandWithAccessToBothProjectAndContent();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -33,7 +33,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
         var command = GetProjectCommandWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -46,7 +46,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
         var command = GetProjectCommandWithAccessToProjectButNotContent();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsFalse(result);

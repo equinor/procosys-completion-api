@@ -44,38 +44,40 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
 
         punchItem.Unclear();
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await _unitOfWork.SetAuditDataAsync();
+
+        var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
+            _messageProducer,
+            punchItem,
+            "Punch item uncleared",
+            [],
+            cancellationToken);
+
+        punchItem.SetRowVersion(request.RowVersion);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
 
         try
         {
-            // AuditData must be set before publishing events due to use of Created- and Modified-properties
-            await _unitOfWork.SetAuditDataAsync();
-
-            var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-                _messageProducer,
-                punchItem,
-                "Punch item uncleared",
-                [],
-                cancellationToken);
-
-            punchItem.SetRowVersion(request.RowVersion);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-           
-             await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
-
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on unclear of PunchListItem with guid {PunchItemGuid}", request.PunchItemGuid);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(e, "Error occurred while trying to Sync Unclear on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
+
+        try
+        {
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+        }
+
+        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
 }

@@ -19,7 +19,7 @@ public class CheckListValidatorTests
     public void Setup()
     {
         _checkListCacheMock = Substitute.For<ICheckListCache>();
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
 
         _dut = new ProCoSys4CheckListValidator(_checkListCacheMock);
     }
@@ -51,7 +51,7 @@ public class CheckListValidatorTests
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnFalse_WhenCheckListExistsAndTagNotVoided()
     {
         // Act
-        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid);
+        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -61,10 +61,10 @@ public class CheckListValidatorTests
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnTrue_WhenCheckListExistsAndTagIsVoided()
     {
         // Arrange
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(new ProCoSys4CheckList("RC", true, Guid.NewGuid()));
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(new ProCoSys4CheckList("RC", true, Guid.NewGuid()));
 
         // Act
-        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid);
+        var result = await _dut.TagOwningCheckListIsVoidedAsync(_checkListGuid, default);
 
         // Assert
         Assert.IsTrue(result);

@@ -11,7 +11,7 @@ namespace Equinor.ProCoSys.Completion.Command.Comments;
 
 public interface ICommentService
 {
-    Task<CommentDto> AddAndSaveAsync(
+    Task<CommentDto> AddAsync(
         IUnitOfWork unitOfWork,
         IHaveGuid parentEntity,
         string plant,
@@ -24,13 +24,5 @@ public interface ICommentService
          * See ICompletionMailService for sample
          */
         string emailTemplateCode,
-        CancellationToken cancellationToken);
-
-    Task<Guid> AddAsync(
-        IHaveGuid parentEntity,
-        string plant,
-        string text,
-        IEnumerable<Label> labels,
-        IEnumerable<Person> mentions,
         CancellationToken cancellationToken);
 }

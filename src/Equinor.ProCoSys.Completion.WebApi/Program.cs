@@ -5,14 +5,11 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 
 const string AllowAllOriginsCorsPolicy = "AllowAllOrigins";
