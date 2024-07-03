@@ -125,8 +125,8 @@ public class PunchItemEventConsumerTests
         _libraryItemRepoMock.GetAsync(s_raisedByOrgGuid, Arg.Any<CancellationToken>()).Returns(_raisedByOrg);
         _libraryItemRepoMock.GetAsync(s_clearingByOrgGuid, Arg.Any<CancellationToken>()).Returns(_clearingByOrg);
 
-        _libraryItemRepoMock.GetByGuidAndTypeAsync(_punchListPriorityGuid, LibraryType.PUNCHLIST_PRIORITY, Arg.Any<CancellationToken>())
-            .Returns(new LibraryItem(Plant, _punchListPriorityGuid, "COM", "?", LibraryType.PUNCHLIST_PRIORITY));
+        _libraryItemRepoMock.GetByGuidAndTypeAsync(_punchListPriorityGuid, LibraryType.COMM_PRIORITY, Arg.Any<CancellationToken>())
+            .Returns(new LibraryItem(Plant, _punchListPriorityGuid, "COM", "?", LibraryType.COMM_PRIORITY));
         _libraryItemRepoMock.GetByGuidAndTypeAsync(_punchListSortingGuid, LibraryType.PUNCHLIST_SORTING, Arg.Any<CancellationToken>())
             .Returns(new LibraryItem(Plant, _punchListSortingGuid, "COM", "?", LibraryType.PUNCHLIST_SORTING));
         _libraryItemRepoMock.GetByGuidAndTypeAsync(_punchListTypeGuid, LibraryType.PUNCHLIST_TYPE, Arg.Any<CancellationToken>())

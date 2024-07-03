@@ -115,7 +115,7 @@ public static class CompletionContextExtension
             plant,
             KnownData.PriorityGuid[plant],
             "P1",
-            LibraryType.PUNCHLIST_PRIORITY);
+            LibraryType.COMM_PRIORITY);
         knownTestData.PunchLibraryItemGuids.Add(priority.Guid);
 
         var sorting = SeedLibrary(

@@ -14,7 +14,7 @@ public class LibraryItemsControllerNegativeTests : TestBase
         => await LibraryItemsControllerTestsHelper.GetLibraryItemsAsync(
             UserType.Anonymous,
             TestFactory.Unknown,
-            [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY],
+            [LibraryType.PUNCHLIST_SORTING],
             HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -22,7 +22,7 @@ public class LibraryItemsControllerNegativeTests : TestBase
         => await LibraryItemsControllerTestsHelper.GetLibraryItemsAsync(
             UserType.NoPermissionUser,
             TestFactory.Unknown,
-            [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY],
+            [LibraryType.PUNCHLIST_SORTING],
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -31,7 +31,7 @@ public class LibraryItemsControllerNegativeTests : TestBase
         => await LibraryItemsControllerTestsHelper.GetLibraryItemsAsync(
             UserType.Writer,
             TestFactory.Unknown,
-            [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY], 
+            [LibraryType.PUNCHLIST_SORTING], 
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -40,7 +40,7 @@ public class LibraryItemsControllerNegativeTests : TestBase
         => await LibraryItemsControllerTestsHelper.GetLibraryItemsAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY], 
+            [LibraryType.PUNCHLIST_SORTING], 
             HttpStatusCode.Forbidden);
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class LibraryItemsControllerNegativeTests : TestBase
         => await LibraryItemsControllerTestsHelper.GetLibraryItemsAsync(
             UserType.Writer,
             TestFactory.PlantWithoutAccess, 
-            [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY], 
+            [LibraryType.PUNCHLIST_SORTING], 
             HttpStatusCode.Forbidden);
     #endregion
 }

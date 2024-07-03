@@ -88,8 +88,8 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _existingRaisedByOrg2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
             _existingClearingByOrg1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
             _existingClearingByOrg2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMPLETION_ORGANIZATION, ++id));
-            _existingPriority1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_PRIORITY, ++id));
-            _existingPriority2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_PRIORITY, ++id));
+            _existingPriority1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMM_PRIORITY, ++id));
+            _existingPriority2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.COMM_PRIORITY, ++id));
             _existingSorting1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_SORTING, ++id));
             _existingSorting2.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_SORTING, ++id));
             _existingType1.Add(testPlant, SetupLibraryItem(testPlant, LibraryType.PUNCHLIST_TYPE, ++id));
