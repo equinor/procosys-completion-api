@@ -15,6 +15,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.MessageContracts;
@@ -67,17 +68,14 @@ public class RejectPunchItemCommandHandler(
          var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
          var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
 
-         //TODO issue 208 rewrite to be integrationEvent and publish said integration event
-         var commentEvent = new CommentEventDto
-         {
-             Guid = comment.Guid,
-             Plant = punchItem.Plant,
-             ParentGuid = comment.ParentGuid,
-             CreatedBy = createdBy,
-             CreatedAtUtc = TimeService.UtcNow,
-             Text = comment.Text,
-             Labels = comment.Labels.Select(x => x.Text).ToList()
-         };
+         var commentCreatedIntegrationEvent = new CommentCreatedIntegrationEvent(comment.Guid, punchItem.Plant,
+             comment.ParentGuid,
+             createdBy,
+             TimeService.UtcNow,
+             comment.Text,
+             comment.Labels.Select(x => x.Text));
+
+        await messageProducer.PublishAsync(commentCreatedIntegrationEvent, cancellationToken);
 
         punchItem.SetRowVersion(request.RowVersion);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -98,7 +96,7 @@ public class RejectPunchItemCommandHandler(
 
         try
         {
-            await syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
+            await syncToPCS4Service.SyncNewCommentAsync(commentCreatedIntegrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
