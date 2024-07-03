@@ -23,7 +23,7 @@ public class MainApiCheckListService(
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
         try

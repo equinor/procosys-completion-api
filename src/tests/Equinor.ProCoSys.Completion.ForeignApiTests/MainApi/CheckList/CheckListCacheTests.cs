@@ -36,7 +36,7 @@ public class CheckListCacheTests
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
         _distributedCache = new MemoryDistributedCache(options);
         _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
-        _checkListApiServiceMock.GetCheckListAsync(_checkListGuid).Returns(_checkList);
+        _checkListApiServiceMock.GetCheckListAsync(_checkListGuid, default).Returns(_checkList);
 
         _dut = new CheckListCache(_checkListApiServiceMock, _distributedCache, applicationOptionsMock, default);
     }
@@ -49,7 +49,7 @@ public class CheckListCacheTests
 
         // Assert
         AssertCheckList(result);
-        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid);
+        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid, default);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class CheckListCacheTests
         // Assert
         AssertCheckList(result);
         // since GetCheckListAsync has been called twice, but TryGetCheckListByOidAsync has been called once, the second Get uses cache
-        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid);
+        await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid, default);
     }
 
     private void AssertCheckList(ProCoSys4CheckList checkList)

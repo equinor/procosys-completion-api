@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
 public interface IAccessValidator
 {
-    Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest: IBaseRequest;
+    Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest: IBaseRequest;
 }

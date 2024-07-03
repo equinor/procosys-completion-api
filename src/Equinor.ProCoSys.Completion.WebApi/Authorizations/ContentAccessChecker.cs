@@ -24,7 +24,7 @@ public class ContentAccessChecker : IContentAccessChecker
     }
 
     public async Task<bool> HasCurrentUserAccessToCheckListAsync(Guid checkListGuid,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
@@ -35,7 +35,7 @@ public class ContentAccessChecker : IContentAccessChecker
     }
 
     public async Task<bool> HasCurrentUserAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {

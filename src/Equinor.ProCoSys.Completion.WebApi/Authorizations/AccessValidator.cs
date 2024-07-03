@@ -40,7 +40,7 @@ public class AccessValidator : IAccessValidator
         _logger = logger;
     }
 
-    public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IBaseRequest
+    public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IBaseRequest
     {
         if (request is null)
         {

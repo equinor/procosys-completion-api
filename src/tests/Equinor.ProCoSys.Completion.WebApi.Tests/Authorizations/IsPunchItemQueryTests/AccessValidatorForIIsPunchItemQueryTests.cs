@@ -19,7 +19,7 @@ public abstract class AccessValidatorForIIsPunchItemQueryTests<TPunchItemQuery> 
         var query = GetPunchItemQueryWithAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -32,7 +32,7 @@ public abstract class AccessValidatorForIIsPunchItemQueryTests<TPunchItemQuery> 
         var query = GetPunchItemQueryWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsFalse(result);
