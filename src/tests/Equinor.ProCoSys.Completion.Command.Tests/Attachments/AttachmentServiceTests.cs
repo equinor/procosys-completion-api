@@ -653,7 +653,6 @@ public class AttachmentServiceTests : TestsBase
     #endregion
 
     #region Unit Tests which can be removed when no longer sync to pcs4
-    #region UploadNewAsync
     [TestMethod]
     public async Task UploadNewAsync_ShouldSyncWithPcs4()
     {
@@ -677,45 +676,40 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UploadNewAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UploadNewAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UploadNewAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task UploadNewAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewAttachmentAsync(Arg.Any<object>(), default);
     }
-    #endregion UploadNewAsync
 
-    #region UpdateAsync
+    [TestMethod]
+    public async Task UploadNewAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewAttachmentAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncNewAttachmentAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.UploadNewAsync(_project, _parentType, _parentGuid, _newJpgFileName, new MemoryStream(), _contentTypeJpeg, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
     [TestMethod]
     public async Task UpdateAsync_ShouldSyncWithPcs4()
     {
@@ -739,45 +733,40 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task UpdateAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncAttachmentUpdateAsync(Arg.Any<object>(), default);
     }
-    #endregion UpdateAsync
 
-    #region DeleteAsync
+    [TestMethod]
+    public async Task UpdateAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncAttachmentUpdateAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncAttachmentUpdateAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.UpdateAsync(_existingAttachment.Guid, "description", new List<Label>(), _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
     [TestMethod]
     public async Task DeleteAsync_ShouldSyncWithPcs4()
     {
@@ -801,42 +790,38 @@ public class AttachmentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task DeleteAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task DeleteAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncAttachmentDeleteAsync(Arg.Any<object>(), default);
     }
-    #endregion DeleteAsync
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncAttachmentDeleteAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncAttachmentDeleteAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.DeleteAsync(_existingAttachment.Guid, _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
     #endregion
 }

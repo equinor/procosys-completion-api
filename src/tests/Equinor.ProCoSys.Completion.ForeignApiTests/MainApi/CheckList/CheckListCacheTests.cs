@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain;

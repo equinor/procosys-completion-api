@@ -416,7 +416,6 @@ public class LinkServiceTests : TestsBase
     #endregion
 
     #region Unit Tests which can be removed when no longer sync to pcs4
-    #region AddAsync
     [TestMethod]
     public async Task AddAsync_ShouldSyncWithPcs4()
     {
@@ -440,45 +439,40 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task AddAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task AddAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.AddAsync("Whatever", _parentGuid, "T", "www", default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewLinkAsync(Arg.Any<object>(), default);
     }
-    #endregion AddAsync
 
-    #region UpdateAsync
+    [TestMethod]
+    public async Task AddAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewLinkAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncNewLinkAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.AddAsync("Whatever", _parentGuid, "T", "www", default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
     [TestMethod]
     public async Task UpdateAsync_ShouldSyncWithPcs4()
     {
@@ -502,45 +496,40 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task UpdateAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task UpdateAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task UpdateAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkUpdateAsync(Arg.Any<object>(), default);
     }
-    #endregion UpdateAsync
 
-    #region DeleteAsync
+    [TestMethod]
+    public async Task UpdateAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncLinkUpdateAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncLinkUpdateAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.UpdateAsync(_existingLink.Guid, "title", "url", _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
     [TestMethod]
     public async Task DeleteAsync_ShouldSyncWithPcs4()
     {
@@ -564,42 +553,38 @@ public class LinkServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task DeleteAsync_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task DeleteAsync_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task DeleteAsync_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncLinkDeleteAsync(Arg.Any<object>(), default);
     }
-    #endregion DeleteAsync
+
+    [TestMethod]
+    public async Task DeleteAsync_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncLinkDeleteAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncLinkDeleteAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.DeleteAsync(_existingLink.Guid, _rowVersion, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
     #endregion
 }

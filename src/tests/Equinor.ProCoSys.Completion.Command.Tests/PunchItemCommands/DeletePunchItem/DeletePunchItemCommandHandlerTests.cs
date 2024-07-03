@@ -170,41 +170,87 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldBeginTransaction()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).BeginTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldCommitTransaction_WhenNoExceptions()
-    {
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert
-        await _unitOfWorkMock.Received(1).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(default);
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldRollbackTransaction_WhenExceptionThrown()
+    public async Task HandlingCommand_ShouldNotSyncWithPcs4_WhenSavingChangesFails()
     {
         // Arrange
-        _unitOfWorkMock
-            .When(u => u.SaveChangesAsync())
-            .Do(_ => throw new Exception());
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+           .Do(_ => throw new Exception("SaveChangesAsync error"));
 
         // Act
-        var exception = await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(default);
-        await _unitOfWorkMock.Received(1).RollbackTransactionAsync(default);
-        Assert.IsInstanceOfType(exception, typeof(Exception));
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncPunchListItemDeleteAsync(Arg.Any<object>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSavingChangesFails()
+    {
+        // Arrange
+        _unitOfWorkMock.When(x => x.SaveChangesAsync())
+            .Do(_ => throw new Exception("SaveChangesAsync error"));
+
+        // Act
+        await Assert.ThrowsExceptionAsync<Exception>(async () =>
+        {
+            await _dut.Handle(_command, default);
+        });
+
+        // Assert
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemDeleteAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncPunchListItemDeleteAsync error"));
+
+        // Act
+        await _dut.Handle(_command, default);
+
+        // Assert
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncPunchListItemDeleteAsync(Arg.Any<object>(), default))
+            .Do(_ => throw new Exception("SyncPunchListItemDeleteAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenRecalculatingFails()
+    {
+        // Arrange
+        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default))
+            .Do(_ => throw new Exception("RecalculateCheckListStatus error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_command, default);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
     }
     #endregion
 }

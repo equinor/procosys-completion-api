@@ -113,6 +113,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         SetMaterialETAUtc(punchItem, request.MaterialETAUtc, properties);
         SetMaterialExternalNo(punchItem, request.MaterialExternalNo, properties);
 
+        PunchItemCreatedIntegrationEvent integrationEvent;
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
@@ -126,22 +127,14 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             // Add property for ItemNo first in list, since it is an "important" property
             properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
-            var integrationEvent =
-                await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
+            integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
-
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
-            
             _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo,
                 punchItem.Guid);
-
-            return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
-                punchItem.RowVersion.ConvertToString()));
         }
         catch (Exception e)
         {
@@ -149,6 +142,29 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
+
+        try
+        {
+            await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", punchItem.Guid);
+            return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
+                punchItem.RowVersion.ConvertToString()));
+        }
+
+        try
+        {
+            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+        }
+
+        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
+            punchItem.RowVersion.ConvertToString()));
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
