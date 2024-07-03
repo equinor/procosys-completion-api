@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
@@ -26,17 +27,17 @@ public class AccessChecker : IAccessChecker
 
     }
 
-    public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid)
+    public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
             return true;
         }
 
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid);
+        return await HasCurrentUserExplicitAccessToContent(checkListGuid, cancellationToken);
     }
 
-    public async Task<bool> HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid)
+    public async Task<bool> HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
@@ -50,20 +51,20 @@ public class AccessChecker : IAccessChecker
             throw new Exception($"CheckListGuid for PunchItem '{punchItemGuid}' not found");
         }
 
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid.Value);
+        return await HasCurrentUserExplicitAccessToContent(checkListGuid.Value, cancellationToken);
     }
 
-    public async Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid)
+    public async Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
-        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         return checkList == null
             ? throw new Exception($"CheckList with guid '{checkListGuid}' not found")
             : _projectAccessChecker.HasCurrentUserAccessToProject(checkList.ProjectGuid);
     }
 
-    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid)
+    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid, CancellationToken cancellationToken)
     {
-        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid);
+        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         if (checkList is null)
         {
             throw new Exception($"CheckList '{checkListGuid}' not found");

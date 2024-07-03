@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.Extensions.Logging;
@@ -37,15 +38,15 @@ public class AccessValidatorTestBase
         _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
         _accessCheckerMock = Substitute.For<IAccessChecker>();
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent, Arg.Any<CancellationToken>())
             .Returns(false);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent, Arg.Any<CancellationToken>())
             .Returns(true);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent, Arg.Any<CancellationToken>())
             .Returns(false);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
             .Returns(true);
-        _accessCheckerMock.HasCurrentUserReadAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent)
+        _accessCheckerMock.HasCurrentUserReadAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
             .Returns(true);
 
         var punchItemHelperMock = Substitute.For<IPunchItemHelper>();

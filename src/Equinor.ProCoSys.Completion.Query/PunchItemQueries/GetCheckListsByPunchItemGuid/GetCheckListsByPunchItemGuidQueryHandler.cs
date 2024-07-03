@@ -22,9 +22,10 @@ public class GetCheckListsByPunchItemGuidQueryHandler : IRequestHandler<GetCheck
     }
 
     public async Task<Result<ChecklistsByPunchGuidInstance>> Handle(GetCheckListsByPunchItemGuidQuery request,
-    CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        var res = await _checkListApiService.GetByPunchItemGuidAsync(_plantProvider.Plant, request.PunchItemGuid);
+        var res = await _checkListApiService.GetByPunchItemGuidAsync(
+            _plantProvider.Plant, request.PunchItemGuid, cancellationToken);
         return new SuccessResult<ChecklistsByPunchGuidInstance>(res!);
     }
 }

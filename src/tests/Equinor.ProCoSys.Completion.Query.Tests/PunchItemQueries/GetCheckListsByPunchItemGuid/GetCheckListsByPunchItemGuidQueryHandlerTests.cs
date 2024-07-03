@@ -34,7 +34,7 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
         _plantProviderMock = Substitute.For<IPlantProvider>();
         _plantProviderMock.Plant.Returns(Plant);
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-        _checkListApiServiceMock.GetByPunchItemGuidAsync(Plant, _punchItemGuid).Returns(_checkList);
+        _checkListApiServiceMock.GetByPunchItemGuidAsync(Plant, _punchItemGuid, default).Returns(_checkList);
 
         _query = new GetCheckListsByPunchItemGuidQuery(_punchItemGuid);
         _dut = new GetCheckListsByPunchItemGuidQueryHandler(_plantProviderMock, _checkListApiServiceMock);

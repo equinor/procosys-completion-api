@@ -20,7 +20,7 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
         var command = GetPunchItemCommandWithAccessToBothProjectAndContent();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -33,7 +33,7 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
         var command = GetPunchItemCommandWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsFalse(result);
@@ -46,7 +46,7 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
         var command = GetPunchItemCommandWithAccessToProjectButNotContent();
 
         // act
-        var result = await _dut.ValidateAsync(command);
+        var result = await _dut.ValidateAsync(command, default);
 
         // Assert
         Assert.IsFalse(result);

@@ -19,7 +19,7 @@ public abstract class AccessValidatorForIIsCheckListQueryTests<TCheckListQuery> 
         var query = GetCheckListQueryWithAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsTrue(result);
@@ -32,7 +32,7 @@ public abstract class AccessValidatorForIIsCheckListQueryTests<TCheckListQuery> 
         var query = GetCheckListQueryWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(query);
+        var result = await _dut.ValidateAsync(query, default);
 
         // Assert
         Assert.IsFalse(result);
