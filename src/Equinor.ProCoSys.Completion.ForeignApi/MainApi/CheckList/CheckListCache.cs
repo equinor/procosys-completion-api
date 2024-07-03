@@ -22,7 +22,7 @@ public class CheckListCache(
     };
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var checkListGuidCacheKey = CheckListGuidCacheKey(checkListGuid);
 

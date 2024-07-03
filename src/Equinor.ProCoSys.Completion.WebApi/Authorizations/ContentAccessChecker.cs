@@ -53,7 +53,7 @@ public class ContentAccessChecker : IContentAccessChecker
     }
 
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         if (checkList is null)

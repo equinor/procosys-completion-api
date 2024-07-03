@@ -51,7 +51,7 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
 
         // Act
@@ -66,7 +66,7 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
 
         // Act
@@ -81,7 +81,7 @@ public class ContentAccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(null as ProCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(null as ProCoSys4CheckList);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(
@@ -107,7 +107,7 @@ public class ContentAccessCheckerTests
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
         _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
 
         // Act
@@ -123,7 +123,7 @@ public class ContentAccessCheckerTests
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
         _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(_proCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
 
         // Act
@@ -151,7 +151,7 @@ public class ContentAccessCheckerTests
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
         _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync(_checkListGuid).Returns(null as ProCoSys4CheckList);
+        _checkListCacheMock.GetCheckListAsync(_checkListGuid, default).Returns(null as ProCoSys4CheckList);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(

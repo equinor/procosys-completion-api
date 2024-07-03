@@ -45,7 +45,7 @@ public class CheckListCacheTests
     public async Task GetCheckList_ShouldReturnCheckListFromCheckListApiServiceFirstTime()
     {   
         // Act
-        var result = await _dut.GetCheckListAsync(_checkListGuid);
+        var result = await _dut.GetCheckListAsync(_checkListGuid, default);
 
         // Assert
         AssertCheckList(result);
@@ -55,10 +55,10 @@ public class CheckListCacheTests
     [TestMethod]
     public async Task GetCheckList_ShouldReturnCheckListsFromCacheSecondTime()
     {
-        await _dut.GetCheckListAsync(_checkListGuid);
+        await _dut.GetCheckListAsync(_checkListGuid, default);
 
         // Act
-        var result = await _dut.GetCheckListAsync(_checkListGuid);
+        var result = await _dut.GetCheckListAsync(_checkListGuid, default);
 
         // Assert
         AssertCheckList(result);
