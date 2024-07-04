@@ -14,7 +14,7 @@ public class LibraryItemTests
     private readonly Guid _guid = Guid.NewGuid();
     private readonly string _description = "X Desc";
     private readonly LibraryType _type = LibraryType.COMPLETION_ORGANIZATION;
-    private readonly Classification _punchPriClassification = new(Guid.NewGuid(), "CL");
+    private readonly Classification _classification = new(Guid.NewGuid(), "CL");
 
     [TestInitialize]
     public void Setup() => _dut = new LibraryItem(_testPlant, _guid, _code, _description, _type);
@@ -32,22 +32,22 @@ public class LibraryItemTests
     public void AddClassification_ShouldAddClassification()
     {
         // Act
-        _dut.AddClassification(_punchPriClassification);
+        _dut.AddClassification(_classification);
 
         // Arrange
         Assert.AreEqual(1, _dut.Classifications.Count);
-        Assert.AreEqual(_punchPriClassification, _dut.Classifications.ElementAt(0));
+        Assert.AreEqual(_classification, _dut.Classifications.ElementAt(0));
     }
 
     [TestMethod]
     public void RemoveClassification_ShouldRemoveClassification()
     {
         // Arrange
-        _dut.AddClassification(_punchPriClassification);
+        _dut.AddClassification(_classification);
         Assert.AreEqual(1, _dut.Classifications.Count);
 
         // Act
-        _dut.RemoveClassification(_punchPriClassification);
+        _dut.RemoveClassification(_classification);
 
         // Arrange
         Assert.AreEqual(0, _dut.Classifications.Count);
