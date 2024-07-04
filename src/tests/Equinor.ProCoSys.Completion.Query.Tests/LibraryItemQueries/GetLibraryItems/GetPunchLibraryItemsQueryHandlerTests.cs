@@ -110,7 +110,7 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddPunchPriorityLibraryItemsInclusiveNonClassifiedCommPriority(context);
+        AddCommPriorityLibraryItemsInclusiveClassifiedAsPunchPriority(context);
 
         var query = new GetPunchLibraryItemsQuery([LibraryType.COMM_PRIORITY]);
         var dut = new GetPunchLibraryItemsQueryHandler(context);
@@ -125,7 +125,7 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         AssertLibraryItem(result.Data.ElementAt(0), _punchListPriorityLibraryItem);
     }
 
-    private void AddPunchPriorityLibraryItemsInclusiveNonClassifiedCommPriority(CompletionContext context)
+    private void AddCommPriorityLibraryItemsInclusiveClassifiedAsPunchPriority(CompletionContext context)
     {
         _punchListPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "PriA", "Pri A Desc", LibraryType.COMM_PRIORITY);
         _punchListPriorityLibraryItem.AddClassification(new Classification(Guid.Empty, Classification.PunchPriority));
