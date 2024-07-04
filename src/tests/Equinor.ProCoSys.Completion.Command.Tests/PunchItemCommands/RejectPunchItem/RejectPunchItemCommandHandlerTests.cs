@@ -22,6 +22,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.RejectPunc
 [TestClass]
 public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
 {
+    private const string RejectLabelText = "Reject";
     private readonly string _testPlant = TestPlantA;
     private RejectPunchItemCommand _command;
     private RejectPunchItemCommandHandler _dut;
@@ -32,6 +33,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
     private Label _rejectedLabel;
     private List<Person> _personList;
+    private Comment _commentAddedToRepository = null!;
 
     [TestInitialize]
     public void Setup()
@@ -47,12 +49,18 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             new List<Guid> { person.Guid },
             RowVersion);
 
-        const string rejectLabelText = "Reject";
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
-        _rejectedLabel = new Label(rejectLabelText);
-        _labelRepositoryMock.GetByTextAsync(rejectLabelText, default).Returns(_rejectedLabel);
+        _rejectedLabel = new Label(RejectLabelText);
+        _labelRepositoryMock.GetByTextAsync(RejectLabelText, default).Returns(_rejectedLabel);
 
         _commentRepositoryMock = Substitute.For<ICommentRepository>();
+        _commentRepositoryMock
+            .When(x => x.Add(Arg.Any<Comment>()))
+            .Do(info =>
+            {
+                _commentAddedToRepository = info.Arg<Comment>();
+                _commentAddedToRepository.SetCreated(_person);
+            });
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
 
@@ -62,7 +70,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _optionsMock.CurrentValue.Returns(
             new ApplicationOptions
             {
-                RejectLabel = rejectLabelText
+                RejectLabel = RejectLabelText
             });
 
         _personRepositoryMock.GetOrCreateManyAsync(_command.Mentions, default)
@@ -130,24 +138,15 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestMethod]
     public async Task HandlingCommand_ShouldAddComment_WithCorrectLabel()
     {
-        // Arrange 
-        Comment addedComment = null!;
-        _commentRepositoryMock
-            .When(x => x.Add(Arg.Any<Comment>()))
-            .Do(info =>
-            {
-                addedComment = info.Arg<Comment>();
-            });
-
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
         _commentRepositoryMock.Received(1)
             .Add(Arg.Any<Comment>());
-        Assert.IsNotNull(addedComment);
-        Assert.AreEqual(1, addedComment.Labels.Count);
-        Assert.AreEqual(_rejectedLabel, addedComment.Labels.ElementAt(0));
+        Assert.IsNotNull(_commentAddedToRepository);
+        Assert.AreEqual(1, _commentAddedToRepository.Labels.Count);
+        Assert.AreEqual(_rejectedLabel, _commentAddedToRepository.Labels.ElementAt(0));
     }
 
     [TestMethod]

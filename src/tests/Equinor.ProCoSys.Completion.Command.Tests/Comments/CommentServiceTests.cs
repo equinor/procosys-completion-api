@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,7 +29,7 @@ public class CommentServiceTests : TestsBase
     private Comment _commentAddedToRepository;
     private ICompletionMailService _completionMailServiceMock;
     private IDeepLinkUtility _deepLinkUtilityMock;
-    private IPersonRepository _personRepositoryMock;
+    private IMessageProducer _messageProducerMock;
 
     [TestInitialize]
     public void Setup()
@@ -37,23 +39,21 @@ public class CommentServiceTests : TestsBase
             .Do(info =>
             {
                 _commentAddedToRepository = info.Arg<Comment>();
+                _commentAddedToRepository.SetCreated(_person);
             });
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
         _deepLinkUtilityMock = Substitute.For<IDeepLinkUtility>();
-        _personRepositoryMock = Substitute.For<IPersonRepository>();
-        _personRepositoryMock.GetCurrentPersonAsync(Arg.Any<CancellationToken>())
-            .Returns(_person);
+        _messageProducerMock = Substitute.For<IMessageProducer>();
 
         _dut = new CommentService(
             _commentRepository, 
             _completionMailServiceMock,
             _deepLinkUtilityMock,
-            _personRepositoryMock,
             _syncToPCS4ServiceMock,
+            _messageProducerMock,
             Substitute.For<ILogger<CommentService>>());
     }
-
 
     [TestMethod]
     public async Task AddAsync_ShouldAddCommentToRepository()
@@ -161,15 +161,6 @@ public class CommentServiceTests : TestsBase
 
     
     #region Unit Tests which can be removed when no longer sync to pcs4
-    [TestMethod]
-    public async Task AddAsync_ShouldCall_GetCurrentPersonAsync()
-    {
-        // Act
-        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _personRepositoryMock.Received(1).GetCurrentPersonAsync(default);
-    }
 
     [TestMethod]
     public async Task AddAsync_ShouldSyncWithPcs4()
@@ -178,7 +169,7 @@ public class CommentServiceTests : TestsBase
         await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
+        await _syncToPCS4ServiceMock.Received(1).SyncNewCommentAsync(Arg.Any<CommentCreatedIntegrationEvent>(), default);
     }
 
     [TestMethod]
@@ -195,7 +186,7 @@ public class CommentServiceTests : TestsBase
         });
 
         // Assert
-        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<CommentEventDto>(), Arg.Any<CancellationToken>());
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewCommentAsync(Arg.Any<CommentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]

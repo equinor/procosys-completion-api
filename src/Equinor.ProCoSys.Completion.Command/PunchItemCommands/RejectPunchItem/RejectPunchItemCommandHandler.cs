@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Common.Time;
-using Equinor.ProCoSys.Completion.Command.Comments;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
@@ -15,9 +13,9 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -53,6 +51,8 @@ public class RejectPunchItemCommandHandler(
 
         var mentions = await personRepository.GetOrCreateManyAsync(request.Mentions, cancellationToken);
 
+        var comment = AddToCommentRepository(punchItem, request.Comment, [rejectLabel], mentions);
+
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
         await unitOfWork.SetAuditDataAsync();
 
@@ -62,62 +62,67 @@ public class RejectPunchItemCommandHandler(
             "Punch item rejected",
             [change],
             cancellationToken);
-        
-         var comment = AddToCommentRepository(punchItem, request.Comment, [rejectLabel], mentions);
-         var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
-         var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
 
-         //TODO issue 208 rewrite to be integrationEvent and publish said integration event
-         var commentEvent = new CommentEventDto
-         {
-             Guid = comment.Guid,
-             Plant = punchItem.Plant,
-             ParentGuid = comment.ParentGuid,
-             CreatedBy = createdBy,
-             CreatedAtUtc = TimeService.UtcNow,
-             Text = comment.Text,
-             Labels = comment.Labels.Select(x => x.Text).ToList()
-         };
+        var commentCreatedIntegrationEvent =
+            await PublishCommentCreatedIntegrationEventsAsync(cancellationToken, comment, punchItem.Plant);
 
         punchItem.SetRowVersion(request.RowVersion);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
 
-        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo, punchItem.Guid);
-        
+        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo,
+            punchItem.Guid);
+
         try
         {
             await syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}",
+                request.PunchItemGuid);
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
 
         try
         {
-            await syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
+            await syncToPCS4Service.SyncNewCommentAsync(commentCreatedIntegrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Reject comment on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e,
+                "Error occurred while trying to Sync Reject comment on PunchItemList with guid {PunchItemGuid}",
+                request.PunchItemGuid);
             return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
         }
 
         try
         {
-            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid,
+                cancellationToken);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e,
+                "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}",
+                punchItem.CheckListGuid);
         }
 
         return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
     }
-    
+
+    private async Task<CommentCreatedIntegrationEvent> PublishCommentCreatedIntegrationEventsAsync(
+        CancellationToken cancellationToken, 
+        Comment comment,
+        string plant)
+    {
+        var commentCreatedIntegrationEvent = new CommentCreatedIntegrationEvent(comment, plant);
+
+        await messageProducer.PublishAsync(commentCreatedIntegrationEvent, cancellationToken);
+        return commentCreatedIntegrationEvent;
+    }
+
     private Comment AddToCommentRepository(
         IHaveGuid parentEntity,
         string text,

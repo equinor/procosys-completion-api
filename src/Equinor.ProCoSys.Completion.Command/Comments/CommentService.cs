@@ -5,45 +5,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Command.Email;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.MessageContracts;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
 
-public class CommentService : ICommentService
+public class CommentService(
+    ICommentRepository commentRepository,
+    ICompletionMailService completionMailService,
+    IDeepLinkUtility deepLinkUtility,
+    ISyncToPCS4Service syncToPCS4Service,
+    IMessageProducer messageProducer,
+    ILogger<CommentService> logger)
+    : ICommentService
 {
-    private readonly ICommentRepository _commentRepository;
-    private readonly ICompletionMailService _completionMailService;
-    private readonly IDeepLinkUtility _deepLinkUtility;
-    private readonly IPersonRepository _personRepository;
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly ILogger<CommentService> _logger;
-
-    public CommentService(
-        ICommentRepository commentRepository,
-        ICompletionMailService completionMailService,
-        IDeepLinkUtility deepLinkUtility,
-        IPersonRepository personRepository,
-        ISyncToPCS4Service syncToPCS4Service,
-        ILogger<CommentService> logger)
-    {
-        _commentRepository = commentRepository;
-        _completionMailService = completionMailService;
-        _deepLinkUtility = deepLinkUtility;
-        _personRepository = personRepository;
-        _syncToPCS4Service = syncToPCS4Service;
-        _logger = logger;
-    }
-
-    public async Task<CommentDto> AddAsync(
-        IUnitOfWork unitOfWork,
+    public async Task<CommentDto> AddAsync(IUnitOfWork unitOfWork,
         IHaveGuid parentEntity,
         string plant,
         string text,
@@ -54,39 +37,29 @@ public class CommentService : ICommentService
     {
         var comment = AddToRepository(parentEntity, text, labels, mentions);
 
-        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
-        var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await unitOfWork.SetAuditDataAsync();
 
+        var commentCreatedEvent = new CommentCreatedIntegrationEvent(comment, plant);
+
+        await messageProducer.PublishAsync(commentCreatedEvent, cancellationToken);
+        
         await unitOfWork.SaveChangesAsync(cancellationToken);
         
-        // This should be replaced with an actual Service Bus Integration Comment event
-        // As well the publish call to publish the comment to the service bus
-        
-        //TODO issue 208 use integration event and publish (before save)
-        var commentEvent = new CommentEventDto
-        {
-            Guid = comment.Guid,
-            Plant = plant,
-            ParentGuid = comment.ParentGuid,
-            CreatedBy = createdBy,
-            CreatedAtUtc = TimeService.UtcNow,
-            Text = comment.Text,
-            Labels = comment.Labels.Select(x => x.Text).ToList()
-        };
-        
         await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
-        _logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
+        
+        logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
             comment.Guid,
             comment.ParentType,
             comment.ParentGuid);
 
         try
         {
-            await _syncToPCS4Service.SyncNewCommentAsync(commentEvent, cancellationToken);
+            await syncToPCS4Service.SyncNewCommentAsync(commentCreatedEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Create on Comment with guid {guid}", commentEvent.Guid);
+            logger.LogError(e, "Error occurred while trying to Sync Create on Comment with guid {guid}", commentCreatedEvent.Guid);
         }
 
         return new CommentDto(comment.Guid, comment.RowVersion.ConvertToString());
@@ -102,7 +75,7 @@ public class CommentService : ICommentService
         comment.UpdateLabels(labels.ToList());
         comment.SetMentions(mentions.ToList());
 
-        _commentRepository.Add(comment);
+        commentRepository.Add(comment);
 
         return comment;
     }
@@ -115,9 +88,9 @@ public class CommentService : ICommentService
     {
         var emailContext = parentEntity.GetEmailContext();
         emailContext.Comment = comment;
-        emailContext.Url = _deepLinkUtility.CreateUrl(parentEntity.GetContextName(), parentEntity.Guid);
+        emailContext.Url = deepLinkUtility.CreateUrl(parentEntity.GetContextName(), parentEntity.Guid);
         
         var emailAddresses = comment.Mentions.Select(m => m.Email).ToList();
-        await _completionMailService.SendEmailAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);
+        await completionMailService.SendEmailAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);
     }
 }
