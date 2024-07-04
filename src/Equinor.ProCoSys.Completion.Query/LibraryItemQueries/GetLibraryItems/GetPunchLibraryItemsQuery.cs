@@ -5,9 +5,9 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 
-public class GetLibraryItemsQuery : IRequest<Result<IEnumerable<LibraryItemDto>>>
+public class GetPunchLibraryItemsQuery : IRequest<Result<IEnumerable<LibraryItemDto>>>
 {
-    public GetLibraryItemsQuery(LibraryType[] libraryTypes) => LibraryTypes = libraryTypes;
+    public GetPunchLibraryItemsQuery(LibraryType[] libraryTypes) => LibraryTypes = libraryTypes;
 
     public LibraryType[] LibraryTypes { get; }
 }

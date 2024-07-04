@@ -10,21 +10,26 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 
-public class GetLibraryItemsQueryHandler(IReadOnlyContext context)
-    : IRequestHandler<GetLibraryItemsQuery, Result<IEnumerable<LibraryItemDto>>>
+public class GetPunchLibraryItemsQueryHandler(IReadOnlyContext context)
+    : IRequestHandler<GetPunchLibraryItemsQuery, Result<IEnumerable<LibraryItemDto>>>
 {
-    public async Task<Result<IEnumerable<LibraryItemDto>>> Handle(GetLibraryItemsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<LibraryItemDto>>> Handle(GetPunchLibraryItemsQuery request, CancellationToken cancellationToken)
     {
         var libraryItems =
             await (from libraryItem in context.QuerySet<LibraryItem>()
-                   where libraryItem.IsVoided == false && request.LibraryTypes.Contains(libraryItem.Type)
+                        .Include(l => l.Classifications)
+                   where libraryItem.IsVoided == false &&
+                         request.LibraryTypes.Contains(libraryItem.Type) &&
+                         (libraryItem.Type != LibraryType.COMM_PRIORITY ||
+                          (libraryItem.Type == LibraryType.COMM_PRIORITY && 
+                          libraryItem.Classifications.Any( c => c.Name == Classification.PunchPriority)))
                    select new LibraryItemDto(
                        libraryItem.Guid,
                        libraryItem.Code,
                        libraryItem.Description,
                        libraryItem.Type.ToString())
                 )
-                .TagWith($"{nameof(GetLibraryItemsQueryHandler)}.{nameof(Handle)}")
+                .TagWith($"{nameof(GetPunchLibraryItemsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
 
         var orderedLibraryItems = libraryItems.OrderBy(l => l.Code);

@@ -24,7 +24,7 @@ public class LibraryItemsController : ControllerBase
 
     [AuthorizeAny(Permissions.LIBRARY_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LibraryItemDto>>> GetLibraryItems(
+    public async Task<ActionResult<IEnumerable<LibraryItemDto>>> GetPunchLibraryItems(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
@@ -33,7 +33,7 @@ public class LibraryItemsController : ControllerBase
         [Required]
         [FromQuery] LibraryType[] libraryTypes)
     {
-        var result = await _mediator.Send(new GetLibraryItemsQuery(libraryTypes), cancellationToken);
+        var result = await _mediator.Send(new GetPunchLibraryItemsQuery(libraryTypes), cancellationToken);
         return this.FromResult(result);
     }
 }
