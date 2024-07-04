@@ -133,7 +133,7 @@ public static class CompletionContextExtension
             "Painting",
             LibraryType.PUNCHLIST_TYPE);
 
-        var punchItem = SeedPunchItem(
+        var punchItemA = SeedPunchItem(
             dbContext,
             plant,
             project,
@@ -145,14 +145,8 @@ public static class CompletionContextExtension
             priority,
             sorting,
             type);
-        knownTestData.PunchItem = punchItem;
+        knownTestData.PunchItemA = punchItemA;
 
-        project = SeedProject(
-            dbContext, 
-            plant,
-            KnownData.ProjectGuidB[plant],
-            "ProjectNameB", 
-            "ProjectDescriptionB");
         knownTestData.PunchItemB = SeedPunchItem(
             dbContext,
             plant,
@@ -163,22 +157,29 @@ public static class CompletionContextExtension
             raisedByOrg,
             clearingByOrg);
 
-        var link = SeedLink(dbContext, nameof(PunchItem), punchItem.Guid, "VG", "www.vg.no");
-        knownTestData.LinkInPunchItemAGuid = link.Guid;
-
-        var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
-        knownTestData.CommentInPunchItemAGuid = comment.Guid;
-
-        var historyItem = SeedHistory(
+        project = SeedProject(
             dbContext, 
-            punchItem.Guid, "History display name", 
+            plant,
+            KnownData.ProjectGuidB[plant],
+            "ProjectNameB", 
+            "ProjectDescriptionB");
+
+        var linkInPunchItemA = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
+        knownTestData.LinkInPunchItemAGuid = linkInPunchItemA.Guid;
+
+        var commentInPunchItemA = SeedComment(dbContext, nameof(PunchItem), punchItemA.Guid, "Comment");
+        knownTestData.CommentInPunchItemAGuid = commentInPunchItemA.Guid;
+
+        var historyItemInPunchItemA = SeedHistory(
+            dbContext, 
+            punchItemA.Guid, "History display name", 
             userProvider.GetCurrentUserOid(), 
             "History full name", 
             DateTime.UtcNow);
 
-        knownTestData.HistoryInPunchItem = historyItem;
+        knownTestData.HistoryInPunchItemA = historyItemInPunchItemA;
 
-        var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItem.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItemA.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
 
         SeedWorkOrder(

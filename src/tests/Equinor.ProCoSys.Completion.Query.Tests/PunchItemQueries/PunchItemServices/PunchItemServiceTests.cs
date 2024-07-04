@@ -7,15 +7,15 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.PunchItemService;
+namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.PunchItemServices;
 
 [TestClass]
 public class PunchItemServiceTests : ReadOnlyTestsBase
@@ -133,15 +133,16 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var result = await dut.GetByCheckListGuid(_checkListGuid, default);
 
         // Assert
-        Assert.IsTrue(2 == result.Count(x => x.CheckListGuid == _checkListGuid));
-        Assert.IsTrue(2 == result.First(x => x.Guid == _createdPunchItem.Guid).AttachmentCount);
-        Assert.IsTrue(0 == result.First(x => x.Guid == _modifiedPunchItem.Guid).AttachmentCount);
+        var dtos = result.ToList();
+        Assert.IsTrue(2 == dtos.Count(x => x.CheckListGuid == _checkListGuid));
+        Assert.IsTrue(2 == dtos.First(x => x.Guid == _createdPunchItem.Guid).AttachmentCount);
+        Assert.IsTrue(0 == dtos.First(x => x.Guid == _modifiedPunchItem.Guid).AttachmentCount);
     }
     
     [TestMethod]
@@ -151,7 +152,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _createdPunchItem;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -185,7 +186,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _modifiedPunchItem;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -218,7 +219,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _clearedPunchItem;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -249,7 +250,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _verifiedPunchItem;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -280,7 +281,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _rejectedPunchItem;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -311,7 +312,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithPriority;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -331,7 +332,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithSorting;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -351,7 +352,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithType;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -371,7 +372,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithDocument;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -391,7 +392,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithWorkOrder;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -411,7 +412,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithOriginalWorkOrder;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -431,7 +432,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithSWCR;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -451,7 +452,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutPriority;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -469,7 +470,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutSorting;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -487,7 +488,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutType;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -505,7 +506,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutDocument;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -523,7 +524,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutOriginalWorkOrder;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -541,7 +542,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutSWCR;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
@@ -560,7 +561,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
         var testPunchItem = _punchItemWithoutWorkOrder;
-        var dut = new PunchItemServices.PunchItemService(context);
+        var dut = new PunchItemService(context);
 
         // Act
         var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);

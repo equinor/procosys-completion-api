@@ -90,6 +90,6 @@ public class GetPunchItemQueryHandlerTests
             Document: null,
             SWCR: null,
             AttachmentCount: 3,
-            RowVersion: "1.0"
+            RowVersion: "AAAAAAAAABA="
         );
 }

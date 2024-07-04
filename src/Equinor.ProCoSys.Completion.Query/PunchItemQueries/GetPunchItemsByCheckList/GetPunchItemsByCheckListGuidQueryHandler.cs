@@ -12,6 +12,7 @@ public class GetPunchItemsByCheckListGuidQueryHandler : IRequestHandler<GetPunch
     private readonly IPunchItemService _punchItemService;
 
     public GetPunchItemsByCheckListGuidQueryHandler(IPunchItemService punchItemService) => _punchItemService = punchItemService;
+    
     public async Task<Result<IEnumerable<PunchItemDetailsDto>>> Handle(GetPunchItemsByCheckListGuidQuery request, CancellationToken cancellationToken)
     {
         var punchItems = await _punchItemService.GetByCheckListGuid(request.CheckListGuid, cancellationToken);

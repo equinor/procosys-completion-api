@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
@@ -35,7 +34,7 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
 
         _punchItemServiceMock = Substitute.For<IPunchItemService>();
         _punchItemServiceMock.GetByCheckListGuid(_punchItemDetails.CheckListGuid, default)
-            .Returns(new List<PunchItemDetailsDto>(){ _punchItemDetails });
+            .Returns(new List<PunchItemDetailsDto>{ _punchItemDetails });
 
         _query = new GetPunchItemsByCheckListGuidQuery(_punchItemDetails.CheckListGuid);
         _dut = new GetPunchItemsByCheckListGuidQueryHandler(_punchItemServiceMock);
@@ -95,6 +94,6 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
             Document: null,
             SWCR: null,
             AttachmentCount: 3,
-            RowVersion: "1.0"
+            RowVersion: "AAAAAAAAABA="
         );
 }
