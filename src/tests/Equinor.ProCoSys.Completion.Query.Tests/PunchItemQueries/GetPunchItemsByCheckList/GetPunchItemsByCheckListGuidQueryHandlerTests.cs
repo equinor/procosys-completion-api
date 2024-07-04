@@ -45,10 +45,10 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
     {
         // Act
         var result = await _dut.Handle(_query, default);
-        var data = result.Data?.ToList();
 
         // Assert
         Assert.AreEqual(ResultType.Ok, result.ResultType);
+        var data = result.Data?.ToList();
         Assert.IsInstanceOfType(data, typeof(List<PunchItemDetailsDto>));
         Assert.IsTrue(0 < data.Count);
         CollectionAssert.Contains(data, _punchItemDetails);
