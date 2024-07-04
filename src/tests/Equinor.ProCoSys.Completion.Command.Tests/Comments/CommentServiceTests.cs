@@ -29,7 +29,6 @@ public class CommentServiceTests : TestsBase
     private Comment _commentAddedToRepository;
     private ICompletionMailService _completionMailServiceMock;
     private IDeepLinkUtility _deepLinkUtilityMock;
-    private IPersonRepository _personRepositoryMock;
     private IMessageProducer _messageProducerMock;
 
     [TestInitialize]
@@ -40,25 +39,21 @@ public class CommentServiceTests : TestsBase
             .Do(info =>
             {
                 _commentAddedToRepository = info.Arg<Comment>();
+                _commentAddedToRepository.SetCreated(_person);
             });
 
         _completionMailServiceMock = Substitute.For<ICompletionMailService>();
         _deepLinkUtilityMock = Substitute.For<IDeepLinkUtility>();
-        _personRepositoryMock = Substitute.For<IPersonRepository>();
-        _personRepositoryMock.GetCurrentPersonAsync(Arg.Any<CancellationToken>())
-            .Returns(_person);
         _messageProducerMock = Substitute.For<IMessageProducer>();
 
         _dut = new CommentService(
             _commentRepository, 
             _completionMailServiceMock,
             _deepLinkUtilityMock,
-            _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _messageProducerMock,
             Substitute.For<ILogger<CommentService>>());
     }
-
 
     [TestMethod]
     public async Task AddAsync_ShouldAddCommentToRepository()
@@ -166,15 +161,6 @@ public class CommentServiceTests : TestsBase
 
     
     #region Unit Tests which can be removed when no longer sync to pcs4
-    [TestMethod]
-    public async Task AddAsync_ShouldCall_GetCurrentPersonAsync()
-    {
-        // Act
-        await _dut.AddAsync(_unitOfWorkMock, _parent, _testPlant, "text", [], [], "Whatever", default);
-
-        // Assert
-        await _personRepositoryMock.Received(1).GetCurrentPersonAsync(default);
-    }
 
     [TestMethod]
     public async Task AddAsync_ShouldSyncWithPcs4()

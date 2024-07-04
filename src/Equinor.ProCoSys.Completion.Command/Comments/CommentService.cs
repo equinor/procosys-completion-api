@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
@@ -14,7 +13,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
-using Equinor.ProCoSys.Completion.MessageContracts;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.Comments;
@@ -23,7 +21,6 @@ public class CommentService(
     ICommentRepository commentRepository,
     ICompletionMailService completionMailService,
     IDeepLinkUtility deepLinkUtility,
-    IPersonRepository personRepository,
     ISyncToPCS4Service syncToPCS4Service,
     IMessageProducer messageProducer,
     ILogger<CommentService> logger)
@@ -40,18 +37,11 @@ public class CommentService(
     {
         var comment = AddToRepository(parentEntity, text, labels, mentions);
 
-        var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
-        var createdBy = new User(currentPerson.Guid, currentPerson.GetFullName());
-        
-        var commentCreatedEvent = new CommentCreatedIntegrationEvent(
-            comment.Guid,
-            plant,
-            comment.ParentGuid,
-            createdBy,
-            TimeService.UtcNow,
-            comment.Text,
-            comment.Labels.Select(x => x.Text)
-        );
+        // AuditData must be set before publishing events due to use of Created- and Modified-properties
+        await unitOfWork.SetAuditDataAsync();
+
+        var commentCreatedEvent = new CommentCreatedIntegrationEvent(comment, plant);
+
         await messageProducer.PublishAsync(commentCreatedEvent, cancellationToken);
         
         await unitOfWork.SaveChangesAsync(cancellationToken);
