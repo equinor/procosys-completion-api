@@ -89,7 +89,7 @@ public static class CompletionContextExtension
         userProvider.SetCurrentUserOid(new Guid(SeederOid));
         var plant = knownTestData.Plant;
             
-        var project = SeedProject(
+        var projectA = SeedProject(
             dbContext,
             plant,
             KnownData.ProjectGuidA[plant],
@@ -136,7 +136,7 @@ public static class CompletionContextExtension
         var punchItemA = SeedPunchItem(
             dbContext,
             plant,
-            project,
+            projectA,
             KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemA",
@@ -147,22 +147,22 @@ public static class CompletionContextExtension
             type);
         knownTestData.PunchItemA = punchItemA;
 
-        knownTestData.PunchItemB = SeedPunchItem(
-            dbContext,
-            plant,
-            project,
-            KnownData.CheckListGuidA[plant],
-            Category.PA,
-            "PunchItemB",
-            raisedByOrg,
-            clearingByOrg);
-
-        project = SeedProject(
+        var projectB = SeedProject(
             dbContext, 
             plant,
             KnownData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
+
+        knownTestData.PunchItemB = SeedPunchItem(
+            dbContext,
+            plant,
+            projectB,
+            KnownData.CheckListGuidA[plant],
+            Category.PA,
+            "PunchItemB",
+            raisedByOrg,
+            clearingByOrg);
 
         var linkInPunchItemA = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
         knownTestData.LinkInPunchItemAGuid = linkInPunchItemA.Guid;
@@ -179,7 +179,7 @@ public static class CompletionContextExtension
 
         knownTestData.HistoryInPunchItemA = historyItemInPunchItemA;
 
-        var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItemA.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, punchItemA.Project.Name, nameof(PunchItem), punchItemA.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
 
         SeedWorkOrder(
