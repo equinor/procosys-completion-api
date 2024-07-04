@@ -13,18 +13,16 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Query.Tests.LibraryItemQueries.GetLibraryItems;
 
 [TestClass]
-public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
+public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 {
     // perform test in other plant than TestPlantA / TestPlantB, since base class initiate LibraryItems there
     private readonly string _testPlant = TestPlantWithoutData;
-
-    private readonly LibraryType _sortingType = LibraryType.PUNCHLIST_SORTING;
-    private readonly LibraryType _typeType = LibraryType.PUNCHLIST_TYPE;
 
     private LibraryItem _punchListSortingLibraryItemA;
     private LibraryItem _punchListSortingLibraryItemB;
     private LibraryItem _punchListSortingLibraryItemC;
     private LibraryItem _punchListTypeLibraryItem;
+    private LibraryItem _punchListPriorityLibraryItem;
 
     protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
         => _plantProviderMock.Plant.Returns(_testPlant);
@@ -35,8 +33,8 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var query = new GetLibraryItemsQuery([LibraryType.PUNCHLIST_TYPE]);
-        var dut = new GetLibraryItemsQueryHandler(context);
+        var query = new GetPunchLibraryItemsQuery([LibraryType.PUNCHLIST_TYPE]);
+        var dut = new GetPunchLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -52,10 +50,10 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
+        AddLibraryItemsInclusiveVoidedLibraryItem(context);
 
-        var query = new GetLibraryItemsQuery([_sortingType]);
-        var dut = new GetLibraryItemsQueryHandler(context);
+        var query = new GetPunchLibraryItemsQuery([LibraryType.PUNCHLIST_SORTING]);
+        var dut = new GetPunchLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -71,10 +69,10 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
+        AddLibraryItemsInclusiveVoidedLibraryItem(context);
 
-        var query = new GetLibraryItemsQuery([_sortingType, _typeType]);
-        var dut = new GetLibraryItemsQueryHandler(context);
+        var query = new GetPunchLibraryItemsQuery([LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_TYPE]);
+        var dut = new GetPunchLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -90,10 +88,10 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        AddLibraryItemsToPlantInclusiveVoidedLibraryItem(context);
+        AddLibraryItemsInclusiveVoidedLibraryItem(context);
 
-        var query = new GetLibraryItemsQuery([_sortingType]);
-        var dut = new GetLibraryItemsQueryHandler(context);
+        var query = new GetPunchLibraryItemsQuery([LibraryType.PUNCHLIST_SORTING]);
+        var dut = new GetPunchLibraryItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -107,21 +105,54 @@ public class GetLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
         AssertLibraryItem(result.Data.ElementAt(2), _punchListSortingLibraryItemC);
     }
 
+    [TestMethod]
+    public async Task Handler_ShouldReturnCorrectNumberOfLibraryItems_WhenQueryingCommPriority()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        AddCommPriorityLibraryItemsInclusiveClassifiedAsPunchPriority(context);
+
+        var query = new GetPunchLibraryItemsQuery([LibraryType.COMM_PRIORITY]);
+        var dut = new GetPunchLibraryItemsQueryHandler(context);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.AreEqual(1, result.Data.Count());
+        AssertLibraryItem(result.Data.ElementAt(0), _punchListPriorityLibraryItem);
+    }
+
+    private void AddCommPriorityLibraryItemsInclusiveClassifiedAsPunchPriority(CompletionContext context)
+    {
+        _punchListPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "PriA", "Pri A Desc", LibraryType.COMM_PRIORITY);
+        _punchListPriorityLibraryItem.AddClassification(new Classification(Guid.Empty, Classification.PunchPriority));
+
+        var nonClassifiedCommPriorityLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "PriB", "Pri B Desc", LibraryType.COMM_PRIORITY);
+
+        context.Library.Add(_punchListPriorityLibraryItem);
+        context.Library.Add(nonClassifiedCommPriorityLibraryItem);
+
+        context.SaveChangesAsync().Wait();
+    }
+
     private void AssertLibraryItem(LibraryItemDto libraryItemDto, LibraryItem libraryItem)
     {
         Assert.AreEqual(libraryItem.Code, libraryItemDto.Code);
         Assert.AreEqual(libraryItem.Description, libraryItemDto.Description);
     }
 
-    private void AddLibraryItemsToPlantInclusiveVoidedLibraryItem(CompletionContext context)
+    private void AddLibraryItemsInclusiveVoidedLibraryItem(CompletionContext context)
     {
-        _punchListSortingLibraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", _sortingType);
-        _punchListSortingLibraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", _sortingType);
-        _punchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", _sortingType);
-        var voidedPunchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", _sortingType)
+        _punchListSortingLibraryItemA = new LibraryItem(_testPlant, Guid.NewGuid(), "A", "A Desc", LibraryType.PUNCHLIST_SORTING);
+        _punchListSortingLibraryItemB = new LibraryItem(_testPlant, Guid.NewGuid(), "B", "B Desc", LibraryType.PUNCHLIST_SORTING);
+        _punchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "C", "C Desc", LibraryType.PUNCHLIST_SORTING);
+        var voidedPunchListSortingLibraryItemC = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", LibraryType.PUNCHLIST_SORTING)
             {IsVoided = true};
-        _punchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "T", "T Desc", _typeType);
-        var voidedPunchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", _typeType)
+        _punchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "T", "T Desc", LibraryType.PUNCHLIST_TYPE);
+        var voidedPunchListTypeLibraryItem = new LibraryItem(_testPlant, Guid.NewGuid(), "V", "V Desc", LibraryType.PUNCHLIST_TYPE)
             { IsVoided = true };
 
         context.Library.Add(_punchListSortingLibraryItemC);

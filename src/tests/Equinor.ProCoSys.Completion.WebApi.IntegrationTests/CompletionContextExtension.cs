@@ -115,7 +115,8 @@ public static class CompletionContextExtension
             plant,
             KnownData.PriorityGuid[plant],
             "P1",
-            LibraryType.PUNCHLIST_PRIORITY);
+            LibraryType.COMM_PRIORITY);
+        ClassifyPriorityAsPunchPriority(dbContext, priority);
         knownTestData.PunchLibraryItemGuids.Add(priority.Guid);
 
         var sorting = SeedLibrary(
@@ -203,6 +204,12 @@ public static class CompletionContextExtension
             plant,
             KnownData.DocumentGuid[plant],
             KnownData.DocumentNo[plant]);
+    }
+
+    private static void ClassifyPriorityAsPunchPriority(CompletionContext dbContext, LibraryItem priority)
+    {
+        priority.AddClassification(new Classification(Guid.Empty, Classification.PunchPriority));
+        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedWorkOrder(CompletionContext dbContext, string plant, Guid guid, string no)

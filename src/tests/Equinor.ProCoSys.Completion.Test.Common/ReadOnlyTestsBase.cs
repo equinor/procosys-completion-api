@@ -121,7 +121,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
             Guid.NewGuid(),
             "P1",
             "P1 desc",
-            LibraryType.PUNCHLIST_PRIORITY);
+            LibraryType.COMM_PRIORITY);
         var sorting = new LibraryItem(
             plant,
             Guid.NewGuid(),

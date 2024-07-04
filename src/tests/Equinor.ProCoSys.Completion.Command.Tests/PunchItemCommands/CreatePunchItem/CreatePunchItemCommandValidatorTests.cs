@@ -55,7 +55,7 @@ public class CreatePunchItemCommandValidatorTests
 
         SetupOkLibraryItem(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         SetupOkLibraryItem(_command.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
-        SetupOkLibraryItem(_command.PriorityGuid!.Value, LibraryType.PUNCHLIST_PRIORITY);
+        SetupOkLibraryItem(_command.PriorityGuid!.Value, LibraryType.COMM_PRIORITY);
         SetupOkLibraryItem(_command.SortingGuid!.Value, LibraryType.PUNCHLIST_SORTING);
         SetupOkLibraryItem(_command.TypeGuid!.Value, LibraryType.PUNCHLIST_TYPE);
 
@@ -251,7 +251,7 @@ public class CreatePunchItemCommandValidatorTests
         // Arrange
         _libraryItemValidatorMock.HasTypeAsync(
                 _command.PriorityGuid!.Value,
-                LibraryType.PUNCHLIST_PRIORITY, 
+                LibraryType.COMM_PRIORITY, 
                 default)
             .Returns(false);
 
@@ -262,7 +262,7 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith(
-            $"Priority library item is not a {LibraryType.PUNCHLIST_PRIORITY}!"));
+            $"Priority library item is not a {LibraryType.COMM_PRIORITY}!"));
     }
 
     [TestMethod]

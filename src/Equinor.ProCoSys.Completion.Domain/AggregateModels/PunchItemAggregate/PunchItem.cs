@@ -275,7 +275,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         {
             throw new ArgumentException($"Can't relate {nameof(priority)} in {priority.Plant} to item in {Plant}");
         }
-        if (priority.Type != LibraryType.PUNCHLIST_PRIORITY)
+        if (priority.Type != LibraryType.COMM_PRIORITY)
         {
             throw new ArgumentException($"Can't relate a {priority.Type} as {nameof(priority)}");
         }

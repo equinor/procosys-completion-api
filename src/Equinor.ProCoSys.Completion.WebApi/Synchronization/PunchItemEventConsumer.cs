@@ -117,7 +117,7 @@ public class PunchItemEventConsumer(
         punchItem.Description = busEvent.Description!;
         SetDueTime(punchItem, busEvent.DueDate);
 
-        await SetLibraryItemAsync(punchItem, busEvent.PunchPriorityGuid, LibraryType.PUNCHLIST_PRIORITY, cancellationToken);
+        await SetLibraryItemAsync(punchItem, busEvent.PunchPriorityGuid, LibraryType.COMM_PRIORITY, cancellationToken);
         await SetLibraryItemAsync(punchItem, busEvent.PunchListSortingGuid, LibraryType.PUNCHLIST_SORTING, cancellationToken);
         await SetLibraryItemAsync(punchItem, busEvent.PunchListTypeGuid, LibraryType.PUNCHLIST_TYPE, cancellationToken);
 
@@ -262,7 +262,7 @@ public class PunchItemEventConsumer(
     {
         switch (libraryType)
         {
-            case LibraryType.PUNCHLIST_PRIORITY:
+            case LibraryType.COMM_PRIORITY:
                 if (libraryItem is null)
                 {
                     punchItem.ClearPriority();

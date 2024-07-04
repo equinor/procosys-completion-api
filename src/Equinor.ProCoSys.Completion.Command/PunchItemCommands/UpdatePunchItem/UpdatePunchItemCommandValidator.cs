@@ -140,10 +140,10 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
                 => BeALibraryItemOfTypeAsync(
                     command.PatchDocument.Operations,
                     nameof(PatchablePunchItem.PriorityGuid),
-                    LibraryType.PUNCHLIST_PRIORITY,
+                    LibraryType.COMM_PRIORITY,
                     cancellationToken))
             .WithMessage(command =>
-                $"Priority library item is not a {LibraryType.PUNCHLIST_PRIORITY}! " +
+                $"Priority library item is not a {LibraryType.COMM_PRIORITY}! " +
                 $"Guid={GetGuidValue(command.PatchDocument.Operations, nameof(PatchablePunchItem.PriorityGuid))}")
             .When(command => ValueIsReplacedWithGuid(
                     command.PatchDocument.Operations,

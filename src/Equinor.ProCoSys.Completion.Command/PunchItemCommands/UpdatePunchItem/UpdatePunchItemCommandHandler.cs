@@ -421,7 +421,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         {
             var libraryItem = await _libraryItemRepository.GetByGuidAndTypeAsync(
                 patchedPunchItem.PriorityGuid.Value,
-                LibraryType.PUNCHLIST_PRIORITY,
+                LibraryType.COMM_PRIORITY,
                 cancellationToken);
             changes.Add(new ChangedProperty<string?>(nameof(punchItem.Priority),
                 punchItem.Priority?.ToString(),

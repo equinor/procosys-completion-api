@@ -47,7 +47,7 @@ public class PunchItemTests : IModificationAuditableTests
         _clearingByOrg = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg.SetProtectedIdForTesting(125);
 
-        _priority = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY);
+        _priority = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.COMM_PRIORITY);
         _priority.SetProtectedIdForTesting(126);
 
         _type = new LibraryItem(_testPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_TYPE);
@@ -640,7 +640,7 @@ public class PunchItemTests : IModificationAuditableTests
     public void SetPriority_ShouldThrowException_WhenPriorityInOtherPlant() =>
         Assert.ThrowsException<ArgumentException>(() =>
             _dut.SetPriority(
-                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY)));
+                new LibraryItem("OtherPlant", Guid.NewGuid(), null!, null!, LibraryType.COMM_PRIORITY)));
 
     [TestMethod]
     public void SetPriority_ShouldThrowException_WhenPriorityIsIncorrectType() =>

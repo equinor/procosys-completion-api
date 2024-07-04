@@ -32,7 +32,7 @@ public class PunchItemRepositoryTests : EntityWithGuidRepositoryTestBase<PunchIt
         _raisedByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         _clearingByOrg = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMPLETION_ORGANIZATION);
         var punchItem = new PunchItem(TestPlant, _project, Guid.NewGuid(), Category.PB, null!, _raisedByOrg, _clearingByOrg);
-        _priority = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_PRIORITY);
+        _priority = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.COMM_PRIORITY);
         punchItem.SetPriority(_priority);
         _sorting = new LibraryItem(TestPlant, Guid.NewGuid(), null!, null!, LibraryType.PUNCHLIST_SORTING);
         punchItem.SetSorting(_sorting);

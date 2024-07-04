@@ -27,6 +27,12 @@ internal class LibraryItemConfiguration : IEntityTypeConfiguration<LibraryItem>
             .IsRequired();
 
         builder
+            .HasMany(x => x.Classifications)
+            .WithOne()
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
             .HasIndex(x => x.Guid)
             .IsUnique()
             .HasDatabaseName("IX_LibraryItems_Guid")

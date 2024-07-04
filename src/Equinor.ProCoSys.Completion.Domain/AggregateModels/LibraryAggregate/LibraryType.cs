@@ -5,9 +5,8 @@
 public enum LibraryType
 {
     COMPLETION_ORGANIZATION,
-    // In ProCoSys 4 PUNCHLIST_PRIORITY is COMM_PRIORITY classified as PUNCH_PRIORITY.
-    // In ProCoSys 5 this should be simplefied to just PUNCHLIST_PRIORITY
-    PUNCHLIST_PRIORITY,
+    // In ProCoSys 4 a Punch priority is a COMM_PRIORITY classified as PUNCH_PRIORITY.
+    COMM_PRIORITY,
     PUNCHLIST_SORTING,
     PUNCHLIST_TYPE
 }

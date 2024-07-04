@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -8,6 +9,8 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
     public const int CodeLengthMax = 255;
     public const int DescriptionLengthMax = 255;
     public const int TypeLengthMax = 30;
+
+    private readonly List<Classification> _classifications = new();
 
 #pragma warning disable CS8618
     protected LibraryItem()
@@ -36,4 +39,10 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
     public DateTime SyncTimestamp { get; set; }
 
     public override string ToString() => $"{Code}, {Description}";
+
+    public IReadOnlyCollection<Classification> Classifications => _classifications.AsReadOnly();
+
+    public void AddClassification(Classification classification) => _classifications.Add(classification);
+
+    public void RemoveClassification(Classification classification) => _classifications.Remove(classification);
 }

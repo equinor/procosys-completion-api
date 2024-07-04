@@ -29,7 +29,7 @@ public class PunchItemIntegrationEventTestsBase : TestsBase
     protected void FillOptionalProperties(PunchItem punchItem)
     {
         punchItem.SetSorting(new LibraryItem(TestPlantA, Guid.NewGuid(), "SortC", "SortD", LibraryType.PUNCHLIST_SORTING));
-        punchItem.SetPriority(new LibraryItem(TestPlantA, Guid.NewGuid(), "PriC", "PriD", LibraryType.PUNCHLIST_PRIORITY));
+        punchItem.SetPriority(new LibraryItem(TestPlantA, Guid.NewGuid(), "PriC", "PriD", LibraryType.COMM_PRIORITY));
         punchItem.SetType(new LibraryItem(TestPlantA, Guid.NewGuid(), "TypC", "TypD", LibraryType.PUNCHLIST_TYPE));
         punchItem.DueTimeUtc = DateTime.UtcNow;
         punchItem.Estimate = 100;

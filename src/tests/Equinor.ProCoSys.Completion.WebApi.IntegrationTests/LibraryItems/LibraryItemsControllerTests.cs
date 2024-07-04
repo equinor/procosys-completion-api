@@ -19,7 +19,7 @@ public class LibraryItemsControllerTests : TestBase
             .GetLibraryItemsAsync(
                 UserType.Reader,
                 testPlant,
-                [LibraryType.PUNCHLIST_SORTING, LibraryType.PUNCHLIST_PRIORITY]);
+                [LibraryType.PUNCHLIST_SORTING, LibraryType.COMM_PRIORITY]);
 
         // Assert
         var expectedLibraryItemGuid =
