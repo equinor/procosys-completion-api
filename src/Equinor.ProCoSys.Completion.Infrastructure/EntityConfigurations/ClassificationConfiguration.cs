@@ -11,11 +11,6 @@ internal class ClassificationConfiguration : IEntityTypeConfiguration<Classifica
     {
         builder.ConfigureSystemVersioning();
 
-        builder
-            // MS SQL is case insensitive, which will prohibit adding same classifications with different casing
-            .HasIndex(x => x.Name)
-            .IsUnique();
-
         builder.Property(x => x.Name)
             .HasMaxLength(Classification.NameLengthMax)
             .IsRequired();
