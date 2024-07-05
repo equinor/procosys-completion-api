@@ -2,17 +2,17 @@
 public static class QueueNames
 {
     public const string ClassificationCompletionTransferQueue = "classificationCompletionTransferQueue";
-    public static string CompletionHistoryCreated = "completionHistoryCreatedQueue";
-    public static string CompletionHistoryUpdated = "completionHistoryUpdatedQueue";
-    public static string CompletionHistoryDeleted = "completionHistoryDeletedQueue";
-    public static string LibraryCompletionTransferQueue = "libraryCompletionTransferQueue";
-    public static string SwcrCompletionTransferQueue = "swcrCompletionTransferQueue";
-    public static string DocumentCompletionTransferQueue = "documentCompletionTransferQueue";
-    public static string WorkOrderCompletionTransferQueue = "workOrderCompletionTransferQueue";
-    public static string PunchItemCompletionTransferQueue = "punchItemCompletionTransferQueue";
-    public static string PunchItemChangeHistoryCompletionTransferQueue = "punchItemChangeHistoryCompletionTransferQueue";
-    public static string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
-    public static string PersonCompletionTransferQueue = "personCompletionTransferQueue";
-    public static string PunchItemAttachmentCompletionTransferQueue = "punchItemAttachmentCompletionTransferQueue";
-    public static string PunchItemCommentCompletionTransferQueue = "punchItemCommentCompletionTransferQueue";
+    public const string CompletionHistoryCreated = "completionHistoryCreatedQueue";
+    public const string CompletionHistoryUpdated = "completionHistoryUpdatedQueue";
+    public const string CompletionHistoryDeleted = "completionHistoryDeletedQueue";
+    public const string LibraryCompletionTransferQueue = "libraryCompletionTransferQueue";
+    public const string SwcrCompletionTransferQueue = "swcrCompletionTransferQueue";
+    public const string DocumentCompletionTransferQueue = "documentCompletionTransferQueue";
+    public const string WorkOrderCompletionTransferQueue = "workOrderCompletionTransferQueue";
+    public const string PunchItemCompletionTransferQueue = "punchItemCompletionTransferQueue";
+    public const string PunchItemChangeHistoryCompletionTransferQueue = "punchItemChangeHistoryCompletionTransferQueue";
+    public const string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
+    public const string PersonCompletionTransferQueue = "personCompletionTransferQueue";
+    public const string PunchItemAttachmentCompletionTransferQueue = "punchItemAttachmentCompletionTransferQueue";
+    public const string PunchItemCommentCompletionTransferQueue = "punchItemCommentCompletionTransferQueue";
 }
