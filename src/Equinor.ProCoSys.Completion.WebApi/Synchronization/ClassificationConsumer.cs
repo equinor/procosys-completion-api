@@ -23,6 +23,8 @@ public class ClassificationConsumer(
         
         if (classification.Behavior == "delete")
         {
+            //ExecuteDeleteAsync() does its own save, so we don't need to call SaveChangesAsync
+            //We do it this way because we don't have libraryItemGuid in the delete messages
            var deleted = await dbContext.Classifications.Where(c => c.Guid == classification.ProCoSysGuid).ExecuteDeleteAsync();
             logger.LogDebug("Classification delete Message Consumed: {MessageId} \n Guid {Guid} \n Deleted {Deleted} rows",
                  context.MessageId, classification.ProCoSysGuid, deleted);
