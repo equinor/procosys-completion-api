@@ -25,4 +25,9 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20240705092048_ClassificationConstraint.cs" />
+    <Compile Remove="Migrations\20240705092048_ClassificationConstraint.Designer.cs" />
+  </ItemGroup>
+
 </Project>

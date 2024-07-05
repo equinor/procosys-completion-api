@@ -18,14 +18,4 @@ public class LibraryItemRepository(CompletionContext context)
         => await DefaultQueryable
                .SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type, cancellationToken)
            ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid);
-
-
-    public async Task<LibraryItem> GetUnknownOrgAsync(string busEventPlant, CancellationToken cancellationToken)
-    {
-        const string LibraryCodeForUnknownOrg = "UNKNOWN";
-        var libraryItem = await Set.SingleAsync(l
-            => l.Type == LibraryType.COMPLETION_ORGANIZATION && l.Code == LibraryCodeForUnknownOrg, cancellationToken);
-
-        return libraryItem;
-    }
 }

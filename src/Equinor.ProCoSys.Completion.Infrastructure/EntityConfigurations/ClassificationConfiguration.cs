@@ -10,7 +10,9 @@ internal class ClassificationConfiguration : IEntityTypeConfiguration<Classifica
     public void Configure(EntityTypeBuilder<Classification> builder)
     {
         builder.ConfigureSystemVersioning();
-
+        builder.Property(x => x.Guid).ValueGeneratedNever();
+        builder.HasIndex("Name","LibraryItemId").IsUnique();
+        builder.HasKey(x => x.Guid);
         builder.Property(x => x.Name)
             .HasMaxLength(Classification.NameLengthMax)
             .IsRequired();

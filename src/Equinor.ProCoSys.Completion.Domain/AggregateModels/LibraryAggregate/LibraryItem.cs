@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -42,7 +43,16 @@ public class LibraryItem : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 
     public IReadOnlyCollection<Classification> Classifications => _classifications.AsReadOnly();
 
-    public void AddClassification(Classification classification) => _classifications.Add(classification);
+    public void AddClassification(Classification classification)
+    {
+        if(!ClassificationExistsOrNameInUse(classification))
+        {
+            _classifications.Add(classification);
+        }
+    }
+
+    private bool ClassificationExistsOrNameInUse(Classification classification) => 
+        _classifications.Any(c => c.Guid == classification.Guid || c.Name == classification.Name);
 
     public void RemoveClassification(Classification classification) => _classifications.Remove(classification);
 }
