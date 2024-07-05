@@ -89,7 +89,7 @@ public static class CompletionContextExtension
         userProvider.SetCurrentUserOid(new Guid(SeederOid));
         var plant = knownTestData.Plant;
             
-        var project = SeedProject(
+        var projectA = SeedProject(
             dbContext,
             plant,
             KnownData.ProjectGuidA[plant],
@@ -134,10 +134,10 @@ public static class CompletionContextExtension
             "Painting",
             LibraryType.PUNCHLIST_TYPE);
 
-        var punchItem = SeedPunchItem(
+        var punchItemA = SeedPunchItem(
             dbContext,
             plant,
-            project,
+            projectA,
             KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemA",
@@ -146,40 +146,41 @@ public static class CompletionContextExtension
             priority,
             sorting,
             type);
-        knownTestData.PunchItem = punchItem;
+        knownTestData.PunchItemA = punchItemA;
 
-        project = SeedProject(
+        var projectB = SeedProject(
             dbContext, 
             plant,
             KnownData.ProjectGuidB[plant],
             "ProjectNameB", 
             "ProjectDescriptionB");
-        SeedPunchItem(
+
+        knownTestData.PunchItemB = SeedPunchItem(
             dbContext,
             plant,
-            project,
+            projectB,
             KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemB",
             raisedByOrg,
             clearingByOrg);
 
-        var link = SeedLink(dbContext, nameof(PunchItem), punchItem.Guid, "VG", "www.vg.no");
-        knownTestData.LinkInPunchItemAGuid = link.Guid;
+        var linkInPunchItemA = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
+        knownTestData.LinkInPunchItemAGuid = linkInPunchItemA.Guid;
 
-        var comment = SeedComment(dbContext, nameof(PunchItem), punchItem.Guid, "Comment");
-        knownTestData.CommentInPunchItemAGuid = comment.Guid;
+        var commentInPunchItemA = SeedComment(dbContext, nameof(PunchItem), punchItemA.Guid, "Comment");
+        knownTestData.CommentInPunchItemAGuid = commentInPunchItemA.Guid;
 
-        var historyItem = SeedHistory(
+        var historyItemInPunchItemA = SeedHistory(
             dbContext, 
-            punchItem.Guid, "History display name", 
+            punchItemA.Guid, "History display name", 
             userProvider.GetCurrentUserOid(), 
             "History full name", 
             DateTime.UtcNow);
 
-        knownTestData.HistoryInPunchItem = historyItem;
+        knownTestData.HistoryInPunchItemA = historyItemInPunchItemA;
 
-        var attachment = SeedAttachment(dbContext, project.Name, nameof(PunchItem), punchItem.Guid, "fil.txt");
+        var attachment = SeedAttachment(dbContext, punchItemA.Project.Name, nameof(PunchItem), punchItemA.Guid, "fil.txt");
         knownTestData.AttachmentInPunchItemAGuid = attachment.Guid;
 
         SeedWorkOrder(

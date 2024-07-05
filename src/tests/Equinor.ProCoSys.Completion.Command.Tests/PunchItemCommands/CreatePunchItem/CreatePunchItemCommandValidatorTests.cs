@@ -48,8 +48,8 @@ public class CreatePunchItemCommandValidatorTests
         _projectValidatorMock = Substitute.For<IProjectValidator>();
         _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(true);
         _checkListValidatorMock = Substitute.For<ICheckListValidator>();
-        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid).Returns(true);
-        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid).Returns(true);
+        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid, default).Returns(true);
+        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid, default).Returns(true);
 
         _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
 
@@ -369,7 +369,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_CheckListNotExists()
     {
         // Arrange
-        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid).Returns(false);
+        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -399,7 +399,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_CheckListNotInGivenProject()
     {
         // Arrange
-        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid).Returns(false);
+        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

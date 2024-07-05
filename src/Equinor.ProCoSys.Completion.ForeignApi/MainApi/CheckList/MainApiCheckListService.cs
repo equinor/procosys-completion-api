@@ -22,8 +22,7 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid,
-        CancellationToken cancellationToken)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
         var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
         try
@@ -33,8 +32,7 @@ public class MainApiCheckListService(
                       $"?proCoSysGuid={checkListGuid:N}" +
                       $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url,
-                cancellationToken: cancellationToken);
+            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
         }
         finally
         {
@@ -67,13 +65,13 @@ public class MainApiCheckListService(
         }
     }
 
-    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid)
+    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
                   $"?plantId={plant}" +
                   $"&proCoSysGuid={punchItemGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url);
+        return await mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, null, cancellationToken);
     }
 }

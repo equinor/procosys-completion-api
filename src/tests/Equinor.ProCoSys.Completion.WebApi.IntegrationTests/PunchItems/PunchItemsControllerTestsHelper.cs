@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 using Newtonsoft.Json;
 
@@ -597,6 +598,46 @@ public static class PunchItemsControllerTestsHelper
         return JsonConvert.DeserializeObject<List<HistoryDto>>(content);
     }
 
+    public static async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetPunchItemsByCheckListGuid(
+        UserType userType,
+        string plant,
+        Guid checkListGuid,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/CheckList/{checkListGuid}");
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<List<PunchItemDetailsDto>>(content).AsReadOnly();
+    }
+
+    public static async Task<ChecklistsByPunchGuidInstance> GetCheckListsByPunchItemGuid(
+        UserType userType,
+        string plant,
+        Guid guid,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/CheckLists");
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<ChecklistsByPunchGuidInstance>(content);
+    }
+
     private static async Task<string> PostAsync(
         UserType userType,
         string plant,
@@ -673,4 +714,5 @@ public static class PunchItemsControllerTestsHelper
 
         return (guidAndRowVersion.Guid, rowVersionAfterClear);
     }
+
 }

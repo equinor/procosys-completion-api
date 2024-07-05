@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -20,7 +21,7 @@ public class PunchItemsControllerTests : TestBase
     [TestInitialize]
     public async Task TestInitialize()
     {
-        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItem.Guid;
+        _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemA.Guid;
         _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
             .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
@@ -892,6 +893,31 @@ public class PunchItemsControllerTests : TestBase
         AssertRowVersionChange(rowVersionAfterVerify, newRowVersion);
         punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(UserType.Writer, TestFactory.PlantWithAccess, guid);
         Assert.IsFalse(punchItem.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldGetPunchItems()
+    {
+        // Act
+        var punchItems = await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            TestFactory.CheckListGuidNotRestricted
+            );
+
+        // Assert
+        Assert.IsTrue(0 < punchItems.Count);
+    }
+
+    [TestMethod]
+    public async Task GetCheckListsByPunchItemGuid_AsReader_ShouldGetCheckLists()
+    {
+        var res = await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest);
+
+        Assert.IsInstanceOfType(res, typeof(ChecklistsByPunchGuidInstance));
     }
 
     private async Task<(

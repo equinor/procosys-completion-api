@@ -34,6 +34,7 @@ using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
@@ -84,7 +85,7 @@ public static class ApplicationModule
         // services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
-        services.AddScoped<IContentAccessChecker, ContentAccessChecker>();
+        services.AddScoped<IAccessChecker, AccessChecker>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
@@ -116,6 +117,7 @@ public static class ApplicationModule
         services.AddScoped<Command.Attachments.IAttachmentService, Command.Attachments.AttachmentService>();
         services.AddScoped<Query.Attachments.IAttachmentService, Query.Attachments.AttachmentService>();
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
+        services.AddScoped<IPunchItemService, PunchItemService>();
 
         services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
 

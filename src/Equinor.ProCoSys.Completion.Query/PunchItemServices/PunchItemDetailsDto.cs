@@ -1,9 +1,10 @@
 ﻿using System;
 
-namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
+namespace Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
 public sealed record PunchItemDetailsDto(
     Guid Guid,
+    Guid CheckListGuid,
     string ProjectName,
     long ItemNo,
     string Category,
