@@ -40,6 +40,20 @@ public class LibraryItemTests
     }
 
     [TestMethod]
+    public void AddMultipleEqualClassifications_ShouldAddOnlyOneClassification()
+    {
+        // Act
+        _dut.AddClassification(_classification);
+        _dut.AddClassification(_classification);
+        _dut.AddClassification(new Classification(_classification.Guid, "blah"));
+        _dut.AddClassification(new Classification(Guid.NewGuid(), _classification.Name));
+
+        // Arrange
+        Assert.AreEqual(1, _dut.Classifications.Count);
+        Assert.AreEqual(_classification, _dut.Classifications.ElementAt(0));
+    }
+
+    [TestMethod]
     public void RemoveClassification_ShouldRemoveClassification()
     {
         // Arrange

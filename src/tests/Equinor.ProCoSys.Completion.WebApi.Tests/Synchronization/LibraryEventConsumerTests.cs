@@ -29,7 +29,10 @@ public class LibraryEventConsumerTests
     private const LibraryType LibType = LibraryType.COMM_PRIORITY;
 
     public LibraryEventConsumerTests() =>
-        _dut = new LibraryEventConsumer(Substitute.For<ILogger<LibraryEventConsumer>>(), _plantSetter, _libraryItemRepoMock, 
+        _dut = new LibraryEventConsumer(
+            Substitute.For<ILogger<LibraryEventConsumer>>(),
+            _plantSetter,
+            _libraryItemRepoMock, 
             _unitOfWorkMock);
 
     [TestInitialize]

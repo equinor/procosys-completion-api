@@ -111,6 +111,13 @@ public static class MassTransitModule
                     e.Name = "completion_punchitem";
                     e.Temporary = false;
                 });
+            
+            x.AddConsumer<ClassificationConsumer>()
+                .Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Temporary = false;
+                });
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
@@ -265,6 +272,17 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
+                cfg.ReceiveEndpoint(QueueNames.ClassificationCompletionTransferQueue, e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ClassificationConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
                 #endregion
 
                 #region Receive from topics
@@ -337,6 +355,15 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PunchItemDeleteEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                cfg.SubscriptionEndpoint("completion_punchprioritylibrarylation", "punchprioritylibraryrelation", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<ClassificationConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
