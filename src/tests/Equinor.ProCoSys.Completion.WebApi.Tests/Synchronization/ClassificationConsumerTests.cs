@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -69,14 +70,11 @@ public class ClassificationConsumerTests
         var bEvent = new ClassificationEvent(string.Empty, string.Empty, Guid.NewGuid(), DateTime.UtcNow, Guid.NewGuid(), null);
         _contextMock.Message.Returns(bEvent);
 
-    //Act
-    var exception = await Assert.ThrowsExceptionAsync<Exception>(() => dut.Consume(_contextMock));
-
-        //Assert
-        Assert.AreEqual($"{nameof(LibraryItem)} {bEvent.CommPriorityGuid} not found", exception.Message);
+        //Act
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException<LibraryItem>>(() => dut.Consume(_contextMock));
     }
 
-    /*
+    
     [TestMethod]
     public async Task Consume_ShouldHandleDeleteClassification_WhenClassificationNotExists()
     {
@@ -123,5 +121,5 @@ public class ClassificationConsumerTests
         Assert.IsNotNull(priority.Classifications);
         Assert.AreEqual(0, priority.Classifications.Count);
     }
-    */
+    
 }

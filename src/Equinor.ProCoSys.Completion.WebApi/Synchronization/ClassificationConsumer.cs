@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
@@ -23,26 +24,26 @@ public class ClassificationConsumer(
 
         if (classification.Behavior == "delete")
         {
-            //ExecuteDeleteAsync() does its own save, so we don't need to call SaveChangesAsync
-            //We do it this way because we don't have libraryItemGuid in the delete messages
-            var deletedRows = await dbContext.Classifications.Where(c => c.Guid == classification.ProCoSysGuid)
-                .ExecuteDeleteAsync();
+            var toDelete = await dbContext.Classifications.SingleOrDefaultAsync(c => c.Guid == classification.ProCoSysGuid);
+
+            if(toDelete is not null)
+            {
+                dbContext.Classifications.Remove(toDelete); 
+                await dbContext.SaveChangesFromSyncAsync(context.CancellationToken);
+            }
+           
             logger.LogDebug(
-                "Classification delete Message Consumed: {MessageId} \n Guid {Guid} \n Deleted {Deleted} rows",
-                context.MessageId, classification.ProCoSysGuid, deletedRows);
+                "Classification delete Message Consumed: {MessageId} \n Guid {Guid} \n",
+                context.MessageId, classification.ProCoSysGuid);
             return;
         }
 
         var libItem = await dbContext.Library
             .IgnoreQueryFilters()
-            .Include(l => l.Classifications)
-            .SingleOrDefaultAsync(l => l.Guid == classification.CommPriorityGuid, context.CancellationToken);
-
-        if (libItem is null)
-        {
-            throw new Exception($"{nameof(LibraryItem)} {classification.CommPriorityGuid} not found");
-        }
-
+            .Include(l =>l.Classifications)
+            .SingleOrDefaultAsync(l => l.Guid == classification.CommPriorityGuid, context.CancellationToken)
+                      ?? throw new EntityNotFoundException<LibraryItem>(classification.CommPriorityGuid);
+        
         libItem.AddClassification(new Classification(classification.ProCoSysGuid, Classification.PunchPriority));
 
         await dbContext.SaveChangesFromSyncAsync(context.CancellationToken);
