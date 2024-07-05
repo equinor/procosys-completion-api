@@ -208,7 +208,7 @@ public static class CompletionContextExtension
 
     private static void ClassifyPriorityAsPunchPriority(CompletionContext dbContext, LibraryItem priority)
     {
-        priority.AddClassification(new Classification(Guid.Empty, Classification.PunchPriority));
+        priority.AddClassification(new Classification(Guid.NewGuid(), Classification.PunchPriority));
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
