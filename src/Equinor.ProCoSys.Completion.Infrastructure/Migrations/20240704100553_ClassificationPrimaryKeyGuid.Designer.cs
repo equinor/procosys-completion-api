@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20240704100553_ClassificationPrimaryKeyGuid")]
+    partial class ClassificationPrimaryKeyGuid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -631,10 +634,10 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
             modelBuilder.Entity("Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.Classification", b =>
                 {
                     b.Property<Guid>("Guid")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("LibraryItemId")
-                        .IsRequired()
+                    b.Property<int>("LibraryItemId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -655,9 +658,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasKey("Guid");
 
                     b.HasIndex("LibraryItemId");
-
-                    b.HasIndex("Name", "LibraryItemId")
-                        .IsUnique();
 
                     b.ToTable("Classifications");
 
