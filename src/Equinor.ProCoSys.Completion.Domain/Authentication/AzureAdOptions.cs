@@ -1,4 +1,4 @@
-﻿namespace Equinor.ProCoSys.Completion.WebApi.Authentication;
+﻿namespace Equinor.ProCoSys.Completion.Domain.Authentication;
 
 /// <summary>
 /// Options for Azure authentication and authorization.
@@ -15,5 +15,5 @@ public class AzureAdOptions
     public bool DisableProjectUserDataClaims { get; set; }
     public bool DisableRestrictionRoleUserDataClaims { get; set; }
 
-    public string? MainApiScope { get; set; }
+    public required string MainApiScope { get; set; }
 }

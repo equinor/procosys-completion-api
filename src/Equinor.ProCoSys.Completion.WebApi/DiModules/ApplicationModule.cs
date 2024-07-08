@@ -30,7 +30,9 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.Domain.Authentication;
 using Equinor.ProCoSys.Completion.Domain.Validators;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
@@ -120,6 +122,7 @@ public static class ApplicationModule
         services.AddScoped<IPunchItemService, PunchItemService>();
 
         services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
+        services.AddScoped<IMainApiAuthenticator, DistributedCacheMainApiAuthenticator>();
 
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
