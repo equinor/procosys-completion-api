@@ -42,6 +42,7 @@
     <PackageReference Include="System.Text.Json" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj" />

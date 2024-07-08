@@ -65,6 +65,10 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.Completion.DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Cache", "Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj", "{66418B78-B408-4552-969D-22623B2C2459}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Cache.Tests", "tests\Equinor.ProCoSys.Completion.Cache.Tests\Equinor.ProCoSys.Completion.Cache.Tests.csproj", "{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +147,14 @@ Global
 		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66418B78-B408-4552-969D-22623B2C2459}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66418B78-B408-4552-969D-22623B2C2459}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66418B78-B408-4552-969D-22623B2C2459}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66418B78-B408-4552-969D-22623B2C2459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,6 +169,7 @@ Global
 		{75BF00C3-7FC9-49AD-9EF5-51DB36CEDE60} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{C318C627-9419-42FC-B652-660795962C7F} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
+		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C79730D0-E4C2-474A-9D04-1C07256B6DF3}
