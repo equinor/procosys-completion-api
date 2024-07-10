@@ -69,6 +69,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Cache.Tests", "tests\Equinor.ProCoSys.Completion.Cache.Tests\Equinor.ProCoSys.Completion.Cache.Tests.csproj", "{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.TieImport", "Equinor.ProCoSys.Completion.TieImport\Equinor.ProCoSys.Completion.TieImport.csproj", "{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

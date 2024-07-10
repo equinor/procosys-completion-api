@@ -73,6 +73,7 @@ builder.ConfigureTelemetry(credential, devOnLocalhost);
 
 builder.Services.AddMediatrModules();
 builder.Services.AddApplicationModules(builder.Configuration);
+builder.Services.AddTieImportModule(builder.Configuration);
 
 var app = builder.Build();
 
