@@ -5,6 +5,7 @@ namespace Equinor.ProCoSys.Completion.Domain.Imports;
 public sealed record PunchItemImportMessage(
     Guid? Guid,
     string Plant,
+    string Project,
     Optional<string?> PunchClass,
     Optional<string?> ExternalPunchItemNo,
     Optional<string?> TagNo,

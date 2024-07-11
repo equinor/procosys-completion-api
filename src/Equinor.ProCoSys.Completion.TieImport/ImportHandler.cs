@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
+using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -79,6 +80,8 @@ public sealed class ImportHandler : IImportHandler
     {
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
 
+        var errors = message.Objects.SelectMany(PunchTiObjectValidator.Validate).ToList();
+
         var punchItemImportMessages = TiObjectToPunchItemImportMessage
             .ToPunchItemImportMessages(message.Objects);
         
@@ -87,8 +90,6 @@ public sealed class ImportHandler : IImportHandler
         
         var contextBuilder = new PlantScopedImportDataContextBuilder(completionContext);
         var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
-        
-        
         
         // //TODO: 109642 Collect errors and warnings
         // try

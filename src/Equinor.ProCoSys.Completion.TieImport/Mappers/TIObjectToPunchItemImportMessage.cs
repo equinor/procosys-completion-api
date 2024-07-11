@@ -7,11 +7,14 @@ namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public static class TiObjectToPunchItemImportMessage
 {
+    public const string ProjectMissing = "$PROJECT_MISSING$";
+
     public static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
     {
-        var foo = new PunchItemImportMessage(
+        var message = new PunchItemImportMessage(
             tiObject.Guid,
             tiObject.Site,
+            tiObject.GetAttributeValueAsString("PROJECT") ?? ProjectMissing,
             GetStringValue(tiObject, "CLASS"),
             GetStringValue(tiObject, "EXTERNALPUNCHITEMNO"),
             GetStringValue(tiObject, "TAGNO"),
@@ -35,7 +38,7 @@ public static class TiObjectToPunchItemImportMessage
             GetStringValue(tiObject, "MATERIALNO")
         );
 
-        return foo;
+        return message;
     }
 
     public static IReadOnlyCollection<PunchItemImportMessage> ToPunchItemImportMessages(List<TIObject> tiObjects) =>
