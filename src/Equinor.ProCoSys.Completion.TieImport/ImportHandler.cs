@@ -11,7 +11,9 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
+using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -76,25 +78,39 @@ public sealed class ImportHandler : IImportHandler
     private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
-        //TODO: 109642 Collect errors and warnings
-        try
-        {
-            foreach (var tiObject in message.Objects)
-            {
-                await ImportObject(message, tiObject);
-            }
-        }
-        catch (Exception ex) //TODO: 109642 SetFailed result
-        {
-            _logger.LogError("Failed to import message with GUID={MessageGuid} Exception: {ExceptionMessage}, InnerException {InnerExceptionMessage}", 
-                message.Guid, ex.Message, ex.InnerException?.Message);
-        }
-        finally
-        {
-            //This is where existing code does commit or abort...
-        }
 
-        //TODO: 109642 return tiMessageResult;
+        var punchItemImportMessages = TiObjectToPunchItemImportMessage
+            .ToPunchItemImportMessages(message.Objects);
+        
+        using var scope = _serviceScopeFactory.CreateScope();
+        var completionContext = scope.ServiceProvider.GetRequiredService<CompletionContext>();
+        
+        var contextBuilder = new PlantScopedImportDataContextBuilder(completionContext);
+        var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
+        
+        
+        
+        // //TODO: 109642 Collect errors and warnings
+        // try
+        // {
+        //     var foo = TiObjectToPunchItemImportMessage.ToPunchItemImportMessages(message.Objects);
+        //     foreach (var tiObject in message.Objects)
+        //     {
+        //         await ImportObject(message, tiObject);
+        //     }
+        // }
+        // catch (Exception ex) //TODO: 109642 SetFailed result
+        // {
+        //     _logger.LogError("Failed to import message with GUID={MessageGuid} Exception: {ExceptionMessage}, InnerException {InnerExceptionMessage}", 
+        //         message.Guid, ex.Message, ex.InnerException?.Message);
+        // }
+        // finally
+        // {
+        //     //This is where existing code does commit or abort...
+        // }
+        //
+        // //TODO: 109642 return tiMessageResult;
+        
         return new TIMessageResult();
     }
 
@@ -161,6 +177,7 @@ public sealed class ImportHandler : IImportHandler
 
     private CreatePunchItemCommand GetCreatePunchItemCommand(TIObject tiObject)
     {
+        var foo = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(tiObject);
         var description = tiObject.GetAttributeValueAsString("Description");
 
         //TODO: Hardcoded for minimum viable product / proof of concept
