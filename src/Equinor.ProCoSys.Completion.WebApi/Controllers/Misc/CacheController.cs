@@ -95,11 +95,15 @@ public class CacheController : ControllerBase
 
     [HttpGet("PrefetchCheckListByGuid/{checkListGuid}")]
     public async Task<ActionResult> PrefetchCheckListByGuid(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
         [FromRoute] Guid checkListGuid,
         CancellationToken cancellationToken
     )
     {
-        await _mediator.Send(new PrefetchCheckListQuery(checkListGuid), cancellationToken);
+        await _mediator.Send(new PrefetchCheckListQuery(checkListGuid, plant), cancellationToken);
         return Ok();
     }
 }

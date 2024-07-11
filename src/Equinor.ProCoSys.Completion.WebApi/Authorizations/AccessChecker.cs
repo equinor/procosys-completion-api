@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 
@@ -13,18 +14,20 @@ public class AccessChecker : IAccessChecker
     private readonly ICheckListCache _checkListCache;
     private readonly IPunchItemHelper _punchItemHelper;
     private readonly IProjectAccessChecker _projectAccessChecker;
+    private readonly IPlantProvider _plantProvider;
 
     public AccessChecker(
         IRestrictionRolesChecker restrictionRolesChecker,
         ICheckListCache checkListCache,
         IPunchItemHelper punchItemHelper,
-        IProjectAccessChecker projectAccessChecker)
+        IProjectAccessChecker projectAccessChecker,
+        IPlantProvider plantProvider)
     {
         _restrictionRolesChecker = restrictionRolesChecker;
         _checkListCache = checkListCache;
         _punchItemHelper = punchItemHelper;
         _projectAccessChecker = projectAccessChecker;
-
+        _plantProvider = plantProvider;
     }
 
     public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid,
@@ -57,7 +60,7 @@ public class AccessChecker : IAccessChecker
 
     public async Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
-        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+        var checkList = await _checkListCache.GetCheckListAsync(_plantProvider.Plant, checkListGuid, cancellationToken);
         return checkList == null
             ? throw new Exception($"CheckList with guid '{checkListGuid}' not found")
             : _projectAccessChecker.HasCurrentUserAccessToProject(checkList.ProjectGuid);
@@ -66,7 +69,7 @@ public class AccessChecker : IAccessChecker
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid,
         CancellationToken cancellationToken)
     {
-        var checkList = await _checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+        var checkList = await _checkListCache.GetCheckListAsync(_plantProvider.Plant, checkListGuid, cancellationToken);
         if (checkList is null)
         {
             throw new Exception($"CheckList '{checkListGuid}' not found");

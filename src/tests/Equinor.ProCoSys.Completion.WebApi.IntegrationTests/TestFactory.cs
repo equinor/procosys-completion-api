@@ -417,11 +417,11 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
 
         CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
