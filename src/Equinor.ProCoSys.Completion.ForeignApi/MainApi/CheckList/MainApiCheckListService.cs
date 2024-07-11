@@ -31,8 +31,8 @@ public class MainApiCheckListService(
         {
             mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
             var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                      $"plantId={plant}" +
-                      $"?proCoSysGuid={checkListGuid:N}" +
+                      $"?plantId={plant}" +
+                      $"&proCoSysGuid={checkListGuid:N}" +
                       $"&api-version={_apiVersion}";
 
             return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
