@@ -23,13 +23,15 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid,
+        CancellationToken cancellationToken)
     {
         var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
         try
         {
             mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
             var url = $"{_baseAddress}CheckList/ForProCoSys5" +
+                      $"plantId={plant}" +
                       $"?proCoSysGuid={checkListGuid:N}" +
                       $"&api-version={_apiVersion}";
 
