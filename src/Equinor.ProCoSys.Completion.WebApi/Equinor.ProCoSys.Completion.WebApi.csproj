@@ -44,7 +44,7 @@
     <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.2.0" />
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
-    <PackageReference Include="System.Text.Json" Version="8.0.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj" />

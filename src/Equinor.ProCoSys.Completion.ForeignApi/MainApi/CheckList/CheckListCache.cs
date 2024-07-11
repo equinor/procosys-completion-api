@@ -21,7 +21,7 @@ public class CheckListCache(
         SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.CurrentValue.CheckListCacheExpirationMinutes)
     };
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid,
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid,
         CancellationToken cancellationToken)
     {
         var checkListGuidCacheKey = CheckListGuidCacheKey(checkListGuid);
@@ -29,7 +29,7 @@ public class CheckListCache(
         var cachedChecklist = await distributedCache.GetStringAsync(checkListGuidCacheKey, cancellationToken);
         if (string.IsNullOrEmpty(cachedChecklist))
         {
-            var checkList = await checkListApiService.GetCheckListAsync(checkListGuid, cancellationToken);
+            var checkList = await checkListApiService.GetCheckListAsync(plant, checkListGuid, cancellationToken);
             await distributedCache.SetStringAsync(checkListGuidCacheKey, JsonSerializer.Serialize(checkList), _options,
                 cancellationToken);
             return checkList;
