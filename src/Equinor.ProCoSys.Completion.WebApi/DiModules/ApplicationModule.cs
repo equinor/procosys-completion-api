@@ -35,6 +35,7 @@ using Equinor.ProCoSys.Completion.Domain.Authentication;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
@@ -89,6 +90,7 @@ public static class ApplicationModule
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
         services.AddScoped<IAccessChecker, AccessChecker>();
+        services.AddScoped<ITagService, TagService>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();

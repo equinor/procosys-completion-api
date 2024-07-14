@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.Imports;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
@@ -76,5 +77,24 @@ public class MainApiCheckListService(
                   $"&api-version={_apiVersion}";
 
         return await mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, null, cancellationToken);
+    }
+
+    public async Task<TagCheckList[]> GetCheckListsByTagIdAndPlantAsync(int tagId, string plant, CancellationToken cancellationToken)
+    {
+        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
+        try
+        {
+            mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+            var url = $"{_baseAddress}Tag/CheckLists" +
+                      $"?plantId={plant}" +
+                      $"&tagId={tagId}" +
+                      $"&api-version={_apiVersion}";
+
+            return await mainApiClient.TryQueryAndDeserializeAsync<TagCheckList[]>(url, null, cancellationToken);
+        }
+        finally
+        {
+            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
+        }
     }
 }

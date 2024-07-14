@@ -8,11 +8,17 @@ public static class PunchTiObjectValidator
 {
     public static IEnumerable<ImportError> Validate(TIObject tiObject)
     {
-        var project = tiObject.GetAttributeValueAsString("PROJECT");
+        var project = tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project);
 
-        if (project is null)
+        if (string.IsNullOrEmpty(project))
         {
             yield return tiObject.ToImportError("This punch item object is missing a project");
+        }
+
+        var tagNo = tiObject.GetAttributeValueAsString(PunchObjectAttributes.TagNo);
+        if (string.IsNullOrEmpty(tagNo))
+        {
+            yield return tiObject.ToImportError("This punch item object is missng a tag number");
         }
     }
 }
@@ -24,7 +30,7 @@ public static class TiObjectExtensions {
         var importError = new ImportError(
                 tiObject.Guid,
                 tiObject.Method,
-            tiObject.GetAttributeValueAsString("PROJECT") ?? "N/A",
+            tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project) ?? "N/A",
                 tiObject.Site,
                 message
             );

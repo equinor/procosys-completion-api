@@ -1,22 +1,22 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
+using Equinor.ProCoSys.Completion.Extensions;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using MassTransit.Util;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Graph.Models;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
-public sealed class PlantScopedImportDataContextBuilder(CompletionContext completionContext)
+public sealed class PlantScopedImportDataContextBuilder(CompletionContext completionContext, ICheckListCache checkListCache, ITagService tagService)
     : IScopedContextLibraryTypeBuilder
 {
-    private readonly Dictionary<string, List<LibraryItemByPlant>> _libraryItemsByPlant = new();
-    private readonly Dictionary<string, PersonKey> _personByEmail = new ();
+    private ILookup<string, LibraryItemByPlant> _libraryItemsByPlant = EmptyLookup<string, LibraryItemByPlant>.Empty();
+    private ILookup<string, PersonKey> _personByEmail = EmptyLookup<string, PersonKey>.Empty();
     private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
-    private List<ProjectByPlantKey> _projectsByPlant = new();
+    private readonly List<ProjectByPlantKey> _projectsByPlant = [];
+    private readonly List<TagNoByProjectNameAndPlantKey> _tagNoByPlantKeys = [];
 
     public async Task<Dictionary<string, PlantScopedImportDataContext>> BuildAsync(
         IReadOnlyCollection<PunchItemImportMessage> importMessages, CancellationToken cancellationToken)
@@ -29,16 +29,10 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
     private async Task BuildLibraryItemsAsync(IReadOnlyCollection<PunchItemImportMessage> importMessages,
         CancellationToken cancellationToken)
     {
-        foreach (var message in importMessages)
-        {
-            CreateLibraryItemKeys(message.PunchListType, message.Plant);
-            CreateLibraryItemKeys(message.ClearedByOrganization, message.Plant);
-            CreateLibraryItemKeys(message.RaisedByOrganization, message.Plant);
-            CreatePersonKeys(message.ClearedBy);
-            CreatePersonKeys(message.VerifiedBy);
-            CreatePersonKeys(message.RejectedBy);
-            CreateProjectKeys(message, message.Plant);
-        }
+        _tagNoByPlantKeys.AddRange(FetchKeysCreator.CreateTagKeys(importMessages));
+        _libraryItemsByPlant = FetchKeysCreator.CreateLibraryItemKeys(importMessages);
+        _personByEmail = FetchKeysCreator.CreatePersonKeys(importMessages);
+        _projectsByPlant .AddRange(FetchKeysCreator.CreateProjectKeys(importMessages));
 
         _plantScopedImportDataContexts = importMessages
                 .GroupBy(x => x.Plant)
@@ -46,9 +40,59 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
                 .ToDictionary(k => k.Key, v => v.Value)
             ;
 
-        await FetchLibraryItemsForPlantAsync(_libraryItemsByPlant.Values.SelectMany(x => x).ToList(), cancellationToken);
-        await FetchPersons(_personByEmail.Values.ToArray(), cancellationToken);
-        await FetchProjects(_projectsByPlant, cancellationToken);
+        var tagTasks = CreateFetchTagsByPlantTasks(_tagNoByPlantKeys.Distinct().ToArray(), cancellationToken);
+        await FetchLibraryItemsForPlantAsync(
+            _libraryItemsByPlant.SelectMany(x => x).ToList(),
+            cancellationToken);
+        await FetchPersonsAsync(_personByEmail.SelectMany(x => x).ToArray(), cancellationToken);
+        await FetchProjectsAsync(_projectsByPlant, cancellationToken);
+        await WhenAllFetchTagsByPlantTasksAsync(tagTasks);
+    }
+
+    private async Task WhenAllFetchTagsByPlantTasksAsync(Task<TagCheckList[]>[] tagTasks)
+    {
+        var results = await Task.WhenAll(tagTasks);
+        var checkListsByPlant = results
+            .SelectMany(x => x)
+            .GroupBy(x => x.Plant);
+        
+        foreach (var checkLists in checkListsByPlant)
+        {
+            _plantScopedImportDataContexts[checkLists.Key].AddCheckList(checkLists.ToArray());
+        }
+    }
+
+    private Task<TagCheckList[]>[] CreateFetchTagsByPlantTasks(TagNoByProjectNameAndPlantKey[] keys, CancellationToken cancellationToken)
+    {
+        var tasks = new List<Task<TagCheckList[]>>();
+        var byPlant = keys.GroupBy(x => x.Plant);
+
+        foreach (var plantKeys in byPlant)
+        {
+            var byProject = plantKeys.GroupBy(x => x.ProjectName);
+            foreach (var projectKeys in byProject)
+            {
+                var foo = CreateFetchTagsByPlantTask(plantKeys.Key, projectKeys.Key, projectKeys.ToArray(),
+                    cancellationToken);
+                tasks.Add(foo);
+            }
+        }
+
+        var fetchTagsByPlantTasks = tasks.ToArray();
+        return fetchTagsByPlantTasks;
+    }
+
+    private async Task<TagCheckList[]> CreateFetchTagsByPlantTask(string plant, string projectName, TagNoByProjectNameAndPlantKey[] keys, CancellationToken cancellationToken)
+    {
+        var tagNos = keys.Select(x => x.TagNo).ToArray();
+        var tags = await tagService.GetTagsByTagNosAsync(plant, projectName, tagNos, cancellationToken);
+        
+        var tasks = tags.Select(tag =>
+            checkListCache.GetCheckListsByTagIdAsync(tag.Id, plant, cancellationToken));
+
+        var results = await Task.WhenAll(tasks);
+
+        return results.SelectMany(x => x).ToArray();
     }
 
     private async Task FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
@@ -73,7 +117,7 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
         parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Code{i}", k.Code)));
         parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Type{i}", k.Type.ToString())));
         parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Plant{i}", k.Plant)));
-        
+
         var items = await completionContext.Library
             .FromSqlRaw(query, parameters.ToArray())
             .IgnoreQueryFilters()
@@ -86,13 +130,13 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
             _plantScopedImportDataContexts[libraryItems.Key].AddLibraryItems(libraryItems.ToArray());
         }
     }
-    
-    private async Task FetchPersons(PersonKey[] keys, CancellationToken cancellationToken)
+
+    private async Task FetchPersonsAsync(PersonKey[] keys, CancellationToken cancellationToken)
     {
         var emailKeys = keys.Select(x => x.Email)
             .Distinct()
             .ToArray();
-        
+
         var persons = await completionContext.Persons
             .Where(x => emailKeys.Contains(x.Email))
             .IgnoreQueryFilters()
@@ -104,8 +148,8 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
             scopedContext.Value.AddPersons(persons);
         }
     }
-    
-    private async Task FetchProjects(List<ProjectByPlantKey> keys, CancellationToken cancellationToken)
+
+    private async Task FetchProjectsAsync(List<ProjectByPlantKey> keys, CancellationToken cancellationToken)
     {
         keys = keys.Distinct().ToList();
         var query = $"""
@@ -123,7 +167,7 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
 
         parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Name{i}", k.Project)));
         parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Plant{i}", k.Plant)));
-        
+
         var items = await completionContext.Projects
             .FromSqlRaw(query, parameters.ToArray())
             .IgnoreQueryFilters()
@@ -136,43 +180,8 @@ public sealed class PlantScopedImportDataContextBuilder(CompletionContext comple
             _plantScopedImportDataContexts[projects.Key].AddProjects(projects.ToArray());
         }
     }
-    
-    private void CreateLibraryItemKeys(Optional<string?> libraryCode, string plant)
-    {
-        if (libraryCode is not { HasValue: true, Value: not null })
-        {
-            return;
-        }
 
-        var key = new LibraryItemByPlant(libraryCode.Value, LibraryType.COMPLETION_ORGANIZATION,
-            plant);
-
-        if (_libraryItemsByPlant.TryGetValue(key.Plant, out var value))
-        {
-            value.Add(key);
-        }
-        else
-        {
-            _libraryItemsByPlant[key.Plant] = [key];
-        }
-    }
     
-    private void CreatePersonKeys(Optional<string?> personEmail)
-    {
-        if (personEmail is not { HasValue: true, Value: not null })
-        {
-            return;
-        }
-
-        var key = new PersonKey(personEmail.Value);
-        _personByEmail[key.Email] = key;
-    }
-    
-    private void CreateProjectKeys(PunchItemImportMessage message, string plant)
-    {
-        var key = new ProjectByPlantKey(message.Project, plant);
-        _projectsByPlant.Add(key);
-    }
 }
 
 public interface IScopedContextLibraryTypeBuilder

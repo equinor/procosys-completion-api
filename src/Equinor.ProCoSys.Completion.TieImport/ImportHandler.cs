@@ -11,6 +11,8 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
@@ -81,14 +83,19 @@ public sealed class ImportHandler : IImportHandler
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
 
         var errors = message.Objects.SelectMany(PunchTiObjectValidator.Validate).ToList();
+        var validatedObjects = message.Objects
+            .Where(m => errors.All(y => y.Guid != m.Guid))
+            .ToList();
 
         var punchItemImportMessages = TiObjectToPunchItemImportMessage
-            .ToPunchItemImportMessages(message.Objects);
+            .ToPunchItemImportMessages(validatedObjects);
         
         using var scope = _serviceScopeFactory.CreateScope();
         var completionContext = scope.ServiceProvider.GetRequiredService<CompletionContext>();
+        var checkListService = scope.ServiceProvider.GetRequiredService<ICheckListCache>();
+        var tagService = scope.ServiceProvider.GetRequiredService<ITagService>();
         
-        var contextBuilder = new PlantScopedImportDataContextBuilder(completionContext);
+        var contextBuilder = new PlantScopedImportDataContextBuilder(completionContext, checkListService, tagService);
         var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
         
         // //TODO: 109642 Collect errors and warnings
