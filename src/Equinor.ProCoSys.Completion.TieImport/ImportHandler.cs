@@ -11,6 +11,7 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -95,6 +96,14 @@ public sealed class ImportHandler : IImportHandler
         
         var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
         var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
+
+        var messagesByPlant = punchItemImportMessages.GroupBy(x => x.Plant);
+
+        foreach (var plantMessages in messagesByPlant)
+        {
+            await ImportPlantMessages(plantMessages.ToArray(), scopedContext[plantMessages.Key],
+                CancellationToken.None);
+        }
         
         // //TODO: 109642 Collect errors and warnings
         // try
@@ -118,6 +127,47 @@ public sealed class ImportHandler : IImportHandler
         // //TODO: 109642 return tiMessageResult;
         
         return new TIMessageResult();
+    }
+
+    private async Task ImportPlantMessages(IReadOnlyCollection<PunchItemImportMessage> messages,
+        PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
+    {
+        var mapper = new PunchItemImportMessageToCreatePunchItem(scopedImportDataContext);
+
+        var (commands, errors) = mapper.Map(messages);
+        
+        //Import module is running as a background service which is lifetime singleton.
+        //A singleton service cannot retrieve scoped services via constructor.
+        using var scope = _serviceScopeFactory.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
+        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
+        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
+        var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
+        var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
+        var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
+        
+        if (claimsTransformation is null)
+        {
+            throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
+        }
+
+        if (authenticatorOptions is null)
+        {
+            throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
+        }
+
+        plantSetter.SetPlant(scopedImportDataContext.Plant);
+
+        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+
+        currentUserSetter.SetCurrentUserOid(Guid.Parse("5ea68d43-5ee1-4c28-9c79-bc54a004f269"));
+
+        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
+
+        var tasks = commands.Select(m => mediator.Send(m, cancellationToken));
+
+        var results = await Task.WhenAll(tasks);
     }
 
     private async Task ImportObject(TIInterfaceMessage message, TIObject tiObject)

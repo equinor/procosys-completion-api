@@ -1,10 +1,12 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain.Imports;
 
 public sealed record PunchItemImportMessage(
     Guid? Guid,
     string Plant,
+    string Method,
     string ProjectName,
     string TagNo,
     string ExternalPunchItemNo,
@@ -14,7 +16,7 @@ public sealed record PunchItemImportMessage(
     Optional<string?> Description,
     Optional<string?> Responsible,
     Optional<string?> RaisedByOrganization,
-    Optional<string?> Status,
+    Category? Category,
     Optional<string?> PunchListType,
     Optional<DateTime?> DueDate,
     Optional<DateTime?> ClearedDate,
@@ -27,4 +29,14 @@ public sealed record PunchItemImportMessage(
     Optional<string?> MaterialRequired,
     Optional<DateTime?> MaterialEta,
     Optional<string?> MaterialNo
-    );
+)
+{
+    public ImportError ToImportError(string message) =>
+        new(
+            Guid,
+            Method,
+            ProjectName,
+            Plant,
+            message
+        );
+};

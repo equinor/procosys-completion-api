@@ -19,19 +19,3 @@ public static class PunchTiObjectValidator
         return errors;
     }
 }
-
-
-public static class TiObjectExtensions {
-    public static ImportError ToImportError(this TIObject tiObject, string message)
-    {
-        var importError = new ImportError(
-                tiObject.Guid,
-                tiObject.Method,
-            tiObject.GetAttributeValueAsString(Project) ?? "N/A",
-                tiObject.Site,
-                message
-            );
-
-        return importError;
-    }
-}

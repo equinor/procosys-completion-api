@@ -25,4 +25,11 @@ public static class PunchObjectAttributes
     public const string TagNo = "TAGNO";
     public const string VerifiedBy = "VERIFIEDBY";
     public const string VerifiedDate = "VERIFIEDDATE";
+    
+    public static class Methods
+    {
+        public const string Create = "CREATE";
+        public const string Update = "UPDATE";
+        public const string Delete = "DELETE";
+    }
 }

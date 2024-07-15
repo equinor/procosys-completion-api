@@ -1,4 +1,6 @@
-﻿using Equinor.ProCoSys.Completion.Domain;
+﻿using System.Globalization;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Statoil.TI.InterfaceServices.Message;
@@ -13,6 +15,7 @@ public static class TiObjectToPunchItemImportMessage
         var message = new PunchItemImportMessage(
             tiObject.Guid,
             tiObject.Site,
+            tiObject.Method,
             GetStringValueOrThrow(tiObject, Project),
             GetStringValueOrThrow(tiObject, TagNo),
             GetStringValueOrThrow(tiObject, ExternalPunchItemNo),
@@ -22,7 +25,7 @@ public static class TiObjectToPunchItemImportMessage
             GetStringValue(tiObject, Description),
             GetStringValue(tiObject, Responsible),
             GetStringValue(tiObject, RaisedByOrganization),
-            GetStringValue(tiObject, Status),
+            GetCategoryFromStatus(tiObject),
             GetStringValue(tiObject, PunchListType),
             GetDateValue(tiObject, DueDate),
             GetDateValue(tiObject, ClearedDate),
@@ -52,8 +55,39 @@ public static class TiObjectToPunchItemImportMessage
             ? new Optional<string?>(tiObject.GetAttributeValueAsString(attribute))
             : new Optional<string?>();
 
-    private static Optional<DateTime?> GetDateValue(TIObject tiObject, string attribute) =>
-        tiObject.Attributes.Any(a => a.Name == attribute)
-            ? new Optional<DateTime?>(DateTime.Parse(tiObject.GetAttributeValueAsString(attribute)))
-            : new Optional<DateTime?>();
+    private static Optional<DateTime?> GetDateValue(TIObject tiObject, string attribute)
+    {
+        var dueDate = tiObject.GetAttributeValueAsString(attribute);
+        if (tiObject.Attributes.All(a => a.Name != attribute))
+        {
+            return new Optional<DateTime?>();
+        }
+
+        if (string.IsNullOrEmpty(dueDate))
+        {
+            return new Optional<DateTime?>();
+        }
+
+        var dateTime = DateTime.SpecifyKind(DateTime.Parse(dueDate), DateTimeKind.Utc);
+
+        return new Optional<DateTime?>(dateTime);
+    }
+        
+    private static Category? GetCategoryFromStatus(TIObject tiObject)
+    {
+        var status = tiObject.GetAttributeValueAsString(Status);
+        if (string.IsNullOrEmpty(status))
+        {
+            return null;
+        }
+
+        if (status != Category.PB.ToString() && status != Category.PA.ToString())
+        {
+            return null;
+        }
+
+        return status == Category.PA.ToString()
+            ? Category.PA
+            : Category.PB;
+    }
 }

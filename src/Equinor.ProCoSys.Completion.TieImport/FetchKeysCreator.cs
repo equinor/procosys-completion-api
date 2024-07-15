@@ -8,7 +8,8 @@ public static class FetchKeysCreator
 {
     public static IEnumerable<TagNoByProjectNameAndPlantKey> CreateTagKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages) =>
-        importMessages.Select(message => CreateTagKey(message.TagNo, message.ProjectName, message.Plant, message.FormType));
+        importMessages.Select(message =>
+            CreateTagKey(message.TagNo, message.ProjectName, message.Plant, message.FormType));
 
     public static ILookup<string, LibraryItemByPlant> CreateLibraryItemKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
@@ -17,9 +18,11 @@ public static class FetchKeysCreator
             .SelectMany(message =>
                 new List<LibraryItemByPlant?>
                 {
-                    CreateLibraryItemKey(message.PunchListType, message.Plant),
-                    CreateLibraryItemKey(message.ClearedByOrganization, message.Plant),
-                    CreateLibraryItemKey(message.RaisedByOrganization, message.Plant)
+                    CreateLibraryItemKey(message.PunchListType, message.Plant, LibraryType.PUNCHLIST_TYPE),
+                    CreateLibraryItemKey(message.ClearedByOrganization, message.Plant,
+                        LibraryType.COMPLETION_ORGANIZATION),
+                    CreateLibraryItemKey(message.RaisedByOrganization, message.Plant,
+                        LibraryType.COMPLETION_ORGANIZATION)
                 }
             )
             .Where(x => x is not null)
@@ -58,15 +61,15 @@ public static class FetchKeysCreator
         string formType) =>
         new(tagNo, projectName, plant, formType);
 
-    private static LibraryItemByPlant? CreateLibraryItemKey(Optional<string?> libraryCode, string plant)
+    private static LibraryItemByPlant? CreateLibraryItemKey(Optional<string?> libraryCode, string plant,
+        LibraryType type)
     {
         if (libraryCode is not { HasValue: true, Value: not null })
         {
             return null;
         }
 
-        var key = new LibraryItemByPlant(libraryCode.Value, LibraryType.COMPLETION_ORGANIZATION,
-            plant);
+        var key = new LibraryItemByPlant(libraryCode.Value, type, plant);
 
         return key;
     }

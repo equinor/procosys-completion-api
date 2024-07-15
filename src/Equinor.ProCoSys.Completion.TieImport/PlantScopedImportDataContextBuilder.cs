@@ -28,7 +28,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
 
         _plantScopedImportDataContexts = importMessages
                 .GroupBy(x => x.Plant)
-                .Select(x => new { x.Key, Value = new PlantScopedImportDataContext() })
+                .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
                 .ToDictionary(k => k.Key, v => v.Value)
             ;
 
