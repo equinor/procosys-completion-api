@@ -9,4 +9,8 @@ public readonly record struct LibraryItemByPlant(string Code, LibraryType Type, 
 
 public readonly record struct ProjectByPlantKey(string Project, string Plant);
 
-public readonly record struct TagNoByProjectNameAndPlantKey(string TagNo, string ProjectName, string Plant);
+public readonly record struct TagNoByProjectNameAndPlantKey(
+    string TagNo,
+    string ProjectName,
+    string Plant,
+    string FormType);

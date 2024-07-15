@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +50,7 @@ public class CheckListCache(
         return null;
     }
 
-    public async Task<TagCheckList[]> GetCheckListsByTagIdAsync(int tagId, string plant, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<TagCheckList>> GetCheckListsByTagIdAsync(int tagId, string plant, CancellationToken cancellationToken)
     {
         var checkListGuidCacheKey = CheckListBygTagAndPlantCacheKey(tagId, plant);
 
@@ -63,7 +65,10 @@ public class CheckListCache(
 
         try
         {
-            return JsonSerializer.Deserialize<TagCheckList[]>(cachedChecklist) ?? [];
+            var checkLists = JsonSerializer.Deserialize<TagCheckList[]>(cachedChecklist) ?? [];
+            return checkLists
+                .Select(x => x with { Plant = plant })
+                .ToArray();
         }
         catch (Exception ex)
         {

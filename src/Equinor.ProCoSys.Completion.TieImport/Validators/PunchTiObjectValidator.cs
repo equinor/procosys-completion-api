@@ -1,6 +1,7 @@
 ﻿using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Statoil.TI.InterfaceServices.Message;
+using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 
@@ -8,18 +9,14 @@ public static class PunchTiObjectValidator
 {
     public static IEnumerable<ImportError> Validate(TIObject tiObject)
     {
-        var project = tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project);
+        string[] requiredStringAttributes = [Project, TagNo, ExternalPunchItemNo, FormType];
 
-        if (string.IsNullOrEmpty(project))
-        {
-            yield return tiObject.ToImportError("This punch item object is missing a project");
-        }
+        var errors = requiredStringAttributes
+            .Where(attributeName => string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(attributeName)))
+            .Select(attributeName =>
+                tiObject.ToImportError($"This punch item object is missing required attribute '{attributeName}'"));
 
-        var tagNo = tiObject.GetAttributeValueAsString(PunchObjectAttributes.TagNo);
-        if (string.IsNullOrEmpty(tagNo))
-        {
-            yield return tiObject.ToImportError("This punch item object is missng a tag number");
-        }
+        return errors;
     }
 }
 
@@ -30,7 +27,7 @@ public static class TiObjectExtensions {
         var importError = new ImportError(
                 tiObject.Guid,
                 tiObject.Method,
-            tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project) ?? "N/A",
+            tiObject.GetAttributeValueAsString(Project) ?? "N/A",
                 tiObject.Site,
                 message
             );

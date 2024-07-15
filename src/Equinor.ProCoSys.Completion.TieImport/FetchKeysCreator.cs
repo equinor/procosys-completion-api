@@ -8,7 +8,7 @@ public static class FetchKeysCreator
 {
     public static IEnumerable<TagNoByProjectNameAndPlantKey> CreateTagKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages) =>
-        importMessages.Select(message => CreateTagKey(message.TagNo, message.ProjectName, message.Plant));
+        importMessages.Select(message => CreateTagKey(message.TagNo, message.ProjectName, message.Plant, message.FormType));
 
     public static ILookup<string, LibraryItemByPlant> CreateLibraryItemKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
@@ -54,8 +54,9 @@ public static class FetchKeysCreator
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
         => importMessages.Select(CreateProjectKey);
 
-    private static TagNoByProjectNameAndPlantKey CreateTagKey(string tagNo, string projectName, string plant) =>
-        new(tagNo, projectName, plant);
+    private static TagNoByProjectNameAndPlantKey CreateTagKey(string tagNo, string projectName, string plant,
+        string formType) =>
+        new(tagNo, projectName, plant, formType);
 
     private static LibraryItemByPlant? CreateLibraryItemKey(Optional<string?> libraryCode, string plant)
     {

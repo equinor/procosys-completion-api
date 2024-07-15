@@ -2,44 +2,47 @@
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Statoil.TI.InterfaceServices.Message;
+using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public static class TiObjectToPunchItemImportMessage
 {
-    public const string ProjectMissing = "$PROJECT_MISSING$";
-
     public static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
     {
         var message = new PunchItemImportMessage(
             tiObject.Guid,
             tiObject.Site,
-            tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project) ?? throw new Exception($"We expect the '{nameof(TIObject)}' to have a '{PunchObjectAttributes.Project}', but it did not"),
-            tiObject.GetAttributeValueAsString(PunchObjectAttributes.TagNo) ?? throw new Exception($"We expect the '{nameof(TIObject)}' to have a '{PunchObjectAttributes.TagNo}', but it did not"),
-            GetStringValue(tiObject, PunchObjectAttributes.Class),
-            GetStringValue(tiObject, PunchObjectAttributes.ExternalPunchItemNo),
-            GetStringValue(tiObject, PunchObjectAttributes.PunchItemNo),
-            GetStringValue(tiObject, PunchObjectAttributes.Description),
-            GetStringValue(tiObject, PunchObjectAttributes.Responsible),
-            GetStringValue(tiObject, PunchObjectAttributes.RaisedByOrganization),
-            GetStringValue(tiObject, PunchObjectAttributes.Status),
-            GetStringValue(tiObject, PunchObjectAttributes.FormType),
-            GetStringValue(tiObject, PunchObjectAttributes.PunchListType),
-            GetDateValue(tiObject, PunchObjectAttributes.DueDate),
-            GetDateValue(tiObject, PunchObjectAttributes.ClearedDate),
-            GetStringValue(tiObject, PunchObjectAttributes.ClearedBy),
-            GetStringValue(tiObject, PunchObjectAttributes.ClearedByOrganization),
-            GetDateValue(tiObject, PunchObjectAttributes.VerifiedDate),
-            GetStringValue(tiObject, PunchObjectAttributes.VerifiedBy),
-            GetDateValue(tiObject, PunchObjectAttributes.RejectedDate),
-            GetStringValue(tiObject, PunchObjectAttributes.RejectedBy),
-            GetStringValue(tiObject, PunchObjectAttributes.MaterialRequired),
-            GetDateValue(tiObject, PunchObjectAttributes.MaterialEta),
-            GetStringValue(tiObject, PunchObjectAttributes.MaterialNo)
+            GetStringValueOrThrow(tiObject, Project),
+            GetStringValueOrThrow(tiObject, TagNo),
+            GetStringValueOrThrow(tiObject, ExternalPunchItemNo),
+            GetStringValueOrThrow(tiObject, FormType),
+            GetStringValue(tiObject, Class),
+            GetStringValue(tiObject, PunchItemNo),
+            GetStringValue(tiObject, Description),
+            GetStringValue(tiObject, Responsible),
+            GetStringValue(tiObject, RaisedByOrganization),
+            GetStringValue(tiObject, Status),
+            GetStringValue(tiObject, PunchListType),
+            GetDateValue(tiObject, DueDate),
+            GetDateValue(tiObject, ClearedDate),
+            GetStringValue(tiObject, ClearedBy),
+            GetStringValue(tiObject, ClearedByOrganization),
+            GetDateValue(tiObject, VerifiedDate),
+            GetStringValue(tiObject, VerifiedBy),
+            GetDateValue(tiObject, RejectedDate),
+            GetStringValue(tiObject, RejectedBy),
+            GetStringValue(tiObject, MaterialRequired),
+            GetDateValue(tiObject, MaterialEta),
+            GetStringValue(tiObject, MaterialNo)
         );
 
         return message;
     }
+
+    private static string GetStringValueOrThrow(TIObject tiObject, string attributeName) =>
+        tiObject.GetAttributeValueAsString(attributeName) ?? throw new Exception(
+            $"We expect the '{nameof(TIObject)}' to have a '{attributeName}', but it did not");
 
     public static IReadOnlyCollection<PunchItemImportMessage> ToPunchItemImportMessages(List<TIObject> tiObjects) =>
         tiObjects.Select(ToPunchItemImportMessage).ToArray();

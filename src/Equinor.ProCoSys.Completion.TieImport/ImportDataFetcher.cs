@@ -120,12 +120,8 @@ public sealed class ImportDataFetcher(
         foreach (var plantKeys in byPlant)
         {
             var byProject = plantKeys.GroupBy(x => x.ProjectName);
-            foreach (var projectKeys in byProject)
-            {
-                var plantTasks = CreateFetchTagsByPlantTask(plantKeys.Key, projectKeys.Key, projectKeys.ToArray(),
-                    cancellationToken);
-                tasks.Add(plantTasks);
-            }
+            tasks.AddRange(byProject.Select(projectKeys =>
+                CreateFetchTagsByPlantTask(plantKeys.Key, projectKeys.Key, projectKeys.ToArray(), cancellationToken)));
         }
 
         return tasks;
@@ -142,6 +138,9 @@ public sealed class ImportDataFetcher(
 
         var results = await Task.WhenAll(tasks);
 
-        return results.SelectMany(x => x).ToArray();
+        return results
+            .SelectMany(x => x)
+            .Where(x => keys.Any(y => y.FormType == x.FormularType))
+            .ToArray();
     }
 }

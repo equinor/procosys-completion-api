@@ -91,9 +91,6 @@ public sealed class ImportHandler : IImportHandler
             .ToPunchItemImportMessages(validatedObjects);
         
         using var scope = _serviceScopeFactory.CreateScope();
-        var completionContext = scope.ServiceProvider.GetRequiredService<CompletionContext>();
-        var checkListService = scope.ServiceProvider.GetRequiredService<ICheckListCache>();
-        var tagService = scope.ServiceProvider.GetRequiredService<ITagService>();
         var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
         
         var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
