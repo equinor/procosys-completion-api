@@ -12,8 +12,8 @@ public sealed class PlantScopedImportDataContext
     public List<Project> Projects { get; } = new();
     public List<TagCheckList> CheckLists { get; } = new();
 
-    public void AddLibraryItems(LibraryItem[] libraryItems) => Library.AddRange(libraryItems);
-    public void AddPersons(Person[] persons) => Persons.AddRange(persons);
-    public void AddProjects(Project[] projects) => Projects.AddRange(projects);
-    public void AddCheckList(TagCheckList[] checkLists) => CheckLists.AddRange(checkLists);
+    public void AddLibraryItems(IReadOnlyCollection<LibraryItem> libraryItems) => Library.AddRange(libraryItems);
+    public void AddPersons(IReadOnlyCollection<Person> persons) => Persons.AddRange(persons);
+    public void AddProjects(IReadOnlyCollection<Project> projects) => Projects.AddRange(projects);
+    public void AddCheckList(IReadOnlyCollection<TagCheckList> checkLists) => CheckLists.AddRange(checkLists);
 }

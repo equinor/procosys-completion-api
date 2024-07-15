@@ -94,8 +94,9 @@ public sealed class ImportHandler : IImportHandler
         var completionContext = scope.ServiceProvider.GetRequiredService<CompletionContext>();
         var checkListService = scope.ServiceProvider.GetRequiredService<ICheckListCache>();
         var tagService = scope.ServiceProvider.GetRequiredService<ITagService>();
+        var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
         
-        var contextBuilder = new PlantScopedImportDataContextBuilder(completionContext, checkListService, tagService);
+        var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
         var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
         
         // //TODO: 109642 Collect errors and warnings
