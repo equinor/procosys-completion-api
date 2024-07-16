@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
@@ -12,16 +10,10 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
-using Equinor.ProCoSys.Completion.Domain.Imports;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
-using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -31,8 +23,8 @@ public sealed class ImportHandler : IImportHandler
     private readonly IImportSchemaMapper _importSchemaMapper;
     private readonly ILogger<ImportHandler> _logger;
 
-    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper, 
-             ILogger<ImportHandler> logger)
+    public ImportHandler(IServiceScopeFactory serviceScopeFactory, IImportSchemaMapper importSchemaMapper,
+        ILogger<ImportHandler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _importSchemaMapper = importSchemaMapper;
@@ -48,12 +40,12 @@ public sealed class ImportHandler : IImportHandler
             return response;
         }
 
-        _logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}.", 
+        _logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}.",
             message.ObjectName, message.ObjectClass, message.Site);
 
         var sw = new Stopwatch();
         sw.Start();
-        
+
         TIMessageResult? tiMessageResult = null;
         try
         {
@@ -79,75 +71,56 @@ public sealed class ImportHandler : IImportHandler
         {
             AddResultOfImportOperationToResponseObject(message, tiMessageResult, response);
         }
-        
+
         sw.Stop();
         _logger.LogCritical("Import elapsed {Elapsed}", sw.Elapsed);
-        
+
         return response;
     }
 
     private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
-        _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
+        _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid,
+            message.Objects.Count);
 
         var importResults = message.Objects
             .Select(PunchTiObjectValidator.Validate)
             .ToList()
             .Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage)
             .ToList();
-        
+
         using var scope = _serviceScopeFactory.CreateScope();
         var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
-        
+
         var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
         var scopedContext = await contextBuilder
             .BuildAsync(importResults
                 .Where(x => x.Message is not null)
                 .Select(x => x.Message!).ToArray(), CancellationToken.None);
 
-        var messagesByPlant = importResults.GroupBy(x => x.Message?.Plant);
-
-        var tasks = messagesByPlant
+        var tasks = importResults.GroupBy(x => x.Message?.Plant)
             .SelectMany(plantMessage =>
-        {
-            if (plantMessage.Key is null)
             {
-                return plantMessage
-                    .Select(Task.FromResult);
-            }
-            
-            var context = scopedContext[plantMessage.Key];
-            var mapper = new PunchItemImportMessageToCreatePunchItem(context);
+                if (plantMessage.Key is null)
+                {
+                    return plantMessage
+                        .Select(Task.FromResult);
+                }
 
-            var commands = mapper
-                .Map(plantMessage.ToArray());
+                var context = scopedContext[plantMessage.Key];
+                var mapper = new PunchItemImportMessageToCreatePunchItem(context);
 
-            return commands.Select(c => ImportObjectExceptionWrapper(c, context, CancellationToken.None));
-        });
+                var commands = mapper
+                    .Map(plantMessage.ToArray());
+
+
+                return commands.Select(c => c.Errors.Length == 0
+                    ? ImportObjectExceptionWrapper(c, context, CancellationToken.None)
+                    : Task.FromResult(c));
+            });
 
         var results = await Task.WhenAll(tasks);
-        
-        // //TODO: 109642 Collect errors and warnings
-        // try
-        // {
-        //     var foo = TiObjectToPunchItemImportMessage.ToPunchItemImportMessages(message.Objects);
-        //     foreach (var tiObject in message.Objects)
-        //     {
-        //         await ImportObject(message, tiObject);
-        //     }
-        // }
-        // catch (Exception ex) //TODO: 109642 SetFailed result
-        // {
-        //     _logger.LogError("Failed to import message with GUID={MessageGuid} Exception: {ExceptionMessage}, InnerException {InnerExceptionMessage}", 
-        //         message.Guid, ex.Message, ex.InnerException?.Message);
-        // }
-        // finally
-        // {
-        //     //This is where existing code does commit or abort...
-        // }
-        //
-        // //TODO: 109642 return tiMessageResult;
-        
+
         return new TIMessageResult();
     }
 
@@ -164,7 +137,8 @@ public sealed class ImportHandler : IImportHandler
         }
     }
 
-    private async Task<ImportResult> ImportObject(ImportResult command, PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
+    private async Task<ImportResult> ImportObject(ImportResult command,
+        PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
     {
         //TODO: 105834 CollectWarnings
 
@@ -197,7 +171,7 @@ public sealed class ImportHandler : IImportHandler
         var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
         var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
         var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
-        
+
         if (claimsTransformation is null)
         {
             throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
@@ -225,7 +199,8 @@ public sealed class ImportHandler : IImportHandler
         return command;
     }
 
-    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider, IClaimsTransformation claimsTransformation, Guid oid)
+    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
+        IClaimsTransformation claimsTransformation, Guid oid)
     {
         var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
         var claimsIdentity = new ClaimsIdentity();
@@ -246,7 +221,8 @@ public sealed class ImportHandler : IImportHandler
         return tiMessageResult;
     }
 
-    private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message, TIMessageResult? tiMessageResult,
+    private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message,
+        TIMessageResult? tiMessageResult,
         TIResponseFrame response)
     {
         if (tiMessageResult is not null)
