@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+﻿using System.Diagnostics;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
@@ -17,6 +18,7 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
@@ -49,7 +51,9 @@ public sealed class ImportHandler : IImportHandler
         _logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}.", 
             message.ObjectName, message.ObjectClass, message.Site);
 
-
+        var sw = new Stopwatch();
+        sw.Start();
+        
         TIMessageResult? tiMessageResult = null;
         try
         {
@@ -76,6 +80,9 @@ public sealed class ImportHandler : IImportHandler
             AddResultOfImportOperationToResponseObject(message, tiMessageResult, response);
         }
         
+        sw.Stop();
+        _logger.LogCritical("Import elapsed {Elapsed}", sw.Elapsed);
+        
         return response;
     }
 
@@ -83,27 +90,42 @@ public sealed class ImportHandler : IImportHandler
     {
         _logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid, message.Objects.Count);
 
-        var errors = message.Objects.SelectMany(PunchTiObjectValidator.Validate).ToList();
-        var validatedObjects = message.Objects
-            .Where(m => errors.All(y => y.Guid != m.Guid))
+        var importResults = message.Objects
+            .Select(PunchTiObjectValidator.Validate)
+            .ToList()
+            .Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage)
             .ToList();
-
-        var punchItemImportMessages = TiObjectToPunchItemImportMessage
-            .ToPunchItemImportMessages(validatedObjects);
         
         using var scope = _serviceScopeFactory.CreateScope();
         var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
         
         var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
-        var scopedContext = await contextBuilder.BuildAsync(punchItemImportMessages, CancellationToken.None);
+        var scopedContext = await contextBuilder
+            .BuildAsync(importResults
+                .Where(x => x.Message is not null)
+                .Select(x => x.Message!).ToArray(), CancellationToken.None);
 
-        var messagesByPlant = punchItemImportMessages.GroupBy(x => x.Plant);
+        var messagesByPlant = importResults.GroupBy(x => x.Message?.Plant);
 
-        foreach (var plantMessages in messagesByPlant)
+        var tasks = messagesByPlant
+            .SelectMany(plantMessage =>
         {
-            await ImportPlantMessages(plantMessages.ToArray(), scopedContext[plantMessages.Key],
-                CancellationToken.None);
-        }
+            if (plantMessage.Key is null)
+            {
+                return plantMessage
+                    .Select(Task.FromResult);
+            }
+            
+            var context = scopedContext[plantMessage.Key];
+            var mapper = new PunchItemImportMessageToCreatePunchItem(context);
+
+            var commands = mapper
+                .Map(plantMessage.ToArray());
+
+            return commands.Select(c => ImportObjectExceptionWrapper(c, context, CancellationToken.None));
+        });
+
+        var results = await Task.WhenAll(tasks);
         
         // //TODO: 109642 Collect errors and warnings
         // try
@@ -129,48 +151,20 @@ public sealed class ImportHandler : IImportHandler
         return new TIMessageResult();
     }
 
-    private async Task ImportPlantMessages(IReadOnlyCollection<PunchItemImportMessage> messages,
+    private async Task<ImportResult> ImportObjectExceptionWrapper(ImportResult command,
         PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
     {
-        var mapper = new PunchItemImportMessageToCreatePunchItem(scopedImportDataContext);
-
-        var (commands, errors) = mapper.Map(messages);
-        
-        //Import module is running as a background service which is lifetime singleton.
-        //A singleton service cannot retrieve scoped services via constructor.
-        using var scope = _serviceScopeFactory.CreateScope();
-        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-        var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
-        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
-        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-        var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
-        var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
-        var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
-        
-        if (claimsTransformation is null)
+        try
         {
-            throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
+            return await ImportObject(command, scopedImportDataContext, cancellationToken);
         }
-
-        if (authenticatorOptions is null)
+        catch (Exception ex)
         {
-            throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
+            return command with { Errors = [..command.Errors, command.GetImportError(ex.Message)] };
         }
-
-        plantSetter.SetPlant(scopedImportDataContext.Plant);
-
-        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
-
-        currentUserSetter.SetCurrentUserOid(Guid.Parse("5ea68d43-5ee1-4c28-9c79-bc54a004f269"));
-
-        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
-
-        var tasks = commands.Select(m => mediator.Send(m, cancellationToken));
-
-        var results = await Task.WhenAll(tasks);
     }
 
-    private async Task ImportObject(TIInterfaceMessage message, TIObject tiObject)
+    private async Task<ImportResult> ImportObject(ImportResult command, PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
     {
         //TODO: 105834 CollectWarnings
 
@@ -214,38 +208,21 @@ public sealed class ImportHandler : IImportHandler
             throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
         }
 
-        plantSetter.SetPlant(message.Site);
+        plantSetter.SetPlant(scopedImportDataContext.Plant);
 
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        currentUserSetter.SetCurrentUserOid(Guid.NewGuid());
+        currentUserSetter.SetCurrentUserOid(Guid.Parse("5ea68d43-5ee1-4c28-9c79-bc54a004f269"));
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 
-        var createPunchCommand = GetCreatePunchItemCommand(tiObject);
-
-        await mediator.Send(createPunchCommand);
+        await mediator.Send(command.Command!, cancellationToken);
 
         //TODO: 106687 CommandFailureHandler;
 
         //TODO: 109642 return ImportResult.Ok();
-    }
 
-    private CreatePunchItemCommand GetCreatePunchItemCommand(TIObject tiObject)
-    {
-        var foo = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(tiObject);
-        var description = tiObject.GetAttributeValueAsString("Description");
-
-        //TODO: Hardcoded for minimum viable product / proof of concept
-        var checkListGuid = new Guid("EB38CCBC-C659-D926-E053-2810000AC5B2");
-        var projectGuid = new Guid("EB38367C-37DE-DD39-E053-2810000A174A");
-        var raisedByOrgGuid = new Guid("46A76B8B-F7BC-4BAB-9C19-81A64A550250");
-        var clearingByOrgGuid = new Guid("72EA41A7-6283-4ED4-B910-B4FC38B391DD");
-
-        return new CreatePunchItemCommand(Category.PB, description!, projectGuid, checkListGuid,
-            raisedByOrgGuid, clearingByOrgGuid, null, null, null, null, 
-            null, null, null, null, null, null, 
-            null, false, null, null);
+        return command;
     }
 
     private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider, IClaimsTransformation claimsTransformation, Guid oid)

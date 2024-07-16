@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -90,7 +91,10 @@ public class MainApiCheckListService(
                       $"&tagId={tagId}" +
                       $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<TagCheckList[]>(url, null, cancellationToken);
+            var checkLists = await mainApiClient.TryQueryAndDeserializeAsync<TagCheckList[]>(url, null, cancellationToken);
+            return checkLists
+                .Select(x => x with {Plant = plant})
+                .ToArray();
         }
         finally
         {

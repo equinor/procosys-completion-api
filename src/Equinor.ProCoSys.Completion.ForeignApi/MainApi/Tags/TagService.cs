@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Client;
 using Microsoft.Extensions.Options;
@@ -26,15 +27,17 @@ public sealed class TagService(
     {
         var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
+        var encodedTagNos = tagNos.Select(HttpUtility.UrlEncode);
         try
         {
             var url = $"{_baseAddress}Tag/ByTagNos" +
                          $"?plantId={plant}" +
-                         string.Join(string.Empty, tagNos.Select(x => $"&tagNos={x}")) +
+                         string.Join(string.Empty, encodedTagNos.Select(x => $"&tagNos={x}")) +
                          $"&projectName={projectName}" +
                          $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4Tag[]>(url, null, cancellationToken);
+            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4Tag[]>(url, null, cancellationToken)
+                ?? [];
         }
         finally
         {

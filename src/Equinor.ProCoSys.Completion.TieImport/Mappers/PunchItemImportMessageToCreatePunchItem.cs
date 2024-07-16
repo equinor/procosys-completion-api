@@ -1,32 +1,25 @@
+using System.Security.Cryptography.X509Certificates;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Imports;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
+using MediatR;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDataContext scopedImportDataContext)
 {
-    public (IReadOnlyCollection<CreatePunchItemCommand> Commands, IReadOnlyCollection<ImportError> Errors) Map(
-        IReadOnlyCollection<PunchItemImportMessage> messages)
+    public IEnumerable<ImportResult> Map(ImportResult[] messages)
     {
-        var results = messages
-            .Select(Map)
-            .ToArray();
-
-        var commands = results
-            .Where(x => x.Command is not null)
-            .Select(x => x.Command!)
-            .ToArray();
-        
-        var errors = results
-            .SelectMany(x => x.Errors)
-            .ToArray();
-
-        return (commands, errors);
+        for (var i = 0; i < messages.Length; i++)
+        {
+            var message = messages[i];
+            var (command, errors) = Map(message.Message!);
+            yield return message with { Command = command, Errors = [..message.Errors, ..errors] };
+        }
     }
 
-    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(
-        PunchItemImportMessage message)
+    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(PunchItemImportMessage message)
     {
         var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
         var validationResult = validator.Validate(message);
@@ -38,7 +31,11 @@ public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDat
                 .ToArray());
         }
 
-        var references = scopedImportDataContext.GetPunchItemImportMessageReferences(message);
+        var (references, errors) = scopedImportDataContext.GetPunchItemImportMessageReferences(message);
+        if (errors.Count != 0)
+        {
+            return (null, errors);
+        }
 
         var command = new CreatePunchItemCommand(
             message.Category!.Value,
@@ -63,6 +60,6 @@ public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDat
             message.MaterialNo.Value
         );
 
-        return (command, []);
+        return (command, Array.Empty<ImportError>());
     }
 }

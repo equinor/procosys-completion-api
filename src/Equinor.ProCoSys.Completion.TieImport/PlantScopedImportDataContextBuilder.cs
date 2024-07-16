@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain;
+﻿using System.Diagnostics;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
@@ -51,6 +52,10 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
 
         foreach (var checkLists in checkListsByPlant)
         {
+            if (!_plantScopedImportDataContexts.ContainsKey(checkLists.Key))
+            {
+                Debugger.Break();
+            }
             _plantScopedImportDataContexts[checkLists.Key].AddCheckList(checkLists.ToArray());
         }
     }

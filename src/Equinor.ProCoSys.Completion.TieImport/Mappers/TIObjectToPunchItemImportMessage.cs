@@ -3,6 +3,7 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 using Statoil.TI.InterfaceServices.Message;
 using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
 
@@ -10,7 +11,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public static class TiObjectToPunchItemImportMessage
 {
-    public static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
+    private static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
     {
         var message = new PunchItemImportMessage(
             tiObject.Guid,
@@ -47,8 +48,14 @@ public static class TiObjectToPunchItemImportMessage
         tiObject.GetAttributeValueAsString(attributeName) ?? throw new Exception(
             $"We expect the '{nameof(TIObject)}' to have a '{attributeName}', but it did not");
 
-    public static IReadOnlyCollection<PunchItemImportMessage> ToPunchItemImportMessages(List<TIObject> tiObjects) =>
-        tiObjects.Select(ToPunchItemImportMessage).ToArray();
+    public static ImportResult ToPunchItemImportMessage(ImportResult message)
+        => message.Errors.Length == 0
+            ? message with { Message = ToPunchItemImportMessage(message.TiObject) }
+            : message;
+
+    public static IReadOnlyCollection<ImportResult> ToPunchItemImportMessages(
+        IReadOnlyCollection<ImportResult> messages) =>
+        messages.Select(m => m with { Message = ToPunchItemImportMessage(m.TiObject) }).ToArray();
 
     private static Optional<string?> GetStringValue(TIObject tiObject, string attribute) =>
         tiObject.Attributes.Any(a => a.Name == attribute)
@@ -72,7 +79,7 @@ public static class TiObjectToPunchItemImportMessage
 
         return new Optional<DateTime?>(dateTime);
     }
-        
+
     private static Category? GetCategoryFromStatus(TIObject tiObject)
     {
         var status = tiObject.GetAttributeValueAsString(Status);
