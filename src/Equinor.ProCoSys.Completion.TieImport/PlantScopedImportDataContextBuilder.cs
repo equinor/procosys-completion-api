@@ -12,20 +12,13 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
     public async Task<Dictionary<string, PlantScopedImportDataContext>> BuildAsync(
         IReadOnlyCollection<PunchItemImportMessage> importMessages, CancellationToken cancellationToken)
     {
-        await BuildLibraryItemsAsync(importMessages, cancellationToken);
-
-        return _plantScopedImportDataContexts;
-    }
-
-    private async Task BuildLibraryItemsAsync(IReadOnlyCollection<PunchItemImportMessage> importMessages,
-        CancellationToken cancellationToken)
-    {
         var tagNoByPlantKeys = FetchKeysCreator.CreateTagKeys(importMessages);
         var libraryItemsByPlant = FetchKeysCreator.CreateLibraryItemKeys(importMessages);
         var personByEmailKeys = FetchKeysCreator.CreatePersonKeys(importMessages);
         var projectByPlantKeys = FetchKeysCreator
             .CreateProjectKeys(importMessages)
             .ToList();
+        var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
         _plantScopedImportDataContexts = importMessages
                 .GroupBy(x => x.Plant)
@@ -39,7 +32,21 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
             cancellationToken);
         await FetchPersonsAsync(personByEmailKeys.SelectMany(x => x).ToArray(), cancellationToken);
         await FetchProjectsAsync(projectByPlantKeys, cancellationToken);
+        await FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
         await WhenAllFetchTagsByPlantTasksAsync(tagTasks);
+
+        return _plantScopedImportDataContexts;
+    }
+
+    private async Task FetchExternalPunchItemNosAsync(IEnumerable<string> externalPunchItemNoKeys,
+        CancellationToken cancellationToken)
+    {
+        var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
+
+        foreach (var plantPunches in punchItems.GroupBy(x => x.Plant))
+        {
+            _plantScopedImportDataContexts[plantPunches.Key].AddPunchItems(plantPunches.ToArray());
+        }
     }
 
     private async Task WhenAllFetchTagsByPlantTasksAsync(
@@ -52,10 +59,6 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
 
         foreach (var checkLists in checkListsByPlant)
         {
-            if (!_plantScopedImportDataContexts.ContainsKey(checkLists.Key))
-            {
-                Debugger.Break();
-            }
             _plantScopedImportDataContexts[checkLists.Key].AddCheckList(checkLists.ToArray());
         }
     }

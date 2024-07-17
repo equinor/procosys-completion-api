@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
@@ -25,6 +26,8 @@ public interface IImportDataFetcher
     IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
         IReadOnlyCollection<TagNoByProjectNameAndPlantKey> keys,
         CancellationToken cancellationToken);
+
+    Task<PunchItem[]> FetchExternalPunchItemNosAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
 }
 
 public sealed class ImportDataFetcher(
@@ -125,6 +128,17 @@ public sealed class ImportDataFetcher(
         }
 
         return tasks;
+    }
+
+    public Task<PunchItem[]> FetchExternalPunchItemNosAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
+    {
+        var punchItems = completionContext.PunchItems
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(x => keys.Contains(x.ExternalItemNo))
+            .ToArrayAsync(cancellationToken);
+
+        return punchItems;
     }
 
     private async Task<IReadOnlyCollection<TagCheckList>> CreateFetchTagsByPlantTask(string plant, string projectName,

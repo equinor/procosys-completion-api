@@ -7,10 +7,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
-    public CreatePunchItemCommand()
-    {
-        Description = string.Empty;
-    }
     public CreatePunchItemCommand(
         Category category,
         string description,

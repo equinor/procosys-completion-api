@@ -56,6 +56,12 @@ public static class FetchKeysCreator
     public static IEnumerable<ProjectByPlantKey> CreateProjectKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
         => importMessages.Select(CreateProjectKey);
+    
+    public static IEnumerable<string> CreateExternalPunchItemNoKeys(IReadOnlyCollection<PunchItemImportMessage> importMessages)
+        => importMessages
+            .Where(x => x.Method != PunchObjectAttributes.Methods.Create)
+            .Select(x => x.ExternalPunchItemNo)
+            .Distinct();
 
     private static TagNoByProjectNameAndPlantKey CreateTagKey(string tagNo, string projectName, string plant,
         string formType) =>

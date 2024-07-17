@@ -7,7 +7,8 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
-public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDataContext scopedImportDataContext)
+public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataContext scopedImportDataContext)
+    : ICommandMapper
 {
     public IEnumerable<ImportResult> Map(ImportResult[] messages)
     {
@@ -15,11 +16,15 @@ public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDat
         {
             var message = messages[i];
             var (command, errors) = Map(message.Message!);
-            yield return message with { Command = command, Errors = [..message.Errors, ..errors] };
+            yield return message with
+            {
+                Commands = command is null ? [] : [command], Errors = [..message.Errors, ..errors]
+            };
         }
     }
 
-    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(PunchItemImportMessage message)
+    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(
+        PunchItemImportMessage message)
     {
         var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
         var validationResult = validator.Validate(message);
@@ -61,5 +66,17 @@ public sealed class PunchItemImportMessageToCreatePunchItem(PlantScopedImportDat
         );
 
         return (command, Array.Empty<ImportError>());
+    }
+
+    public ImportResult Map(ImportResult message)
+    {
+        if (message.Message is null)
+        {
+            return message;
+        }
+
+        var (command, errors) = Map(message.Message);
+
+        return message with { Commands = command is null ? [] : [command], Errors = [..message.Errors, ..errors] };
     }
 }

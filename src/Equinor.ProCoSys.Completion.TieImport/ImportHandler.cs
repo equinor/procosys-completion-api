@@ -108,7 +108,7 @@ public sealed class ImportHandler : IImportHandler
                 }
 
                 var context = scopedContext[plantMessage.Key];
-                var mapper = new PunchItemImportMessageToCreatePunchItem(context);
+                var mapper = new PunchItemImportMessageCommandMapper(context);
 
                 var commands = mapper
                     .Map(plantMessage.ToArray());
@@ -190,7 +190,10 @@ public sealed class ImportHandler : IImportHandler
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 
-        await mediator.Send(command.Command!, cancellationToken);
+        foreach (var c in command.Commands)
+        {
+            await mediator.Send(c, cancellationToken);
+        }
 
         //TODO: 106687 CommandFailureHandler;
 
