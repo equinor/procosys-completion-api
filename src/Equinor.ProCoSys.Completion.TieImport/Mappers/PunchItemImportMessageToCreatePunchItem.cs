@@ -1,28 +1,13 @@
-using System.Security.Cryptography.X509Certificates;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
-using MediatR;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataContext scopedImportDataContext)
     : ICommandMapper
 {
-    public IEnumerable<ImportResult> Map(ImportResult[] messages)
-    {
-        for (var i = 0; i < messages.Length; i++)
-        {
-            var message = messages[i];
-            var (command, errors) = Map(message.Message!);
-            yield return message with
-            {
-                Commands = command is null ? [] : [command], Errors = [..message.Errors, ..errors]
-            };
-        }
-    }
-
     private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(
         PunchItemImportMessage message)
     {
@@ -36,10 +21,11 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
                 .ToArray());
         }
 
-        var (references, errors) = scopedImportDataContext.GetPunchItemImportMessageReferences(message);
-        if (errors.Count != 0)
+        var referencesService = new CommandReferencesService(scopedImportDataContext);
+        var references = referencesService.GetCreatePunchItemReferences(message);
+        if (references.Errors.Length != 0)
         {
-            return (null, errors);
+            return (null, references.Errors);
         }
 
         var command = new CreatePunchItemCommand(
@@ -48,7 +34,7 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
             references.ProjectGuid,
             references.CheckListGuid,
             references.RaisedByOrgGuid,
-            references.ClearingByOrgGuid,
+            references.ClearedByOrgGuid,
             null,
             message.DueDate.Value,
             null,

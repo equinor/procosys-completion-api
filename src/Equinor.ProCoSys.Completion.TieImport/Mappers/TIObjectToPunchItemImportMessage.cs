@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
