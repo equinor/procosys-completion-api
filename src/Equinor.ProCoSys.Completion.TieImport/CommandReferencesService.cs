@@ -9,7 +9,23 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     {
         var references = new CreatePunchReferences();
 
+        references = (CreatePunchReferences)SetInterfaceReferences(message, references);
 
+        return references;
+    }
+
+    public UpdatePunchReferences GetUpdatePunchItemReferences(PunchItemImportMessage message)
+    {
+        var references = new UpdatePunchReferences();
+
+        references = (UpdatePunchReferences)SetInterfaceReferences(message, references);
+        references = GetPunchItem(message, references);
+
+        return references;
+    }
+
+    private ICommandReferences SetInterfaceReferences(PunchItemImportMessage message, ICommandReferences references)
+    {
         references = GetProject(message, references);
         references = GetCheckList(message, references);
         references = GetRaisedByOrg(message, references);
@@ -19,7 +35,8 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         return references;
     }
 
-    private CreatePunchReferences GetProject(PunchItemImportMessage message, CreatePunchReferences references)
+
+    private ICommandReferences GetProject(PunchItemImportMessage message, ICommandReferences references)
     {
         var project = context.Projects.FirstOrDefault(x => x.Name == message.ProjectName);
         if (project is null)
@@ -32,58 +49,86 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
         return references;
     }
-    
-    private CreatePunchReferences GetCheckList(PunchItemImportMessage message, CreatePunchReferences references)
+
+    private ICommandReferences GetCheckList(PunchItemImportMessage message, ICommandReferences references)
     {
-        var checkList = context.CheckLists.FirstOrDefault(x => x.FormularType == message.FormType && x.TagNo == message.TagNo);
+        var checkList =
+            context.CheckLists.FirstOrDefault(x => x.FormularType == message.FormType && x.TagNo == message.TagNo);
         if (checkList is null)
         {
             references.Errors =
-                [..references.Errors, message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' not found")];
+            [
+                ..references.Errors,
+                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' not found")
+            ];
         }
 
         references.CheckListGuid = checkList?.ProCoSysGuid ?? Guid.Empty;
 
         return references;
     }
-    
-    private CreatePunchReferences GetRaisedByOrg(PunchItemImportMessage message, CreatePunchReferences references)
+
+    private ICommandReferences GetRaisedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
         var raisedByOrg = context.Library.FirstOrDefault(x =>
             x.Code == message.RaisedByOrganization.Value && x.Type == LibraryType.COMPLETION_ORGANIZATION);
         if (raisedByOrg is null)
         {
             references.Errors =
-                [..references.Errors, message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found")];
+            [
+                ..references.Errors,
+                message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found")
+            ];
         }
 
         references.RaisedByOrgGuid = raisedByOrg?.Guid ?? Guid.Empty;
 
         return references;
     }
-    
-    private CreatePunchReferences GetClearedByOrg(PunchItemImportMessage message, CreatePunchReferences references)
+
+    private ICommandReferences GetClearedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
         var clearingByOrg = context.Library.FirstOrDefault(x =>
             x.Code == message.ClearedByOrganization.Value && x.Type == LibraryType.COMPLETION_ORGANIZATION);
         if (clearingByOrg is null)
         {
             references.Errors =
-            [..references.Errors,message.ToImportError(
-                $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found")];
+            [
+                ..references.Errors, message.ToImportError(
+                    $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found")
+            ];
         }
-        
+
         references.ClearedByOrgGuid = clearingByOrg?.Guid ?? Guid.Empty;
 
         return references;
     }
-    
-    private CreatePunchReferences GetPunchType(PunchItemImportMessage message, CreatePunchReferences references)
+
+    private ICommandReferences GetPunchType(PunchItemImportMessage message, ICommandReferences references)
     {
         var type = context.Library.FirstOrDefault(x =>
             x.Code == message.PunchListType.Value && x.Type == LibraryType.PUNCHLIST_TYPE);
 
         references.TypeGuid = type?.Guid;
+
+        return references;
+    }
+
+    private UpdatePunchReferences GetPunchItem(PunchItemImportMessage message, UpdatePunchReferences references)
+    {
+        var punchItem = context.PunchItems
+            .FirstOrDefault(x => x.ExternalItemNo == message.ExternalPunchItemNo);
+
+        if (punchItem is null)
+        {
+            references.Errors =
+            [
+                ..references.Errors, message.ToImportError(
+                    $"PunchItem with {nameof(message.ExternalPunchItemNo)} '{message.ExternalPunchItemNo}' not found")
+            ];
+        }
+
+        references.PunchItem = punchItem;
 
         return references;
     }
