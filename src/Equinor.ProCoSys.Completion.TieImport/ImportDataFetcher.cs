@@ -136,6 +136,12 @@ public sealed class ImportDataFetcher(
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(x => keys.Contains(x.ExternalItemNo))
+            .Include(x => x.RaisedByOrg)
+            .Include(x => x.ClearingByOrg)
+            .Include(x => x.Type)
+            .Include(x => x.ClearedBy)
+            .Include(x => x.VerifiedBy)
+            .Include(x => x.RejectedBy)
             .ToArrayAsync(cancellationToken);
 
         return punchItems;
