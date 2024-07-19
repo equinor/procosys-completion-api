@@ -32,6 +32,9 @@ public sealed class PunchItemImportMessageToUpdateCommand(PlantScopedImportDataC
         var category = message.Message?.Category;
 
         return new ImportUpdatePunchItemCommand(
+            message.TiObject.Guid,
+            references.ProjectGuid,
+            message.TiObject.Site,
             references.PunchItem!.Guid,
             patchDocument,
             category,

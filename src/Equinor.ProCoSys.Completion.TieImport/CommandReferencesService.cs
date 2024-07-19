@@ -64,7 +64,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
         if (personEmail is { HasValue: true, Value: not null } && date is { HasValue: true, Value: not null })
         {
-            var person = context.Persons.FirstOrDefault(x => x.Email == personEmail.Value);
+            var person = context.Persons.FirstOrDefault(x => string.Equals(x.Email, personEmail.Value, StringComparison.InvariantCultureIgnoreCase));
             if (person is null)
             {
                 references.Errors =
