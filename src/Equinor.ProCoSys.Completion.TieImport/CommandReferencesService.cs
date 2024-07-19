@@ -34,26 +34,48 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         references = GetRaisedByOrg(message, references);
         references = GetClearedByOrg(message, references);
         references = GetPunchType(message, references);
-        references = GetPerson(references, x => x.ClearedByGuid, message.ClearedBy, message);
-        references = GetPerson(references, x => x.VerifiedByGuid, message.VerifiedBy, message);
-        references = GetPerson(references, x => x.RejectedByGuid, message.RejectedBy, message);
+        references = GetPerson(references, x => x.ClearedBy, message.ClearedBy, message.ClearedDate, message);
+        references = GetPerson(references, x => x.VerifiedBy, message.VerifiedBy, message.VerifiedDate, message);
+        references = GetPerson(references, x => x.RejectedBy, message.RejectedBy, message.RejectedDate, message);
 
         return references;
     }
 
-    private ICommandReferences GetPerson(ICommandReferences references, Expression<Func<ICommandReferences, Optional<Guid?>>> propertySelector, Optional<string?> personEmail, PunchItemImportMessage message)
+    private ICommandReferences GetPerson(
+        ICommandReferences references,
+        Expression<Func<ICommandReferences, Optional<ActionByPerson?>>> propertySelector,
+        Optional<string?> personEmail,
+        Optional<DateTime?> date,
+        PunchItemImportMessage message)
     {
-        var newValue = new Optional<Guid?>();
-        if (personEmail.HasValue)
+        var newValue = new Optional<ActionByPerson?>();
+
+        if (personEmail is { HasValue: true, Value: not null } && date is not { HasValue: true, Value: not null })
+        {
+            references.Errors =
+                [..references.Errors, message.ToImportError($"Date is required for action (Clear, Verify, Reject) by person '{personEmail.Value}'")];
+        }
+
+        if (date is { HasValue: true, Value: not null } && personEmail is not { HasValue: true, Value: not null })
+        {
+            references.Errors =
+                [..references.Errors, message.ToImportError($"Person is required for action (Clear, Verify, Reject) on date '{date.Value}'")];
+        }
+
+        if (personEmail is { HasValue: true, Value: not null } && date is { HasValue: true, Value: not null })
         {
             var person = context.Persons.FirstOrDefault(x => x.Email == personEmail.Value);
             if (person is null)
             {
                 references.Errors =
-                    [..references.Errors, message.ToImportError($"Person '{personEmail.Value}' not found")];
+                    [..references.Errors, message.ToImportError($"Person '{personEmail.Value}' for action (Clear, Verify, Reject) on '{date.Value}' not found")];
+            }
+            else
+            {
+                newValue = new Optional<ActionByPerson?>(new ActionByPerson(person.Guid, date.Value.Value));
             }
         }
-        
+
         var member = propertySelector.Body as MemberExpression;
         var property = (PropertyInfo)member?.Member!;
         property.SetValue(references, newValue);

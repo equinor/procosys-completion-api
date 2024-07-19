@@ -137,7 +137,7 @@ public sealed class ImportHandler : IImportHandler
         }
     }
 
-    private async Task<ImportResult> ImportObject(ImportResult command,
+    private async Task<ImportResult> ImportObject(ImportResult importResult,
         PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
     {
         //TODO: 105834 CollectWarnings
@@ -160,6 +160,12 @@ public sealed class ImportHandler : IImportHandler
         //TODO: 106692 CustomImport
 
         //TODO: 106693 NCR special handling
+        
+        if (importResult.Errors.Length != 0 || importResult.Command is null)
+        {
+            _logger.LogInformation("Not importing object with GUID={Guid} due to errors", importResult.TiObject.Guid);
+            return importResult;
+        }
 
         //Import module is running as a background service which is lifetime singleton.
         //A singleton service cannot retrieve scoped services via constructor.
@@ -190,16 +196,13 @@ public sealed class ImportHandler : IImportHandler
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 
-        foreach (var c in command.Command)
-        {
-            await mediator.Send(c, cancellationToken);
-        }
+        await mediator.Send(importResult.Command, cancellationToken);
 
         //TODO: 106687 CommandFailureHandler;
 
         //TODO: 109642 return ImportResult.Ok();
 
-        return command;
+        return importResult;
     }
 
     private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,

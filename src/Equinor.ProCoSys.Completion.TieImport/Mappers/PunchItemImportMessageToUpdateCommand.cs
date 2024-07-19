@@ -26,18 +26,18 @@ public sealed class PunchItemImportMessageToUpdateCommand(PlantScopedImportDataC
         UpdatePunchReferences references)
     {
         var patchDocument = CreateJsonPatchDocument(message.Message, references);
-        var clearedByGuid = references.ClearedByGuid;
-        var verifiedByGuid = references.VerifiedByGuid;
-        var rejectedByGuid = references.RejectedByGuid;
+        var clearedBy = references.ClearedBy;
+        var verifiedBy = references.VerifiedBy;
+        var rejectedBy = references.RejectedBy;
         var category = message.Message?.Category;
 
         return new ImportUpdatePunchItemCommand(
             references.PunchItem!.Guid,
             patchDocument,
             category,
-            clearedByGuid,
-            verifiedByGuid,
-            rejectedByGuid,
+            clearedBy,
+            verifiedBy,
+            rejectedBy,
             references.PunchItem!.RowVersion.ConvertToString());
     }
 
@@ -134,7 +134,7 @@ public sealed class PunchItemImportMessageToUpdateCommand(PlantScopedImportDataC
         var references = referencesService.GetUpdatePunchItemReferences(message.Message);
         if (references.Errors.Length != 0)
         {
-            return message with { Errors = [..message.Errors, ..errors] };
+            return message with { Errors = [..message.Errors, ..references.Errors] };
         }
 
 
