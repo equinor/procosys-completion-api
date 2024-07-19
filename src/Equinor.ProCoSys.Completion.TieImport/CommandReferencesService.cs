@@ -1,4 +1,7 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
@@ -31,6 +34,29 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         references = GetRaisedByOrg(message, references);
         references = GetClearedByOrg(message, references);
         references = GetPunchType(message, references);
+        references = GetPerson(references, x => x.ClearedByGuid, message.ClearedBy, message);
+        references = GetPerson(references, x => x.VerifiedByGuid, message.VerifiedBy, message);
+        references = GetPerson(references, x => x.RejectedByGuid, message.RejectedBy, message);
+
+        return references;
+    }
+
+    private ICommandReferences GetPerson(ICommandReferences references, Expression<Func<ICommandReferences, Optional<Guid?>>> propertySelector, Optional<string?> personEmail, PunchItemImportMessage message)
+    {
+        var newValue = new Optional<Guid?>();
+        if (personEmail.HasValue)
+        {
+            var person = context.Persons.FirstOrDefault(x => x.Email == personEmail.Value);
+            if (person is null)
+            {
+                references.Errors =
+                    [..references.Errors, message.ToImportError($"Person '{personEmail.Value}' not found")];
+            }
+        }
+        
+        var member = propertySelector.Body as MemberExpression;
+        var property = (PropertyInfo)member?.Member!;
+        property.SetValue(references, newValue);
 
         return references;
     }

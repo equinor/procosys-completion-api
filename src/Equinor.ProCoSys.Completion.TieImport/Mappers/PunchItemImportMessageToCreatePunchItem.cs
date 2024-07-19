@@ -63,6 +63,6 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
 
         var (command, errors) = Map(message.Message);
 
-        return message with { Commands = command is null ? [] : [command], Errors = [..message.Errors, ..errors] };
+        return message with { Command = command, Errors = [..message.Errors, ..errors] };
     }
 }

@@ -190,7 +190,7 @@ public sealed class ImportHandler : IImportHandler
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 
-        foreach (var c in command.Commands)
+        foreach (var c in command.Command)
         {
             await mediator.Send(c, cancellationToken);
         }

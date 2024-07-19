@@ -6,7 +6,8 @@ using Equinor.ProCoSys.Completion.TieImport.Validators;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
-public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataContext scopedImportDataContext) : ICommandMapper
+public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataContext scopedImportDataContext)
+    : ICommandMapper
 {
     private ImportError[] Validate(PunchItemImportMessage message)
     {
@@ -26,7 +27,7 @@ public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataC
         {
             return message with { Errors = [..message.Errors, ..errors] };
         }
-        
+
         var referencesService = new CommandReferencesService(scopedImportDataContext);
         var references = referencesService.GetUpdatePunchItemReferences(message.Message);
 
@@ -34,14 +35,11 @@ public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataC
         {
             return message with { Errors = [..message.Errors, ..references.Errors] };
         }
-        
+
         message = message with
         {
-            Commands =
-            [
-                new DeletePunchItemCommand(references.PunchItem!.Guid,
-                    references.PunchItem.RowVersion.ConvertToString())
-            ]
+            Command = new DeletePunchItemCommand(references.PunchItem!.Guid,
+                references.PunchItem.RowVersion.ConvertToString())
         };
 
         return message;

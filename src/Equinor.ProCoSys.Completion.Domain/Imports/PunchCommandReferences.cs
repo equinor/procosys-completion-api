@@ -10,6 +10,9 @@ public sealed record CreatePunchReferences : ICommandReferences
     public Guid RaisedByOrgGuid { get; set; }
     public Guid ClearedByOrgGuid { get; set; }
     public Guid? TypeGuid { get; set; }
+    public Optional<Guid?> ClearedByGuid { get; set; }
+    public Optional<Guid?> VerifiedByGuid { get; set; }
+    public Optional<Guid?> RejectedByGuid { get; set; }
     public ImportError[] Errors { get; set; } = [];
 }
 
@@ -20,6 +23,9 @@ public sealed record UpdatePunchReferences : ICommandReferences
     public Guid RaisedByOrgGuid { get; set; }
     public Guid ClearedByOrgGuid { get; set; }
     public Guid? TypeGuid { get; set; }
+    public Optional<Guid?> ClearedByGuid { get; set; }
+    public Optional<Guid?> VerifiedByGuid { get; set; }
+    public Optional<Guid?> RejectedByGuid { get; set; }
     public ImportError[] Errors { get; set; } = [];
     public PunchItem? PunchItem { get; set; }
 }
@@ -31,5 +37,8 @@ public interface ICommandReferences
     public Guid RaisedByOrgGuid { get; set; }
     public Guid ClearedByOrgGuid { get; set; }
     public Guid? TypeGuid { get; set; }
+    public Optional<Guid?> ClearedByGuid { get; set; }
+    public Optional<Guid?> VerifiedByGuid { get; set; }
+    public Optional<Guid?> RejectedByGuid { get; set; }
     public ImportError[] Errors { get; set; }
 }
