@@ -13,6 +13,7 @@ using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
@@ -120,8 +121,39 @@ public sealed class ImportHandler : IImportHandler
             });
 
         var results = await Task.WhenAll(tasks);
+        var messageResult = new TIMessageResult
+        {
+            Guid = message.Guid,
+            Result = results.All(x => x.Errors.Length == 0)
+                ? MessageResults.Successful
+                : MessageResults.Failed,
+            ErrorMessage = results.Any(x => x.Errors.Length != 0)
+                ? "One or more objects failed to import"
+                : string.Empty
+        };
 
-        return new TIMessageResult();
+        foreach (var errorResult in results.Where(x => x.Errors.Length != 0))
+        {
+            foreach (var error in errorResult.Errors)
+            {
+                messageResult.AddLogEntry(new TILogEntry
+                {
+                    InterfaceName = "PunchItem",
+                    LogDescription = error.ToString(),
+                    Guid = Guid.NewGuid(),
+                    LogScope = "General",
+                    LogType = "Error",
+                    TimeStamp = DateTime.UtcNow
+                });
+            }
+        }
+
+        foreach (var successResult in results.Where(x => x.Errors.Length == 0))
+        {
+            messageResult.AddLogEntry($"GUID '{successResult.TiObject.Guid}' imported successfully", "PunchItem");
+        }
+
+        return messageResult;
     }
 
     private async Task<ImportResult> ImportObjectExceptionWrapper(ImportResult command,
@@ -130,6 +162,12 @@ public sealed class ImportHandler : IImportHandler
         try
         {
             return await ImportObject(command, scopedImportDataContext, cancellationToken);
+        }
+        catch (ValidationException ve)
+        {
+            var validationErrors = ve.Errors
+                .Select(x => command.GetImportError(x.ErrorMessage)).ToArray();
+            return command with { Errors = [..command.Errors, ..validationErrors] };
         }
         catch (Exception ex)
         {
@@ -160,7 +198,7 @@ public sealed class ImportHandler : IImportHandler
         //TODO: 106692 CustomImport
 
         //TODO: 106693 NCR special handling
-        
+
         if (importResult.Errors.Length != 0 || importResult.Command is null)
         {
             _logger.LogInformation("Not importing object with GUID={Guid} due to errors", importResult.TiObject.Guid);

@@ -8,4 +8,7 @@ public sealed record ImportError(
     string? Project,
     string? Site,
     string Message
-);
+)
+{
+    public override string ToString() => $"Guid {Guid?.ToString() ?? "UnknownGuid"} - Method {Method ?? "UnknownMethod"} - Project {Project ?? "UnknownProject"} - Site {Site ?? "UnknownSite"} -> {Message}";
+};
