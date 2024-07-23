@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
+using static Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryType;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -119,7 +119,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private ICommandReferences GetRaisedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
         var raisedByOrg = context.Library.FirstOrDefault(x =>
-            x.Code == message.RaisedByOrganization.Value && x.Type == LibraryType.COMPLETION_ORGANIZATION);
+            x.Code == message.RaisedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (raisedByOrg is null)
         {
             references.Errors =
@@ -137,7 +137,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private ICommandReferences GetClearedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
         var clearingByOrg = context.Library.FirstOrDefault(x =>
-            x.Code == message.ClearedByOrganization.Value && x.Type == LibraryType.COMPLETION_ORGANIZATION);
+            x.Code == message.ClearedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (clearingByOrg is null)
         {
             references.Errors =
@@ -155,7 +155,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private ICommandReferences GetPunchType(PunchItemImportMessage message, ICommandReferences references)
     {
         var type = context.Library.FirstOrDefault(x =>
-            x.Code == message.PunchListType.Value && x.Type == LibraryType.PUNCHLIST_TYPE);
+            x.Code == message.PunchListType.Value && x.Type == PUNCHLIST_TYPE);
 
         references.TypeGuid = type?.Guid;
 
