@@ -104,6 +104,4 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
     }
 }
 
-public interface IScopedContextLibraryTypeBuilder
-{
-}
+public interface IScopedContextLibraryTypeBuilder;

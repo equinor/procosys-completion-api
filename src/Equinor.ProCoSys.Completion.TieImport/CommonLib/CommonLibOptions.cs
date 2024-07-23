@@ -7,7 +7,7 @@ public sealed class CommonLibOptions
     [Required]
     public int CacheDurationDays { get; set; }
     [Required]
-    public List<string> SchemaFrom { get; set; } = new();
+    public List<string> SchemaFrom { get; set; } = [];
     [Required]
     public string SchemaTo { get; set; } = string.Empty;
     [Required]

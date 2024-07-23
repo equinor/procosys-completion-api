@@ -3,7 +3,7 @@ using Equinor.TI.TIE.Adapter.Base.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Configuration;
 
-public class TieImportOptions
+public sealed class TieImportOptions
 {
 #pragma warning disable CS8618
     [Required]

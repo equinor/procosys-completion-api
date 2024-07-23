@@ -44,7 +44,7 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
     /// TODO: 106837 Do we still need to use a legacy mapper, or can we use a different mapper?
     private LegacySchemaMapper CreateLegacySchemaMapper(IOptionsMonitor<CommonLibOptions> settings)
     {
-        _logger.LogInformation( "Initializing CommonLib LegacySchemaMapper.");
+        _logger.LogInformation("Initializing CommonLib LegacySchemaMapper");
 
         var appId = settings.CurrentValue.ClientId;
         var tenantId = settings.CurrentValue.TenantId;

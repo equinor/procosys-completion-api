@@ -2,6 +2,4 @@
 
 namespace Equinor.ProCoSys.Completion.TieImport.Configuration;
 
-public sealed class TieAdapterConfig : BaseTie1AdapterConfig<TieAdapterPartitionConfig>
-{
-}
+public sealed class TieAdapterConfig : BaseTie1AdapterConfig<TieAdapterPartitionConfig>;

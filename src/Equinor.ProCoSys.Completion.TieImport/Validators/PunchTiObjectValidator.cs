@@ -1,21 +1,26 @@
 ﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Models;
+using FluentValidation;
 using Statoil.TI.InterfaceServices.Message;
 using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 
-public static class PunchTiObjectValidator
+public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
 {
-    public static ImportResult Validate(TIObject tiObject)
+    public PunchTiObjectValidator()
     {
-        string[] requiredStringAttributes = [Project, TagNo, ExternalPunchItemNo, FormType];
+        RuleLevelCascadeMode = CascadeMode.Continue;
+        ClassLevelCascadeMode = CascadeMode.Continue;
 
-        var errors = requiredStringAttributes
-            .Where(attributeName => string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(attributeName)))
-            .Select(attributeName =>
-                tiObject.ToImportError($"This punch item object is missing required attribute '{attributeName}'"));
-
-        return new ImportResult(tiObject, null, default, errors.ToArray());
+        RuleFor(tiObject => tiObject)
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(Project)))
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{Project}'")
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(TagNo)))
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{TagNo}'")
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(ExternalPunchItemNo)))
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{ExternalPunchItemNo}'")
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(FormType)))
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{FormType}'");
     }
 }
