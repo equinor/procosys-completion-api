@@ -14,7 +14,7 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
         ClassLevelCascadeMode = CascadeMode.Continue;
 
         RuleFor(tiObject => tiObject)
-            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(Project)))
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.Project))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{Project}'")
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(TagNo)))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{TagNo}'")

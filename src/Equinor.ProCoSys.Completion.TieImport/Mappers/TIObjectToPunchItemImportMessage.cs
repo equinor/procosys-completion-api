@@ -16,7 +16,7 @@ public static class TiObjectToPunchItemImportMessage
             tiObject.Guid,
             tiObject.Site,
             tiObject.Method,
-            GetStringValueOrThrow(tiObject, Project),
+            tiObject.Project,
             GetStringValueOrThrow(tiObject, TagNo),
             GetStringValueOrThrow(tiObject, ExternalPunchItemNo),
             GetStringValueOrThrow(tiObject, FormType),

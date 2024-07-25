@@ -24,6 +24,12 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
         try
         {
             var mapResult = _legacySchemaMapper.Map(message);
+            mapResult.Message.Project = message.Project;
+
+            foreach (var messageObject in mapResult.Message.Objects)
+            {
+                messageObject.Project ??= message.Objects.FirstOrDefault(x => x.Guid == messageObject.Guid)?.Project;
+            }
 
             LogMapResult(message, mapResult);
 
@@ -31,7 +37,7 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Message not mapped: {ExceptionMessage}{MessageAsXmlString}", 
+            _logger.LogError(ex, "Message not mapped: {ExceptionMessage}{MessageAsXmlString}",
                 ex.Message + Environment.NewLine, message.AsXmlString());
             return new MappingResult(ex.ToMessageResult());
         }
@@ -81,6 +87,7 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
         }
 
         _logger.LogWarning("Mapping of message with GUID={MessageGuid} produced {WarningsCount} warnings: {Warnings}",
-                message.Guid, mapResult.Warnings.Count + Environment.NewLine, string.Join(Environment.NewLine, mapResult.Warnings));
+            message.Guid, mapResult.Warnings.Count + Environment.NewLine,
+            string.Join(Environment.NewLine, mapResult.Warnings));
     }
 }

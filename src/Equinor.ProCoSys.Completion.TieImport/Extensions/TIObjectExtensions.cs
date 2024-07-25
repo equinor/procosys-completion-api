@@ -16,7 +16,7 @@ public static class TiObjectExtensions
         var importError = new ImportError(
             tiObject.Guid,
             tiObject.Method,
-            tiObject.GetAttributeValueAsString(PunchObjectAttributes.Project) ?? "N/A",
+            tiObject.Project,
             tiObject.Site,
             message
         );
