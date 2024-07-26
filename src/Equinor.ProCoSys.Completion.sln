@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Extensions", "Equinor.ProCoSys.Completion.Extensions\Equinor.ProCoSys.Completion.Extensions.csproj", "{760D2EE0-9B72-43DE-9400-FD86E0D01A7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.TieImport.Tests", "tests\Equinor.ProCoSys.Completion.TieImport.Tests\Equinor.ProCoSys.Completion.TieImport.Tests.csproj", "{8C96E385-DF59-4122-8D75-DA8FC400D50A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,10 @@ Global
 		{760D2EE0-9B72-43DE-9400-FD86E0D01A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{760D2EE0-9B72-43DE-9400-FD86E0D01A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{760D2EE0-9B72-43DE-9400-FD86E0D01A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C96E385-DF59-4122-8D75-DA8FC400D50A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C96E385-DF59-4122-8D75-DA8FC400D50A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C96E385-DF59-4122-8D75-DA8FC400D50A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C96E385-DF59-4122-8D75-DA8FC400D50A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -182,6 +188,7 @@ Global
 		{C318C627-9419-42FC-B652-660795962C7F} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{76BB9EF1-24F9-462F-938A-07D3D6FB3FA1} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 		{3E50ECD2-D3F2-460E-8D53-8097F7CF9816} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
+		{8C96E385-DF59-4122-8D75-DA8FC400D50A} = {DFB50BC5-5201-42FD-A049-CF0259AA7AE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C79730D0-E4C2-474A-9D04-1C07256B6DF3}

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 
 namespace Equinor.ProCoSys.Completion.TieImport;

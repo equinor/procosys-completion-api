@@ -11,7 +11,7 @@ public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataC
 {
     private ImportError[] Validate(PunchItemImportMessage message)
     {
-        var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
+        var validator = new PunchItemImportMessageValidator();
         var validationResult = validator.Validate(message);
         return validationResult
             .Errors

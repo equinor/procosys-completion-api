@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.CommonLib;
-using Equinor.ProCoSys.Completion.TieImport.Configuration;
+﻿using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using Microsoft.Extensions.Logging;

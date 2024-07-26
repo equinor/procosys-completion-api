@@ -1,4 +1,3 @@
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Statoil.TI.InterfaceServices.Message;
 
