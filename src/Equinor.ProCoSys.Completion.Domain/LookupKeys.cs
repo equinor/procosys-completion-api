@@ -1,9 +1,10 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 
 namespace Equinor.ProCoSys.Completion.Domain;
 
 
-public readonly record struct PersonKey(string Email);
+public readonly record struct PersonKey(string? Email, string? Username);
 
 public readonly record struct LibraryItemByPlant(string Code, LibraryType Type, string Plant);
 
@@ -14,3 +15,5 @@ public readonly record struct TagNoByProjectNameAndPlantKey(
     string ProjectName,
     string Plant,
     string FormType);
+
+public readonly record struct ExternalPunchItemKey(string ExternalPunchItemNo, string Responsible, string Plant, string ProjectName);

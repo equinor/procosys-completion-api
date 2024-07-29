@@ -11,7 +11,7 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
     private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(
         PunchItemImportMessage message)
     {
-        var validator = new PunchItemImportMessageValidator();
+        var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
         var validationResult = validator.Validate(message);
         if (!validationResult.IsValid)
         {

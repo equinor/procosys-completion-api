@@ -18,8 +18,8 @@ public class CommandReferencesServiceShould
         new("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION);
 
     private PunchItemImportMessage _baseMessage = new(
-        Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-        new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+        Guid.NewGuid(), "TestPlant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
+        "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
         new Optional<string?>("BV"),
         Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
         new Optional<string?>(), new Optional<string?>("EQ"),
@@ -257,7 +257,7 @@ public class CommandReferencesServiceShould
         // Arrange
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "InvalidProjectName", "TagNo", "InvalidExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
             new Optional<string?>(), new Optional<string?>(),

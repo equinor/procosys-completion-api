@@ -83,6 +83,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.AddAttribute(PunchObjectAttributes.TagNo, "Tag1");
         tiObject.AddAttribute(PunchObjectAttributes.ExternalPunchItemNo, "Punch1");
         tiObject.AddAttribute(PunchObjectAttributes.FormType, "Type1");
+        tiObject.AddAttribute(PunchObjectAttributes.Responsible, "EQ");
 
         // Act
         var result = _validator.Validate(tiObject);

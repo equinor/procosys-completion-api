@@ -14,7 +14,7 @@ public sealed class PunchItemImportMessageToUpdateCommand(PlantScopedImportDataC
 {
     private ImportError[] Validate(PunchItemImportMessage message)
     {
-        var validator = new PunchItemImportMessageValidator();
+        var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
         var validationResult = validator.Validate(message);
         return validationResult
             .Errors

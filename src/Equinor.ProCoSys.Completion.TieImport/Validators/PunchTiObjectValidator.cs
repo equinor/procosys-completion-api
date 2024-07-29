@@ -22,6 +22,8 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(ExternalPunchItemNo)))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{ExternalPunchItemNo}'")
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(FormType)))
-            .WithMessage($"This Punch Item Import Object is missing the required attribute '{FormType}'");
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{FormType}'")
+            .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(Responsible)))
+            .WithMessage($"This Punch Item Import Object is missing the required attribute '{Responsible}'");
     }
 }

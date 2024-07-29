@@ -27,7 +27,8 @@ public interface IImportDataFetcher
         IReadOnlyCollection<TagNoByProjectNameAndPlantKey> keys,
         CancellationToken cancellationToken);
 
-    Task<PunchItem[]> FetchExternalPunchItemNosAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
+    Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+        CancellationToken cancellationToken);
 }
 
 public sealed class ImportDataFetcher(
@@ -39,6 +40,8 @@ public sealed class ImportDataFetcher(
         CancellationToken cancellationToken)
     {
         keys = keys.Distinct().ToList();
+        if (keys.Count == 0) return [];
+        
         var query = $"""
                      SELECT Guid, Id, Name, Description, Plant, IsVoided, IsClosed, IsDeletedInSource, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp
                      FROM Projects l
@@ -69,11 +72,17 @@ public sealed class ImportDataFetcher(
         CancellationToken cancellationToken)
     {
         var emailKeys = keys.Select(x => x.Email)
+            .Where(x => x is not null)
+            .Distinct()
+            .ToArray();
+        
+        var usernameKeys = keys.Select(x => x.Username)
+            .Where(x => x is not null)
             .Distinct()
             .ToArray();
 
         var persons = await completionContext.Persons
-            .Where(x => emailKeys.Contains(x.Email))
+            .Where(x => emailKeys.Contains(x.Email) || usernameKeys.Contains(x.UserName))
             .IgnoreQueryFilters()
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
@@ -87,6 +96,8 @@ public sealed class ImportDataFetcher(
         keys = keys
             .Distinct()
             .ToList();
+        if (keys.Count == 0) return [];
+        
         var query = $"""
                      SELECT Guid, Id, Code, Description, Type, Plant, IsVoided, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp
                      FROM Library l
@@ -130,18 +141,27 @@ public sealed class ImportDataFetcher(
         return tasks;
     }
 
-    public Task<PunchItem[]> FetchExternalPunchItemNosAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
+    public async Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+        CancellationToken cancellationToken)
     {
-        var punchItems = completionContext.PunchItems
+        var externalItemNos = keys.Select(y => y.ExternalPunchItemNo).ToList();
+        var plants = keys.Select(y => y.Plant).ToList();
+        var projectNames = keys.Select(y => y.ProjectName).ToList();
+
+        var punchItems = await completionContext.PunchItems
             .IgnoreQueryFilters()
             .AsNoTracking()
-            .Where(x => keys.Contains(x.ExternalItemNo))
             .Include(x => x.RaisedByOrg)
             .Include(x => x.ClearingByOrg)
             .Include(x => x.Type)
             .Include(x => x.ClearedBy)
             .Include(x => x.VerifiedBy)
             .Include(x => x.RejectedBy)
+            .Include(x => x.Project)
+            .Where(x => !string.IsNullOrEmpty(x.ExternalItemNo) 
+                        && externalItemNos.Contains(x.ExternalItemNo)
+                        && plants.Contains(x.Plant)
+                        && projectNames.Contains(x.Project.Name))
             .ToArrayAsync(cancellationToken);
 
         return punchItems;

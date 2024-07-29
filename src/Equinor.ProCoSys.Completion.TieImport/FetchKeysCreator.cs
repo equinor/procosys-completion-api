@@ -33,7 +33,7 @@ public static class FetchKeysCreator
         return libraryItemKeys;
     }
 
-    public static ILookup<string, PersonKey> CreatePersonKeys(
+    public static IReadOnlyCollection<PersonKey> CreatePersonKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
     {
         var personKeys = importMessages
@@ -42,13 +42,14 @@ public static class FetchKeysCreator
                 {
                     CreatePersonKey(message.ClearedBy),
                     CreatePersonKey(message.VerifiedBy),
-                    CreatePersonKey(message.RejectedBy)
+                    CreatePersonKey(message.RejectedBy),
+                    new PersonKey(null, "pcs5.import.user")
                 }
             )
             .Where(x => x is not null)
             .Select(x => x!.Value)
             .Distinct()
-            .ToLookup(k => k.Email);
+            .ToArray();
 
         return personKeys;
     }
@@ -57,11 +58,11 @@ public static class FetchKeysCreator
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
         => importMessages.Select(CreateProjectKey);
     
-    public static IEnumerable<string> CreateExternalPunchItemNoKeys(IReadOnlyCollection<PunchItemImportMessage> importMessages)
+    public static IReadOnlyCollection<ExternalPunchItemKey> CreateExternalPunchItemNoKeys(IReadOnlyCollection<PunchItemImportMessage> importMessages)
         => importMessages
-            .Where(x => x.Method != PunchObjectAttributes.Methods.Create)
-            .Select(x => x.ExternalPunchItemNo)
-            .Distinct();
+            .Select(x => new ExternalPunchItemKey(x.ExternalPunchItemNo, x.Responsible, x.Plant, x.ProjectName))
+            .Distinct()
+            .ToArray();
 
     private static TagNoByProjectNameAndPlantKey CreateTagKey(string tagNo, string projectName, string plant,
         string formType) =>
@@ -87,7 +88,7 @@ public static class FetchKeysCreator
             return null;
         }
 
-        return new PersonKey(personEmail.Value);
+        return new PersonKey(personEmail.Value, null);
     }
 
     private static ProjectByPlantKey CreateProjectKey(PunchItemImportMessage message)

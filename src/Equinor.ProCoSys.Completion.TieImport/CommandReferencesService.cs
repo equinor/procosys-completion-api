@@ -53,22 +53,34 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         if (personEmail is { HasValue: true, Value: not null } && date is not { HasValue: true, Value: not null })
         {
             references.Errors =
-                [..references.Errors, message.ToImportError($"Date is required for action (Clear, Verify, Reject) by person '{personEmail.Value}'")];
+            [
+                ..references.Errors,
+                message.ToImportError(
+                    $"Date is required for action (Clear, Verify, Reject) by person '{personEmail.Value}'")
+            ];
         }
 
         if (date is { HasValue: true, Value: not null } && personEmail is not { HasValue: true, Value: not null })
         {
             references.Errors =
-                [..references.Errors, message.ToImportError($"Person is required for action (Clear, Verify, Reject) on date '{date.Value}'")];
+            [
+                ..references.Errors,
+                message.ToImportError($"Person is required for action (Clear, Verify, Reject) on date '{date.Value}'")
+            ];
         }
 
         if (personEmail is { HasValue: true, Value: not null } && date is { HasValue: true, Value: not null })
         {
-            var person = context.Persons.FirstOrDefault(x => string.Equals(x.Email, personEmail.Value, StringComparison.InvariantCultureIgnoreCase));
+            var person = context.Persons.FirstOrDefault(x =>
+                string.Equals(x.Email, personEmail.Value, StringComparison.InvariantCultureIgnoreCase));
             if (person is null)
             {
                 references.Errors =
-                    [..references.Errors, message.ToImportError($"Person '{personEmail.Value}' for action (Clear, Verify, Reject) on '{date.Value}' not found")];
+                [
+                    ..references.Errors,
+                    message.ToImportError(
+                        $"Person '{personEmail.Value}' for action (Clear, Verify, Reject) on '{date.Value}' not found")
+                ];
             }
             else
             {
@@ -165,14 +177,15 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private UpdatePunchReferences GetPunchItem(PunchItemImportMessage message, UpdatePunchReferences references)
     {
         var punchItem = context.PunchItems
-            .FirstOrDefault(x => x.ExternalItemNo == message.ExternalPunchItemNo);
+            .FirstOrDefault(x => x.ExternalItemNo == message.ExternalPunchItemNo && x.Plant == message.Plant &&
+                                 x.Project.Name == message.ProjectName);
 
         if (punchItem is null)
         {
             references.Errors =
             [
                 ..references.Errors, message.ToImportError(
-                    $"PunchItem with {nameof(message.ExternalPunchItemNo)} '{message.ExternalPunchItemNo}' not found")
+                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.Plant)}: '{message.Plant}, {nameof(message.ProjectName)}: '{message.ProjectName}'` not found")
             ];
         }
 

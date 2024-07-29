@@ -29,7 +29,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         await FetchLibraryItemsForPlantAsync(
             libraryItemsByPlant.SelectMany(x => x).ToList(),
             cancellationToken);
-        await FetchPersonsAsync(personByEmailKeys.SelectMany(x => x).ToArray(), cancellationToken);
+        await FetchPersonsAsync(personByEmailKeys, cancellationToken);
         await FetchProjectsAsync(projectByPlantKeys, cancellationToken);
         await FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
         await WhenAllFetchTagsByPlantTasksAsync(tagTasks);
@@ -37,7 +37,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         return _plantScopedImportDataContexts;
     }
 
-    private async Task FetchExternalPunchItemNosAsync(IEnumerable<string> externalPunchItemNoKeys,
+    private async Task FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
         CancellationToken cancellationToken)
     {
         var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);

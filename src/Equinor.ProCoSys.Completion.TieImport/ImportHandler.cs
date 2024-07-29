@@ -258,7 +258,7 @@ public sealed class ImportHandler(
 
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        currentUserSetter.SetCurrentUserOid(Guid.Parse("5ea68d43-5ee1-4c28-9c79-bc54a004f269"));
+        currentUserSetter.SetCurrentUserOid(scopedImportDataContext.Persons.First(x => x.UserName == "pcs5.import.user").Guid);
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 

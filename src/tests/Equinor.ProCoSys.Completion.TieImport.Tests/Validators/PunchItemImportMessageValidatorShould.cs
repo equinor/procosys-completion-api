@@ -14,7 +14,7 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestInitialize]
     public void Setup()
     {
-        _validator = new PunchItemImportMessageValidator();
+        _validator = new PunchItemImportMessageValidator(new PlantScopedImportDataContext("TestPlant"));
     }
 
     [TestMethod]
@@ -22,7 +22,7 @@ public sealed class PunchItemImportMessageValidatorShould
     {
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             null, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -36,7 +36,7 @@ public sealed class PunchItemImportMessageValidatorShould
     {
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", PunchObjectAttributes.Methods.Create, "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -50,7 +50,7 @@ public sealed class PunchItemImportMessageValidatorShould
     {
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -60,7 +60,7 @@ public sealed class PunchItemImportMessageValidatorShould
 
         message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -74,7 +74,7 @@ public sealed class PunchItemImportMessageValidatorShould
     {
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -84,7 +84,7 @@ public sealed class PunchItemImportMessageValidatorShould
 
         message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<DateTime?>(), new Optional<string?>("User"), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -98,7 +98,7 @@ public sealed class PunchItemImportMessageValidatorShould
     {
         var message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
@@ -108,7 +108,7 @@ public sealed class PunchItemImportMessageValidatorShould
 
         message = new PunchItemImportMessage(
             Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<DateTime?>(), new Optional<string?>()
