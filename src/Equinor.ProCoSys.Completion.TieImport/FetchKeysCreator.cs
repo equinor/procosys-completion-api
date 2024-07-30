@@ -34,7 +34,7 @@ public static class FetchKeysCreator
     }
 
     public static IReadOnlyCollection<PersonKey> CreatePersonKeys(
-        IReadOnlyCollection<PunchItemImportMessage> importMessages)
+        IReadOnlyCollection<PunchItemImportMessage> importMessages, string importUserName)
     {
         var personKeys = importMessages
             .SelectMany(message =>
@@ -43,7 +43,7 @@ public static class FetchKeysCreator
                     CreatePersonKey(message.ClearedBy),
                     CreatePersonKey(message.VerifiedBy),
                     CreatePersonKey(message.RejectedBy),
-                    new PersonKey(null, "pcs5.import.user")
+                    new PersonKey(null, importUserName)
                 }
             )
             .Where(x => x is not null)

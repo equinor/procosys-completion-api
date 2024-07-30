@@ -28,6 +28,7 @@ public interface IImportDataFetcher
         CancellationToken cancellationToken);
 
     Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+        IReadOnlyCollection<TagCheckList> checkLists,
         CancellationToken cancellationToken);
 }
 
@@ -41,7 +42,7 @@ public sealed class ImportDataFetcher(
     {
         keys = keys.Distinct().ToList();
         if (keys.Count == 0) return [];
-        
+
         var query = $"""
                      SELECT Guid, Id, Name, Description, Plant, IsVoided, IsClosed, IsDeletedInSource, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp
                      FROM Projects l
@@ -75,7 +76,7 @@ public sealed class ImportDataFetcher(
             .Where(x => x is not null)
             .Distinct()
             .ToArray();
-        
+
         var usernameKeys = keys.Select(x => x.Username)
             .Where(x => x is not null)
             .Distinct()
@@ -97,7 +98,7 @@ public sealed class ImportDataFetcher(
             .Distinct()
             .ToList();
         if (keys.Count == 0) return [];
-        
+
         var query = $"""
                      SELECT Guid, Id, Code, Description, Type, Plant, IsVoided, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp
                      FROM Library l
@@ -142,6 +143,7 @@ public sealed class ImportDataFetcher(
     }
 
     public async Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+        IReadOnlyCollection<TagCheckList> checkLists,
         CancellationToken cancellationToken)
     {
         var externalItemNos = keys.Select(y => y.ExternalPunchItemNo).ToList();
@@ -158,13 +160,33 @@ public sealed class ImportDataFetcher(
             .Include(x => x.VerifiedBy)
             .Include(x => x.RejectedBy)
             .Include(x => x.Project)
-            .Where(x => !string.IsNullOrEmpty(x.ExternalItemNo) 
+            .Where(x => !string.IsNullOrEmpty(x.ExternalItemNo)
                         && externalItemNos.Contains(x.ExternalItemNo)
                         && plants.Contains(x.Plant)
                         && projectNames.Contains(x.Project.Name))
             .ToArrayAsync(cancellationToken);
 
-        return punchItems;
+        var byPlant = punchItems.GroupBy(x => x.Plant);
+
+        var punchItemsByExternalPunchItemKey = new List<PunchItem>();
+        foreach (var plantPunches in byPlant)
+        {
+            var filteredPunches = plantPunches
+                .Select(p => new
+                {
+                    Punch = p,
+                    Key = keys.First(k =>
+                        k.ExternalPunchItemNo == p.ExternalItemNo && k.Plant == p.Plant &&
+                        k.ProjectName == p.Project.Name)
+                })
+                .Where(pk => checkLists.Any(c =>
+                    c.Plant == pk.Key.Plant && c.ProCoSysGuid == pk.Punch.CheckListGuid && c.ResponsibleCode ==
+                    pk.Key.Responsible))
+                .Select(x => x.Punch);
+            punchItemsByExternalPunchItemKey.AddRange(filteredPunches);
+        }
+
+        return punchItemsByExternalPunchItemKey.ToArray();
     }
 
     private async Task<IReadOnlyCollection<TagCheckList>> CreateFetchTagsByPlantTask(string plant, string projectName,

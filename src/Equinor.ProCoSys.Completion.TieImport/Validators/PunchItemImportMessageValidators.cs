@@ -24,7 +24,7 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
             .Must(rejectedDate => rejectedDate is { HasValue: true, Value: not null })
             .When(message => message.RejectedBy is { HasValue: true, Value: not null })
             .WithMessage("Need to set both RejectedDate and RejectedBy");
-        
+
         RuleFor(message => message.RejectedBy)
             .Must(rejectedBy => rejectedBy is { HasValue: true, Value: not null })
             .When(message => message.RejectedDate is { HasValue: true, Value: not null })
@@ -34,7 +34,7 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
             .Must(verifiedDate => verifiedDate is { HasValue: true, Value: not null })
             .When(message => message.VerifiedBy is { HasValue: true, Value: not null })
             .WithMessage("Need to set both VerifiedDate and VerifiedBy");
-        
+
         RuleFor(message => message.VerifiedBy)
             .Must(verifiedBy => verifiedBy is { HasValue: true, Value: not null })
             .When(message => message.VerifiedDate is { HasValue: true, Value: not null })
@@ -44,15 +44,18 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
             .Must(clearedDate => clearedDate is { HasValue: true, Value: not null })
             .When(message => message.ClearedBy is { HasValue: true, Value: not null })
             .WithMessage("Need to set both ClearedDate and ClearedBy");
-        
+
         RuleFor(message => message.ClearedBy)
             .Must(clearedBy => clearedBy is { HasValue: true, Value: not null })
             .When(message => message.ClearedDate is { HasValue: true, Value: not null })
             .WithMessage("Need to set both ClearedDate and ClearedBy");
-        
+
         RuleFor(message => message)
-            .Must(message => !scopedImportDataContext.PunchItems.Any(y => y.ExternalItemNo == message.ExternalPunchItemNo && y.Plant == message.Plant && y.Project.Name == message.ProjectName))
-            .When(message => message.ClearedDate is { HasValue: true, Value: not null })
+            .Must(message => !scopedImportDataContext.PunchItems.Any(y =>
+                y.ExternalItemNo == message.ExternalPunchItemNo && y.Plant == message.Plant &&
+                y.Project.Name == message.ProjectName && scopedImportDataContext.CheckLists.Any(y =>
+                    y.ResponsibleCode == message.Responsible && y.Plant == message.Plant)))
+            .When(message => message.Method == Methods.Create)
             .WithMessage("An punch item already exists for the given ExternalPunchItemNo, Plant and ProjectName");
     }
 }

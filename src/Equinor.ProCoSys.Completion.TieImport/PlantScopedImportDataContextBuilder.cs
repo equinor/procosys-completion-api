@@ -1,9 +1,10 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
-public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher importDataFetcher)
+public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher importDataFetcher, IOptionsMonitor<TieImportOptions> tieOptions)
     : IScopedContextLibraryTypeBuilder
 {
     private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
@@ -13,7 +14,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
     {
         var tagNoByPlantKeys = FetchKeysCreator.CreateTagKeys(importMessages);
         var libraryItemsByPlant = FetchKeysCreator.CreateLibraryItemKeys(importMessages);
-        var personByEmailKeys = FetchKeysCreator.CreatePersonKeys(importMessages);
+        var personByEmailKeys = FetchKeysCreator.CreatePersonKeys(importMessages, tieOptions.CurrentValue.ImportUserName);
         var projectByPlantKeys = FetchKeysCreator
             .CreateProjectKeys(importMessages)
             .ToList();
@@ -31,8 +32,8 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
             cancellationToken);
         await FetchPersonsAsync(personByEmailKeys, cancellationToken);
         await FetchProjectsAsync(projectByPlantKeys, cancellationToken);
-        await FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
         await WhenAllFetchTagsByPlantTasksAsync(tagTasks);
+        await FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
 
         return _plantScopedImportDataContexts;
     }
@@ -40,7 +41,13 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
     private async Task FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
         CancellationToken cancellationToken)
     {
-        var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
+        var checkLists = _plantScopedImportDataContexts
+            .SelectMany(c => c.Value.CheckLists)
+            .ToArray();
+        var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(
+            externalPunchItemNoKeys,
+            checkLists,
+            cancellationToken);
 
         foreach (var plantPunches in punchItems.GroupBy(x => x.Plant))
         {

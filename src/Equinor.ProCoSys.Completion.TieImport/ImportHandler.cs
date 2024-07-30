@@ -10,11 +10,13 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -155,8 +157,9 @@ public sealed class ImportHandler(
         using var scope = serviceScopeFactory.CreateScope();
 
         var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
-
-        var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher);
+        var tieOptions = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
+        
+        var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher, tieOptions);
         var scopedContext = await contextBuilder
             .BuildAsync(importResults
                 .Where(x => x.Message is not null)
@@ -236,6 +239,7 @@ public sealed class ImportHandler(
         //Import module is running as a background service which is lifetime singleton.
         //A singleton service cannot retrieve scoped services via constructor.
         using var scope = serviceScopeFactory.CreateScope();
+        var tieConfig = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
         var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
@@ -258,7 +262,7 @@ public sealed class ImportHandler(
 
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        currentUserSetter.SetCurrentUserOid(scopedImportDataContext.Persons.First(x => x.UserName == "pcs5.import.user").Guid);
+        currentUserSetter.SetCurrentUserOid(scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName).Guid);
 
         await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
 

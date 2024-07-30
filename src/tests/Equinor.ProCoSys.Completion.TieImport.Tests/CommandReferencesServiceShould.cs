@@ -42,8 +42,8 @@ public class CommandReferencesServiceShould
 
     private void AddCheckLists() => _context.AddCheckList(new[]
     {
-        new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant"),
-        new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant"),
+        new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
+        new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),
     });
 
     private void AddLibraryItems() => _context.AddLibraryItems(new[]
@@ -80,9 +80,12 @@ public class CommandReferencesServiceShould
         AddLibraryItems();
 
         _context.AddPunchItems([
-            new PunchItem("TestPlant", _project, Guid.NewGuid(), Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
-                Guid.NewGuid()),
-            new PunchItem("TestPlant", _project, Guid.NewGuid(), Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
+            new PunchItem("TestPlant", _project, _context.CheckLists[0].ProCoSysGuid, Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
+                Guid.NewGuid())
+            {
+                ExternalItemNo = "WrongExternalPunchItemNo"
+            },
+            new PunchItem("TestPlant", _project, _context.CheckLists[1].ProCoSysGuid, Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
                 Guid.NewGuid()) { ExternalItemNo = "ExternalPunchItemNo" }
         ]);
 

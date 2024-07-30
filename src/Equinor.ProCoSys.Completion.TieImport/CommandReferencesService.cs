@@ -177,15 +177,21 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private UpdatePunchReferences GetPunchItem(PunchItemImportMessage message, UpdatePunchReferences references)
     {
         var punchItem = context.PunchItems
-            .FirstOrDefault(x => x.ExternalItemNo == message.ExternalPunchItemNo && x.Plant == message.Plant &&
-                                 x.Project.Name == message.ProjectName);
+            .FirstOrDefault(x =>
+                x.ExternalItemNo == message.ExternalPunchItemNo &&
+                x.Plant == message.Plant &&
+                x.Project.Name == message.ProjectName &&
+                context.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
+                                            c.Plant == x.Plant &&
+                                            c.ProCoSysGuid == x.CheckListGuid)
+            );
 
         if (punchItem is null)
         {
             references.Errors =
             [
                 ..references.Errors, message.ToImportError(
-                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.Plant)}: '{message.Plant}, {nameof(message.ProjectName)}: '{message.ProjectName}'` not found")
+                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.Plant)}: '{message.Plant}, {nameof(message.ProjectName)}: '{message.ProjectName}', {nameof(message.Responsible)}: '{message.Responsible}'` not found")
             ];
         }
 

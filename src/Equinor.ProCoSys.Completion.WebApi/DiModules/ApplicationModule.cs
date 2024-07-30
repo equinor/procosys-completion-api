@@ -66,6 +66,7 @@ public static class ApplicationModule
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
         services.Configure<GraphOptions>(configuration.GetSection("Graph"));
+        services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
