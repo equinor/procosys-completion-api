@@ -10,6 +10,8 @@ using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
+using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
@@ -262,9 +264,7 @@ public sealed class ImportHandler(
 
         mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
 
-        currentUserSetter.SetCurrentUserOid(scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName).Guid);
-
-        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, Guid.NewGuid());
+        await SetScopeAuthorizationForCommand(importResult, scopedImportDataContext, tieConfig, currentUserSetter, claimsPrincipalProvider, claimsTransformation);
 
         await mediator.Send(importResult.Command, cancellationToken);
 
@@ -275,12 +275,31 @@ public sealed class ImportHandler(
         return importResult;
     }
 
+    private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
+        PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
+        ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
+        IClaimsTransformation claimsTransformation)
+    {
+        var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+        currentUserSetter.SetCurrentUserOid(importUser.Guid);
+
+        var projectGuid = Guid.Empty;
+        if (importResult.Command is IIsProjectCommand pc)
+        {
+            projectGuid = pc.ProjectGuid;
+        }
+        
+        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
+    }
+
     private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
-        IClaimsTransformation claimsTransformation, Guid oid)
+        IClaimsTransformation claimsTransformation, Guid oid, Guid projectGuid, string responsible)
     {
         var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
         var claimsIdentity = new ClaimsIdentity();
         claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
+        claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetProjectClaimValue(projectGuid)));
+        claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetRestrictionRoleClaimValue(responsible)));
         currentUser.AddIdentity(claimsIdentity);
 
         await claimsTransformation.TransformAsync(currentUser);
