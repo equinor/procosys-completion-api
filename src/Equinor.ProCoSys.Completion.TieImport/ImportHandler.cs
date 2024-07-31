@@ -11,7 +11,6 @@ using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
 using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
@@ -70,7 +69,7 @@ public sealed class ImportHandler(
         }
 
         sw.Stop();
-        logger.LogCritical("Import elapsed {Elapsed}", sw.Elapsed);
+        logger.LogInformation("Import elapsed {Elapsed}", sw.Elapsed);
 
         return response;
     }
