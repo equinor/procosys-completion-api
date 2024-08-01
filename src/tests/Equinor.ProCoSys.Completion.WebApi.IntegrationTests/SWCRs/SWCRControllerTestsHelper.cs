@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.SWCRs;
@@ -32,6 +32,6 @@ public class SWCRControllerTestsHelper
         }
 
         var result = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<SWCRDto>>(result);
+        return JsonSerializer.Deserialize<List<SWCRDto>>(result, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 }

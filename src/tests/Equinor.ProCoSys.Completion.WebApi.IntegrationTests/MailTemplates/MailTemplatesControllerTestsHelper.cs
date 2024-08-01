@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.MailTemplates;
 
@@ -24,6 +24,6 @@ public static class MailTemplatesControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<MailTemplateDto>>(content);
+        return JsonSerializer.Deserialize<List<MailTemplateDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 }

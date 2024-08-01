@@ -167,7 +167,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
         Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
         Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
-        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
+        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.guid);
         Assert.AreEqual(newExternalItemNo, punchItem.ExternalItemNo);
         Assert.AreEqual(NewMaterialRequired, punchItem.MaterialRequired);
         Assert.AreEqual(newMaterialETAUtc, punchItem.MaterialETAUtc);
@@ -204,7 +204,7 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.OriginalWorkOrderGuid, punchItem.OriginalWorkOrder!.Guid);
         Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
         Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
-        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
+        Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.guid);
 
         var initialRowVersion = punchItem.RowVersion;
         var patchDocument = new JsonPatchDocument();

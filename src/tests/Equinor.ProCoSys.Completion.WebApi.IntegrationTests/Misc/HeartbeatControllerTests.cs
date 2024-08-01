@@ -1,7 +1,7 @@
 ﻿using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Misc;
 
@@ -28,7 +28,7 @@ public class HeartbeatControllerTests : TestBase
         }
         var content = await response.Content.ReadAsStringAsync();
         Assert.IsNotNull(content);
-        var dto = JsonConvert.DeserializeObject<HeartbeatDto>(content);
+        var dto = JsonSerializer.Deserialize<HeartbeatDto>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
         Assert.IsNotNull(dto);
         Assert.IsTrue(dto.IsAlive);
         Assert.IsNotNull(dto.TimeStamp);

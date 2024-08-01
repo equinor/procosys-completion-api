@@ -2,4 +2,4 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public record DocumentDto(Guid Guid, string No);
+public record DocumentDto(Guid guid, string no);

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LabelEntities;
 
@@ -32,6 +32,6 @@ public static class LabelEntitiesControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<string>>(content);
+        return JsonSerializer.Deserialize<List<string>>(content);
     }
 }

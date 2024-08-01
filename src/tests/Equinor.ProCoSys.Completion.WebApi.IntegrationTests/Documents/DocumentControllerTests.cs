@@ -15,7 +15,7 @@ public class DocumentControllerTests
         
         // Assert
         Assert.IsTrue(documents.Count == 1);
-        Assert.IsTrue(documents.Any(a => a.Guid == TestFactory.DocumentGuid));
+        Assert.IsTrue(documents.Any(a => a.guid == TestFactory.DocumentGuid));
     }
 }
 

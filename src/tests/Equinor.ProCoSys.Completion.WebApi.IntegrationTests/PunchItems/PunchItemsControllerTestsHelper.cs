@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
-using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
@@ -33,7 +34,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<PunchItemDetailsDto>(content);
+        return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<List<LinkDto>> GetPunchItemLinksAsync(
@@ -53,7 +54,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<LinkDto>>(content);
+        return JsonSerializer.Deserialize<List<LinkDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<List<PunchItemDto>> GetAllPunchItemsInProjectAsync(
@@ -80,7 +81,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<PunchItemDto>>(content);
+        return JsonSerializer.Deserialize<List<PunchItemDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
@@ -121,7 +122,7 @@ public static class PunchItemsControllerTestsHelper
             documentGuid = documentGuid?.ToString()
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync(Route, content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
@@ -132,7 +133,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemLinkAsync(
@@ -150,7 +151,7 @@ public static class PunchItemsControllerTestsHelper
             url
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Links", content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
@@ -161,7 +162,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemCommentAsync(
@@ -181,7 +182,7 @@ public static class PunchItemsControllerTestsHelper
             mentions
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Comments", content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
@@ -192,7 +193,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
 
@@ -213,7 +214,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<AttachmentDto>>(content);
+        return JsonSerializer.Deserialize<List<AttachmentDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<string> GetPunchItemAttachmentDownloadUrlAsync(
@@ -254,7 +255,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<GuidAndRowVersion>(jsonString);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<string> OverwriteExistingPunchItemAttachmentAsync(
@@ -292,7 +293,7 @@ public static class PunchItemsControllerTestsHelper
         {
             rowVersion
         };
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}/Attachments/{attachmentGuid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
@@ -319,7 +320,7 @@ public static class PunchItemsControllerTestsHelper
             labels,
             rowVersion
         };
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Attachments/{attachmentGuid}", content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
@@ -347,7 +348,14 @@ public static class PunchItemsControllerTestsHelper
             rowVersion
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters =
+            {
+                new JsonPatchDocumentConverter()
+            }
+        });
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}", content);
 
@@ -376,7 +384,7 @@ public static class PunchItemsControllerTestsHelper
             rowVersion
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PatchAsync($"{Route}/{guid}/UpdateCategory", content);
 
@@ -437,7 +445,7 @@ public static class PunchItemsControllerTestsHelper
             rowVersion
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Reject", content);
 
@@ -499,7 +507,7 @@ public static class PunchItemsControllerTestsHelper
             rowVersion
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Links/{linkGuid}", content);
 
@@ -525,7 +533,7 @@ public static class PunchItemsControllerTestsHelper
         {
             rowVersion
         };
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
@@ -548,7 +556,7 @@ public static class PunchItemsControllerTestsHelper
         {
             rowVersion
         };
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}/Links/{linkGuid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
@@ -575,7 +583,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<CommentDto>>(content);
+        return JsonSerializer.Deserialize<List<CommentDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<List<HistoryDto>> GetPunchItemHistoryAsync(
@@ -595,7 +603,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<HistoryDto>>(content);
+        return JsonSerializer.Deserialize<List<HistoryDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     public static async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetPunchItemsByCheckListGuid(
@@ -615,7 +623,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<PunchItemDetailsDto>>(content).AsReadOnly();
+        return JsonSerializer.Deserialize<List<PunchItemDetailsDto>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase}).AsReadOnly();
     }
 
     public static async Task<ChecklistsByPunchGuidInstance> GetCheckListsByPunchItemGuid(
@@ -635,7 +643,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<ChecklistsByPunchGuidInstance>(content);
+        return JsonSerializer.Deserialize<ChecklistsByPunchGuidInstance>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
     }
 
     private static async Task<string> PostAsync(
@@ -651,7 +659,7 @@ public static class PunchItemsControllerTestsHelper
             rowVersion
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync(requestUri, content);
 

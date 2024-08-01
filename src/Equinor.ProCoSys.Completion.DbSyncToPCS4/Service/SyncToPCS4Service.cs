@@ -1,6 +1,6 @@
 ﻿using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
@@ -60,7 +60,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
             return;
         }
 
-        var requestBody = JsonConvert.SerializeObject(syncEvent);
+        var requestBody = JsonSerializer.Serialize(syncEvent);
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         var request = new HttpRequestMessage(new HttpMethod(method), endpoint) { Content = content };
         _logger.LogInformation("Sending a request for a {method} method for an object of type {objectName}", method, objectName);

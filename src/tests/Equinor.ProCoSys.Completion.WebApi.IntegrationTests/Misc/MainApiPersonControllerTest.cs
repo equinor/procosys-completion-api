@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Misc;
 
@@ -58,7 +58,7 @@ public class MainApiPersonControllerTest
         }
         var content = await response.Content.ReadAsStringAsync();
         Assert.IsNotNull(content);
-        var result = JsonConvert.DeserializeObject<List<ProCoSysTestPerson>>(content);
+        var result = JsonSerializer.Deserialize<List<ProCoSysTestPerson>>(content, new JsonSerializerOptions {PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Count == 2);
         Assert.IsTrue(result.Any(x => x.AzureOid == TestFactory.Person1.AzureOid));
