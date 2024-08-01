@@ -39,6 +39,7 @@
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj" />
