@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;

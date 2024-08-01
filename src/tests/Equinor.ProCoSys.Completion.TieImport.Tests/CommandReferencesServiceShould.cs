@@ -12,12 +12,12 @@ public class CommandReferencesServiceShould
 {
     private CommandReferencesService _service;
     private PlantScopedImportDataContext _context;
-    private Project _project = new("TestPlant", Guid.NewGuid(), "ProjectName", "ProjectName");
+    private readonly Project _project = new("TestPlant", Guid.NewGuid(), "ProjectName", "ProjectName");
 
-    private LibraryItem _raisedByOrg =
+    private readonly LibraryItem _raisedByOrg =
         new("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION);
 
-    private PunchItemImportMessage _baseMessage = new(
+    private readonly PunchItemImportMessage _baseMessage = new(
         Guid.NewGuid(), "TestPlant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
         "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
         new Optional<string?>("BV"),
@@ -28,7 +28,7 @@ public class CommandReferencesServiceShould
         new Optional<DateTime?>(), new Optional<string?>()
     );
 
-    private string _sksEquinorCom = "SKS@equinor.com";
+    private const string SksEquinorCom = "SKS@equinor.com";
 
     [TestInitialize]
     public void Setup()
@@ -124,9 +124,9 @@ public class CommandReferencesServiceShould
     public void GetCreatePunchItemReferences_ShouldMakeErrorsOnMissingDateForAction()
     {
         // Arrange
-        var clearedByMessage = _baseMessage with { ClearedBy = new Optional<string?>(_sksEquinorCom) };
-        var verifiedByMessage = _baseMessage with { VerifiedBy = new Optional<string?>(_sksEquinorCom) };
-        var rejectedByMessage = _baseMessage with { RejectedBy = new Optional<string?>(_sksEquinorCom) };
+        var clearedByMessage = _baseMessage with { ClearedBy = new Optional<string?>(SksEquinorCom) };
+        var verifiedByMessage = _baseMessage with { VerifiedBy = new Optional<string?>(SksEquinorCom) };
+        var rejectedByMessage = _baseMessage with { RejectedBy = new Optional<string?>(SksEquinorCom) };
 
         // Act
         var clearByRefs = _service.GetCreatePunchItemReferences(clearedByMessage);
@@ -136,15 +136,15 @@ public class CommandReferencesServiceShould
         // Assert
         Assert.IsNotNull(clearByRefs);
         Assert.AreNotEqual(0, clearByRefs.Errors.Length);
-        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
 
         Assert.IsNotNull(verifiedByRefs);
         Assert.AreNotEqual(0, verifiedByRefs.Errors.Length);
-        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
 
         Assert.IsNotNull(rejectedByRefs);
         Assert.AreNotEqual(0, rejectedByRefs.Errors.Length);
-        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
     }
 
     [TestMethod]
@@ -183,15 +183,15 @@ public class CommandReferencesServiceShould
 
         var clearedByMessage = _baseMessage with
         {
-            ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(_sksEquinorCom)
+            ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(SksEquinorCom)
         };
         var verifiedByMessage = _baseMessage with
         {
-            VerifiedDate = new Optional<DateTime?>(DateTime.Now), VerifiedBy = new Optional<string?>(_sksEquinorCom)
+            VerifiedDate = new Optional<DateTime?>(DateTime.Now), VerifiedBy = new Optional<string?>(SksEquinorCom)
         };
         var rejectedByMessage = _baseMessage with
         {
-            RejectedDate = new Optional<DateTime?>(DateTime.Now), RejectedBy = new Optional<string?>(_sksEquinorCom)
+            RejectedDate = new Optional<DateTime?>(DateTime.Now), RejectedBy = new Optional<string?>(SksEquinorCom)
         };
 
         // Act
@@ -202,15 +202,15 @@ public class CommandReferencesServiceShould
         // Assert
         Assert.IsNotNull(clearByRefs);
         Assert.AreNotEqual(0, clearByRefs.Errors.Length);
-        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
 
         Assert.IsNotNull(verifiedByRefs);
         Assert.AreNotEqual(0, verifiedByRefs.Errors.Length);
-        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
 
         Assert.IsNotNull(rejectedByRefs);
         Assert.AreNotEqual(0, rejectedByRefs.Errors.Length);
-        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(_sksEquinorCom)));
+        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
     }
 
     [TestMethod]
@@ -223,19 +223,19 @@ public class CommandReferencesServiceShould
         _context.AddPersons(new[]
         {
             new Person(Guid.NewGuid(), "Person 1", "Person 1", "Person 1", "Person 1", false),
-            new Person(Guid.NewGuid(), _sksEquinorCom, _sksEquinorCom, _sksEquinorCom, _sksEquinorCom, false)
+            new Person(Guid.NewGuid(), SksEquinorCom, SksEquinorCom, SksEquinorCom, SksEquinorCom, false)
         });
         var clearedByMessage = _baseMessage with
         {
-            ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(_sksEquinorCom)
+            ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(SksEquinorCom)
         };
         var verifiedByMessage = _baseMessage with
         {
-            VerifiedDate = new Optional<DateTime?>(DateTime.Now), VerifiedBy = new Optional<string?>(_sksEquinorCom)
+            VerifiedDate = new Optional<DateTime?>(DateTime.Now), VerifiedBy = new Optional<string?>(SksEquinorCom)
         };
         var rejectedByMessage = _baseMessage with
         {
-            RejectedDate = new Optional<DateTime?>(DateTime.Now), RejectedBy = new Optional<string?>(_sksEquinorCom)
+            RejectedDate = new Optional<DateTime?>(DateTime.Now), RejectedBy = new Optional<string?>(SksEquinorCom)
         };
 
         // Act

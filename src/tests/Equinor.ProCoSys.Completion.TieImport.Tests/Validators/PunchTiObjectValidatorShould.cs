@@ -10,10 +10,7 @@ public sealed class PunchTiObjectValidatorShould
     private PunchTiObjectValidator _validator;
 
     [TestInitialize]
-    public void Setup()
-    {
-        _validator = new PunchTiObjectValidator();
-    }
+    public void Setup() => _validator = new PunchTiObjectValidator();
 
     [TestMethod]
     public void Validate_ShouldFail_WhenProjectIsNullOrEmpty()

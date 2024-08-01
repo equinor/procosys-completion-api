@@ -11,22 +11,24 @@ public sealed class PunchItemImportMessageValidatorShould
 {
     private PunchItemImportMessageValidator _validator;
 
+    private readonly PunchItemImportMessage _baseMessage = new(
+        Guid.NewGuid(), "Plant", PunchObjectAttributes.Methods.Create, "ProjectName", "TagNo", "ExternalPunchItemNo",
+        "FormType",
+        "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+        Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
+        new Optional<string?>(), new Optional<string?>(),
+        new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(),
+        new Optional<string?>(),
+        new Optional<DateTime?>(), new Optional<string?>());
+
     [TestInitialize]
-    public void Setup()
-    {
+    public void Setup() =>
         _validator = new PunchItemImportMessageValidator(new PlantScopedImportDataContext("TestPlant"));
-    }
 
     [TestMethod]
     public void ValidateCategoryIsRequired()
     {
-        var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            null, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        var message = _baseMessage with { Category = null };
         var result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.Category);
     }
@@ -34,13 +36,7 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestMethod]
     public void ValidateDescriptionIsRequiredForCreateMethod()
     {
-        var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", PunchObjectAttributes.Methods.Create, "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        var message = _baseMessage;
         var result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.Description);
     }
@@ -48,23 +44,11 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestMethod]
     public void ValidateRejectedDateAndRejectedByMustBeSetTogether()
     {
-        var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        var message = _baseMessage with { RejectedDate = new Optional<DateTime?>(DateTime.Now) };
         var result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.RejectedBy);
 
-        message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        message = _baseMessage with { RejectedBy = new Optional<string?>("SKS@equinor.com") };
         result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.RejectedDate);
     }
@@ -72,23 +56,11 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestMethod]
     public void ValidateVerifiedDateAndVerifiedByMustBeSetTogether()
     {
-        var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        var message = _baseMessage with { VerifiedDate = new Optional<DateTime?>(DateTime.Now) };
         var result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.VerifiedBy);
 
-        message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<DateTime?>(), new Optional<string?>("User"), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        message = _baseMessage with { VerifiedBy = new Optional<string?>("SKS@equinor.com") };
         result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.VerifiedDate);
     }
@@ -96,23 +68,11 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestMethod]
     public void ValidateClearedDateAndClearedByMustBeSetTogether()
     {
-        var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(DateTime.Now), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        var message = _baseMessage with { ClearedDate = new Optional<DateTime?>(DateTime.Now) };
         var result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.ClearedBy);
 
-        message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(), new Optional<string?>("SKS@equinor.com"), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        message = _baseMessage with { ClearedBy = new Optional<string?>("SKS@equinor.com") };
         result = _validator.TestValidate(message);
         result.ShouldHaveValidationErrorFor(x => x.ClearedDate);
     }
