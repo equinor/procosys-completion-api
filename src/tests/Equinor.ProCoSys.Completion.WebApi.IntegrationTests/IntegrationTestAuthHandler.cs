@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -61,7 +61,7 @@ internal class IntegrationTestAuthHandler : AuthenticationHandler<IntegrationTes
         try
         {
             var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(tokenPart));
-            profile = JsonConvert.DeserializeObject<TestProfile>(decoded);
+            profile = JsonSerializer.Deserialize<TestProfile>(decoded, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (profile is null)
             {
                 throw new Exception("Error Deserialize token");

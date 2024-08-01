@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
@@ -23,7 +23,9 @@ public static class TestsHelper
                 
             if (!string.IsNullOrEmpty(expectedMessagePartOnBadRequest))
             {
-                var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(jsonString);
+                var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(
+                    jsonString, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 Assert.IsTrue(
                     // ReSharper disable once PossibleNullReferenceException
                     problemDetails.Errors.SelectMany(e => e.Value)

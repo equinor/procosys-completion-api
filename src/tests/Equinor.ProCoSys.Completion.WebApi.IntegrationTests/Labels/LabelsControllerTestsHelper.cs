@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Labels;
 
@@ -27,7 +27,7 @@ public static class LabelsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<LabelDto>>(content);
+        return JsonSerializer.Deserialize<List<LabelDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
     public static async Task<string> CreateLabelAsync(
@@ -41,7 +41,7 @@ public static class LabelsControllerTestsHelper
             text
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, null).PostAsync(Route, content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
@@ -67,7 +67,7 @@ public static class LabelsControllerTestsHelper
             availableForLabels
         };
 
-        var serializePayload = JsonConvert.SerializeObject(bodyPayload);
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
         var response = await TestFactory.Instance.GetHttpClient(userType, null).PutAsync(Route, content);
         await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
