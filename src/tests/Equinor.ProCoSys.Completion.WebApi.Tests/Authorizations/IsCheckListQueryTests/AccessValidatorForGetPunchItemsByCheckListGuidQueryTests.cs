@@ -1,4 +1,5 @@
 ﻿using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQueryTests;
@@ -7,8 +8,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQue
 public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests : AccessValidatorForIIsCheckListQueryTests<GetPunchItemsByCheckListGuidQuery>
 {
     protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithAccessToProject() 
-        => new (CheckListGuidWithAccessToProjectAndContent);
+        => new (CheckListGuidWithAccessToProjectAndContent, PunchListStatusFilter.All);
 
     protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithoutAccessToProject() 
-        => new (CheckListGuidWithoutAccessToContent);
+        => new (CheckListGuidWithoutAccessToContent, PunchListStatusFilter.All);
 }

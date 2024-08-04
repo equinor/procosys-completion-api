@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -19,7 +20,7 @@ public class GetPunchItemsByCheckListGuidQueryValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _query = new GetPunchItemsByCheckListGuidQuery(Guid.NewGuid());
+        _query = new GetPunchItemsByCheckListGuidQuery(Guid.NewGuid(), PunchListStatusFilter.All);
 
         _checkListValidatorMock = Substitute.For<ICheckListValidator>();
         _checkListValidatorMock.ExistsAsync(_query.CheckListGuid, default).Returns(true);
