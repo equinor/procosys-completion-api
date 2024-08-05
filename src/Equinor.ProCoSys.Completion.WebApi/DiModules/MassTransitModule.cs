@@ -349,7 +349,7 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                cfg.SubscriptionEndpoint("completion_punchitem", "punchlistitem", e =>
+                cfg.SubscriptionEndpoint("completion_punch-item", "punchlistitem", e =>
                 {
                     e.ClearSerialization();
                     e.UseRawJsonSerializer();
