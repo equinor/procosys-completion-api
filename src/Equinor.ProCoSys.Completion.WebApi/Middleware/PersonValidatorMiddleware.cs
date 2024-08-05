@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
@@ -24,7 +26,8 @@ public class PersonValidatorMiddleware
         if (currentUserProvider.HasCurrentUser)
         {
             var oid = currentUserProvider.GetCurrentUserOid();
-            if (!await localPersonRepository.ExistsAsync(oid) &&
+            var userHasPersonClaim = context.User.Claims.IsPersonCreated(oid.ToString());
+            if (!userHasPersonClaim && !await localPersonRepository.ExistsAsync(oid) &&
                 !await personCache.ExistsAsync(oid))
             {
                 await context.WriteForbidden(logger);

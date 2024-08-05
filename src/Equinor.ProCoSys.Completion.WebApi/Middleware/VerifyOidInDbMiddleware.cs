@@ -25,7 +25,8 @@ public class VerifyOidInDbMiddleware
         {
             var httpContextUser = httpContextAccessor.HttpContext.User;
             var oid = httpContextUser.Claims.TryGetOid();
-            if (oid.HasValue)
+            var userHasPersonClaim = httpContextUser.Claims.IsPersonCreated(oid.ToString());
+            if (oid.HasValue && !userHasPersonClaim)
             {
                 var command = new CreatePersonCommand(oid.Value);
                 try

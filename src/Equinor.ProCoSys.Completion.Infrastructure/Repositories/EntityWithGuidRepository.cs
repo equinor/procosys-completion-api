@@ -36,9 +36,12 @@ public abstract class EntityWithGuidRepository<TEntity>(
         Guid guid,
         CancellationToken cancellationToken)
         => await DefaultQueryable
+               .TagWith($"{typeof(TEntity).Name}Repository.GetAsync")
                .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken)
            ?? throw new EntityNotFoundException<TEntity>(guid);
 
     public virtual async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
-        => await Set.AnyAsync(e => e.Guid == guid, cancellationToken);
+        => await Set
+            .TagWith($"{typeof(TEntity).Name}Repository.ExistsAsync")
+            .AnyAsync(e => e.Guid == guid, cancellationToken);
 }
