@@ -25,7 +25,7 @@ public class PunchItemChangeHistoryEventConsumerTests
     public void Setup()
     {
         _dut = new PunchItemChangeHistoryEventConsumer(
-            Substitute.For<ILogger<PunchItemChangeHistoryEventConsumer>>(), 
+            Substitute.For<ILogger<PunchItemChangeHistoryEventConsumer>>(),
             _historyItemRepositoryMock,
             _unitOfWorkMock);
 
@@ -36,7 +36,7 @@ public class PunchItemChangeHistoryEventConsumerTests
                 _historyItemAddedToRepository = callInfo.Arg<HistoryItem>();
             });
     }
-    
+
     [TestMethod]
     public async Task Consume_ShouldAddNewHistoryItem_WhenHistoryItemDoesNotExist()
     {
@@ -50,7 +50,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'FN' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'FN' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(bEvent.ProCoSysGuid, _historyItemAddedToRepository.Guid);
         Assert.AreEqual(bEvent.PunchItemGuid, _historyItemAddedToRepository.EventForGuid);
         Assert.IsNull(_historyItemAddedToRepository.EventForParentGuid);
@@ -73,7 +73,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Description' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Description' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), "Description", bEvent.OldValueLong, bEvent.NewValueLong);
     }
@@ -91,7 +91,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Action by person' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Action by person' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), "Action by person", bEvent.OldValue, bEvent.NewValue);
     }
@@ -109,7 +109,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Cleared' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Cleared' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), "Cleared", bEvent.OldValue, bEvent.NewValue);
     }
@@ -127,7 +127,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Verified' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Verified' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), "Verified", bEvent.OldValue, bEvent.NewValue);
     }
@@ -145,7 +145,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Rejected' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Rejected' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), "Rejected", bEvent.OldValue, bEvent.NewValue);
     }
@@ -163,10 +163,10 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Clearing by org.' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Clearing by org.' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
-        AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0), 
-            "Clearing by org.", 
+        AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
+            "Clearing by org.",
             $"{bEvent.OldValue}, {bEvent.OldValueLong}",
             $"{bEvent.NewValue}, {bEvent.NewValueLong}");
     }
@@ -184,10 +184,10 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Raised by org.' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Raised by org.' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
-            "Raised by org.", 
+            "Raised by org.",
             $"{bEvent.OldValue}, {bEvent.OldValueLong}",
             $"{bEvent.NewValue}, {bEvent.NewValueLong}");
     }
@@ -205,7 +205,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Punch sorting' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Punch sorting' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Punch sorting",
@@ -226,7 +226,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Punch type' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Punch type' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Punch type",
@@ -247,7 +247,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Punch priority' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Punch priority' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Punch priority",
@@ -268,7 +268,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Category' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Category' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Category", bEvent.OldValue, bEvent.NewValue);
@@ -287,7 +287,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Document no' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Document no' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Document no", bEvent.OldValue, bEvent.NewValue);
@@ -306,7 +306,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Due date' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Due date' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Due date", bEvent.OldValue, bEvent.NewValue);
@@ -325,7 +325,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Estimate' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Estimate' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Estimate", bEvent.OldValue, bEvent.NewValue);
@@ -344,7 +344,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'Original WO no' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'Original WO no' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "Original WO no", bEvent.OldValue, bEvent.NewValue);
@@ -363,7 +363,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'WO no' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'WO no' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "WO no", bEvent.OldValue, bEvent.NewValue);
@@ -382,7 +382,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'SWCR no' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'SWCR no' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "SWCR no", bEvent.OldValue, bEvent.NewValue);
@@ -448,7 +448,7 @@ public class PunchItemChangeHistoryEventConsumerTests
 
         //Assert
         Assert.IsNotNull(_historyItemAddedToRepository);
-        Assert.AreEqual("'WO no' change history imported form old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
+        Assert.AreEqual("'WO no' change history imported from old ProCoSys punch item", _historyItemAddedToRepository.EventDisplayName);
         Assert.AreEqual(1, _historyItemAddedToRepository.Properties.Count);
         AssertProperty(_historyItemAddedToRepository.Properties.ElementAt(0),
             "WO no", null, null);

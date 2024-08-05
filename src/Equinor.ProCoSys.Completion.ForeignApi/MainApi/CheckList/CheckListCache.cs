@@ -40,7 +40,7 @@ public class CheckListCache(
 
         try
         {
-            return JsonSerializer.Deserialize<ProCoSys4CheckList?>(cachedChecklist);
+            return JsonSerializer.Deserialize<ProCoSys4CheckList?>(cachedChecklist, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (Exception ex)
         {

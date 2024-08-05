@@ -13,12 +13,12 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 public class AttachmentDeletedConsumer(IAzureBlobService azureBlobService
 ,IOptionsSnapshot<BlobStorageOptions> blobStorageOptions) : 
     IConsumer<AttachmentDeletedByPunchItemIntegrationEvent>,
-    IConsumer<IAttachmentDeletedV1>
+    IConsumer<AttachmentDeletedIntegrationEvent>
 {
     public async Task Consume(ConsumeContext<AttachmentDeletedByPunchItemIntegrationEvent> context) =>
         await DeleteBlobAsync(context.Message.FullBlobPath, context.CancellationToken);
     
-    public async Task Consume(ConsumeContext<IAttachmentDeletedV1> context) 
+    public async Task Consume(ConsumeContext<AttachmentDeletedIntegrationEvent> context) 
         => await DeleteBlobAsync(context.Message.FullBlobPath, context.CancellationToken);
     
     private async Task DeleteBlobAsync(string blobPath, CancellationToken cancellationToken) =>

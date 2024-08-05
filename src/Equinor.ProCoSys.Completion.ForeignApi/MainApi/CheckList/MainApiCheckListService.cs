@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authentication;
@@ -9,7 +10,6 @@ using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
@@ -59,7 +59,7 @@ public class MainApiCheckListService(
                       $"?plantId={plant}" +
                       $"&api-version={_apiVersion}";
 
-            var requestBody = JsonConvert.SerializeObject(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
+            var requestBody = JsonSerializer.Serialize(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
             var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
             await mainApiClient.PostAsync(url, content, cancellationToken);
         }
