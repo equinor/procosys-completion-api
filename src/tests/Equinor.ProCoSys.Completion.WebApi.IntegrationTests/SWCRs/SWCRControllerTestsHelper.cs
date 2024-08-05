@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -32,6 +32,6 @@ public class SWCRControllerTestsHelper
         }
 
         var result = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<SWCRDto>>(result);
+        return JsonSerializer.Deserialize<List<SWCRDto>>(result, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 }

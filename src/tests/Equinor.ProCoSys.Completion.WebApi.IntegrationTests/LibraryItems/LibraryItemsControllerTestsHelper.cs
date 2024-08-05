@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.LibraryItems;
 
@@ -34,6 +34,6 @@ public static class LibraryItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<LibraryItemDto>>(content);
+        return JsonSerializer.Deserialize<List<LibraryItemDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 }

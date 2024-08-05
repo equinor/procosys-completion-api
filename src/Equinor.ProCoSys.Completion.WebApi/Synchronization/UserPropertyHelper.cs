@@ -1,5 +1,4 @@
 ﻿using System;
-// todo consider go through codebase and use System.Text.Json instead of Newtonsoft.Json
 using System.Text.Json;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;

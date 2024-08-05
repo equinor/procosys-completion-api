@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Documents;
 
@@ -32,7 +32,7 @@ public class DocumentControllerTestsHelper
         }
 
         var result = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<List<DocumentDto>>(result);
+        return JsonSerializer.Deserialize<List<DocumentDto>>(result, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 }
 
