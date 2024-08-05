@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 
@@ -60,7 +60,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
             return;
         }
 
-        var requestBody = JsonConvert.SerializeObject(syncEvent);
+        var requestBody = JsonSerializer.Serialize(syncEvent);
         var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         var request = new HttpRequestMessage(new HttpMethod(method), endpoint) { Content = content };
         _logger.LogInformation("Sending a request for a {method} method for an object of type {objectName}", method, objectName);
@@ -73,7 +73,7 @@ public class SyncToPCS4Service : ISyncToPCS4Service
 
         if (!result.IsSuccessStatusCode)
         {
-            var responseContent = await result.Content.ReadAsStringAsync();
+            var responseContent = await result.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogError("Error occurred when trying to execute a {Method} sync statement to PCS4 for data of type {SourceObjectName}. Status code: {StatusCode}, Response: {ResponseContent}", method, sourceObjectName, result.StatusCode, responseContent);
             throw new Exception($"Error occurred when trying to execute a ({method}) sync statement to PCS4 for data of type ({sourceObjectName}). Status code: {result.StatusCode}, Response: {responseContent}");
         }

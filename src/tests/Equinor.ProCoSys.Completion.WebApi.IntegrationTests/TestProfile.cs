@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 using AuthPerson = Equinor.ProCoSys.Auth.Person.ProCoSysPerson;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
@@ -38,7 +38,7 @@ public class TestProfile
     /// <returns>Serialized, encoded string ready for authorization header</returns>
     public string CreateBearerToken()
     {
-        var serialized = JsonConvert.SerializeObject(this);
+        var serialized = JsonSerializer.Serialize(this);
         var tokenBytes = Encoding.UTF8.GetBytes(serialized);
         var tokenString = Convert.ToBase64String(tokenBytes);
 
