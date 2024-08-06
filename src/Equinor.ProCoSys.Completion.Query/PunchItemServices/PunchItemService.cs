@@ -38,12 +38,16 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         .Include(p => p.SWCR)
         .Include(p => p.Document);
 
-    public async Task<PunchItemDetailsDto> GetByGuid(Guid punchItemGuid, CancellationToken cancellationToken)
+    public async Task<PunchItemDetailsDto?> GetByGuid(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var punchItem = await PunchItemsQueryable
-                            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByGuid)}")
-                            .FirstOrDefaultAsync(pi => pi.Guid == punchItemGuid, cancellationToken)
-                        ?? throw new EntityNotFoundException<PunchItem>(punchItemGuid);
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByGuid)}")
+            .FirstOrDefaultAsync(pi => pi.Guid == punchItemGuid, cancellationToken);
+        
+        if (punchItem is null)
+        {
+            return null;
+        }
 
         var attCount = await context.QuerySet<Attachment>()
             .TagWith($"{nameof(PunchItemService)}.{nameof(GetByGuid)}-GetAttachmentCounts")
