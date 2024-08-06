@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,14 +6,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.7" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.4" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.61.3" />
     <PackageReference Include="Microsoft.Identity.Web.TokenAcquisition" Version="2.19.1" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
 </Project>

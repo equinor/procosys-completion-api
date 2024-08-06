@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -10,17 +9,14 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.7" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.0.1" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.19" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />
@@ -57,5 +53,9 @@
       <Link>.dockerignore</Link>
     </Content>
   </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>
