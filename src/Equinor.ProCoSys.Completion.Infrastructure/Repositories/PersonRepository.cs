@@ -54,13 +54,7 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
             throw new Exception($"Illegal to get or create person with empty oid {oid}");
         }
 
-        Person? existingPerson = null;
-        try
-        {
-            existingPerson = await GetAsync(oid, cancellationToken);
-        } catch (EntityNotFoundException<Person>)
-        { }
-
+        var existingPerson = await GetOrNullAsync(oid, cancellationToken);
         if (existingPerson is not null)
         {
             return existingPerson;
