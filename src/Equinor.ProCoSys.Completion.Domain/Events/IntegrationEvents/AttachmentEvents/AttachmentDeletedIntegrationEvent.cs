@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 
-public record AttachmentDeletedIntegrationEvent
-(
+[method: JsonConstructor]
+public record AttachmentDeletedIntegrationEvent(
     string Plant,
     Guid Guid,
     Guid ParentGuid,
     string FullBlobPath,
     User DeletedBy,
-    DateTime DeletedAtUtc) : IAttachmentDeletedV1
+    DateTime DeletedAtUtc)
+    : IAttachmentDeletedV1
 {
     public AttachmentDeletedIntegrationEvent(Attachment attachment, string plant) : this(
         plant,
