@@ -24,8 +24,8 @@ public class PersonValidatorMiddleware
         if (currentUserProvider.HasCurrentUser)
         {
             var oid = currentUserProvider.GetCurrentUserOid();
-            var userHasPersonClaim = context.User.Claims.PersonExistsLocally(oid.ToString());
-            if (!userHasPersonClaim && !await localPersonRepository.ExistsAsync(oid) &&
+            var personExistsLocally = context.User.Claims.PersonExistsLocally(oid.ToString());
+            if (!personExistsLocally && !await localPersonRepository.ExistsAsync(oid) &&
                 !await personCache.ExistsAsync(oid))
             {
                 await context.WriteForbidden(logger);
