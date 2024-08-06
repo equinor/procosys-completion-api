@@ -60,10 +60,11 @@ public sealed class DistributedCacheManager(IDistributedCache distributedCache) 
     private static object? FetchObject<T>(Func<T> fetch)
     {
         var entryType = typeof(T);
-
-        object? value = fetch();
+        object? value;
+        
         if (!IsTask(entryType))
         {
+            value = fetch();
             return value;
         }
 
