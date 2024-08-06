@@ -35,9 +35,11 @@ using Equinor.ProCoSys.Completion.Domain.Authentication;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
+using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
@@ -64,6 +66,7 @@ public static class ApplicationModule
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
         services.Configure<GraphOptions>(configuration.GetSection("Graph"));
+        services.Configure<TieImportOptions>(configuration.GetSection("TieImport"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -89,6 +92,7 @@ public static class ApplicationModule
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
         services.AddScoped<IAccessChecker, AccessChecker>();
+        services.AddScoped<ITagService, TagService>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
@@ -122,6 +126,7 @@ public static class ApplicationModule
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
         services.AddScoped<IPunchItemService, PunchItemService>();
         services.AddScoped<ICacheManager, DistributedCacheManager>();
+        services.AddScoped<IImportDataFetcher, ImportDataFetcher>();
 
         services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
         services.AddScoped<IMainApiAuthenticator, DistributedCacheMainApiAuthenticator>();
