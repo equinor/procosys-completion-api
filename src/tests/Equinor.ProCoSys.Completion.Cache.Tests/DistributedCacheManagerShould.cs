@@ -15,60 +15,60 @@ public class DistributedCacheManagerShould
     );
 
     [TestMethod]
-    public void CacheEntry()
+    public void GetOrCreate_ShouldCacheEntry()
     {
-        var manager = new DistributedCacheManager(new MemoryDistributedCache(_options));
+        var dut = new DistributedCacheManager(new MemoryDistributedCache(_options));
         var key = "test";
         var item = "foo";
 
-        manager.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
-        var results = manager.Get<string>(key);
+        dut.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
+        var results = dut.Get<string>(key);
 
         Assert.AreEqual(item, results);
     }
 
     [TestMethod]
-    public void ReturnNullOnNotFound()
+    public void GetOrCreate_ShouldReturnNull_WhenKeyNotFound()
     {
-        var manager = new DistributedCacheManager(new MemoryDistributedCache(_options));
+        var dut = new DistributedCacheManager(new MemoryDistributedCache(_options));
         var key = "test";
         var item = "foo";
 
-        manager.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
-        var results = manager.Get<string>("wrong key");
+        dut.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
+        var results = dut.Get<string>("wrong key");
 
         Assert.IsNull(results);
     }
 
     [TestMethod]
-    public void RemoveEntry()
+    public void RemoveEntry_ShouldRemoveEntry()
     {
-        var manager = new DistributedCacheManager(new MemoryDistributedCache(_options));
+        var dut = new DistributedCacheManager(new MemoryDistributedCache(_options));
         var key = "test";
         var item = "foo";
 
-        manager.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
-        var results = manager.Get<string>(key);
-        manager.Remove(key);
-        var removedResults = manager.Get<string>(key);
+        dut.GetOrCreate(key, () => item, CacheDuration.Minutes, 1);
+        var results = dut.Get<string>(key);
+        dut.Remove(key);
+        var removedResults = dut.Get<string>(key);
 
         Assert.AreEqual(item, results);
         Assert.IsNull(removedResults);
     }
 
     [TestMethod]
-    public void CacheEntryTask()
+    public void GetOrCreate_ShouldCacheEntry_WhenActionIsTask()
     {
-        var manager = new DistributedCacheManager(new MemoryDistributedCache(_options));
+        var dut = new DistributedCacheManager(new MemoryDistributedCache(_options));
         var key = "test";
         var item = "foo";
 
-        manager.GetOrCreate(key, async () =>
+        dut.GetOrCreate(key, async () =>
         {
             await Task.Delay(1);
             return item;
         }, CacheDuration.Minutes, 1);
-        var results = manager.Get<Task<string>>(key);
+        var results = dut.Get<Task<string>>(key);
 
         Assert.AreEqual(item, results.Result);
     }

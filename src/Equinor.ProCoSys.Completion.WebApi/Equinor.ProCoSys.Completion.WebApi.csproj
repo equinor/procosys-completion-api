@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.7" />
-    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.19" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.0.0" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.21" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />
     <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
