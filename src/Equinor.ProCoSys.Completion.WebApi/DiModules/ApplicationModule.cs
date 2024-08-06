@@ -31,14 +31,11 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Domain.Authentication;
 using Equinor.ProCoSys.Completion.Domain.Validators;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
@@ -59,7 +56,7 @@ public static class ApplicationModule
         services.Configure<ApplicationOptions>(configuration.GetSection("Application"));
         services.Configure<MainApiOptions>(configuration.GetSection("MainApi"));
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
-        services.Configure<AzureAdOptions>(configuration.GetSection("AzureAd"));
+        services.Configure<MainApiAuthenticatorOptions>(configuration.GetSection("AzureAd"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
@@ -123,9 +120,6 @@ public static class ApplicationModule
         services.AddScoped<IPunchItemService, PunchItemService>();
         services.AddScoped<ICacheManager, DistributedCacheManager>();
 
-        services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
-        services.AddScoped<IMainApiAuthenticator, DistributedCacheMainApiAuthenticator>();
-
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();
@@ -155,12 +149,12 @@ public static class ApplicationModule
         services.AddTransient<SyncBearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
-        services.AddHttpClient("SyncHttpClient")
-        .ConfigureHttpClient((serviceProvider, client) =>
-        {
-            var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
-            client.BaseAddress = new Uri(options.Endpoint);
-        })
-        .AddHttpMessageHandler<SyncBearerTokenHandler>();
+        services.AddHttpClient(SyncToPCS4Service.ClientName)
+            .ConfigureHttpClient((serviceProvider, client) =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
+                client.BaseAddress = new Uri(options.Endpoint);
+            })
+            .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }
 }
