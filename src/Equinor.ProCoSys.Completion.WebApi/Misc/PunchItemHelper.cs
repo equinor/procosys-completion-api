@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -8,28 +9,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Misc;
 
-public class PunchItemHelper : IPunchItemHelper
+public class PunchItemHelper(IReadOnlyContext context) : IPunchItemHelper
 {
-    private readonly IReadOnlyContext _context;
-
-    public PunchItemHelper(IReadOnlyContext context) => _context = context;
-
-    public async Task<Guid?> GetProjectGuidForPunchItemAsync(Guid punchItemGuid)
+    public async Task<Guid?> GetProjectGuidForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var project = await (from p in _context.QuerySet<Project>()
-            join punchItem in _context.QuerySet<PunchItem>() on p.Id equals punchItem.ProjectId
+        var projectGuid = await (from p in context.QuerySet<Project>()
+                .TagWith($"{nameof(PunchItemHelper)}.{nameof(GetProjectGuidForPunchItemAsync)}")
+            join punchItem in context.QuerySet<PunchItem>() on p.Id equals punchItem.ProjectId
             where punchItem.Guid == punchItemGuid
-            select p).SingleOrDefaultAsync();
+            select p.Guid).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-        return project?.Guid;
+        return projectGuid;
     }
 
-    public async Task<Guid?> GetCheckListGuidForPunchItemAsync(Guid punchItemGuid)
+    public async Task<Guid?> GetCheckListGuidForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var punchItem = await (from pi in _context.QuerySet<PunchItem>()
+        var punchItemCheckListGuid = await (from pi in context.QuerySet<PunchItem>()
+                .TagWith($"{nameof(PunchItemHelper)}.{nameof(GetCheckListGuidForPunchItemAsync)}")
             where pi.Guid == punchItemGuid
-            select pi).SingleOrDefaultAsync();
+            select pi.CheckListGuid).SingleOrDefaultAsync();
 
-        return punchItem?.CheckListGuid;
+        return punchItemCheckListGuid;
     }
 }

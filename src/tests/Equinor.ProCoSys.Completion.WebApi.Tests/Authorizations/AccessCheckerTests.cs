@@ -116,7 +116,7 @@ public class AccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
+        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None).Returns(_checkListGuid);
         _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
 
@@ -132,7 +132,7 @@ public class AccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
+        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None).Returns(_checkListGuid);
         _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
         _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
 
@@ -148,7 +148,7 @@ public class AccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(null as Guid?);
+        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None).Returns(null as Guid?);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(
@@ -160,7 +160,7 @@ public class AccessCheckerTests
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
+        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None).Returns(_checkListGuid);
         _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(null as ProCoSys4CheckList);
 
         // Act and Assert

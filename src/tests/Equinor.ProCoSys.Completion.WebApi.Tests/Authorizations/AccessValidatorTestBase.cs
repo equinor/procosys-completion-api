@@ -50,11 +50,11 @@ public class AccessValidatorTestBase
             .Returns(true);
 
         var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
+        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
             .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
+        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent, Arg.Any<CancellationToken>())
             .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject)
+        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject, Arg.Any<CancellationToken>())
             .Returns(ProjectGuidWithoutAccess);
 
         _loggerMock = Substitute.For<ILogger<AccessValidator>>();
