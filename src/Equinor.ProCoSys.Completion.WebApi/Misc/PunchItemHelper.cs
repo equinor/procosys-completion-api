@@ -17,9 +17,9 @@ public class PunchItemHelper(IReadOnlyContext context) : IPunchItemHelper
                 .TagWith($"{nameof(PunchItemHelper)}.{nameof(GetProjectGuidForPunchItemAsync)}")
             join punchItem in context.QuerySet<PunchItem>() on p.Id equals punchItem.ProjectId
             where punchItem.Guid == punchItemGuid
-            select p.Guid).SingleOrDefaultAsync(cancellationToken: cancellationToken);
+            select p.Guid).SingleOrDefaultAsync(cancellationToken);
 
-        return projectGuid;
+        return projectGuid == default ? null : projectGuid;
     }
 
     public async Task<Guid?> GetCheckListGuidForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
@@ -27,8 +27,8 @@ public class PunchItemHelper(IReadOnlyContext context) : IPunchItemHelper
         var punchItemCheckListGuid = await (from pi in context.QuerySet<PunchItem>()
                 .TagWith($"{nameof(PunchItemHelper)}.{nameof(GetCheckListGuidForPunchItemAsync)}")
             where pi.Guid == punchItemGuid
-            select pi.CheckListGuid).SingleOrDefaultAsync();
+            select pi.CheckListGuid).SingleOrDefaultAsync(cancellationToken);
 
-        return punchItemCheckListGuid;
+        return punchItemCheckListGuid == default ? null : punchItemCheckListGuid;
     }
 }
