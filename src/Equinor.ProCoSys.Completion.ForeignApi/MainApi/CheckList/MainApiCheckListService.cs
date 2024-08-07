@@ -29,7 +29,9 @@ public class MainApiCheckListService(
                   $"&proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
+        // Execute as application. The recalc endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
     }
 
     public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
