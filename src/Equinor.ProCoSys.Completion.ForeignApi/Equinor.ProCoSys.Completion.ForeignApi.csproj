@@ -1,18 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.0.0" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.0" />
     <PackageReference Include="Microsoft.Identity.Web.TokenAcquisition" Version="2.19.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
   </ItemGroup>
-
 </Project>

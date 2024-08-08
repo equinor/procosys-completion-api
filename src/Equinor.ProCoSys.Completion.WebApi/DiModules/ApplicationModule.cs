@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.TemplateTransforming;
-using Equinor.ProCoSys.Completion.Cache;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
@@ -118,7 +117,6 @@ public static class ApplicationModule
         services.AddScoped<Query.Attachments.IAttachmentService, Query.Attachments.AttachmentService>();
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
         services.AddScoped<IPunchItemService, PunchItemService>();
-        services.AddScoped<ICacheManager, DistributedCacheManager>();
 
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();

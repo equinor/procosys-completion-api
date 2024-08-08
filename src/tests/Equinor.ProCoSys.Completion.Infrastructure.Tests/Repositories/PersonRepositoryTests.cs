@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Auth.Person;
@@ -87,7 +88,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
     {
         // Arrange
         var dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock, _personCacheMock);
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(_nonExistingPersonOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         // Act
@@ -108,7 +109,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
     {
         // Arrange
         var dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock, _personCacheMock);
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(_nonExistingPersonOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         // Act
@@ -150,7 +151,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
     {
         // Arrange
         var dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock, _personCacheMock);
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(_nonExistingPersonOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         // Act
@@ -175,7 +176,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
     {
         // Arrange
         var dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock, _personCacheMock);
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(_nonExistingPersonOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         // Act
@@ -200,7 +201,7 @@ public class PersonRepositoryTests : EntityWithGuidRepositoryTestBase<Person>
     {
         // Arrange
         var dut = new PersonRepository(_contextHelper.ContextMock, _userProviderMock, _personCacheMock);
-        _personCacheMock.GetAsync(_nonExistingPersonOid)
+        _personCacheMock.GetAsync(_nonExistingPersonOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         // Act

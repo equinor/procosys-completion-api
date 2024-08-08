@@ -38,72 +38,71 @@ public class CacheController : ControllerBase
     }
 
     [HttpPut("Clear")]
-    public void Clear(
+    public async Task Clear(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant)
+        string plant,
+        CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-        _permissionCache.ClearAll(plant, currentUserOid);
+        await _permissionCache.ClearAllAsync(plant, currentUserOid, cancellationToken);
     }
 
     [HttpGet("PermissionsFromCache")]
     public async Task<IList<string>> GetPermissions(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)] [Required]
-        string plant)
+        string plant,
+        CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-        var permissions = await _permissionCache.GetPermissionsForUserAsync(plant, currentUserOid);
+        var permissions = await _permissionCache.GetPermissionsForUserAsync(plant, currentUserOid, cancellationToken);
         return permissions;
     }
 
     [HttpGet("PermissionsFromMain")]
     public async Task<IList<string>> GetPermissionsFromMain(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)] [Required]
-        string plant)
+        string plant,
+        CancellationToken cancellationToken)
     {
-        var permissions = await _permissionApiService.GetPermissionsForCurrentUserAsync(plant);
+        var permissions = await _permissionApiService.GetPermissionsForCurrentUserAsync(plant, cancellationToken);
         return permissions;
     }
 
     [HttpGet("ProjectsFromCache")]
     public async Task<IList<AccessableProject>> GetProjects(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)] [Required]
-        string plant)
+        string plant,
+        CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-        var projects = await _permissionCache.GetProjectsForUserAsync(plant, currentUserOid);
+        var projects = await _permissionCache.GetProjectsForUserAsync(plant, currentUserOid, cancellationToken);
         return projects;
     }
 
     [HttpGet("PlantsFromCache")]
-    public async Task<IList<string>> GetPlantsFromCache()
+    public async Task<IList<string>> GetPlantsFromCache(CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-        var plants = await _permissionCache.GetPlantIdsWithAccessForUserAsync(currentUserOid);
+        var plants = await _permissionCache.GetPlantIdsWithAccessForUserAsync(currentUserOid, cancellationToken);
         return plants;
     }
 
     [HttpGet("AllPlantsFromMain")]
-    public async Task<IList<AccessablePlant>> GetPlantsFromMain()
+    public async Task<IList<AccessablePlant>> GetPlantsFromMain(CancellationToken cancellationToken)
     {
         var currentUserOid = _currentUserProvider.GetCurrentUserOid();
-        var plants = await _permissionApiService.GetAllPlantsForUserAsync(currentUserOid);
+        var plants = await _permissionApiService.GetAllPlantsForUserAsync(currentUserOid, cancellationToken);
         return plants;
     }
 
     [HttpGet("PrefetchCheckListByGuid/{checkListGuid}")]
     public async Task<ActionResult> PrefetchCheckListByGuid(
-        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
-        [Required]
-        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant,
         [FromRoute] Guid checkListGuid,
-        CancellationToken cancellationToken
-    )
+        CancellationToken cancellationToken)
     {
-        await _mediator.Send(new PrefetchCheckListQuery(checkListGuid, plant), cancellationToken);
+        await _mediator.Send(new PrefetchCheckListQuery(checkListGuid), cancellationToken);
         return Ok();
     }
 }

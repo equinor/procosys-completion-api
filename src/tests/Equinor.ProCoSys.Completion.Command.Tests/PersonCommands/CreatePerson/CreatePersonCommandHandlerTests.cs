@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Auth.Person;
@@ -62,7 +63,7 @@ public class CreatePersonCommandHandlerTests : TestsBase
         };
         _personCacheMock = Substitute.For<IPersonCache>();
         _personCacheMock
-            .GetAsync(_azureOid)
+            .GetAsync(_azureOid, Arg.Any<CancellationToken>())
             .Returns(_proCoSysPerson);
 
         _optionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -137,14 +138,14 @@ public class CreatePersonCommandHandlerTests : TestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        await  _unitOfWorkMock.Received(1).SaveChangesAsync(default);
+        await  _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
 
     [TestMethod]
     public async Task HandlingCommand_ShouldThrowException_WhenPersonNotInCache()
     {
         // Arrange
-        _personCacheMock.GetAsync(_azureOid).Returns((ProCoSysPerson)null);
+        _personCacheMock.GetAsync(_azureOid, Arg.Any<CancellationToken>()).Returns((ProCoSysPerson)null);
 
         // Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(() => _dut.Handle(_command, default));

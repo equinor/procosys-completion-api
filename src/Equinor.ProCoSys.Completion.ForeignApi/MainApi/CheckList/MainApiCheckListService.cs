@@ -21,17 +21,16 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid,
-        CancellationToken cancellationToken)
+    // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
         var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                  $"?plantId={plant}" +
-                  $"&proCoSysGuid={checkListGuid:N}" +
+                  $"?proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
         // Execute as application. The recalc endpoint in Main Api requires
         // a special role "Checklist.RecalcStatus", which the Azure application registration has
-        return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
+        return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
     }
 
     public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
@@ -59,6 +58,6 @@ public class MainApiCheckListService(
                   $"&proCoSysGuid={punchItemGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, null, cancellationToken);
+        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
     }
 }
