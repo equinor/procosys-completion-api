@@ -33,10 +33,10 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
         _punchItemDetails = PunchItemDetailsDtoMock(_raisedByOrg, _clearingByOrg);
 
         _punchItemServiceMock = Substitute.For<IPunchItemService>();
-        _punchItemServiceMock.GetByCheckListGuid(_punchItemDetails.CheckListGuid, default)
+        _punchItemServiceMock.GetByCheckListGuidAsync(_punchItemDetails.CheckListGuid, PunchListStatusFilter.All, default)
             .Returns(new List<PunchItemDetailsDto>{ _punchItemDetails });
 
-        _query = new GetPunchItemsByCheckListGuidQuery(_punchItemDetails.CheckListGuid);
+        _query = new GetPunchItemsByCheckListGuidQuery(_punchItemDetails.CheckListGuid, PunchListStatusFilter.All);
         _dut = new GetPunchItemsByCheckListGuidQueryHandler(_punchItemServiceMock);
     }
 

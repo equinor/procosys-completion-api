@@ -118,6 +118,7 @@ public class PunchItemsController : ControllerBase
     /// Get all PunchItems by CheckList (Guid)
     /// </summary>
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="statusFilter">All, NotCleared, NotVerified</param>
     /// <param name="cancellationToken"></param>
     /// <param name="checkListGuid">Guid of checklist</param>
     /// <returns>List of PunchItems (or empty list)</returns>
@@ -129,10 +130,11 @@ public class PunchItemsController : ControllerBase
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
+        PunchListStatusFilter statusFilter,
         CancellationToken cancellationToken,
         [Required][FromRoute] Guid checkListGuid)
     {
-        var result = await _mediator.Send(new GetPunchItemsByCheckListGuidQuery(checkListGuid), cancellationToken);
+        var result = await _mediator.Send(new GetPunchItemsByCheckListGuidQuery(checkListGuid, statusFilter), cancellationToken);
         return this.FromResult(result);
     }
 

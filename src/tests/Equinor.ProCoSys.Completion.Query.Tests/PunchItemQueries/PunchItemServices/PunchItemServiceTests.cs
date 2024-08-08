@@ -136,7 +136,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var result = await dut.GetByCheckListGuid(_checkListGuid, default);
+        var result = await dut.GetByCheckListGuidAsync(_checkListGuid, PunchListStatusFilter.All, default);
 
         // Assert
         var dtos = result.ToList();
