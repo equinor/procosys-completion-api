@@ -44,7 +44,7 @@ public class AccessChecker : IAccessChecker
             return true;
         }
 
-        var checkListGuid = await _punchItemHelper.GetCheckListGuidForPunchItemAsync(punchItemGuid);
+        var checkListGuid = await _punchItemHelper.GetCheckListGuidForPunchItemAsync(punchItemGuid, cancellationToken);
 
         if (!checkListGuid.HasValue)
         {

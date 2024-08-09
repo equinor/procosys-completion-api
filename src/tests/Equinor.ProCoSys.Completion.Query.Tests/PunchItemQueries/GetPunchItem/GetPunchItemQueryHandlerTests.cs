@@ -49,6 +49,19 @@ public class GetPunchItemQueryHandlerTests
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(punchItemDetails, _punchItemDetails);
     }
+    
+    [TestMethod]
+    public async Task Handle_ShouldReturnNotFoundOnNonExistentPunch()
+    {
+        // Act
+        _punchItemServiceMock.GetByGuid(_punchItemDetails.Guid, default).Returns((PunchItemDetailsDto) null);
+        var result = await _dut.Handle(_query, default);
+        var punchItemDetails = result.Data;
+
+        // Assert
+        Assert.AreEqual(ResultType.NotFound, result.ResultType);
+        Assert.IsNull(punchItemDetails);
+    }
 
     private PunchItemDetailsDto PunchItemDetailsDtoMock(LibraryItemDto raisedByOrg, LibraryItemDto clearedByOrg) =>
         new(

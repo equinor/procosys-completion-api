@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
@@ -53,10 +54,10 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
             throw new Exception($"Illegal to get or create person with empty oid {oid}");
         }
 
-        var personExists = await ExistsAsync(oid, cancellationToken);
-        if (personExists)
+        var existingPerson = await GetOrNullAsync(oid, cancellationToken);
+        if (existingPerson is not null)
         {
-            return await GetAsync(oid, cancellationToken);
+            return existingPerson;
         }
 
         var pcsPerson = await _personCache.GetAsync(oid, cancellationToken: cancellationToken);

@@ -16,7 +16,7 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.0" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.2" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.21" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />

@@ -28,11 +28,9 @@ public class PunchItemValidator : IPunchItemValidator
     }
 
     public async Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var punchItem = await GetPunchItemAsync(punchItemGuid, cancellationToken);
-
-        return punchItem is not null;
-    }
+        => await _context.QuerySet<PunchItem>()
+            .TagWith($"{nameof(PunchItemValidator)}.{nameof(ExistsAsync)}")
+            .AnyAsync(p => p.Guid == punchItemGuid, cancellationToken);
 
     public async Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
@@ -49,9 +47,10 @@ public class PunchItemValidator : IPunchItemValidator
     public async Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var project = await (from pi in _context.QuerySet<PunchItem>()
-                             join proj in _context.QuerySet<Project>() on pi.ProjectId equals proj.Id
-                             where pi.Guid == punchItemGuid
-                             select proj).SingleOrDefaultAsync(cancellationToken);
+                .TagWith($"{nameof(PunchItemValidator)}.{nameof(ProjectOwningPunchItemIsClosedAsync)}")
+            join proj in _context.QuerySet<Project>() on pi.ProjectId equals proj.Id
+            where pi.Guid == punchItemGuid
+            select proj).SingleOrDefaultAsync(cancellationToken);
 
         return project is not null && project.IsClosed;
     }
@@ -86,11 +85,14 @@ public class PunchItemValidator : IPunchItemValidator
 
     private async Task<PunchItem?> GetPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
+                .TagWith($"{nameof(PunchItemValidator)}.{nameof(GetPunchItemAsync)}")
             where pi.Guid == punchItemGuid
             select pi).SingleOrDefaultAsync(cancellationToken);
 
-    private async Task<PunchItem?> GetPunchItemWithVerifiedByAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    private async Task<PunchItem?> GetPunchItemWithVerifiedByAsync(Guid punchItemGuid,
+        CancellationToken cancellationToken)
         => await (from pi in _context.QuerySet<PunchItem>()
+                .TagWith($"{nameof(PunchItemValidator)}.{nameof(GetPunchItemWithVerifiedByAsync)}")
                 .Include(p => p.VerifiedBy)
             where pi.Guid == punchItemGuid
             select pi).SingleOrDefaultAsync(cancellationToken);

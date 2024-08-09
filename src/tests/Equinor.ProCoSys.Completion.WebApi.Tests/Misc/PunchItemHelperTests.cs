@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -44,7 +45,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
         var dut = new PunchItemHelper(context);
 
         // Act
-        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(_punchItemGuid);
+        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_projectA.Guid, projectGuid);
@@ -58,7 +59,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
         var dut = new PunchItemHelper(context);
 
         // Act
-        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(Guid.Empty);
+        var projectGuid = await dut.GetProjectGuidForPunchItemAsync(Guid.Empty, CancellationToken.None);
 
         // Assert
         Assert.IsNull(projectGuid);
@@ -72,7 +73,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
         var dut = new PunchItemHelper(context);
 
         // Act
-        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(_punchItemGuid);
+        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_checkListGuid, checkListGuid);
@@ -86,7 +87,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
         var dut = new PunchItemHelper(context);
 
         // Act
-        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(Guid.Empty);
+        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(Guid.Empty, CancellationToken.None);
 
         // Assert
         Assert.IsNull(checkListGuid);

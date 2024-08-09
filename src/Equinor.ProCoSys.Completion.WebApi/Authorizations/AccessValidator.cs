@@ -80,7 +80,7 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsPunchItemCommand punchItemCommand)
         {
-            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemCommand.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemCommand.PunchItemGuid, userOid, cancellationToken))
             {
                 return false;
             }
@@ -95,7 +95,7 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsPunchItemQuery punchItemQuery)
         {
-            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemQuery.PunchItemGuid, userOid))
+            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemQuery.PunchItemGuid, userOid, cancellationToken))
             {
                 return false;
             }
@@ -114,9 +114,10 @@ public class AccessValidator : IAccessValidator
         return true;
     }
 
-    private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid)
+    private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid,
+        CancellationToken cancellationToken)
     {
-        var projectGuid = await _punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid);
+        var projectGuid = await _punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid, cancellationToken);
         if (projectGuid.HasValue)
         {
             var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectGuid.Value);
