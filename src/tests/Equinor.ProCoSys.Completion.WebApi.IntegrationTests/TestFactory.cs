@@ -289,6 +289,17 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         
     private void SetupPermissionMock(string plant, ITestUser testUser)
     {
+        _permissionApiServiceMock.GetUserPlantPermissionDataAsync(Guid.Parse(testUser.Profile.Oid), plant, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new UserPlantPermissionData(
+                Guid.NewGuid(),
+                plant,
+                testUser.AccessablePlants.ToArray(),
+                testUser.Permissions.ToArray(),
+                testUser.AccessableProjects.ToArray(),
+
+                testUser.Restrictions.ToArray()
+                )));
+        
         _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.Permissions));
                         
