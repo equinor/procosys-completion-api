@@ -16,7 +16,7 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.0.1" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.1" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.21" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />
@@ -38,7 +38,6 @@
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj" />

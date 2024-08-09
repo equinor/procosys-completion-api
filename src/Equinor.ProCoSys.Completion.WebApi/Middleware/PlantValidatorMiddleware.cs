@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
@@ -23,7 +24,7 @@ public class PlantValidatorMiddleware
         var plantId = plantProvider.Plant;
         if (context.User.Identity is not null && context.User.Identity.IsAuthenticated && plantId is not null)
         {
-            if (!await permissionCache.IsAValidPlantForCurrentUserAsync(plantId))
+            if (!await permissionCache.IsAValidPlantForCurrentUserAsync(plantId, CancellationToken.None))
             {
                 var errors = new Dictionary<string, string[]>
                 {

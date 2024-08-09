@@ -400,3 +400,4 @@ FodyWeavers.xsd
 /src/.env
 /src/.idea/*
 
+/src/switcher.json

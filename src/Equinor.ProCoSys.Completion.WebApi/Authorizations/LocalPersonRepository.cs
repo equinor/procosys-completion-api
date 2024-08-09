@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Person;
@@ -17,13 +18,13 @@ public class LocalPersonRepository : ILocalPersonRepository
     public LocalPersonRepository(IReadOnlyContext context) => _context = context;
 
     // Should be safe to use AnyAsync since we query for an userOid and there is unique constraint on this Guid
-    public async Task<bool> ExistsAsync(Guid userOid)
+    public async Task<bool> ExistsAsync(Guid userOid, CancellationToken cancellationToken)
         => await (from person in _context.QuerySet<Person>().TagWith("LocalPersonRepository.ExistsAsync")
             where person.Guid == userOid
-            select 1).AnyAsync();
+            select 1).AnyAsync(cancellationToken);
 
     // Should be safe to use AnyAsync since we query for an userOid and there is unique constraint on this Guid
-    public async Task<ProCoSysPerson?> GetAsync(Guid userOid)
+    public async Task<ProCoSysPerson?> GetAsync(Guid userOid, CancellationToken cancellationToken)
         => await (from person in _context.QuerySet<Person>().TagWith("LocalPersonRepository.GetAsync")
             where person.Guid == userOid
             select new ProCoSysPerson
@@ -33,5 +34,5 @@ public class LocalPersonRepository : ILocalPersonRepository
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Super = person.Superuser
-            }).SingleOrDefaultAsync();
+            }).SingleOrDefaultAsync(cancellationToken);
 }
