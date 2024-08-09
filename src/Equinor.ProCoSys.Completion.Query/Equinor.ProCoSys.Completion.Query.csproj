@@ -1,21 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.4" />
     <PackageReference Include="FluentValidation" Version="11.9.1" />
     <PackageReference Include="ServiceResult" Version="1.0.1" />
-    <PackageReference Include="Equinor.ProCoSys.BlobStorage" Version="2.0.4" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>
