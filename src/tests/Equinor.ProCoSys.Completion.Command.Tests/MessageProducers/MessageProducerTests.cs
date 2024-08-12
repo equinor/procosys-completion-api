@@ -119,6 +119,10 @@ public class MessageProducerTests
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => _dut.SendHistoryAsync(history, default));
     }
 
-    record TestMessage(Guid Guid) : IIntegrationEvent;
+    record TestMessage(Guid Guid) : IIntegrationEvent
+    {
+        public Guid MessageId { get; }  = NewId.NextGuid();
+    }
+
     record TestHistoryMessage(string DisplayName, Guid? ParentGuid, User EventBy, DateTime EventAtUtc) : IHistoryItem;
 }

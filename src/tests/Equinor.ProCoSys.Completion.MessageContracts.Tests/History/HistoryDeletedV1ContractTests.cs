@@ -18,7 +18,8 @@ public class HistoryDeletedV1ContractTests : ContractTestBase<IHistoryItemDelete
             { "Guid", typeof(Guid) },
             { "ParentGuid", typeof(Guid?) },
             { "EventBy", typeof(User) },
-            { "EventAtUtc", typeof(DateTime) }
+            { "EventAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

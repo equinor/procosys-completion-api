@@ -19,7 +19,8 @@ public class HistoryCreatedV1ContractTests : ContractTestBase<IHistoryItemCreate
             { "ParentGuid", typeof(Guid?) },
             { "EventBy", typeof(User) },
             { "EventAtUtc", typeof(DateTime) },
-            { "Properties", typeof(List<IProperty>) }
+            { "Properties", typeof(List<IProperty>) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

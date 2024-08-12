@@ -16,6 +16,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
             context =>
             {
                 context.SetSessionId(message.Guid.ToString());
+                context.MessageId = message.MessageId;
                 logger.LogInformation("Publishing: {Message}", context.Message.ToString());
             },
             cancellationToken);
