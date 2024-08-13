@@ -17,7 +17,8 @@ public class PunchItemDeletedV1ContractTests : ContractTestBase<IPunchItemDelete
             { "Plant", typeof(string) },
             { "Guid", typeof(Guid) },
             { "DeletedBy", typeof(User) },
-            { "DeletedAtUtc", typeof(DateTime) }
+            { "DeletedAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

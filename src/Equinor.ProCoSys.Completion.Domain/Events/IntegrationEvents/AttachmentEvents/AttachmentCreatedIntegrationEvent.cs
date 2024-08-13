@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
+using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 
@@ -27,4 +28,6 @@ public record AttachmentCreatedIntegrationEvent
         new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),
         attachment.CreatedAtUtc)
     { }
+
+    public Guid MessageId { get; }  = NewId.NextGuid();
 }

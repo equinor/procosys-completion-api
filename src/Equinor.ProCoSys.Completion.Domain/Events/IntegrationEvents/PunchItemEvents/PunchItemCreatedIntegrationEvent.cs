@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.PunchItem;
+using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 
@@ -105,4 +106,6 @@ public record PunchItemCreatedIntegrationEvent
         new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
         punchItem.CreatedAtUtc)
     { }
+
+    public Guid MessageId { get; } = NewId.NextGuid();
 }

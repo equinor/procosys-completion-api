@@ -6,4 +6,6 @@ public interface IIntegrationEvent
 {
     // The entity Guid the event was published for
     Guid Guid { get; }
+    public Guid MessageId { get; }
+    
 }
