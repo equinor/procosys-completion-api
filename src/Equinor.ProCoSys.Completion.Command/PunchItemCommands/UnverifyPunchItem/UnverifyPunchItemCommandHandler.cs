@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -14,20 +13,17 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchIte
 
 public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnverifyPunchItemCommand, Result<string>>
 {
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessageProducer _messageProducer;
     private readonly ILogger<UnverifyPunchItemCommandHandler> _logger;
 
     public UnverifyPunchItemCommandHandler(
-        IPunchItemRepository punchItemRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
         ILogger<UnverifyPunchItemCommandHandler> logger)
     {
-        _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _messageProducer = messageProducer;
@@ -36,7 +32,7 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
 
     public async Task<Result<string>> Handle(UnverifyPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
 
         punchItem.Unverify();
 

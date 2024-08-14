@@ -27,7 +27,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
 public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCommand, Result<string>>
 {
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IPersonRepository _personRepository;
     private readonly IWorkOrderRepository _workOrderRepository;
@@ -39,7 +38,6 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly ILogger<UpdatePunchItemCommandHandler> _logger;
 
     public UpdatePunchItemCommandHandler(
-        IPunchItemRepository punchItemRepository,
         ILibraryItemRepository libraryItemRepository,
         IPersonRepository personRepository,
         IWorkOrderRepository workOrderRepository,
@@ -50,7 +48,6 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         IMessageProducer messageProducer,
         ILogger<UpdatePunchItemCommandHandler> logger)
     {
-        _punchItemRepository = punchItemRepository;
         _libraryItemRepository = libraryItemRepository;
         _personRepository = personRepository;
         _workOrderRepository = workOrderRepository;
@@ -64,7 +61,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
 
         var changes = await PatchAsync(punchItem, request.PatchDocument, cancellationToken);
 
