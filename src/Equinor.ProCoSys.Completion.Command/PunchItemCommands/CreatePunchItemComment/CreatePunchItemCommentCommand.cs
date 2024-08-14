@@ -1,26 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 
-public class CreatePunchItemCommentCommand : IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+public class CreatePunchItemCommentCommand(
+    Guid punchItemGuid,
+    string text,
+    IEnumerable<string> labels,
+    IEnumerable<Guid> mentions)
+    : IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
-    public CreatePunchItemCommentCommand(
-        Guid punchItemGuid,
-        string text,
-        IEnumerable<string> labels,
-        IEnumerable<Guid> mentions)
-    {
-        PunchItemGuid = punchItemGuid;
-        Text = text;
-        Labels = labels;
-        Mentions = mentions;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public string Text { get; }
-    public IEnumerable<string> Labels { get; }
-    public IEnumerable<Guid> Mentions { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public PunchItem PunchItem { get; set; } = null!;
+    public string Text { get; } = text;
+    public IEnumerable<string> Labels { get; } = labels;
+    public IEnumerable<Guid> Mentions { get; } = mentions;
 }

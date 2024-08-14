@@ -1,17 +1,13 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 
-public class UnclearPunchItemCommand : IRequest<Result<string>>, IIsPunchItemCommand
+public class UnclearPunchItemCommand(Guid punchItemGuid, string rowVersion) : IRequest<Result<string>>, IIsPunchItemCommand
 {
-    public UnclearPunchItemCommand(Guid punchItemGuid, string rowVersion)
-    {
-        PunchItemGuid = punchItemGuid;
-        RowVersion = rowVersion;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public string RowVersion { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public PunchItem PunchItem { get; set; } = null!;
+    public string RowVersion { get; } = rowVersion;
 }
