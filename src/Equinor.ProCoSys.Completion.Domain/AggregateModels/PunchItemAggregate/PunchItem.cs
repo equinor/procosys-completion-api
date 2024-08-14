@@ -129,11 +129,15 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public int? VerifiedById { get; private set; }
     public Person? VerifiedBy { get; private set; }
 
-    public bool IsReadyToBeCleared => !ClearedAtUtc.HasValue;
-    public bool IsReadyToBeRejected => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
-    public bool IsReadyToBeVerified => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
-    public bool IsReadyToBeUncleared => ClearedAtUtc.HasValue && !VerifiedAtUtc.HasValue;
-    public bool IsReadyToBeUnverified => VerifiedAtUtc.HasValue;
+    public bool IsCleared => ClearedAtUtc.HasValue;
+    public bool IsVerified => VerifiedAtUtc.HasValue;
+    public bool IsRejected => RejectedAtUtc.HasValue;
+
+    public bool IsReadyToBeCleared => !IsCleared;
+    public bool IsReadyToBeRejected => IsCleared && !IsVerified;
+    public bool IsReadyToBeVerified => IsCleared && !IsVerified;
+    public bool IsReadyToBeUncleared => IsCleared && !IsVerified;
+    public bool IsReadyToBeUnverified => IsVerified;
 
     public void Clear(Person clearedBy)
     {
@@ -425,5 +429,4 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ActionBy = actionBy;
         ItemNo = itemNo;
     }
-
 }
