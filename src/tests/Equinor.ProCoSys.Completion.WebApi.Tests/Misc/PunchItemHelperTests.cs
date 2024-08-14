@@ -38,7 +38,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task GetProjectGuidForPunchItem_ShouldReturnProjectGuid_WhenKnownPunchItemId()
+    public async Task GetProjectGuidForPunchItemAsync_ShouldReturnProjectGuid_WhenKnownPunchItemId()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -52,7 +52,7 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task GetProjectGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
+    public async Task GetProjectGuidForPunchItemAsync_ShouldReturnNull_WhenUnKnownPunchItemId()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -63,33 +63,5 @@ public class PunchItemHelperTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNull(projectGuid);
-    }
-
-    [TestMethod]
-    public async Task GetCheckListGuidForPunchItem_ShouldReturnCheckListGuid_WhenKnownPunchItemId()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new PunchItemHelper(context);
-
-        // Act
-        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(_punchItemGuid, CancellationToken.None);
-
-        // Assert
-        Assert.AreEqual(_checkListGuid, checkListGuid);
-    }
-
-    [TestMethod]
-    public async Task GetCheckListGuidForPunchItem_ShouldReturnNull_WhenUnKnownPunchItemId()
-    {
-        // Arrange
-        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new PunchItemHelper(context);
-
-        // Act
-        var checkListGuid = await dut.GetCheckListGuidForPunchItemAsync(Guid.Empty, CancellationToken.None);
-
-        // Assert
-        Assert.IsNull(checkListGuid);
     }
 }

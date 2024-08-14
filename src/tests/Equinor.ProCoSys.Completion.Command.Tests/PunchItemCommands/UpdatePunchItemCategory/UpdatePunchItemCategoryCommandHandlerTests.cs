@@ -13,19 +13,20 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemCategory;
 
 [TestClass]
-public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private UpdatePunchItemCategoryCommand _command;
     private UpdatePunchItemCategoryCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new UpdatePunchItemCategoryCommand(_punchItemPa[_testPlant].Guid, Category.PB, RowVersion);
+        _command = new UpdatePunchItemCategoryCommand(_punchItemPa[TestPlantA].Guid, Category.PB, RowVersion)
+        {
+            PunchItem = _punchItemPa[TestPlantA]
+        };
 
         _dut = new UpdatePunchItemCategoryCommandHandler(
-            _punchItemRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             _messageProducerMock,
@@ -36,11 +37,14 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
     [TestMethod]
     public async Task HandlingCommand_ShouldChangePaPunchItemToPb()
     {
+        // Arrange
+        Assert.AreEqual(Category.PA, _command.PunchItem.Category);
+
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(Category.PB, _punchItemPa[_testPlant].Category);
+        Assert.AreEqual(Category.PB, _command.PunchItem.Category);
     }
 
     [TestMethod]
@@ -73,7 +77,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Substitute this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _punchItemPa[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _command.PunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -92,9 +96,8 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _punchItemPa[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        Assert.AreEqual(punchItem.Category.ToString(), integrationEvent.Category);
+        Assert.AreEqual(_command.PunchItem.Category.ToString(), integrationEvent.Category);
     }
 
     [TestMethod]
@@ -113,13 +116,12 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _punchItemPa[_testPlant];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
-            punchItem.Plant,
+            _command.PunchItem.Plant,
             $"Punch item category changed to {_command.Category}",
-            punchItem,
-            punchItem);
+            _command.PunchItem,
+            _command.PunchItem);
         var changedProperties = historyEvent.ChangedProperties;
         Assert.IsNotNull(changedProperties);
         Assert.AreEqual(1, changedProperties.Count);
@@ -138,7 +140,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandHandle
 
         // Assert
         var punchItem = await _punchItemRepositoryMock.GetAsync(_command.PunchItemGuid, default);
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, punchItem.CheckListGuid, default);
     }
 
     [TestMethod]

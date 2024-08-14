@@ -10,7 +10,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
 [TestClass]
-public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
+public class OverwriteExistingPunchItemAttachmentCommandValidatorTests : PunchItemCommandTestsBase
 {
     private OverwriteExistingPunchItemAttachmentCommandValidator _dut;
     private IPunchItemValidator _punchItemValidatorMock;
@@ -20,10 +20,12 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "a.jpg", "r", new MemoryStream(), "image/jpeg");
+        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "a.jpg", "r", new MemoryStream(), "image/jpeg")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.FileNameExistsForParentAsync(
                 _command.PunchItemGuid, 
@@ -32,6 +34,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
             .Returns(true);
         _dut = new OverwriteExistingPunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
+            _checkListValidatorMock,
             _attachmentServiceMock);
     }
 
@@ -44,26 +47,10 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
-    {
-        // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
             .Returns(true);
 
         // Act
@@ -79,8 +66,7 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -115,8 +101,8 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVerified_AndCurrentUserIsNotVerifier()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_existingPerson1);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -131,9 +117,9 @@ public class OverwriteExistingPunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldBeValid_When_PunchItemIsVerified_AndCurrentUserIsVerifier()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
-        _punchItemValidatorMock.CurrentUserIsVerifierAsync(_command.PunchItemGuid, default)
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_existingPerson1);
+        _punchItemValidatorMock.CurrentUserIsVerifier(_command.PunchItem)
             .Returns(true);
 
         // Act

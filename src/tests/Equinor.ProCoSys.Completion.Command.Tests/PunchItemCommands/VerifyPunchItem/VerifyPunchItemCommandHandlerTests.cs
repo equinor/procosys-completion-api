@@ -12,21 +12,22 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.VerifyPunchItem;
 
 [TestClass]
-public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class VerifyPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private VerifyPunchItemCommand _command;
     private VerifyPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem[_testPlant].Clear(_currentPerson);
+        _command = new VerifyPunchItemCommand(_existingPunchItem[TestPlantA].Guid, RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
-        _command = new VerifyPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
+        _command.PunchItem.Clear(_currentPerson);
 
         _dut = new VerifyPunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
@@ -37,12 +38,16 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestMethod]
     public async Task HandlingCommand_ShouldVerifyPunchItem()
     {
+        // Assert
+        Assert.IsTrue(_command.PunchItem.IsCleared);
+        Assert.IsFalse(_command.PunchItem.IsVerified);
+
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem[_testPlant].VerifiedAtUtc);
-        Assert.AreEqual(_currentPerson.Id, _existingPunchItem[_testPlant].VerifiedById);
+        Assert.IsTrue(_command.PunchItem.IsCleared);
+        Assert.IsTrue(_command.PunchItem.IsVerified);
     }
 
     [TestMethod]
@@ -75,7 +80,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -94,7 +99,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         Assert.IsNotNull(integrationEvent);
         AssertIsVerified(punchItem, punchItem.VerifiedBy, integrationEvent);
     }
@@ -115,7 +120,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
             punchItem.Plant,

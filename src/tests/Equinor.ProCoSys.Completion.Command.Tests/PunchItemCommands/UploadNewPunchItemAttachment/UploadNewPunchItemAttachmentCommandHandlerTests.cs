@@ -5,29 +5,29 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAt
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UploadNewPunchItemAttachment;
 
 [TestClass]
-public class UploadNewPunchItemAttachmentCommandHandlerTests : TestsBase
+public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandTestsBase
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private readonly Guid _guid = new("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private UploadNewPunchItemAttachmentCommandHandler _dut;
     private UploadNewPunchItemAttachmentCommand _command;
     private IAttachmentService _attachmentServiceMock;
-    private IPunchItemRepository _punchItemRepositoryMock;
     private Project _project;
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "T", new MemoryStream(), "image/jpeg");
+        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "T", new MemoryStream(), "image/jpeg")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
-        _punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
         _project = new Project(TestPlantA, Guid.NewGuid(), "PrName", "PrDesc");
         _punchItemRepositoryMock.GetProjectAsync(_command.PunchItemGuid, default)
             .Returns(_project);

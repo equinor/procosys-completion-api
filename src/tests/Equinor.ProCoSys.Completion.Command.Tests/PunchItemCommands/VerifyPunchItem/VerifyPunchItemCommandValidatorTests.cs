@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
-using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.VerifyPunchItem;
 
 [TestClass]
-public class VerifyPunchItemCommandValidatorTests
+public class VerifyPunchItemCommandValidatorTests : PunchItemCommandTestsBase
 {
     private VerifyPunchItemCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private VerifyPunchItemCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new VerifyPunchItemCommand(Guid.NewGuid(), "r");
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command = new VerifyPunchItemCommand(Guid.NewGuid(), "r")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
-        _dut = new VerifyPunchItemCommandValidator(_punchItemValidatorMock);
+        _command.PunchItem.Clear(_currentPerson);
+
+        _dut = new VerifyPunchItemCommandValidator(_checkListValidatorMock);
     }
 
     [TestMethod]
@@ -38,26 +36,10 @@ public class VerifyPunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
+    public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemIsVoided()
-    {
-        // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
             .Returns(true);
 
         // Act
@@ -73,8 +55,7 @@ public class VerifyPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -89,8 +70,7 @@ public class VerifyPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotCleared()
     {
         // Arrange
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(false);
+        _command.PunchItem.Unclear();
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -105,8 +85,7 @@ public class VerifyPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsAlreadyVerified()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Verify(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

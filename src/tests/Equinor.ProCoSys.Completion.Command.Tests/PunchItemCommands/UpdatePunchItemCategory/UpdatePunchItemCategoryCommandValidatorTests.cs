@@ -1,32 +1,26 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemCategory;
 
 [TestClass]
-public class UpdatePunchItemCategoryCommandValidatorTests
+public class UpdatePunchItemCategoryCommandValidatorTests: PunchItemCommandTestsBase
 {
     private UpdatePunchItemCategoryCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private UpdatePunchItemCategoryCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCategoryCommand(Guid.NewGuid(), Category.PA, "AAAAAAAAABA=");
+        _command = new UpdatePunchItemCategoryCommand(_punchItemPa[TestPlantA].Guid, Category.PB, RowVersion)
+        {
+            PunchItem = _punchItemPa[TestPlantA]
+        };
 
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
-        _punchItemValidatorMock.HasCategoryAsync(_command.PunchItemGuid, _command.Category, default)
-            .Returns(false);
-
-        _dut = new UpdatePunchItemCategoryCommandValidator(_punchItemValidatorMock);
+        _dut = new UpdatePunchItemCategoryCommandValidator(_checkListValidatorMock);
     }
 
     [TestMethod]
@@ -40,26 +34,10 @@ public class UpdatePunchItemCategoryCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
+    public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemIsVoided()
-    {
-        // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
             .Returns(true);
 
         // Act
@@ -75,8 +53,7 @@ public class UpdatePunchItemCategoryCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -91,8 +68,7 @@ public class UpdatePunchItemCategoryCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemAlreadyHaveSameCategory()
     {
         // Arrange
-        _punchItemValidatorMock.HasCategoryAsync(_command.PunchItemGuid, _command.Category, default)
-            .Returns(true);
+        _command.PunchItem.Category = _command.Category;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -107,8 +83,7 @@ public class UpdatePunchItemCategoryCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsCleared()
     {
         // Arrange
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
