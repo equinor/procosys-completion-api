@@ -110,7 +110,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Project SetupProject(string testPlant, ref int id)
         {
-            var project = new Project(testPlant, Guid.NewGuid(), null!, null!);
+            var project = new Project(testPlant, Guid.NewGuid(), $"Name-{id}", $"Desc-{id}");
             project.SetProtectedIdForTesting(++id);
             _projectRepositoryMock
                 .GetAsync(project.Guid, default)

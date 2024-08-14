@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -18,7 +17,6 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandT
     private UploadNewPunchItemAttachmentCommandHandler _dut;
     private UploadNewPunchItemAttachmentCommand _command;
     private IAttachmentService _attachmentServiceMock;
-    private Project _project;
 
     [TestInitialize]
     public void Setup()
@@ -28,13 +26,9 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandT
             PunchItem = _existingPunchItem[TestPlantA]
         };
 
-        _project = new Project(TestPlantA, Guid.NewGuid(), "PrName", "PrDesc");
-        _punchItemRepositoryMock.GetProjectAsync(_command.PunchItemGuid, default)
-            .Returns(_project);
-
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.UploadNewAsync(
-            _project.Name,
+            _command.PunchItem.Project.Name,
             nameof(PunchItem),
             _command.PunchItemGuid,
             _command.FileName,
@@ -42,7 +36,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandT
             _command.ContentType,
             default).Returns(new AttachmentDto(_guid, _rowVersion));
 
-        _dut = new UploadNewPunchItemAttachmentCommandHandler(_attachmentServiceMock, _punchItemRepositoryMock);
+        _dut = new UploadNewPunchItemAttachmentCommandHandler(_attachmentServiceMock);
     }
 
     [TestMethod]
@@ -65,7 +59,7 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandT
 
         // Assert
         await _attachmentServiceMock.Received(1).UploadNewAsync(
-            _project.Name,
+            _command.PunchItem.Project.Name,
             nameof(PunchItem), 
             _command.PunchItemGuid, 
             _command.FileName,
