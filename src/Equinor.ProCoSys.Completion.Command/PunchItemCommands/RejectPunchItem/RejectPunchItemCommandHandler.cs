@@ -25,7 +25,6 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
 public class RejectPunchItemCommandHandler(
-    IPunchItemRepository punchItemRepository,
     ILabelRepository labelRepository,
     ICommentRepository commentRepository,
     IPersonRepository personRepository,
