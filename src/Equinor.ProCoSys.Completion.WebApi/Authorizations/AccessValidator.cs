@@ -5,6 +5,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
@@ -18,28 +19,15 @@ namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 /// For some request types, it validates if user has access to the project of the request
 /// For some request types, it validates if user has access to content due to restriction roles
 /// </summary>
-public class AccessValidator : IAccessValidator
+public class AccessValidator(
+    ICurrentUserProvider currentUserProvider,
+    IProjectAccessChecker projectAccessChecker,
+    IAccessChecker accessChecker,
+    IPunchItemHelper punchItemHelper,
+    ICheckListCache checkListCache,
+    ILogger<AccessValidator> logger)
+    : IAccessValidator
 {
-    private readonly ICurrentUserProvider _currentUserProvider;
-    private readonly IProjectAccessChecker _projectAccessChecker;
-    private readonly IAccessChecker _accessChecker;
-    private readonly IPunchItemHelper _punchItemHelper;
-    private readonly ILogger<AccessValidator> _logger;
-
-    public AccessValidator(
-        ICurrentUserProvider currentUserProvider,
-        IProjectAccessChecker projectAccessChecker,
-        IAccessChecker accessChecker,
-        IPunchItemHelper punchItemHelper,
-        ILogger<AccessValidator> logger)
-    {
-        _currentUserProvider = currentUserProvider;
-        _projectAccessChecker = projectAccessChecker;
-        _accessChecker = accessChecker;
-        _punchItemHelper = punchItemHelper;
-        _logger = logger;
-    }
-
     public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IBaseRequest
     {
         if (request is null)
@@ -47,12 +35,12 @@ public class AccessValidator : IAccessValidator
             throw new ArgumentNullException(nameof(request));
         }
 
-        var userOid = _currentUserProvider.GetCurrentUserOid();
+        var userOid = currentUserProvider.GetCurrentUserOid();
         if (request is IIsProjectCommand projectCommand)
         {
-            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
+            if (!projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.ProjectGuid))
             {
-                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
+                logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
                     userOid, projectCommand.ProjectGuid);
                 return false;
             }
@@ -60,9 +48,9 @@ public class AccessValidator : IAccessValidator
 
         if (request is CreatePunchItemCommand createPunchItemCommand)
         {
-            if (!await _accessChecker.HasCurrentUserWriteAccessToCheckListAsync(createPunchItemCommand.CheckListGuid, cancellationToken))
+            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(createPunchItemCommand.CheckListGuid, cancellationToken))
             {
-                _logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid}",
+                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid}",
                     userOid, createPunchItemCommand.CheckListGuid);
                 return false;
             }
@@ -70,9 +58,9 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsProjectQuery projectQuery)
         {
-            if (!_projectAccessChecker.HasCurrentUserAccessToProject(projectQuery.ProjectGuid))
+            if (!projectAccessChecker.HasCurrentUserAccessToProject(projectQuery.ProjectGuid))
             {
-                _logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
+                logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
                     userOid, projectQuery.ProjectGuid);
                 return false;
             }
@@ -80,14 +68,14 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsPunchItemCommand punchItemCommand)
         {
-            if (!await HasCurrentUserAccessToProjectOwningPunchItemAsync(punchItemCommand.PunchItemGuid, userOid, cancellationToken))
+            if (!HasCurrentUserAccessToProject(punchItemCommand.PunchItem.Project.Guid, userOid))
             {
                 return false;
             }
 
-            if (!await _accessChecker.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(punchItemCommand.PunchItemGuid, cancellationToken))
+            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(punchItemCommand.PunchItem.CheckListGuid, cancellationToken))
             {
-                _logger.LogWarning("Current user {UserOid} doesn't have write access to checkList owning punch {PunchItemGuid}",
+                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList owning punch {PunchItemGuid}",
                     userOid, punchItemCommand.PunchItemGuid);
                 return false;
             }
@@ -103,10 +91,8 @@ public class AccessValidator : IAccessValidator
 
         if (request is IIsCheckListQuery checkListQuery)
         {
-            if (!await _accessChecker.HasCurrentUserReadAccessToCheckListAsync(checkListQuery.CheckListGuid, cancellationToken))
+            if (!await HasCurrentUserAccessToProjectOwningCheckListAsync(checkListQuery.CheckListGuid, userOid, cancellationToken))
             {
-                _logger.LogWarning("Current user {UserOid} doesn't have read access to checkList {CheckListGuid}",
-                    userOid, checkListQuery.CheckListGuid);
                 return false;
             }
         }
@@ -114,19 +100,43 @@ public class AccessValidator : IAccessValidator
         return true;
     }
 
-    private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid,
-        CancellationToken cancellationToken)
+    private async Task<bool> HasCurrentUserAccessToProjectOwningCheckListAsync(Guid checkListGuid, Guid userOid, CancellationToken cancellationToken)
     {
-        var projectGuid = await _punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid, cancellationToken);
-        if (projectGuid.HasValue)
+        var checkList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+        if (checkList is not null)
         {
-            var accessToProject = _projectAccessChecker.HasCurrentUserAccessToProject(projectGuid.Value);
-
-            if (!accessToProject)
+            if (!HasCurrentUserAccessToProject(checkList.ProjectGuid, userOid))
             {
-                _logger.LogWarning("Current user: {UserOid} does not have access to project {ProjectGuid}", userOid, projectGuid);
                 return false;
             }
+        }
+
+        // if checklist not found, we don't deny access and return 403, but want to return not found (404)
+        return true;
+    }
+
+    private async Task<bool> HasCurrentUserAccessToProjectOwningPunchItemAsync(Guid punchItemGuid, Guid userOid, CancellationToken cancellationToken)
+    {
+        var projectGuid = await punchItemHelper.GetProjectGuidForPunchItemAsync(punchItemGuid, cancellationToken);
+        if (projectGuid.HasValue)
+        {
+            if (!HasCurrentUserAccessToProject(projectGuid.Value, userOid))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool HasCurrentUserAccessToProject(Guid projectGuid, Guid userOid)
+    {
+        var accessToProject = projectAccessChecker.HasCurrentUserAccessToProject(projectGuid);
+
+        if (!accessToProject)
+        {
+            logger.LogWarning("Current user: {UserOid} does not have access to project {ProjectGuid}", userOid, projectGuid);
+            return false;
         }
 
         return true;
