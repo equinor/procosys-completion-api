@@ -8,11 +8,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 public class AccessValidatorForUpdatePunchItemCategoryCommandTests : AccessValidatorForIIsPunchItemCommandTests<UpdatePunchItemCategoryCommand>
 {
     protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
-        => new(PunchItemGuidWithAccessToProjectAndContent, Category.PA, null!);
+        => new(PunchItemGuidWithAccessToProjectAndContent, Category.PA, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
     protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithAccessToProjectButNotContent()
-        => new(PunchItemGuidWithAccessToProjectButNotContent, Category.PA, null!);
+        => new(PunchItemGuidWithAccessToProjectButNotContent, Category.PA, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
     protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject, Category.PA, null!);
+        => new(PunchItemGuidWithoutAccessToProject, Category.PA, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }

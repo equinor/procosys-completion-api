@@ -7,25 +7,14 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 
-public class UploadNewPunchItemAttachmentCommandHandler : IRequestHandler<UploadNewPunchItemAttachmentCommand, Result<GuidAndRowVersion>>
+public class UploadNewPunchItemAttachmentCommandHandler(IAttachmentService attachmentService)
+    : IRequestHandler<UploadNewPunchItemAttachmentCommand, Result<GuidAndRowVersion>>
 {
-    private readonly IAttachmentService _attachmentService;
-    private readonly IPunchItemRepository _punchItemRepository;
-
-    public UploadNewPunchItemAttachmentCommandHandler(
-        IAttachmentService attachmentService,
-        IPunchItemRepository punchItemRepository)
-    {
-        _attachmentService = attachmentService;
-        _punchItemRepository = punchItemRepository;
-    }
-
     public async Task<Result<GuidAndRowVersion>> Handle(UploadNewPunchItemAttachmentCommand request, CancellationToken cancellationToken)
     {
-        var project = await _punchItemRepository.GetProjectAsync(request.PunchItemGuid, cancellationToken);
-
-        var attachmentDto = await _attachmentService.UploadNewAsync(
-            project.Name,
+        var punchItem = request.PunchItem;
+        var attachmentDto = await attachmentService.UploadNewAsync(
+            punchItem.Project.Name,
             nameof(PunchItem),
             request.PunchItemGuid,
             request.FileName,

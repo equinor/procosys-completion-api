@@ -11,29 +11,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Middleware;
 
-public class GlobalExceptionHandler
+public class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionHandler> _logger;
-
-    public GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
             // Call the next delegate/middleware in the pipeline
-            await _next(context);
+            await next(context);
         }
         catch (UnauthorizedAccessException)
         {
             context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
             context.Response.ContentType = "application/text";
             await context.Response.WriteAsync("Unauthorized!");
+        }
+        catch (BadRequestException bex)
+        {
+            var errors = new Dictionary<string, string[]>
+            {
+                { "guid", [bex.Message] }
+            };
+            await context.WriteBadRequestAsync(errors, logger);
         }
         catch (FluentValidation.ValidationException ve)
         {
@@ -50,7 +49,7 @@ public class GlobalExceptionHandler
                 {
                     if (!errors.ContainsKey(error.PropertyName))
                     {
-                        errors.Add(error.PropertyName, new[] {error.ErrorMessage});
+                        errors.Add(error.PropertyName, [error.ErrorMessage]);
                     }
                     else
                     {
@@ -60,7 +59,7 @@ public class GlobalExceptionHandler
                     }
                 }
 
-                await context.WriteBadRequestAsync(errors, _logger);
+                await context.WriteBadRequestAsync(errors, logger);
             }
         }
         catch (ConcurrencyException)
@@ -68,7 +67,7 @@ public class GlobalExceptionHandler
             context.Response.StatusCode = (int)HttpStatusCode.Conflict;
             context.Response.ContentType = "application/text";
             const string Message = "Data store operation failed. Data may have been modified or deleted since entities were loaded.";
-            _logger.LogDebug(Message);
+            logger.LogDebug(Message);
             await context.Response.WriteAsync(Message);
         }
         catch (TaskCanceledException)
@@ -76,12 +75,12 @@ public class GlobalExceptionHandler
             context.Response.StatusCode = 499; //Client Closed Request;
             context.Response.ContentType = "application/text";
             const string Message = "Request canceled";
-            _logger.LogInformation(Message);
+            logger.LogInformation(Message);
             await context.Response.WriteAsync(Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred");
+            logger.LogError(ex, "An exception occurred");
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/text";
             await context.Response.WriteAsync("Something went wrong!");

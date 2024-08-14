@@ -2,17 +2,15 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
-using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItemLink;
 
 [TestClass]
-public class DeletePunchItemLinkCommandValidatorTests
+public class DeletePunchItemLinkCommandValidatorTests : PunchItemCommandTestsBase
 {
     private DeletePunchItemLinkCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private ILinkService _linkServiceMock;
 
     private DeletePunchItemLinkCommand _command;
@@ -20,15 +18,16 @@ public class DeletePunchItemLinkCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "r1");
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "r1")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
         _linkServiceMock = Substitute.For<ILinkService>();
         _linkServiceMock.ExistsAsync(_command.LinkGuid, default).Returns(true);
 
         _dut = new DeletePunchItemLinkCommandValidator(
-            _punchItemValidatorMock,
+            _checkListValidatorMock,
             _linkServiceMock);
     }
 
@@ -40,22 +39,6 @@ public class DeletePunchItemLinkCommandValidatorTests
 
         // Assert
         Assert.IsTrue(result.IsValid);
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
-    {
-        // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
     }
 
     [TestMethod]
@@ -78,7 +61,7 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
             .Returns(true);
 
         // Act
@@ -94,8 +77,7 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -110,8 +92,7 @@ public class DeletePunchItemLinkCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsCleared()
     {
         // Arrange
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -119,6 +100,6 @@ public class DeletePunchItemLinkCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is cleared!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item links can't be deleted. Punch item is cleared!"));
     }
 }

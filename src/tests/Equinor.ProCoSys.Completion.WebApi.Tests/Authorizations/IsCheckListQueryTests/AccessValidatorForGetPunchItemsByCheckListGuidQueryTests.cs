@@ -10,5 +10,5 @@ public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests : AccessVa
         => new (CheckListGuidWithAccessToProjectAndContent);
 
     protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithoutAccessToProject() 
-        => new (CheckListGuidWithoutAccessToContent);
+        => new (CheckListGuidWithoutAccessToProject);
 }

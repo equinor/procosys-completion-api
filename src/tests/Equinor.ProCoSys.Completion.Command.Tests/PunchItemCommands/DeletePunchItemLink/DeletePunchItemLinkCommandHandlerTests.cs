@@ -2,14 +2,13 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItemLink;
 
 [TestClass]
-public class DeletePunchItemLinkCommandHandlerTests : TestsBase
+public class DeletePunchItemLinkCommandHandlerTests : PunchItemCommandTestsBase
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private DeletePunchItemLinkCommandHandler _dut;
@@ -19,10 +18,12 @@ public class DeletePunchItemLinkCommandHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), _rowVersion);
+        _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), _rowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
         _linkServiceMock = Substitute.For<ILinkService>();
-
 
         _dut = new DeletePunchItemLinkCommandHandler(_linkServiceMock);
     }

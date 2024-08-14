@@ -8,7 +8,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItemAttachment;
 
 [TestClass]
-public class DeletePunchItemAttachmentCommandHandlerTests
+public class DeletePunchItemAttachmentCommandHandlerTests : PunchItemCommandTestsBase
 {
     private DeletePunchItemAttachmentCommandHandler _dut;
     private DeletePunchItemAttachmentCommand _command;
@@ -17,7 +17,10 @@ public class DeletePunchItemAttachmentCommandHandlerTests
     [TestInitialize]
     public void Setup()
     {
-        _command = new DeletePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "r");
+        _command = new DeletePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "r")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
 

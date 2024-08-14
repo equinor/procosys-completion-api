@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ServiceResult;
@@ -15,7 +14,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 
 public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<VerifyPunchItemCommand, Result<string>>
 {
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,14 +21,12 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
     private readonly ILogger<VerifyPunchItemCommandHandler> _logger;
 
     public VerifyPunchItemCommandHandler(
-        IPunchItemRepository punchItemRepository,
         IPersonRepository personRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
         ILogger<VerifyPunchItemCommandHandler> logger)
     {
-        _punchItemRepository = punchItemRepository;
         _personRepository = personRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
@@ -40,7 +36,7 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
 
     public async Task<Result<string>> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
 
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Verify(currentPerson);

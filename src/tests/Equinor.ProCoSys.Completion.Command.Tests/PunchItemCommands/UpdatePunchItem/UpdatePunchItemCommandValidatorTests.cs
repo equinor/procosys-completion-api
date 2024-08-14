@@ -11,10 +11,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
 [TestClass]
-public class UpdatePunchItemCommandValidatorTests
+public class UpdatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
 {
     private UpdatePunchItemCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private ILibraryItemValidator _libraryItemValidatorMock;
     private IWorkOrderValidator _workOrderValidatorMock;
     private ISWCRValidator _swcrValidatorMock;
@@ -34,7 +33,11 @@ public class UpdatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "AAAAAAAAABA=");
+        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "AAAAAAAAABA=")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
         _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _raisedByOrgGuid);
         _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _clearingByOrgGuid);
         _command.PatchDocument.Replace(p => p.PriorityGuid, _priorityGuid);
@@ -47,9 +50,6 @@ public class UpdatePunchItemCommandValidatorTests
 
         _command.EnsureValidInputValidation();
 
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
         _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
         _workOrderValidatorMock = Substitute.For<IWorkOrderValidator>();
         _workOrderValidatorMock.ExistsAsync(_originalWorkOrderGuid, default).Returns(true);
@@ -66,7 +66,7 @@ public class UpdatePunchItemCommandValidatorTests
         SetupOkLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE);
 
         _dut = new UpdatePunchItemCommandValidator(
-            _punchItemValidatorMock,
+            _checkListValidatorMock,
             _libraryItemValidatorMock,
             _workOrderValidatorMock,
             _swcrValidatorMock,
@@ -146,26 +146,10 @@ public class UpdatePunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
-    {
-        // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
+        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
             .Returns(true);
 
         // Act
@@ -181,8 +165,7 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -197,8 +180,7 @@ public class UpdatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsCleared()
     {
         // Arrange
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

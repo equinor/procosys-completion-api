@@ -12,21 +12,22 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnclearPunchItem;
 
 [TestClass]
-public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class UnclearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private UnclearPunchItemCommand _command;
     private UnclearPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem[_testPlant].Clear(_currentPerson);
+        _command = new UnclearPunchItemCommand(_existingPunchItem[TestPlantA].Guid, RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
-        _command = new UnclearPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
+        _command.PunchItem.Clear(_currentPerson);
 
         _dut = new UnclearPunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             _messageProducerMock,
@@ -38,15 +39,13 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
     public async Task HandlingCommand_ShouldUnclearPunchItem()
     {
         // Assert
-        Assert.IsTrue(_existingPunchItem[_testPlant].ClearedAtUtc.HasValue);
-        Assert.IsTrue(_existingPunchItem[_testPlant].ClearedById.HasValue);
+        Assert.IsTrue(_command.PunchItem.IsCleared);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsFalse(_existingPunchItem[_testPlant].ClearedAtUtc.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].ClearedById.HasValue);
+        Assert.IsFalse(_command.PunchItem.IsCleared);
     }
 
     [TestMethod]
@@ -79,7 +78,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _command.PunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -119,13 +118,12 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
-            punchItem.Plant,
+            _command.PunchItem.Plant,
             "Punch item uncleared",
-            punchItem,
-            punchItem);
+            _command.PunchItem,
+            _command.PunchItem);
         Assert.IsNotNull(historyEvent.ChangedProperties);
         Assert.AreEqual(0, historyEvent.ChangedProperties.Count);
     }
@@ -138,8 +136,8 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1)
+            .RecalculateCheckListStatus(TestPlantA, _command.PunchItem.CheckListGuid, default);
     }
 
     [TestMethod]

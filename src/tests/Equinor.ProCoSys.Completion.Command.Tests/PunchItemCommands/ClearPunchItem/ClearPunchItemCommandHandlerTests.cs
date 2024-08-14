@@ -12,19 +12,20 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem;
 
 [TestClass]
-public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class ClearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private ClearPunchItemCommand _command;
     private ClearPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new ClearPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
+        _command = new ClearPunchItemCommand(_existingPunchItem[TestPlantA].Guid, RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
         _dut = new ClearPunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _personRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
@@ -40,8 +41,7 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem[_testPlant].ClearedAtUtc);
-        Assert.AreEqual(_currentPerson.Id, _existingPunchItem[_testPlant].ClearedById);
+        Assert.IsTrue(_command.PunchItem.IsCleared);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Substitute this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _command.PunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -93,9 +93,8 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
-        AssertIsCleared(punchItem, punchItem.ClearedBy, integrationEvent);
+        AssertIsCleared(_command.PunchItem, _command.PunchItem.ClearedBy, integrationEvent);
         AssertNotRejected(integrationEvent);
     }
 
@@ -115,13 +114,12 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
-            punchItem.Plant,
+            _command.PunchItem.Plant,
             "Punch item cleared",
-            punchItem,
-            punchItem);
+            _command.PunchItem,
+            _command.PunchItem);
         Assert.IsNotNull(historyEvent.ChangedProperties);
         Assert.AreEqual(0, historyEvent.ChangedProperties.Count);
     }
@@ -134,8 +132,7 @@ public class ClearPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBas
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, _command.PunchItem.CheckListGuid, default);
     }
 
     [TestMethod]

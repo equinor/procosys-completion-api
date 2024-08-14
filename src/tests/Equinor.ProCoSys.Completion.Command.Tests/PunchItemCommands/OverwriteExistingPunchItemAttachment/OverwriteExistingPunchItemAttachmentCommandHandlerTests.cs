@@ -1,17 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
 [TestClass]
-public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
+public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : PunchItemCommandTestsBase
 {
     private readonly string _newRowVersion = "AAAAAAAAACC=";
     private OverwriteExistingPunchItemAttachmentCommandHandler _dut;
@@ -22,7 +21,11 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : TestsBase
     public void Setup()
     {
         var oldRowVersion = "AAAAAAAAABA=";
-        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "T", oldRowVersion, new MemoryStream(), "image/jpeg");
+        _command = new OverwriteExistingPunchItemAttachmentCommand(Guid.NewGuid(), "T", oldRowVersion, new MemoryStream(), "image/jpeg")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
 
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.UploadOverwriteAsync(

@@ -2,14 +2,13 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
-using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
+using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemLink;
 
 [TestClass]
-public class UpdatePunchItemLinkCommandHandlerTests : TestsBase
+public class UpdatePunchItemLinkCommandHandlerTests : PunchItemCommandTestsBase
 {
     private readonly string _rowVersion = "AAAAAAAAABA=";
     private UpdatePunchItemLinkCommandHandler _dut;
@@ -19,7 +18,11 @@ public class UpdatePunchItemLinkCommandHandlerTests : TestsBase
     [TestInitialize]
     public void Setup()
     {
-        _command = new UpdatePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "T", "U", _rowVersion);
+        _command = new UpdatePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "T", "U", _rowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
 
         _linkServiceMock = Substitute.For<ILinkService>();
         _linkServiceMock.UpdateAsync(

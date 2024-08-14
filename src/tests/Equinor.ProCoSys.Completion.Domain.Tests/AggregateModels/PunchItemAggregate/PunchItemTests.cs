@@ -195,6 +195,7 @@ public class PunchItemTests : IModificationAuditableTests
     public void Clear_ShouldSetClearedFields()
     {
         // Arrange
+        Assert.IsFalse(_dut.IsCleared);
         Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
         Assert.IsFalse(_dut.ClearedById.HasValue);
         Assert.IsTrue(_dut.IsReadyToBeCleared);
@@ -203,6 +204,7 @@ public class PunchItemTests : IModificationAuditableTests
         _dut.Clear(_person);
 
         // Assert
+        Assert.IsTrue(_dut.IsCleared);
         Assert.AreEqual(_now, _dut.ClearedAtUtc);
         Assert.AreEqual(_person.Id, _dut.ClearedById);
     }
@@ -293,6 +295,7 @@ public class PunchItemTests : IModificationAuditableTests
     {
         // Arrange
         _dut.Clear(_person);
+        Assert.IsFalse(_dut.IsVerified);
         Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
         Assert.IsFalse(_dut.VerifiedById.HasValue);
         Assert.IsTrue(_dut.IsReadyToBeVerified);
@@ -301,6 +304,7 @@ public class PunchItemTests : IModificationAuditableTests
         _dut.Verify(_person);
 
         // Assert
+        Assert.IsTrue(_dut.IsVerified);
         Assert.AreEqual(_now, _dut.VerifiedAtUtc);
         Assert.AreEqual(_person.Id, _dut.VerifiedById);
     }
@@ -324,6 +328,7 @@ public class PunchItemTests : IModificationAuditableTests
     {
         // Arrange
         _dut.Clear(_person);
+        Assert.IsTrue(_dut.IsCleared);
         Assert.IsTrue(_dut.ClearedAtUtc.HasValue);
         Assert.IsTrue(_dut.ClearedById.HasValue);
         Assert.IsTrue(_dut.IsReadyToBeUncleared);
@@ -332,6 +337,7 @@ public class PunchItemTests : IModificationAuditableTests
         _dut.Unclear();
 
         // Assert
+        Assert.IsFalse(_dut.IsCleared);
         Assert.IsFalse(_dut.ClearedAtUtc.HasValue);
         Assert.IsFalse(_dut.ClearedById.HasValue);
     }
@@ -356,6 +362,7 @@ public class PunchItemTests : IModificationAuditableTests
         // Arrange
         _dut.Clear(_person);
         _dut.Verify(_person);
+        Assert.IsTrue(_dut.IsVerified);
         Assert.IsTrue(_dut.VerifiedAtUtc.HasValue);
         Assert.IsTrue(_dut.VerifiedById.HasValue);
         Assert.IsTrue(_dut.IsReadyToBeUnverified);
@@ -364,6 +371,7 @@ public class PunchItemTests : IModificationAuditableTests
         _dut.Unverify();
 
         // Assert
+        Assert.IsFalse(_dut.IsVerified);
         Assert.IsFalse(_dut.VerifiedAtUtc.HasValue);
         Assert.IsFalse(_dut.VerifiedById.HasValue);
     }

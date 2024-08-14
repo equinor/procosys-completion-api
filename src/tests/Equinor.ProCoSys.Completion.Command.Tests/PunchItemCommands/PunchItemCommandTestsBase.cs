@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
@@ -16,7 +17,7 @@ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 {
-    public class PunchItemCommandHandlerTestsBase : TestsBase
+    public class PunchItemCommandTestsBase : TestsBase
     {
         protected const string OriginalRowVersion = "BBBBBBBBABA=";
         protected const string RowVersion = "AAAAAAAAABA=";
@@ -29,6 +30,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
         protected IDocumentRepository _documentRepositoryMock;
         protected IMessageProducer _messageProducerMock;
         protected ICheckListApiService _checkListApiServiceMock;
+        protected ICheckListValidator _checkListValidatorMock;
         protected Person _currentPerson;
         protected Person _existingPerson1;
         protected Person _existingPerson2;
@@ -65,6 +67,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
             _documentRepositoryMock = Substitute.For<IDocumentRepository>();
             _messageProducerMock = Substitute.For<IMessageProducer>();
             _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+            _checkListValidatorMock = Substitute.For<ICheckListValidator>();
             var id = 5;
             _currentPerson = SetupPerson(++id);
             _personRepositoryMock.GetCurrentPersonAsync(default)
@@ -107,7 +110,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands
 
         private Project SetupProject(string testPlant, ref int id)
         {
-            var project = new Project(testPlant, Guid.NewGuid(), null!, null!);
+            var project = new Project(testPlant, Guid.NewGuid(), $"Name-{id}", $"Desc-{id}");
             project.SetProtectedIdForTesting(++id);
             _projectRepositoryMock
                 .GetAsync(project.Guid, default)

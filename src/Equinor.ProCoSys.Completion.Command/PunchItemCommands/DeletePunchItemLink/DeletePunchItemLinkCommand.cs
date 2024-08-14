@@ -1,19 +1,15 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 
-public class DeletePunchItemLinkCommand : IRequest<Result<Unit>>, IIsPunchItemCommand
+public class DeletePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, string rowVersion)
+    : IRequest<Result<Unit>>, IIsPunchItemCommand
 {
-    public DeletePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, string rowVersion)
-    {
-        PunchItemGuid = punchItemGuid;
-        LinkGuid = linkGuid;
-        RowVersion = rowVersion;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public Guid LinkGuid { get; }
-    public string RowVersion { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public PunchItem PunchItem { get; set; } = null!;
+    public Guid LinkGuid { get; } = linkGuid;
+    public string RowVersion { get; } = rowVersion;
 }

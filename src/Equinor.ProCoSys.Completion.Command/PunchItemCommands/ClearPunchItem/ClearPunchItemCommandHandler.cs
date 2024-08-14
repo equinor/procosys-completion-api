@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 
 public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<ClearPunchItemCommand, Result<string>>
 {
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +23,6 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
     private readonly ILogger<ClearPunchItemCommandHandler> _logger;
 
     public ClearPunchItemCommandHandler(
-        IPunchItemRepository punchItemRepository,
         IPersonRepository personRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
@@ -33,7 +30,6 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
         ICheckListApiService checkListApiService,
         ILogger<ClearPunchItemCommandHandler> logger)
     {
-        _punchItemRepository = punchItemRepository;
         _personRepository = personRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
@@ -44,7 +40,7 @@ public class ClearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHand
 
     public async Task<Result<string>> Handle(ClearPunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
         var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Clear(currentPerson);
 

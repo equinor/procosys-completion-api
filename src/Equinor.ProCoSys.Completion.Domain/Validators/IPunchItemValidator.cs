@@ -8,10 +8,5 @@ namespace Equinor.ProCoSys.Completion.Domain.Validators;
 public interface IPunchItemValidator
 {
     Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken);
-    Task<bool> TagOwningPunchItemIsVoidedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
-    Task<bool> ProjectOwningPunchItemIsClosedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
-    Task<bool> IsClearedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
-    Task<bool> IsVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken);
-    Task<bool> HasCategoryAsync(Guid punchItemGuid, Category category, CancellationToken cancellationToken);
-    Task<bool> CurrentUserIsVerifierAsync(Guid punchItemGuid, CancellationToken cancellationToken);
+    bool CurrentUserIsVerifier(PunchItem punchItem);
 }
