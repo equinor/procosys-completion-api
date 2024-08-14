@@ -40,7 +40,7 @@ public abstract class EntityWithGuidRepository<TEntity>(
                .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken)
            ?? throw new EntityNotFoundException<TEntity>(guid);
 
-    public async Task<TEntity?> GetOrNullAsync(
+    public virtual async Task<TEntity?> GetOrNullAsync(
         Guid guid,
         CancellationToken cancellationToken)
         => await DefaultQueryable
