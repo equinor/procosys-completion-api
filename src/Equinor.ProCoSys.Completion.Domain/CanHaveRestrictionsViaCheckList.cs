@@ -8,9 +8,8 @@ namespace Equinor.ProCoSys.Completion.Domain;
 // commands), not reading data (i.e. not when executing MediatR queries).
 //
 // Sample: If user has Restrictions Role for responsible code RespA and RespB, the user should be denied changing data on
-// objects having responsible and the responsible is other than RespA or RespB. A checklist has a Responsible. Punch Responsible
+// objects with a responsible, and the responsible is other than RespA or RespB. A checklist has a responsible. Punch responsible
 // is found via the checklist owning the punch
-
 public abstract class CanHaveRestrictionsViaCheckList : NeedProjectAccess
 {
     public abstract Guid GetCheckListGuidForWriteAccessCheck();
