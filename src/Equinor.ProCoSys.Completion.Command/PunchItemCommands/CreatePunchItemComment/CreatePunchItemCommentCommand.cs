@@ -12,7 +12,7 @@ public class CreatePunchItemCommentCommand(
     string text,
     IEnumerable<string> labels,
     IEnumerable<Guid> mentions)
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

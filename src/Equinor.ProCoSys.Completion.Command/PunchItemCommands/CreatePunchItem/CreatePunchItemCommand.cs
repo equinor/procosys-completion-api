@@ -7,7 +7,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommand
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
 {
     public CreatePunchItemCommand(
         Category category,

@@ -7,7 +7,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 
 public class ClearPunchItemCommand(Guid punchItemGuid, string rowVersion) 
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

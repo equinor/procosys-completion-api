@@ -7,7 +7,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 
 public class DeletePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, string rowVersion)
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<Unit>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<Unit>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;

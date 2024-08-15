@@ -52,7 +52,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Command",
-                typeof(CanHaveCheckListRestrictionsViaCheckList));
+                typeof(CanHaveRestrictionsViaCheckList));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),

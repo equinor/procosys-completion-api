@@ -7,7 +7,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
 public class UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category category, string rowVersion)
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;

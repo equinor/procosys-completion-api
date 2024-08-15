@@ -11,7 +11,7 @@ public class UpdatePunchItemCommand(
     Guid punchItemGuid,
     JsonPatchDocument<PatchablePunchItem> patchDocument,
     string rowVersion)
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

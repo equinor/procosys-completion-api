@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Domain;
 namespace Equinor.ProCoSys.Completion.Command;
 
 public abstract class UploadAttachmentCommand(Stream content)
-    : CanHaveCheckListRestrictionsViaCheckList, IDisposable
+    : CanHaveRestrictionsViaCheckList, IDisposable
 {
     private bool _isDisposed;
 

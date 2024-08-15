@@ -11,7 +11,7 @@ namespace Equinor.ProCoSys.Completion.Domain;
 // objects having responsible and the responsible is other than RespA or RespB. A checklist has a Responsible. Punch Responsible
 // is found via the checklist owning the punch
 
-public abstract class CanHaveCheckListRestrictionsViaCheckList : NeedProjectAccess
+public abstract class CanHaveRestrictionsViaCheckList : NeedProjectAccess
 {
     public abstract Guid GetCheckListGuidForWriteAccessCheck();
 }

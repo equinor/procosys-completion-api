@@ -7,7 +7,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 
 public class DeletePunchItemAttachmentCommand(Guid punchItemGuid, Guid attachmentGuid, string rowVersion)
-    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<Unit>>, IIsPunchItemCommand
+    : CanHaveRestrictionsViaCheckList, IRequest<Result<Unit>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

@@ -39,7 +39,7 @@ public class AccessValidator(
             }
         }
 
-        if (request is CanHaveCheckListRestrictionsViaCheckList checkListRequest)
+        if (request is CanHaveRestrictionsViaCheckList checkListRequest)
         {
             var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
             if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))
