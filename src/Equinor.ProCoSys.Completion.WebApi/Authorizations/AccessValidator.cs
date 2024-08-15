@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +17,6 @@ public class AccessValidator(
     ICurrentUserProvider currentUserProvider,
     IProjectAccessChecker projectAccessChecker,
     IAccessChecker accessChecker,
-    ICheckListCache checkListCache,
     ILogger<AccessValidator> logger)
     : IAccessValidator
 {
@@ -36,7 +33,7 @@ public class AccessValidator(
             var projectGuidForAccessCheck = projectRequest.GetProjectGuidForAccessCheck();
             if (!projectAccessChecker.HasCurrentUserAccessToProject(projectGuidForAccessCheck))
             {
-                logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
+                logger.LogWarning("Current user {UserOid} doesn't have access to project {ProjectGuid}",
                     userOid, projectGuidForAccessCheck);
                 return false;
             }
@@ -47,34 +44,12 @@ public class AccessValidator(
             var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
             if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))
             {
-                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid}",
+                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
                     userOid, checkListGuidForWriteAccessCheck);
                 return false;
             }
         }
 
-        if (request is IIsCheckListQuery checkListQuery)
-        {
-            if (!await HasCurrentUserAccessToProjectOwningCheckListAsync(checkListQuery.CheckListGuid, userOid, cancellationToken))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private async Task<bool> HasCurrentUserAccessToProjectOwningCheckListAsync(Guid checkListGuid, Guid userOid, CancellationToken cancellationToken)
-    {
-        var checkList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-        if (checkList is not null && !projectAccessChecker.HasCurrentUserAccessToProject(checkList.ProjectGuid))
-        {
-            logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
-                userOid, checkList.ProjectGuid);
-            return false;
-        }
-
-        // if checklist not found, we don't deny access and return 403, but want to return not found (404)
         return true;
     }
 }
