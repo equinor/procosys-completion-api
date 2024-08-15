@@ -1,11 +1,16 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunchItemGuid;
 
-public class GetCheckListsByPunchItemGuidQuery(Guid punchItemGuid) : IRequest<Result<ChecklistsByPunchGuidInstance>>, IIsPunchItemQuery
+public class GetCheckListsByPunchItemGuidQuery(Guid punchItemGuid)
+    : NeedProjectAccess, IRequest<Result<ChecklistsByPunchGuidInstance>>, IIsPunchItemRelatedQuery
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
+    public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => ProjectDetailsDto.Guid;
 }

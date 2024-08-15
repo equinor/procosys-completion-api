@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Query.Links;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
 
-public class GetPunchItemLinksQuery : IRequest<Result<IEnumerable<LinkDto>>>, IIsPunchItemQuery
+public class GetPunchItemLinksQuery(Guid punchItemGuid)
+    : NeedProjectAccess, IRequest<Result<IEnumerable<LinkDto>>>, IIsPunchItemRelatedQuery
 {
-    public GetPunchItemLinksQuery(Guid punchItemGuid) => PunchItemGuid = punchItemGuid;
-
-    public Guid PunchItemGuid { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => ProjectDetailsDto.Guid;
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using MediatR;
 using ServiceResult;
@@ -18,7 +19,7 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandler : IRequestHandler<Get
         var uri = await _attachmentService.GetDownloadUriAsync(request.AttachmentGuid, cancellationToken);
         if (uri is null)
         {
-            throw new Exception($"Attachment with Guid {request.AttachmentGuid} not found");
+            throw new EntityNotFoundException($"Attachment with Guid {request.AttachmentGuid} not found");
         }
 
         return new SuccessResult<Uri>(uri);
