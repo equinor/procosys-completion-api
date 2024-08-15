@@ -37,7 +37,6 @@ using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using Microsoft.EntityFrameworkCore;
@@ -89,7 +88,6 @@ public static class ApplicationModule
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
         services.AddScoped<IPersonCache, PersonCache>();
-        services.AddScoped<IPunchItemHelper, PunchItemHelper>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddScoped<IUnitOfWork>(x => x.GetRequiredService<CompletionContext>());
         services.AddScoped<IReadOnlyContext, CompletionContext>();
