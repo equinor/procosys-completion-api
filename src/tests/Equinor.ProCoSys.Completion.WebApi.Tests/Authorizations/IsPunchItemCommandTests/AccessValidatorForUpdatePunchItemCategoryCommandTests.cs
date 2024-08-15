@@ -6,14 +6,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForUpdatePunchItemCategoryCommandTests : AccessValidatorForIIsPunchItemCommandTests<UpdatePunchItemCategoryCommand>
+public class AccessValidatorForUpdatePunchItemCategoryCommandTests : AccessValidatorForCommandNeedAccessTests<UpdatePunchItemCategoryCommand>
 {
-    protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+    protected override UpdatePunchItemCategoryCommand GetCommandWithAccessToBothProjectAndContent()
         => new(Guid.Empty, Category.PA, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
-    protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+    protected override UpdatePunchItemCategoryCommand GetCommandWithAccessToProjectButNotContent()
         => new(Guid.Empty, Category.PA, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
-    protected override UpdatePunchItemCategoryCommand GetPunchItemCommandWithoutAccessToProject()
+    protected override UpdatePunchItemCategoryCommand GetCommandWithoutAccessToProject()
         => new(Guid.Empty, Category.PA, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }

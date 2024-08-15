@@ -7,15 +7,15 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQue
 
 [TestClass]
 public class AccessValidatorForGetPunchItemCommentsQueryTests
-    : AccessValidatorForIIsPunchItemRelatedQueryTests<GetPunchItemCommentsQuery>
+    : AccessValidatorForQueryNeedAccessTests<GetPunchItemCommentsQuery>
 {
-    protected override GetPunchItemCommentsQuery GetPunchItemQueryWithAccessToProject()
+    protected override GetPunchItemCommentsQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
         {
             ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithAccess)
         };
 
-    protected override GetPunchItemCommentsQuery GetPunchItemQueryWithoutAccessToProject()
+    protected override GetPunchItemCommentsQuery GetQueryWithoutAccessToProjectToTest()
         => new(Guid.Empty)
         {
             ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithoutAccess)

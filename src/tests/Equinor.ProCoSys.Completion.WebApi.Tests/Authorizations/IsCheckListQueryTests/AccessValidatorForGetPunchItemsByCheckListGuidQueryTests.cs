@@ -6,15 +6,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests : AccessValidatorForIIsCheckListQueryTests<GetPunchItemsByCheckListGuidQuery>
+public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests
+    : AccessValidatorForQueryNeedAccessTests<GetPunchItemsByCheckListGuidQuery>
 {
-    protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithAccessToProject()
+    protected override GetPunchItemsByCheckListGuidQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
         {
             ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithAccess)
         };
 
-    protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithoutAccessToProject() 
+    protected override GetPunchItemsByCheckListGuidQuery GetQueryWithoutAccessToProjectToTest() 
         => new (Guid.Empty)
         {
             ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithoutAccess)

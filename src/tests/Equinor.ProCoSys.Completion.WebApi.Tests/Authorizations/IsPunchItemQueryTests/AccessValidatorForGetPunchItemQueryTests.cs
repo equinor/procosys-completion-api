@@ -6,15 +6,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemQueryTests : AccessValidatorForIIsPunchItemQueryTests<GetPunchItemQuery>
+public class AccessValidatorForGetPunchItemQueryTests : AccessValidatorForQueryNeedAccessTests<GetPunchItemQuery>
 {
-    protected override GetPunchItemQuery GetPunchItemQueryWithAccessToProject()
+    protected override GetPunchItemQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
         {
             PunchItemDetailsDto = PunchItemDetailsDtoMock(ProjectGuidWithAccess)
         };
 
-    protected override GetPunchItemQuery GetPunchItemQueryWithoutAccessToProject()
+    protected override GetPunchItemQuery GetQueryWithoutAccessToProjectToTest()
         => new(Guid.Empty)
         {
             PunchItemDetailsDto = PunchItemDetailsDtoMock(ProjectGuidWithoutAccess)

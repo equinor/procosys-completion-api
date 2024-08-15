@@ -3,21 +3,21 @@ using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> : AccessValidatorTestBase
-    where TProjectCommand : NeedProjectAccess, IBaseRequest
+public abstract class AccessValidatorForCommandNeedAccessTests<TCommand> : AccessValidatorTestBase
+    where TCommand : NeedProjectAccess, IBaseRequest
 {
-    protected abstract TProjectCommand GetProjectCommandWithAccessToBothProjectAndContent();
-    protected abstract TProjectCommand GetProjectCommandWithAccessToProjectButNotContent();
-    protected abstract TProjectCommand GetProjectCommandWithoutAccessToProject();
+    protected abstract TCommand GetCommandWithAccessToBothProjectAndContent();
+    protected abstract TCommand GetCommandWithAccessToProjectButNotContent();
+    protected abstract TCommand GetCommandWithoutAccessToProject();
 
     [TestMethod]
     public async Task Validate_ShouldReturnTrue_WhenAccessToBothProjectAndContent()
     {
         // Arrange
-        var command = GetProjectCommandWithAccessToBothProjectAndContent();
+        var command = GetCommandWithAccessToBothProjectAndContent();
 
         // act
         var result = await _dut.ValidateAsync(command, default);
@@ -30,7 +30,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var command = GetProjectCommandWithoutAccessToProject();
+        var command = GetCommandWithoutAccessToProject();
 
         // act
         var result = await _dut.ValidateAsync(command, default);
@@ -43,7 +43,7 @@ public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> 
     public async Task Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
     {
         // Arrange
-        var command = GetProjectCommandWithAccessToProjectButNotContent();
+        var command = GetCommandWithAccessToProjectButNotContent();
 
         // act
         var result = await _dut.ValidateAsync(command, default);

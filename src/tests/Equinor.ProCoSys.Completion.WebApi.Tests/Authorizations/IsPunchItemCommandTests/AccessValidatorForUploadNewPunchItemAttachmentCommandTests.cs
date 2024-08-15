@@ -5,14 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForUploadNewPunchItemAttachmentCommandTests : AccessValidatorForIIsPunchItemCommandTests<UploadNewPunchItemAttachmentCommand>
+public class AccessValidatorForUploadNewPunchItemAttachmentCommandTests : AccessValidatorForCommandNeedAccessTests<UploadNewPunchItemAttachmentCommand>
 {
-    protected override UploadNewPunchItemAttachmentCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+    protected override UploadNewPunchItemAttachmentCommand GetCommandWithAccessToBothProjectAndContent()
         => new(Guid.Empty, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
-    protected override UploadNewPunchItemAttachmentCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+    protected override UploadNewPunchItemAttachmentCommand GetCommandWithAccessToProjectButNotContent()
         => new(Guid.Empty, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
-    protected override UploadNewPunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
+    protected override UploadNewPunchItemAttachmentCommand GetCommandWithoutAccessToProject()
         => new(Guid.Empty, null!, null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }

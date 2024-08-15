@@ -5,14 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForDeletePunchItemAttachmentCommandTests : AccessValidatorForIIsPunchItemCommandTests<DeletePunchItemAttachmentCommand>
+public class AccessValidatorForDeletePunchItemAttachmentCommandTests : AccessValidatorForCommandNeedAccessTests<DeletePunchItemAttachmentCommand>
 {
-    protected override DeletePunchItemAttachmentCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+    protected override DeletePunchItemAttachmentCommand GetCommandWithAccessToBothProjectAndContent()
         => new(Guid.Empty, Guid.Empty, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
-    protected override DeletePunchItemAttachmentCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+    protected override DeletePunchItemAttachmentCommand GetCommandWithAccessToProjectButNotContent()
         => new(Guid.Empty, Guid.Empty, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
-    protected override DeletePunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
+    protected override DeletePunchItemAttachmentCommand GetCommandWithoutAccessToProject()
         => new(Guid.Empty, Guid.Empty, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }
