@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
@@ -18,8 +17,6 @@ public class AccessValidatorTestBase
 {
     protected static string Plant = "P";
 
-    protected static LibraryItem Org = new(Plant, Guid.Empty, null!, null!, LibraryType.COMPLETION_ORGANIZATION);
-
     protected static Guid CheckListGuidWithAccessToContent = new("55555555-5555-5555-5555-555555555555");
     protected static Guid CheckListGuidWithAccessToProjectAndContent = new("99999999-9999-9999-9999-999999999999");
     protected static Guid CheckListGuidWithoutAccessToContent = new("66666666-6666-6666-6666-666666666666");
@@ -27,19 +24,16 @@ public class AccessValidatorTestBase
 
     protected static Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
     protected static Project ProjectWithAccess = new(Plant, ProjectGuidWithAccess, null!, null!);
-    protected static Guid PunchItemGuidWithAccessToProjectAndContent = new("11111111-1111-1111-1111-111111111111");
     protected static PunchItem PunchItemWithAccessToProjectAndContent
-        = new(Plant, ProjectWithAccess, CheckListGuidWithAccessToProjectAndContent, Category.PA, null!, Org, Org);
+        = new(Plant, ProjectWithAccess, CheckListGuidWithAccessToProjectAndContent, Category.PA, null!, null!, null!);
 
     protected static Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
     protected static Project ProjectWithoutAccess = new(Plant, ProjectGuidWithoutAccess, null!, null!);
-    protected static Guid PunchItemGuidWithoutAccessToProject = new("22222222-2222-2222-2222-222222222222");
     protected static PunchItem PunchItemWithoutAccessToProject
-        = new(Plant, ProjectWithoutAccess, CheckListGuidWithAccessToContent, Category.PA, null!, Org, Org);
+        = new(Plant, ProjectWithoutAccess, CheckListGuidWithAccessToContent, Category.PA, null!, null!, null!);
 
-    protected static Guid PunchItemGuidWithAccessToProjectButNotContent = new("77777777-7777-7777-7777-777777777777");
     protected static PunchItem PunchItemWithAccessToProjectButNotContent
-        = new(Plant, ProjectWithAccess, CheckListGuidWithoutAccessToContent, Category.PA, null!, Org, Org);
+        = new(Plant, ProjectWithAccess, CheckListGuidWithoutAccessToContent, Category.PA, null!, null!, null!);
 
     protected AccessValidator _dut = null!;
 
@@ -58,14 +52,6 @@ public class AccessValidatorTestBase
         accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
             .Returns(true);
 
-        var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
-            .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent, Arg.Any<CancellationToken>())
-            .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject, Arg.Any<CancellationToken>())
-            .Returns(ProjectGuidWithoutAccess);
-
         var checkListCacheMock = Substitute.For<ICheckListCache>();
         checkListCacheMock.GetCheckListAsync(CheckListGuidWithoutAccessToProject, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(null!, false, ProjectGuidWithoutAccess));
@@ -74,7 +60,6 @@ public class AccessValidatorTestBase
             Substitute.For<ICurrentUserProvider>(),
             projectAccessCheckerMock,
             accessCheckerMock,
-            punchItemHelperMock,
             checkListCacheMock,
             Substitute.For<ILogger<AccessValidator>>());
     }

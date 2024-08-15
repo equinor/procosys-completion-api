@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
+﻿using System;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
@@ -7,11 +8,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 public class AccessValidatorForOverwriteExistingPunchItemAttachmentCommandTests : AccessValidatorForIIsPunchItemCommandTests<OverwriteExistingPunchItemAttachmentCommand>
 {
     protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
-        => new(PunchItemGuidWithAccessToProjectAndContent, null!, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
+        => new(Guid.Empty, null!, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
     protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithAccessToProjectButNotContent()
-        => new(PunchItemGuidWithAccessToProjectButNotContent, null!, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
+        => new(Guid.Empty, null!, null!, null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
     protected override OverwriteExistingPunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject, null!, null!, null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
+        => new(Guid.Empty, null!, null!, null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }

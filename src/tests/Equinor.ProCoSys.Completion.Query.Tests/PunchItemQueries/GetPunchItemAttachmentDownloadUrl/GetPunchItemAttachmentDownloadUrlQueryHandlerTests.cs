@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Test.Common;
@@ -49,7 +50,7 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
         var query = new GetPunchItemAttachmentDownloadUrlQuery(Guid.NewGuid(), Guid.NewGuid());
 
         // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(()
+        await Assert.ThrowsExceptionAsync<EntityNotFoundException>(()
             => _dut.Handle(query, default));
     }
 

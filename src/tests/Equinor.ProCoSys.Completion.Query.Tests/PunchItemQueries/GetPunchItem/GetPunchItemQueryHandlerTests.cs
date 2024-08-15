@@ -4,7 +4,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
@@ -12,29 +11,16 @@ namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 [TestClass]
 public class GetPunchItemQueryHandlerTests
 {
-    private PunchItemDetailsDto _punchItemDetails;
-
-    private LibraryItemDto _raisedByOrg;
-    private LibraryItemDto _clearingByOrg;
-    private const string Code = "A30";
-
-    private IPunchItemService _punchItemServiceMock;
     private GetPunchItemQuery _query;
     private GetPunchItemQueryHandler _dut;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _raisedByOrg = new LibraryItemDto(Guid.NewGuid(), Code, "raisedBy", LibraryType.COMPLETION_ORGANIZATION.ToString());
-        _clearingByOrg = new LibraryItemDto(Guid.NewGuid(), Code, "clearingBy", LibraryType.COMPLETION_ORGANIZATION.ToString());
+        var punchItemDetails = PunchItemDetailsDtoMock();
 
-        _punchItemDetails = PunchItemDetailsDtoMock(_raisedByOrg, _clearingByOrg);
-
-        _punchItemServiceMock = Substitute.For<IPunchItemService>();
-        _punchItemServiceMock.GetByGuid(_punchItemDetails.Guid, default).Returns(_punchItemDetails);
-
-        _query = new GetPunchItemQuery(_punchItemDetails.Guid);
-        _dut = new GetPunchItemQueryHandler(_punchItemServiceMock);
+        _query = new GetPunchItemQuery(punchItemDetails.Guid) { PunchItemDetailsDto = punchItemDetails };
+        _dut = new GetPunchItemQueryHandler();
     }
 
     [TestMethod]
@@ -47,27 +33,15 @@ public class GetPunchItemQueryHandlerTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(punchItemDetails, _punchItemDetails);
-    }
-    
-    [TestMethod]
-    public async Task Handle_ShouldReturnNotFoundOnNonExistentPunch()
-    {
-        // Act
-        _punchItemServiceMock.GetByGuid(_punchItemDetails.Guid, default).Returns((PunchItemDetailsDto) null);
-        var result = await _dut.Handle(_query, default);
-        var punchItemDetails = result.Data;
-
-        // Assert
-        Assert.AreEqual(ResultType.NotFound, result.ResultType);
-        Assert.IsNull(punchItemDetails);
+        Assert.AreEqual(_query.PunchItemDetailsDto, punchItemDetails);
     }
 
-    private PunchItemDetailsDto PunchItemDetailsDtoMock(LibraryItemDto raisedByOrg, LibraryItemDto clearedByOrg) =>
+    private PunchItemDetailsDto PunchItemDetailsDtoMock() =>
         new(
             Guid: Guid.NewGuid(),
             CheckListGuid: Guid.NewGuid(),
             ProjectName: "Mock Project",
+            ProjectGuid: Guid.NewGuid(), 
             ItemNo: 12345,
             Category: "Mock Category",
             Description: "This is a mock description.",
@@ -86,8 +60,8 @@ public class GetPunchItemQueryHandlerTests
             IsReadyToBeUnverified: false,
             VerifiedBy: null,
             VerifiedAtUtc: null,
-            raisedByOrg,
-            clearedByOrg,
+            new LibraryItemDto(Guid.NewGuid(), "r", "raisedBy", LibraryType.COMPLETION_ORGANIZATION.ToString()),
+            new LibraryItemDto(Guid.NewGuid(), "c", "clearingBy", LibraryType.COMPLETION_ORGANIZATION.ToString()),
             Priority: null,
             Sorting: null,
             Type: null,

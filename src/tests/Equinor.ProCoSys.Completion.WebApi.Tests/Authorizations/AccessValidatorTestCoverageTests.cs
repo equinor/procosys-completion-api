@@ -68,6 +68,22 @@ public class AccessValidatorTestCoverageTests
         AssertAllHasUnitTest(classes, testClassList);
     }
 
+    [TestMethod]
+    public void Each_IIsPunchItemRelatedQuery_ShouldHaveUnitTest_ForAccessValidator()
+    {
+        var classes =
+            TestHelper.GetClassesImplementingInterface(
+                "Equinor.ProCoSys.Completion.Query",
+                typeof(IIsPunchItemRelatedQuery));
+
+        var testClassList
+            = TestHelper.GetTestsWhichInheritsBaseClass(
+                Assembly.GetExecutingAssembly(),
+                typeof(AccessValidatorForIIsPunchItemRelatedQueryTests<>));
+
+        AssertAllHasUnitTest(classes, testClassList);
+    }
+
     private static void AssertAllHasUnitTest(List<Type> classes, List<Type> testClassList)
     {
         Assert.AreNotEqual(0, classes.Count);

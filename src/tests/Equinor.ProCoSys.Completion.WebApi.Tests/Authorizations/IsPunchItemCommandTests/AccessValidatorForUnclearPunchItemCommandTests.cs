@@ -1,4 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
+﻿using System;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
@@ -7,11 +8,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 public class AccessValidatorForUnclearPunchItemCommandTests : AccessValidatorForIIsPunchItemCommandTests<UnclearPunchItemCommand>
 {
     protected override UnclearPunchItemCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
-        => new(PunchItemGuidWithAccessToProjectAndContent, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
+        => new(Guid.Empty, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
     protected override UnclearPunchItemCommand GetPunchItemCommandWithAccessToProjectButNotContent()
-        => new(PunchItemGuidWithAccessToProjectButNotContent, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
+        => new(Guid.Empty, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
     protected override UnclearPunchItemCommand GetPunchItemCommandWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject, null!) { PunchItem = PunchItemWithoutAccessToProject };
+        => new(Guid.Empty, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }
