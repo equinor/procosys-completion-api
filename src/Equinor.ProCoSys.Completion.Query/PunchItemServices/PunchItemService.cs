@@ -37,10 +37,10 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         .Include(p => p.SWCR)
         .Include(p => p.Document);
 
-    public async Task<PunchItemDetailsDto?> GetByGuid(Guid punchItemGuid, CancellationToken cancellationToken)
+    public async Task<PunchItemDetailsDto?> GetPunchItemOrNullByPunchItemGuidAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var punchItem = await PunchItemsQueryable
-            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByGuid)}")
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItemOrNullByPunchItemGuidAsync)}")
             .FirstOrDefaultAsync(pi => pi.Guid == punchItemGuid, cancellationToken);
         
         if (punchItem is null)
@@ -49,11 +49,28 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         }
 
         var attCount = await context.QuerySet<Attachment>()
-            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByGuid)}-GetAttachmentCounts")
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItemOrNullByPunchItemGuidAsync)}-GetAttachmentCounts")
             .Where(x => x.ParentGuid == punchItem.Guid)
             .CountAsync(cancellationToken);
 
         return MapPunchToDto(punchItem, attCount);
+    }
+
+    public async Task<ProjectDetailsDto?> GetProjectOrNullByPunchItemGuidAsync(Guid punchItemGuid, CancellationToken cancellationToken)
+    {
+        var dto = await context.QuerySet<PunchItem>()
+            .Include(p => p.Project)
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetProjectOrNullByPunchItemGuidAsync)}")
+            .Where(p => p.Guid == punchItemGuid)
+            .Select(p => new { ProjectName = p.Project.Name, ProjectGuid = p.Project.Guid })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (dto is null)
+        {
+            return null;
+        }
+
+        return new ProjectDetailsDto(dto.ProjectName, dto.ProjectGuid);
     }
 
     public async Task<IEnumerable<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid,
@@ -100,6 +117,7 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             punchItem.Guid,
             punchItem.CheckListGuid,
             punchItem.Project.Name,
+            punchItem.Project.Guid,
             punchItem.ItemNo,
             punchItem.Category.ToString(),
             punchItem.Description,
