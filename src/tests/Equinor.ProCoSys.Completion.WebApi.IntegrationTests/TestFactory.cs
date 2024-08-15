@@ -512,8 +512,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
                     Permissions.PUNCHITEM_WRITE,
-                    Permissions.PUNCHITEM_ATTACH,
-                    Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ,
@@ -547,8 +545,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
                     Permissions.PUNCHITEM_WRITE,
-                    Permissions.PUNCHITEM_ATTACH,
-                    Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ
