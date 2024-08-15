@@ -34,6 +34,13 @@ public class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptio
             };
             await context.WriteBadRequestAsync(errors, logger);
         }
+        catch (EntityNotFoundException ne)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            context.Response.ContentType = "application/text";
+            logger.LogDebug(ne.Message);
+            await context.Response.WriteAsync(ne.Message);
+        }
         catch (FluentValidation.ValidationException ve)
         {
             if (AnyNotFoundValidationErrors(ve.Errors, out var notFoundMessage))
