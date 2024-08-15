@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
@@ -6,10 +7,11 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 
 public class UpdatePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, string title, string url, string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid LinkGuid { get; } = linkGuid;
     public string Title { get; } = title;
     public string Url { get; } = url;

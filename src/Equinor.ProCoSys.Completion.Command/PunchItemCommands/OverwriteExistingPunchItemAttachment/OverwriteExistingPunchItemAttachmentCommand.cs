@@ -16,7 +16,7 @@ public class OverwriteExistingPunchItemAttachmentCommand(
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
-
+    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public string FileName { get; } = fileName;
     public string RowVersion { get; } = rowVersion;
     public string ContentType { get; } = contentType;

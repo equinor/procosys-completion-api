@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command;
 
-public abstract class UploadAttachmentCommand : IDisposable
+public abstract class UploadAttachmentCommand : NeedProjectAccess, IDisposable
 {
     private bool _isDisposed;
 

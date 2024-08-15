@@ -1,9 +1,5 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command;
 
-public interface IIsProjectCommand : IBaseRequest
-{
-    Guid ProjectGuid { get; }
-}
+public interface IIsProjectCommand : IBaseRequest;

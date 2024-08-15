@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
@@ -12,10 +13,11 @@ public class UpdatePunchItemAttachmentCommand(
     string description,
     IEnumerable<string> labels,
     string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid AttachmentGuid { get; } = attachmentGuid;
     public string Description { get; } = description;
     public IEnumerable<string> Labels { get; } = labels;

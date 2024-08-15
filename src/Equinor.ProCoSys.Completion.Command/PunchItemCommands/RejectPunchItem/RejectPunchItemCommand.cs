@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
@@ -11,10 +12,11 @@ public class RejectPunchItemCommand(
     string comment,
     IEnumerable<Guid> mentions,
     string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public string Comment { get; } = comment;
     public IEnumerable<Guid> Mentions { get; } = mentions;
     public string RowVersion { get; } = rowVersion;

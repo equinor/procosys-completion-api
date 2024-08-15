@@ -1,11 +1,12 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
-public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
+public class CreatePunchItemCommand : NeedProjectAccess, IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
     public CreatePunchItemCommand(
         Category category,
@@ -71,4 +72,5 @@ public class CreatePunchItemCommand : IRequest<Result<GuidAndRowVersion>>, IIsPr
     public bool MaterialRequired { get; }
     public DateTime? MaterialETAUtc { get; }
     public string? MaterialExternalNo { get; }
+    public override Guid GetProjectGuidForAccessCheck() => ProjectGuid;
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
@@ -10,10 +11,11 @@ public class UpdatePunchItemCommand(
     Guid punchItemGuid,
     JsonPatchDocument<PatchablePunchItem> patchDocument,
     string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public JsonPatchDocument<PatchablePunchItem> PatchDocument { get; } = patchDocument;
     public string RowVersion { get; } = rowVersion;
 }
