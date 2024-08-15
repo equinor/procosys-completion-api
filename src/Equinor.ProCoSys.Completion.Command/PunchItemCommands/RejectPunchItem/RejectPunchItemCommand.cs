@@ -12,11 +12,12 @@ public class RejectPunchItemCommand(
     string comment,
     IEnumerable<Guid> mentions,
     string rowVersion)
-    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
+    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
     public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public override Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public string Comment { get; } = comment;
     public IEnumerable<Guid> Mentions { get; } = mentions;
     public string RowVersion { get; } = rowVersion;

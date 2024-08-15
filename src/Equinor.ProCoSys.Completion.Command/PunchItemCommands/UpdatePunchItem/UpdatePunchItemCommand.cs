@@ -11,11 +11,12 @@ public class UpdatePunchItemCommand(
     Guid punchItemGuid,
     JsonPatchDocument<PatchablePunchItem> patchDocument,
     string rowVersion)
-    : NeedProjectAccess, IRequest<Result<string>>, IIsPunchItemCommand
+    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
     public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public override Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public JsonPatchDocument<PatchablePunchItem> PatchDocument { get; } = patchDocument;
     public string RowVersion { get; } = rowVersion;
 }

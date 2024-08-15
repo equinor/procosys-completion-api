@@ -5,16 +5,14 @@ using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command;
 
-public abstract class UploadAttachmentCommand : NeedProjectAccess, IDisposable
+public abstract class UploadAttachmentCommand(Stream content)
+    : CanHaveCheckListRestrictionsViaCheckList, IDisposable
 {
     private bool _isDisposed;
 
-    protected UploadAttachmentCommand(Stream content)
-        => Content = content;
-
     // JsonIgnore needed here so GlobalExceptionHandler do not try to serialize the Stream when reporting validation errors. 
     [JsonIgnore]
-    public Stream Content { get; }
+    public Stream Content { get; } = content;
 
     public void Dispose(bool disposing)
     {

@@ -6,7 +6,8 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
-public class CreatePunchItemCommand : NeedProjectAccess, IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
+public class CreatePunchItemCommand
+    : CanHaveCheckListRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsProjectCommand
 {
     public CreatePunchItemCommand(
         Category category,
@@ -73,4 +74,5 @@ public class CreatePunchItemCommand : NeedProjectAccess, IRequest<Result<GuidAnd
     public DateTime? MaterialETAUtc { get; }
     public string? MaterialExternalNo { get; }
     public override Guid GetProjectGuidForAccessCheck() => ProjectGuid;
+    public override Guid GetCheckListGuidForWriteAccessCheck() => CheckListGuid;
 }

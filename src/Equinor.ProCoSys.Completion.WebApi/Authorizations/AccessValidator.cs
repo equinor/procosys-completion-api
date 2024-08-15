@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
@@ -33,32 +31,24 @@ public class AccessValidator(
         }
 
         var userOid = currentUserProvider.GetCurrentUserOid();
-        if (request is NeedProjectAccess projectCommand)
+        if (request is NeedProjectAccess projectRequest)
         {
-            if (!projectAccessChecker.HasCurrentUserAccessToProject(projectCommand.GetProjectGuidForAccessCheck()))
+            var projectGuidForAccessCheck = projectRequest.GetProjectGuidForAccessCheck();
+            if (!projectAccessChecker.HasCurrentUserAccessToProject(projectGuidForAccessCheck))
             {
                 logger.LogWarning("Current user {UserOid} don't have access to project {ProjectGuid}",
-                    userOid, projectCommand.GetProjectGuidForAccessCheck());
+                    userOid, projectGuidForAccessCheck);
                 return false;
             }
         }
 
-        if (request is CreatePunchItemCommand createPunchItemCommand)
+        if (request is CanHaveCheckListRestrictionsViaCheckList checkListRequest)
         {
-            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(createPunchItemCommand.CheckListGuid, cancellationToken))
+            var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
+            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))
             {
                 logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid}",
-                    userOid, createPunchItemCommand.CheckListGuid);
-                return false;
-            }
-        }
-
-        if (request is IIsPunchItemCommand punchItemCommand)
-        {
-            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(punchItemCommand.PunchItem.CheckListGuid, cancellationToken))
-            {
-                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList owning punch {PunchItemGuid}",
-                    userOid, punchItemCommand.PunchItemGuid);
+                    userOid, checkListGuidForWriteAccessCheck);
                 return false;
             }
         }
