@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Query;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectQuery
 
 [TestClass]
 public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : AccessValidatorTestBase
-    where TProjectQuery : IBaseRequest, IIsProjectQuery
+    where TProjectQuery : NeedProjectAccess, IBaseRequest
 {
     protected abstract TProjectQuery GetProjectQueryWithAccessToProjectToTest();
     protected abstract TProjectQuery GetProjectQueryWithoutAccessToProjectToTest();

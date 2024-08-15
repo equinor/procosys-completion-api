@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectComma
 
 [TestClass]
 public abstract class AccessValidatorForIIsProjectCommandTests<TProjectCommand> : AccessValidatorTestBase
-    where TProjectCommand : IBaseRequest, IIsProjectCommand
+    where TProjectCommand : NeedProjectAccess, IBaseRequest
 {
     protected abstract TProjectCommand GetProjectCommandWithAccessToBothProjectAndContent();
     protected abstract TProjectCommand GetProjectCommandWithAccessToProjectButNotContent();
