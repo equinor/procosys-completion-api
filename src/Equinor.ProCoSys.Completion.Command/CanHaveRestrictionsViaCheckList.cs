@@ -1,6 +1,7 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
 
-namespace Equinor.ProCoSys.Completion.Domain;
+namespace Equinor.ProCoSys.Completion.Command;
 
 // abstract class to be used for all MediatR commands (write) which need check if user has restrictions via checklist
 // In ProCoSys 4, it is possible to add a so-called Restrictions Role to users. If user has such role, the role define which

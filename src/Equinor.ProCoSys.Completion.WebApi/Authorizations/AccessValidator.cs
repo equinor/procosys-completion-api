@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.Extensions.Logging;

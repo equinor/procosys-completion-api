@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
