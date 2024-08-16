@@ -12,10 +12,12 @@ public class UpdatePunchItemAttachmentCommand(
     string description,
     IEnumerable<string> labels,
     string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public Guid AttachmentGuid { get; } = attachmentGuid;
     public string Description { get; } = description;
     public IEnumerable<string> Labels { get; } = labels;

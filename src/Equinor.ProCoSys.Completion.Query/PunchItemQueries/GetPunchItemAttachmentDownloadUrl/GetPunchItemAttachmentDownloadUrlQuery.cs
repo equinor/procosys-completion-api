@@ -1,17 +1,16 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 
-public class GetPunchItemAttachmentDownloadUrlQuery : IRequest<Result<Uri>>, IIsPunchItemQuery
+public class GetPunchItemAttachmentDownloadUrlQuery(Guid punchItemGuid, Guid attachmentGuid)
+    : INeedProjectAccess, IRequest<Result<Uri>>, IIsPunchItemRelatedQuery
 {
-    public GetPunchItemAttachmentDownloadUrlQuery(Guid punchItemGuid, Guid attachmentGuid)
-    {
-        PunchItemGuid = punchItemGuid;
-        AttachmentGuid = attachmentGuid;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public Guid AttachmentGuid { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => ProjectDetailsDto.Guid;
+    public Guid AttachmentGuid { get; } = attachmentGuid;
 }

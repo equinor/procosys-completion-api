@@ -5,9 +5,13 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 
-public class ClearPunchItemCommand(Guid punchItemGuid, string rowVersion) : IRequest<Result<string>>, IIsPunchItemCommand
+public class ClearPunchItemCommand(Guid punchItemGuid, string rowVersion) 
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+
     public string RowVersion { get; } = rowVersion;
 }

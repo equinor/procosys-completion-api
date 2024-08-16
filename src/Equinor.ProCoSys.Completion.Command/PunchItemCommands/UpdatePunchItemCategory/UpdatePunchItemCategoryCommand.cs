@@ -6,9 +6,11 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
 public class UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category category, string rowVersion)
-    : IRequest<Result<string>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public PunchItem PunchItem { get; set; } = null!;
     public Category Category { get; } = category;
     public string RowVersion { get; } = rowVersion;

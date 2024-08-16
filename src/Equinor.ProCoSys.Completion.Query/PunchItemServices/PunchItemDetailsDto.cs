@@ -6,6 +6,7 @@ public sealed record PunchItemDetailsDto(
     Guid Guid,
     Guid CheckListGuid,
     string ProjectName,
+    Guid ProjectGuid,
     long ItemNo,
     string Category,
     string Description,

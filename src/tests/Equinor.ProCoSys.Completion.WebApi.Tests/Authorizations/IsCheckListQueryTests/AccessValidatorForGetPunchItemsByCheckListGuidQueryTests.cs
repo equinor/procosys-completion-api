@@ -1,14 +1,23 @@
-﻿using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
+﻿using System;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests : AccessValidatorForIIsCheckListQueryTests<GetPunchItemsByCheckListGuidQuery>
+public class AccessValidatorForGetPunchItemsByCheckListGuidQueryTests
+    : AccessValidatorForQueryNeedAccessTests<GetPunchItemsByCheckListGuidQuery>
 {
-    protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithAccessToProject() 
-        => new (CheckListGuidWithAccessToProjectAndContent);
+    protected override GetPunchItemsByCheckListGuidQuery GetQueryWithAccessToProjectToTest()
+        => new(Guid.Empty)
+        {
+            ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithAccess)
+        };
 
-    protected override GetPunchItemsByCheckListGuidQuery GetCheckListQueryWithoutAccessToProject() 
-        => new (CheckListGuidWithoutAccessToProject);
+    protected override GetPunchItemsByCheckListGuidQuery GetQueryWithoutAccessToProjectToTest() 
+        => new (Guid.Empty)
+        {
+            ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithoutAccess)
+        };
 }

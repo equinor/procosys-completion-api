@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -918,6 +919,48 @@ public class PunchItemsControllerTests : TestBase
             _punchItemGuidUnderTest);
 
         Assert.IsInstanceOfType(res, typeof(ChecklistsByPunchGuidInstance));
+    }
+
+    [TestMethod]
+    public async Task PerformanceTest_For_Create_Clear()
+    {
+        var sw = Stopwatch.StartNew();
+
+        for (var i = 0; i < 100; i++)
+        {
+            var guidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+                UserType.Writer,
+                TestFactory.PlantWithAccess,
+                "PA",
+                Guid.NewGuid().ToString(),
+                TestFactory.ProjectGuidWithAccess,
+                TestFactory.CheckListGuidNotRestricted,
+                TestFactory.RaisedByOrgGuid,
+                TestFactory.ClearingByOrgGuid);
+
+            await PunchItemsControllerTestsHelper.ClearPunchItemAsync(
+                UserType.Writer, TestFactory.PlantWithAccess,
+                guidAndRowVersion.Guid,
+                guidAndRowVersion.RowVersion);
+        }
+        Console.WriteLine($"Ran {sw.ElapsedMilliseconds}ms");
+        //  We don't Assert. Difficult to set an expected maximum limit due to running on different machines / pipeline
+    }
+
+    [TestMethod]
+    public async Task PerformanceTest_For_Get()
+    {
+        var sw = Stopwatch.StartNew();
+
+        for (var i = 0; i < 100; i++)
+        {
+            await PunchItemsControllerTestsHelper
+                .GetPunchItemAsync(UserType.Reader, 
+                    TestFactory.PlantWithAccess, 
+                    _punchItemGuidUnderTest);
+        }
+        Console.WriteLine($"Ran {sw.ElapsedMilliseconds}ms");
+        //  We don't Assert. Difficult to set an expected maximum limit due to running on different machines / pipeline
     }
 
     private async Task<(

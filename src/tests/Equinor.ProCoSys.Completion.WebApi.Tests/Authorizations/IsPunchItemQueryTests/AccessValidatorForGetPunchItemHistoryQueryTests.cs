@@ -1,14 +1,23 @@
-﻿using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
+﻿using System;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
+using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemHistoryQueryTests : AccessValidatorForIIsPunchItemQueryTests<GetPunchItemHistoryQuery>
+public class AccessValidatorForGetPunchItemHistoryQueryTests
+    : AccessValidatorForQueryNeedAccessTests<GetPunchItemHistoryQuery>
 {
-    protected override GetPunchItemHistoryQuery GetPunchItemQueryWithAccessToProject()
-        => new(PunchItemGuidWithAccessToProjectAndContent);
+    protected override GetPunchItemHistoryQuery GetQueryWithAccessToProjectToTest()
+        => new(Guid.Empty)
+        {
+            ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithAccess)
+        };
 
-    protected override GetPunchItemHistoryQuery GetPunchItemQueryWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject);
+    protected override GetPunchItemHistoryQuery GetQueryWithoutAccessToProjectToTest()
+        => new(Guid.Empty)
+        {
+            ProjectDetailsDto = new ProjectDetailsDto("P", ProjectGuidWithoutAccess)
+        };
 }

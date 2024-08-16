@@ -4,8 +4,8 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 
-public interface IIsPunchItemQuery : IBaseRequest
+public interface IIsPunchItemRelatedQuery : IBaseRequest
 {
     Guid PunchItemGuid { get; }
-    PunchItemDetailsDto PunchItemDetailsDto { get; set; }
+    ProjectDetailsDto ProjectDetailsDto { get; set; }
 }

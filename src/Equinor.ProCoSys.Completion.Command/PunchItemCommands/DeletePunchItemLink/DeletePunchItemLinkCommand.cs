@@ -6,9 +6,11 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 
 public class DeletePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, string rowVersion)
-    : IRequest<Result<Unit>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<Unit>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public PunchItem PunchItem { get; set; } = null!;
     public Guid LinkGuid { get; } = linkGuid;
     public string RowVersion { get; } = rowVersion;

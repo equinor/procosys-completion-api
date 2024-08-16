@@ -1,17 +1,18 @@
-﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
+﻿using System;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchItemLinkCommandTests : AccessValidatorForIIsPunchItemCommandTests<CreatePunchItemLinkCommand>
+public class AccessValidatorForCreatePunchItemLinkCommandTests : AccessValidatorForCommandNeedAccessTests<CreatePunchItemLinkCommand>
 {
-    protected override CreatePunchItemLinkCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
-        => new(PunchItemGuidWithAccessToProjectAndContent, null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
+    protected override CreatePunchItemLinkCommand GetCommandWithAccessToBothProjectAndContent()
+        => new(Guid.Empty, null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
 
-    protected override CreatePunchItemLinkCommand GetPunchItemCommandWithAccessToProjectButNotContent()
-        => new(PunchItemGuidWithAccessToProjectButNotContent, null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
+    protected override CreatePunchItemLinkCommand GetCommandWithAccessToProjectButNotContent()
+        => new(Guid.Empty, null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
 
-    protected override CreatePunchItemLinkCommand GetPunchItemCommandWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject, null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
+    protected override CreatePunchItemLinkCommand GetCommandWithoutAccessToProject()
+        => new(Guid.Empty, null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
 }

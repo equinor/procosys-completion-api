@@ -25,6 +25,7 @@ public static class TestHelper
                 .ToList();
         return classes;
     }
+
     public static List<Type> GetInterfacesImplementingInterface(string assemblyName, Type interfaceType)
     {
         var assembly =
@@ -55,14 +56,31 @@ public static class TestHelper
 
     public static List<Type> GetTestsWhichInheritsBaseClass(Assembly assembly, Type baseClass)
     {
-        var accessValidatorForIPunchItemQueryTestClasses =
+        var types =
             assembly.GetTypes()
                 .Where(t =>
                     IsAEquinorType(t) &&
                     IsATestClass(t) &&
                     t.HasBaseClassOfType(baseClass))
                 .ToList();
-        return accessValidatorForIPunchItemQueryTestClasses;
+        return types;
+    }
+
+    public static List<Type> GetClassesInheritsBaseClass(string assemblyName, Type baseClass)
+    {
+        var assembly =
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Single(a => a.FullName is not null &&
+                             a.FullName.Contains(assemblyName) &&
+                             !a.FullName.Contains(".Test"));
+        var types =
+            assembly.GetTypes()
+                .Where(t =>
+                    IsAEquinorType(t) &&
+                    !t.IsAbstract &&
+                    t.IsAssignableTo(baseClass))
+                .ToList();
+        return types;
     }
 
     public static bool IsAEquinorType(Type type)

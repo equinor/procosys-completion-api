@@ -6,10 +6,12 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 
 public class CreatePunchItemLinkCommand(Guid punchItemGuid, string title, string url)
-    : IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public string Title { get; } = title;
     public string Url { get; } = url;
 }

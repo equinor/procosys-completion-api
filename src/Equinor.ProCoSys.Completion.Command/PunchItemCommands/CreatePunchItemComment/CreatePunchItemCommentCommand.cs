@@ -11,10 +11,13 @@ public class CreatePunchItemCommentCommand(
     string text,
     IEnumerable<string> labels,
     IEnumerable<Guid> mentions)
-    : IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+
     public string Text { get; } = text;
     public IEnumerable<string> Labels { get; } = labels;
     public IEnumerable<Guid> Mentions { get; } = mentions;

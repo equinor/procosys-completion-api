@@ -16,10 +16,6 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
 {
     private PunchItemDetailsDto _punchItemDetails;
 
-    private LibraryItemDto _raisedByOrg;
-    private LibraryItemDto _clearingByOrg;
-    private const string Code = "A30";
-
     private IPunchItemService _punchItemServiceMock;
     private GetPunchItemsByCheckListGuidQuery _query;
     private GetPunchItemsByCheckListGuidQueryHandler _dut;
@@ -27,10 +23,7 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _raisedByOrg = new LibraryItemDto(Guid.NewGuid(), Code, "raisedBy", LibraryType.COMPLETION_ORGANIZATION.ToString()); 
-        _clearingByOrg = new LibraryItemDto(Guid.NewGuid(), Code, "clearingBy", LibraryType.COMPLETION_ORGANIZATION.ToString());
-
-        _punchItemDetails = PunchItemDetailsDtoMock(_raisedByOrg, _clearingByOrg);
+        _punchItemDetails = PunchItemDetailsDtoMock();
 
         _punchItemServiceMock = Substitute.For<IPunchItemService>();
         _punchItemServiceMock.GetByCheckListGuid(_punchItemDetails.CheckListGuid, default)
@@ -54,11 +47,12 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
         CollectionAssert.Contains(data, _punchItemDetails);
     }
 
-    private PunchItemDetailsDto PunchItemDetailsDtoMock(LibraryItemDto raisedByOrg, LibraryItemDto clearedByOrg) =>
+    private PunchItemDetailsDto PunchItemDetailsDtoMock() =>
         new(
             Guid: Guid.NewGuid(),
             CheckListGuid: Guid.NewGuid(),
             ProjectName: "Mock Project",
+            ProjectGuid: Guid.NewGuid(), 
             ItemNo: 12345,
             Category: "Mock Category",
             Description: "This is a mock description.",
@@ -77,8 +71,8 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
             IsReadyToBeUnverified: false,
             VerifiedBy: null, 
             VerifiedAtUtc: null, 
-            raisedByOrg,
-            clearedByOrg,
+            RaisedByOrg: new LibraryItemDto(Guid.NewGuid(), "A30", "raisedBy", LibraryType.COMPLETION_ORGANIZATION.ToString()),
+            ClearingByOrg: new LibraryItemDto(Guid.NewGuid(), "A30", "clearingBy", LibraryType.COMPLETION_ORGANIZATION.ToString()),
             Priority: null, 
             Sorting: null,
             Type: null, 

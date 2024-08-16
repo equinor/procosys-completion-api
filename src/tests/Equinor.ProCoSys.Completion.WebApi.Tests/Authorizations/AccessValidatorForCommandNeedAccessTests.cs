@@ -1,23 +1,23 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemCommand> : AccessValidatorTestBase
-    where TPunchItemCommand : IBaseRequest, IIsPunchItemCommand
+public abstract class AccessValidatorForCommandNeedAccessTests<TCommand> : AccessValidatorTestBase
+    where TCommand : INeedProjectAccess, IBaseRequest
 {
-    protected abstract TPunchItemCommand GetPunchItemCommandWithAccessToBothProjectAndContent();
-    protected abstract TPunchItemCommand GetPunchItemCommandWithAccessToProjectButNotContent();
-    protected abstract TPunchItemCommand GetPunchItemCommandWithoutAccessToProject();
+    protected abstract TCommand GetCommandWithAccessToBothProjectAndContent();
+    protected abstract TCommand GetCommandWithAccessToProjectButNotContent();
+    protected abstract TCommand GetCommandWithoutAccessToProject();
 
     [TestMethod]
     public async Task Validate_ShouldReturnTrue_WhenAccessToBothProjectAndContent()
     {
         // Arrange
-        var command = GetPunchItemCommandWithAccessToBothProjectAndContent();
+        var command = GetCommandWithAccessToBothProjectAndContent();
 
         // act
         var result = await _dut.ValidateAsync(command, default);
@@ -30,7 +30,7 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var command = GetPunchItemCommandWithoutAccessToProject();
+        var command = GetCommandWithoutAccessToProject();
 
         // act
         var result = await _dut.ValidateAsync(command, default);
@@ -43,7 +43,7 @@ public abstract class AccessValidatorForIIsPunchItemCommandTests<TPunchItemComma
     public async Task Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
     {
         // Arrange
-        var command = GetPunchItemCommandWithAccessToProjectButNotContent();
+        var command = GetCommandWithAccessToProjectButNotContent();
 
         // act
         var result = await _dut.ValidateAsync(command, default);

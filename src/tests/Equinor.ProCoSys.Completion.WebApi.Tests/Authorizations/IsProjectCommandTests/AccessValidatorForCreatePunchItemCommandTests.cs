@@ -6,9 +6,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForIIsProjectCommandTests<CreatePunchItemCommand>
+public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForCommandNeedAccessTests<CreatePunchItemCommand>
 {
-    protected override CreatePunchItemCommand GetProjectCommandWithAccessToBothProjectAndContent()
+    protected override CreatePunchItemCommand GetCommandWithAccessToBothProjectAndContent()
         => new(
             Category.PA,
             null!,
@@ -31,7 +31,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
             null,
             null);
 
-    protected override CreatePunchItemCommand GetProjectCommandWithAccessToProjectButNotContent()
+    protected override CreatePunchItemCommand GetCommandWithAccessToProjectButNotContent()
         => new(Category.PA, 
             null!, 
             ProjectGuidWithAccess, 
@@ -53,7 +53,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
             null,
             null);
 
-    protected override CreatePunchItemCommand GetProjectCommandWithoutAccessToProject()
+    protected override CreatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(Category.PA,
             null!,
             ProjectGuidWithoutAccess,

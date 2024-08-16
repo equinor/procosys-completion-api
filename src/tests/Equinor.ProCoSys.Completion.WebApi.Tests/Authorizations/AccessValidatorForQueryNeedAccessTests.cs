@@ -1,22 +1,22 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Query;
+using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectQueryTests;
+namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : AccessValidatorTestBase
-    where TProjectQuery : IBaseRequest, IIsProjectQuery
+public abstract class AccessValidatorForQueryNeedAccessTests<TQuery> : AccessValidatorTestBase
+    where TQuery : INeedProjectAccess, IBaseRequest
 {
-    protected abstract TProjectQuery GetProjectQueryWithAccessToProjectToTest();
-    protected abstract TProjectQuery GetProjectQueryWithoutAccessToProjectToTest();
+    protected abstract TQuery GetQueryWithAccessToProjectToTest();
+    protected abstract TQuery GetQueryWithoutAccessToProjectToTest();
 
     [TestMethod]
     public async Task Validate_ShouldReturnTrue_WhenAccessToProject()
     {
         // Arrange
-        var query = GetProjectQueryWithAccessToProjectToTest();
+        var query = GetQueryWithAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(query, default);
@@ -29,7 +29,7 @@ public abstract class AccessValidatorForIIsProjectQueryTests<TProjectQuery> : Ac
     public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
-        var query = GetProjectQueryWithoutAccessToProjectToTest();
+        var query = GetQueryWithoutAccessToProjectToTest();
 
         // act
         var result = await _dut.ValidateAsync(query, default);
