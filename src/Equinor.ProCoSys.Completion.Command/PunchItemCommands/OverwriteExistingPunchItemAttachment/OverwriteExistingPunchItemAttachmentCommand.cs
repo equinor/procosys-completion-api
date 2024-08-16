@@ -12,12 +12,12 @@ public class OverwriteExistingPunchItemAttachmentCommand(
     string rowVersion,
     Stream content,
     string contentType)
-    : UploadAttachmentCommand(content), IRequest<Result<string>>, IIsPunchItemCommand
+    : UploadAttachmentCommand(content), ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
-    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
-    public override Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public string FileName { get; } = fileName;
     public string RowVersion { get; } = rowVersion;
     public string ContentType { get; } = contentType;

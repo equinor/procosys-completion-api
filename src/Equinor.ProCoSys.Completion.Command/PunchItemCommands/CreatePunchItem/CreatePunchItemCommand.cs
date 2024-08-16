@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
@@ -7,7 +6,7 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommand
-    : CanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
 {
     public CreatePunchItemCommand(
         Category category,
@@ -73,6 +72,6 @@ public class CreatePunchItemCommand
     public bool MaterialRequired { get; }
     public DateTime? MaterialETAUtc { get; }
     public string? MaterialExternalNo { get; }
-    public override Guid GetProjectGuidForAccessCheck() => ProjectGuid;
-    public override Guid GetCheckListGuidForWriteAccessCheck() => CheckListGuid;
+    public Guid GetProjectGuidForAccessCheck() => ProjectGuid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => CheckListGuid;
 }

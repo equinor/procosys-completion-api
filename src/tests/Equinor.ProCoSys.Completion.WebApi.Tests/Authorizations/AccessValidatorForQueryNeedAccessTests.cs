@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
 public abstract class AccessValidatorForQueryNeedAccessTests<TQuery> : AccessValidatorTestBase
-    where TQuery : NeedProjectAccess, IBaseRequest
+    where TQuery : INeedProjectAccess, IBaseRequest
 {
     protected abstract TQuery GetQueryWithAccessToProjectToTest();
     protected abstract TQuery GetQueryWithoutAccessToProjectToTest();

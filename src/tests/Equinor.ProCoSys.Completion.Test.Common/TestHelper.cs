@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -60,7 +61,7 @@ public static class TestHelper
                 .Where(t =>
                     IsAEquinorType(t) &&
                     IsATestClass(t) &&
-                    t.IsAssignableTo(baseClass))
+                    t.HasBaseClassOfType(baseClass))
                 .ToList();
         return types;
     }

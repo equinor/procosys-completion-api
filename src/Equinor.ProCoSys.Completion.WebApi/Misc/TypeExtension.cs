@@ -25,12 +25,23 @@ public static class TypeExtension
 
     public static bool HasBaseClassOfType(this Type type, Type baseType)
     {
-        var baseTypeFullName = baseType.FullName!;
-        var hasBaseClassOfType =
-            type.BaseType?.FullName != null &&
-            type.BaseType.FullName.StartsWith(baseTypeFullName);
+        while (type != null && type != typeof(object))
+        {
+            var baseTypeFullName = baseType.FullName!;
+            if (type.BaseType?.FullName != null &&
+                type.BaseType.FullName.StartsWith(baseTypeFullName))
+            {
+                return true;
+            }
 
-        return hasBaseClassOfType;
+            if (type.BaseType is null)
+            {
+                return false;
+            }
+            type = type.BaseType;
+        }
+
+        return false;
     }
 
     private static IEnumerable<PropertyInfo> GetPropertiesWithAttribute(IEnumerable<PropertyInfo> props, Type attributeType)

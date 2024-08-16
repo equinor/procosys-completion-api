@@ -8,9 +8,9 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunchItemGuid;
 
 public class GetCheckListsByPunchItemGuidQuery(Guid punchItemGuid)
-    : NeedProjectAccess, IRequest<Result<ChecklistsByPunchGuidInstance>>, IIsPunchItemRelatedQuery
+    : INeedProjectAccess, IRequest<Result<ChecklistsByPunchGuidInstance>>, IIsPunchItemRelatedQuery
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;
-    public override Guid GetProjectGuidForAccessCheck() => ProjectDetailsDto.Guid;
+    public Guid GetProjectGuidForAccessCheck() => ProjectDetailsDto.Guid;
 }

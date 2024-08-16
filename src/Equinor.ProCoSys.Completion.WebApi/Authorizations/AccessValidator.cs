@@ -29,7 +29,7 @@ public class AccessValidator(
         }
 
         var userOid = currentUserProvider.GetCurrentUserOid();
-        if (request is NeedProjectAccess projectRequest)
+        if (request is INeedProjectAccess projectRequest)
         {
             var projectGuidForAccessCheck = projectRequest.GetProjectGuidForAccessCheck();
             if (!projectAccessChecker.HasCurrentUserAccessToProject(projectGuidForAccessCheck))
@@ -40,7 +40,7 @@ public class AccessValidator(
             }
         }
 
-        if (request is CanHaveRestrictionsViaCheckList checkListRequest)
+        if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
             var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
             if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))

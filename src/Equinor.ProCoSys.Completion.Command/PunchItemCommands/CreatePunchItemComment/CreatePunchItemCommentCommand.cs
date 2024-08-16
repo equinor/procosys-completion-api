@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
@@ -12,12 +11,12 @@ public class CreatePunchItemCommentCommand(
     string text,
     IEnumerable<string> labels,
     IEnumerable<Guid> mentions)
-    : CanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;
-    public override Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
-    public override Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
 
     public string Text { get; } = text;
     public IEnumerable<string> Labels { get; } = labels;

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json.Serialization;
-using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command;
 
-public abstract class UploadAttachmentCommand(Stream content)
-    : CanHaveRestrictionsViaCheckList, IDisposable
+public abstract class UploadAttachmentCommand(Stream content) : IDisposable
 {
     private bool _isDisposed;
 

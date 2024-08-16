@@ -12,7 +12,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public class AccessValidatorTestBase
+public abstract class AccessValidatorTestBase
 {
     protected static string Plant = "P";
 
