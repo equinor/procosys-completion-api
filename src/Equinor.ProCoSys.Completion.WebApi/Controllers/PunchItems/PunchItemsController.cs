@@ -201,6 +201,29 @@ public class PunchItemsController : ControllerBase
     }
 
     /// <summary>
+    /// Duplicate a PunchItem to given checklists
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem to duplicate</param>
+    /// <param name="dto"></param>
+    /// <returns>List of Guid and RowVersion of created PunchItems</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_CREATE, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Duplicate")]
+    public Task<ActionResult<List<GuidAndRowVersion>>> DuplicatePunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [FromRoute] Guid guid,
+        [FromBody] DuplicatePunchItemDto dto)
+    {
+
+        throw new NotImplementedException();
+    }
+    /// <summary>
     /// Update (patch) a PunchItem
     /// </summary>
     /// <description>test</description>

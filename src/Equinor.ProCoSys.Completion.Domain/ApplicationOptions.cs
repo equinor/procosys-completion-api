@@ -13,4 +13,5 @@ public class ApplicationOptions
     public bool DevOnLocalhost { get; set; }
     public Guid ObjectId { get; set; }
     public int CheckListCacheExpirationMinutes { get; set; } = 20;
+    public int MaxDuplicatePunch { get; set; } = 50;
 }
