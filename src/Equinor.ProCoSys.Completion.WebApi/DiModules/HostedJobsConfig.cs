@@ -19,7 +19,7 @@ public static class HostedJobsConfig
             DebugOptions.DebugEntityFrameworkInDevelopment = builder.Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
         }
 
-        if (!builder.Environment.IsProduction() && builder.Configuration.GetValue<bool>("SeedDummyData"))
+        if (!builder.Environment.IsProduction() && !builder.Environment.IsTest() && builder.Configuration.GetValue<bool>("SeedDummyData"))
         {
             builder.Services.AddHostedService<Seeder>();
         }
