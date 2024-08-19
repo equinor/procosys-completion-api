@@ -25,4 +25,7 @@ public class AttachmentRepository(CompletionContext context)
 
     public async Task<IEnumerable<Attachment>> GetAllByParentGuidAsync(Guid parentGuid, CancellationToken cancellationToken) 
         => await DefaultQueryable.Where(a => a.ParentGuid == parentGuid).ToListAsync(cancellationToken);
+
+    public async Task<List<Attachment>> GetAttachmentsByParentGuid(Guid parentGuid, CancellationToken cancellationToken)
+        => await DefaultQueryable.Where(a => a.ParentGuid == parentGuid).ToListAsync(cancellationToken);
 }

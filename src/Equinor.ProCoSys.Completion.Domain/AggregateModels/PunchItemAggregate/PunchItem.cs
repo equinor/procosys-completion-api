@@ -429,4 +429,14 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ActionBy = actionBy;
         ItemNo = itemNo;
     }
+
+    public PunchItem ShallowCopy(Guid checkListGuid)
+    {
+        var copy = (PunchItem)this.MemberwiseClone();
+        copy.Id = default;
+        copy.Guid = MassTransit.NewId.NextGuid();
+        copy.ItemNo = default;
+        copy.CheckListGuid = checkListGuid;
+        return copy;
+    }
 }

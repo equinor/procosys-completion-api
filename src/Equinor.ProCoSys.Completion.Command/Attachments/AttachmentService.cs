@@ -124,6 +124,63 @@ public class AttachmentService(
         return attachment is not null;
     }
 
+    public async Task<List<AttachmentDto>> CopyAttachments(List<Attachment> attachments, string parentType, Guid parentGuid, string project, CancellationToken cancellationToken)
+    {
+        var newAttachments = new List<Attachment>();
+
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
+        foreach (var att in attachments)
+        {
+            var attachment =
+                await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, att.FileName,
+                    cancellationToken);
+            if (attachment is not null)
+            {
+                throw new Exception(
+                    $"{parentType} {parentGuid} already has an attachment with filename {att.FileName}");
+            }
+
+            attachment = new Attachment(
+                project,
+                parentType,
+                parentGuid,
+                att.FileName);
+
+            attachmentRepository.Add(attachment);
+            newAttachments.Add(attachment);
+
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var copied = true; /*await azureBlobService.CopyBlobAsync(
+                blobStorageOptions.Value.BlobContainer,
+                att.GetFullBlobPath(),
+                attachment.GetFullBlobPath(),
+                true,
+                cancellationToken
+            );*/
+
+            var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+            await syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
+
+            if (!copied)
+            {
+                await unitOfWork.RollbackTransactionAsync(cancellationToken);
+
+                newAttachments.ForEach(BlobRollback);
+
+                throw new Exception($"Unable to copy attachments for {parentType} with Guid {parentGuid}");
+
+                async void BlobRollback(Attachment a)
+                {
+                    await azureBlobService.DeleteAsync(blobStorageOptions.Value.BlobContainer, a.GetFullBlobPath(), cancellationToken);
+                }
+            }
+        }
+
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
+        return newAttachments.Select(a => new AttachmentDto(a.Guid, a.RowVersion.ConvertToString())).ToList();
+    }
+
     public async Task DeleteAsync(
         Guid guid,
         string rowVersion,

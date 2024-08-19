@@ -10,4 +10,5 @@ public interface IAttachmentRepository : IRepositoryWithGuid<Attachment>
     Task<Attachment?> GetAttachmentWithFileNameForParentAsync(Guid parentGuid, string fileName, CancellationToken cancellationToken);
     Task<Attachment> GetAttachmentWithLabelsAsync(Guid attachmentGuid, CancellationToken cancellationToken);
     Task<IEnumerable<Attachment>> GetAllByParentGuidAsync(Guid parentGuid, CancellationToken cancellationToken);
+    Task<List<Attachment>> GetAttachmentsByParentGuid(Guid parentGuid, CancellationToken cancellationToken);
 }
