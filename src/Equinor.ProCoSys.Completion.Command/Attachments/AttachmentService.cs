@@ -151,13 +151,13 @@ public class AttachmentService(
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var copied = true; /*await azureBlobService.CopyBlobAsync(
+            var copied = await azureBlobService.CopyBlobAsync(
                 blobStorageOptions.Value.BlobContainer,
                 att.GetFullBlobPath(),
                 attachment.GetFullBlobPath(),
                 true,
                 cancellationToken
-            );*/
+            );
 
             var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
             await syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken);
