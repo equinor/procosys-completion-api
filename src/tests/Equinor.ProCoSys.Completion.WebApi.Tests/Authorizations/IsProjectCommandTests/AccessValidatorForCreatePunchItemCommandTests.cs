@@ -1,5 +1,4 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,7 +12,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
         => new(
             Category.PA,
             null!,
-            CheckListGuidWithAccessToContent,
+            CheckListWithAccessToBothProjectAndContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -31,14 +30,13 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             null)
         {
-            CheckListDetailsDto =
-                new CheckListDetailsDto(CheckListGuidWithAccessToContent, "R", false, ProjectGuidWithAccess)
+            CheckListDetailsDto = CheckListWithAccessToBothProjectAndContent
         };
 
     protected override CreatePunchItemCommand GetCommandWithAccessToProjectButNotContent()
         => new(Category.PA, 
-            null!, 
-            CheckListGuidWithoutAccessToContent,
+            null!,
+            CheckListWithAccessToProjectButNotContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -56,14 +54,13 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             null)
         {
-            CheckListDetailsDto =
-                new CheckListDetailsDto(CheckListGuidWithoutAccessToContent, "R", false, ProjectGuidWithAccess)
+            CheckListDetailsDto = CheckListWithAccessToProjectButNotContent
         };
 
     protected override CreatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(Category.PA,
             null!,
-            ProjectGuidWithoutAccess,
+            CheckListWithoutAccessToProject.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -81,7 +78,6 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             null)
         {
-            CheckListDetailsDto =
-                new CheckListDetailsDto(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess)
+            CheckListDetailsDto = CheckListWithoutAccessToProject
         };
 }

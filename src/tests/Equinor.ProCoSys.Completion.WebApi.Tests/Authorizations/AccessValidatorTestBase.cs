@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -35,6 +36,13 @@ public abstract class AccessValidatorTestBase
     protected static PunchItem PunchItemWithAccessToProjectButNotContent
         = new(Plant, s_projectWithAccess, CheckListGuidWithoutAccessToContent, Category.PA, null!, Org, Org);
 
+    protected static CheckListDetailsDto CheckListWithAccessToBothProjectAndContent =
+        new(CheckListGuidWithAccessToContent, "R", false, ProjectGuidWithAccess);
+    protected static CheckListDetailsDto CheckListWithAccessToProjectButNotContent =
+        new(CheckListGuidWithoutAccessToContent, "R", false, ProjectGuidWithAccess);
+    protected static CheckListDetailsDto CheckListWithoutAccessToProject =
+        new(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess);
+
     protected AccessValidator _dut = null!;
 
     [TestInitialize]
@@ -50,6 +58,12 @@ public abstract class AccessValidatorTestBase
         accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent, Arg.Any<CancellationToken>())
             .Returns(true);
         accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
+            .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToProjectButNotContent)
+            .Returns(false);
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToBothProjectAndContent)
+            .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithoutAccessToProject)
             .Returns(true);
         _dut = new AccessValidator(
             Substitute.For<ICurrentUserProvider>(),

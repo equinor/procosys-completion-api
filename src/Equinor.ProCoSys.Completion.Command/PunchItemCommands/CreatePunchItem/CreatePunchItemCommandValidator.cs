@@ -28,7 +28,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 
             // validate given CheckList
             .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
-            .WithMessage(command => $"Tag owning check list is voided! Guid={command.CheckListGuid}")
+            .WithMessage(command => $"Tag owning check list is voided! Check list guid={command.CheckListGuid}")
 
             // validate given RaisedByOrg
             .MustAsync((command, cancellationToken)
