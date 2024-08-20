@@ -41,7 +41,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             category,
             description,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
@@ -109,7 +108,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -184,7 +182,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
@@ -250,7 +247,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             description,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
@@ -295,7 +291,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -326,7 +321,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -352,7 +346,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -722,7 +715,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -749,7 +741,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -777,7 +768,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -807,7 +797,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -847,7 +836,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -875,7 +863,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -933,7 +920,6 @@ public class PunchItemsControllerTests : TestBase
                 TestFactory.PlantWithAccess,
                 "PA",
                 Guid.NewGuid().ToString(),
-                TestFactory.ProjectGuidWithAccess,
                 TestFactory.CheckListGuidNotRestricted,
                 TestFactory.RaisedByOrgGuid,
                 TestFactory.ClearingByOrgGuid);
@@ -972,7 +958,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -995,7 +980,6 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -1019,7 +1003,6 @@ public class PunchItemsControllerTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);

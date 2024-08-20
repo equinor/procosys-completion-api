@@ -11,7 +11,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public class PunchItemsControllerRestrictedContentTests : TestBase
 {
     private readonly string _plantWithAccess = TestFactory.PlantWithAccess;
-    private readonly Guid _projectGuidWithAccess = TestFactory.ProjectGuidWithAccess;
 
     #region CreatePunchItem
     [TestMethod]
@@ -21,7 +20,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             _plantWithAccess,
             "PA",
             "PunchItem1",
-            _projectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
@@ -265,7 +263,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -288,7 +285,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -313,7 +309,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -335,7 +330,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -356,7 +350,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             _plantWithAccess,
             "PA",
             "PunchItem1",
-            _projectGuidWithAccess,
             TestFactory.CheckListGuidRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid,
