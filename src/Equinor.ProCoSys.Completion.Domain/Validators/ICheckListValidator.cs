@@ -6,7 +6,5 @@ namespace Equinor.ProCoSys.Completion.Domain.Validators;
 
 public interface ICheckListValidator
 {
-    Task<bool> ExistsAsync(Guid checkListGuid, CancellationToken cancellationToken);
     Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid, CancellationToken cancellationToken);
-    Task<bool> InProjectAsync(Guid checkListGuid, Guid projectGuid, CancellationToken cancellationToken);
 }
