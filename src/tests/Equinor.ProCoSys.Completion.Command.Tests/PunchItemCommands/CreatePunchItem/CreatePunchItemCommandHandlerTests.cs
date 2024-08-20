@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -48,7 +49,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[TestPlantA].Guid,
             _existingCheckListGuid,
             _existingRaisedByOrg1[TestPlantA].Guid,
             _existingClearingByOrg1[TestPlantA].Guid,
@@ -65,7 +65,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             "123",
             true,
             DateTime.UtcNow,
-            "123.1");
+            "123.1")
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         _dut = new CreatePunchItemCommandHandler(
             _plantProviderMock,
@@ -128,7 +132,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         var command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[TestPlantA].Guid,
             _existingCheckListGuid,
             _existingRaisedByOrg1[TestPlantA].Guid,
             _existingClearingByOrg1[TestPlantA].Guid,
@@ -145,7 +148,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         // Act
         await _dut.Handle(command, default);
@@ -338,7 +345,6 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         var command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[TestPlantA].Guid,
             _existingCheckListGuid,
             _existingRaisedByOrg1[TestPlantA].Guid,
             _existingClearingByOrg1[TestPlantA].Guid,
@@ -355,7 +361,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         // Act
         await _dut.Handle(command, default);
