@@ -9,6 +9,8 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using CheckListQueryDetailsDto = Equinor.ProCoSys.Completion.Query.CheckListDetailsDto;
+using CheckListCommandDetailsDto = Equinor.ProCoSys.Completion.Command.PunchItemCommands.CheckListDetailsDto;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Behaviors;
 
@@ -66,12 +68,32 @@ public class PrefetchBehavior<TRequest, TResponse>(
             }
         }
 
+        else if (request is IIsCheckListCommand checkListCommand)
+        {
+            var checkListDto = await checkListCache.GetCheckListAsync(checkListCommand.CheckListGuid, cancellationToken);
+            if (checkListDto is not null)
+            {
+                checkListCommand.CheckListDetailsDto =
+                    new CheckListCommandDetailsDto(
+                        checkListCommand.CheckListGuid,
+                        checkListDto.ResponsibleCode, 
+                        checkListDto.IsVoided,
+                        checkListDto.ProjectGuid);
+            }
+            else
+            {
+                // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
+                throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListCommand.CheckListGuid}");
+            }
+        }
+
         else if (request is IIsCheckListQuery checkListQuery)
         {
             var checkListDto = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
             if (checkListDto is not null)
             {
-                checkListQuery.ProjectDetailsDto = new ProjectDetailsDto(null!, checkListDto.ProjectGuid);
+                checkListQuery.CheckListDetailsDto =
+                    new CheckListQueryDetailsDto(checkListQuery.CheckListGuid, checkListDto.ProjectGuid);
             }
             else
             {
