@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,6 +18,7 @@ public class AccessCheckerTests
     private AccessChecker _dut = null!;
     private IRestrictionRolesChecker _restrictionRolesCheckerMock = null!;
     private ICheckListCache _checkListCacheMock = null!;
+    private readonly CheckListDetailsDto _checkListDetailsDto = new(Guid.NewGuid(), "R", false, Guid.NewGuid());
 
     [TestInitialize]
     public void Setup()
@@ -41,6 +43,19 @@ public class AccessCheckerTests
     }
 
     [TestMethod]
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnTrue_WhenUserHasNoRestrictions()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(true);
+
+        // Act
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
     public async Task HasCurrentUserWriteAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
     {
         // Arrange
@@ -56,6 +71,20 @@ public class AccessCheckerTests
     }
 
     [TestMethod]
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnTrue_WhenUserHasAccessToCheckList()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_checkListDetailsDto.ResponsibleCode).Returns(true);
+
+        // Act
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
     public async Task HasCurrentUserWriteAccessToCheckListAsync_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
     {
         // Arrange
@@ -65,6 +94,20 @@ public class AccessCheckerTests
 
         // Act
         var result = await _dut.HasCurrentUserWriteAccessToCheckListAsync(_checkListGuid, default);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
+    {
+        // Arrange
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_checkListDetailsDto.ResponsibleCode).Returns(false);
+
+        // Act
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
 
         // Assert
         Assert.IsFalse(result);

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
@@ -18,6 +19,15 @@ public class AccessChecker(IRestrictionRolesChecker restrictionRolesChecker, ICh
         }
 
         return await HasCurrentUserExplicitAccessToContent(checkListGuid, cancellationToken);
+    }
+
+    public bool HasCurrentUserWriteAccessToCheckList(CheckListDetailsDto checkListDetailsDto)
+    {
+        if (restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
+        {
+            return true;
+        }
+        return restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkListDetailsDto.ResponsibleCode);
     }
 
     private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid, CancellationToken cancellationToken)
