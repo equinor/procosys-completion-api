@@ -6,12 +6,11 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
 public class CreatePunchItemCommand
-    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
+    : ICanHaveRestrictionsViaCheckList, IIsCheckListCommand, IRequest<Result<GuidAndRowVersion>>
 {
     public CreatePunchItemCommand(
         Category category,
         string description,
-        Guid projectGuid,
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
@@ -32,7 +31,6 @@ public class CreatePunchItemCommand
     {
         Category = category;
         Description = description;
-        ProjectGuid = projectGuid;
         CheckListGuid = checkListGuid;
         RaisedByOrgGuid = raisedByOrgGuid;
         ClearingByOrgGuid = clearingByOrgGuid;
@@ -54,8 +52,8 @@ public class CreatePunchItemCommand
 
     public Category Category { get; }
     public string Description { get; }
-    public Guid ProjectGuid { get; }
     public Guid CheckListGuid { get; }
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public Guid RaisedByOrgGuid { get; }
     public Guid ClearingByOrgGuid { get; }
     public Guid? ActionByPersonOid { get; }
@@ -72,6 +70,6 @@ public class CreatePunchItemCommand
     public bool MaterialRequired { get; }
     public DateTime? MaterialETAUtc { get; }
     public string? MaterialExternalNo { get; }
-    public Guid GetProjectGuidForAccessCheck() => ProjectGuid;
+    public Guid GetProjectGuidForAccessCheck() => CheckListDetailsDto.ProjectGuid;
     public Guid GetCheckListGuidForWriteAccessCheck() => CheckListGuid;
 }
