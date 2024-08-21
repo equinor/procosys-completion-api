@@ -1,10 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
 public interface IAccessValidator
 {
-    Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest: IBaseRequest;
+    bool HasAccess<TRequest>(TRequest request) where TRequest: IBaseRequest;
 }

@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -68,24 +69,6 @@ public class PrefetchBehavior<TRequest, TResponse>(
             }
         }
 
-        else if (request is IIsCheckListCommand checkListCommand)
-        {
-            var checkListDto = await checkListCache.GetCheckListAsync(checkListCommand.CheckListGuid, cancellationToken);
-            if (checkListDto is not null)
-            {
-                checkListCommand.CheckListDetailsDto =
-                    new CheckListCommandDetailsDto(
-                        checkListCommand.CheckListGuid,
-                        checkListDto.ResponsibleCode, 
-                        checkListDto.IsVoided,
-                        checkListDto.ProjectGuid);
-            }
-            else
-            {
-                // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
-                throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListCommand.CheckListGuid}");
-            }
-        }
 
         else if (request is IIsCheckListQuery checkListQuery)
         {
@@ -99,6 +82,27 @@ public class PrefetchBehavior<TRequest, TResponse>(
             {
                 // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
                 throw new EntityNotFoundException($"Check list with this guid does not exist! Guid={checkListQuery.CheckListGuid}");
+            }
+        }
+
+        // This check must come AFTER prefetching PunchList. GetCheckListGuidForWriteAccessCheck() uses PunchList
+        if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
+        {
+            var checkListGuid = checkListRequest.GetCheckListGuidForWriteAccessCheck();
+            var checkListDto = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+            if (checkListDto is not null)
+            {
+                checkListRequest.CheckListDetailsDto =
+                    new CheckListCommandDetailsDto(
+                        checkListGuid,
+                        checkListDto.ResponsibleCode,
+                        checkListDto.IsVoided,
+                        checkListDto.ProjectGuid);
+            }
+            else
+            {
+                // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
+                throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListGuid}");
             }
         }
 

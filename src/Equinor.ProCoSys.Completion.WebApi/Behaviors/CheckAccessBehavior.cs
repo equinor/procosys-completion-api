@@ -8,25 +8,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Behaviors;
 
-public class CheckAccessBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+public class CheckAccessBehavior<TRequest, TResponse>(
+    ILogger<CheckAccessBehavior<TRequest, TResponse>> logger,
+    IAccessValidator accessValidator)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
-    private readonly ILogger<CheckAccessBehavior<TRequest, TResponse>> _logger;
-    private readonly IAccessValidator _accessValidator;
-    public CheckAccessBehavior(ILogger<CheckAccessBehavior<TRequest, TResponse>> logger, IAccessValidator accessValidator)
-    {
-        _logger = logger;
-        _accessValidator = accessValidator;
-    }
-
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var typeName = request.GetGenericTypeName();
 
-        _logger.LogInformation("----- Checking access for {TypeName}", typeName);
+        logger.LogInformation("----- Checking access for {TypeName}", typeName);
 
-        if (!await _accessValidator.ValidateAsync(request as IBaseRequest, cancellationToken))
+        if (!accessValidator.HasAccess(request as IBaseRequest))
         {
-            _logger.LogWarning("User do not have access - {TypeName}", typeName);
+            logger.LogWarning("User do not have access - {TypeName}", typeName);
 
             throw new UnauthorizedAccessException();
         }

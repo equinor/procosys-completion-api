@@ -18,6 +18,7 @@ public class UpdatePunchItemAttachmentCommand(
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public Guid AttachmentGuid { get; } = attachmentGuid;
     public string Description { get; } = description;
     public IEnumerable<string> Labels { get; } = labels;

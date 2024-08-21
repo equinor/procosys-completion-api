@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -22,7 +19,7 @@ public class AccessValidator(
     ILogger<AccessValidator> logger)
     : IAccessValidator
 {
-    public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IBaseRequest
+    public bool HasAccess<TRequest>(TRequest request) where TRequest : IBaseRequest
     {
         if (request is null)
         {
@@ -43,25 +40,12 @@ public class AccessValidator(
 
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
-            if (request is IIsCheckListCommand checkListCommand)
+            var checkListDetailsDto = checkListRequest.CheckListDetailsDto;
+            if (!accessChecker.HasCurrentUserWriteAccessToCheckList(checkListDetailsDto))
             {
-                var checkListDetailsDto = checkListCommand.CheckListDetailsDto;
-                if (!accessChecker.HasCurrentUserWriteAccessToCheckList(checkListDetailsDto))
-                {
-                    logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
-                        userOid, checkListDetailsDto.CheckListGuid);
-                    return false;
-                }
-            }
-            else
-            {
-                var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
-                if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))
-                {
-                    logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
-                        userOid, checkListGuidForWriteAccessCheck);
-                    return false;
-                }
+                logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
+                    userOid, checkListDetailsDto.CheckListGuid);
+                return false;
             }
         }
 
