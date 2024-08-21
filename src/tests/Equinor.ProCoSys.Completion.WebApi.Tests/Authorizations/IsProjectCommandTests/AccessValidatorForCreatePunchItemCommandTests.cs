@@ -60,7 +60,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
     protected override CreatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(Category.PA,
             null!,
-            CheckListWithoutAccessToProject.CheckListGuid,
+            CheckListWithAccessCheckListButNotProject.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -78,6 +78,6 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             null)
         {
-            CheckListDetailsDto = CheckListWithoutAccessToProject
+            CheckListDetailsDto = CheckListWithAccessCheckListButNotProject
         };
 }

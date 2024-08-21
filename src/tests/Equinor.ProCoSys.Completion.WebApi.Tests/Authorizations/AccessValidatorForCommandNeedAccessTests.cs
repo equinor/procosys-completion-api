@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,39 +13,39 @@ public abstract class AccessValidatorForCommandNeedAccessTests<TCommand> : Acces
     protected abstract TCommand GetCommandWithoutAccessToProject();
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToBothProjectAndContent()
+    public void Validate_ShouldReturnTrue_WhenAccessToBothProjectAndContent()
     {
         // Arrange
         var command = GetCommandWithAccessToBothProjectAndContent();
 
         // act
-        var result = await _dut.ValidateAsync(command, default);
+        var result = _dut.HasAccess(command);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
+    public void Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
         var command = GetCommandWithoutAccessToProject();
 
         // act
-        var result = await _dut.ValidateAsync(command, default);
+        var result = _dut.HasAccess(command);
 
         // Assert
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
+    public void Validate_ShouldReturnFalse_WhenAccessToProjectButNotContent()
     {
         // Arrange
         var command = GetCommandWithAccessToProjectButNotContent();
 
         // act
-        var result = await _dut.ValidateAsync(command, default);
+        var result = _dut.HasAccess(command);
 
         // Assert
         Assert.IsFalse(result);

@@ -8,11 +8,23 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCom
 public class AccessValidatorForUpdatePunchItemAttachmentCommandTests : AccessValidatorForCommandNeedAccessTests<UpdatePunchItemAttachmentCommand>
 {
     protected override UpdatePunchItemAttachmentCommand GetCommandWithAccessToBothProjectAndContent()
-        => new(Guid.Empty, Guid.Empty, "a", null!, null!) { PunchItem = PunchItemWithAccessToProjectAndContent };
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessToProjectAndContent,
+            CheckListDetailsDto = CheckListWithAccessToBothProjectAndContent
+        };
 
     protected override UpdatePunchItemAttachmentCommand GetCommandWithAccessToProjectButNotContent()
-        => new(Guid.Empty, Guid.Empty, "a", null!, null!) { PunchItem = PunchItemWithAccessToProjectButNotContent };
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessToProjectButNotContent,
+            CheckListDetailsDto = CheckListWithAccessToProjectButNotContent
+        };
 
     protected override UpdatePunchItemAttachmentCommand GetCommandWithoutAccessToProject()
-        => new(Guid.Empty, Guid.Empty, "a", null!, null!) { PunchItem = PunchItemWithoutAccessToProject };
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessCheckListButNotProject,
+            CheckListDetailsDto = CheckListWithAccessCheckListButNotProject
+        };
 }

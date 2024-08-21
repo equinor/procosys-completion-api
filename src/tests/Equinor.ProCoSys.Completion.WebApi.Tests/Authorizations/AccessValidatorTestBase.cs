@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Threading;
-using Equinor.ProCoSys.Completion.WebApi.Authorizations;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.WebApi.Authorizations;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
@@ -30,7 +29,7 @@ public abstract class AccessValidatorTestBase
 
     protected static Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
     private static readonly Project s_projectWithoutAccess = new(Plant, ProjectGuidWithoutAccess, null!, null!);
-    protected static PunchItem PunchItemWithoutAccessToProject
+    protected static PunchItem PunchItemWithAccessCheckListButNotProject
         = new(Plant, s_projectWithoutAccess, CheckListGuidWithAccessToContent, Category.PA, null!, Org, Org);
 
     protected static PunchItem PunchItemWithAccessToProjectButNotContent
@@ -40,7 +39,7 @@ public abstract class AccessValidatorTestBase
         new(CheckListGuidWithAccessToContent, "R", false, ProjectGuidWithAccess);
     protected static CheckListDetailsDto CheckListWithAccessToProjectButNotContent =
         new(CheckListGuidWithoutAccessToContent, "R", false, ProjectGuidWithAccess);
-    protected static CheckListDetailsDto CheckListWithoutAccessToProject =
+    protected static CheckListDetailsDto CheckListWithAccessCheckListButNotProject =
         new(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess);
 
     protected AccessValidator _dut = null!;
@@ -53,17 +52,11 @@ public abstract class AccessValidatorTestBase
         projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
         var accessCheckerMock = Substitute.For<IAccessChecker>();
-        accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent, Arg.Any<CancellationToken>())
-            .Returns(false);
-        accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent, Arg.Any<CancellationToken>())
-            .Returns(true);
-        accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
-            .Returns(true);
         accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToProjectButNotContent)
             .Returns(false);
         accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToBothProjectAndContent)
             .Returns(true);
-        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithoutAccessToProject)
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessCheckListButNotProject)
             .Returns(true);
         _dut = new AccessValidator(
             Substitute.For<ICurrentUserProvider>(),
