@@ -12,6 +12,7 @@ public class DeletePunchItemAttachmentCommand(Guid punchItemGuid, Guid attachmen
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public Guid AttachmentGuid { get; } = attachmentGuid;
     public string RowVersion { get; } = rowVersion;
 }

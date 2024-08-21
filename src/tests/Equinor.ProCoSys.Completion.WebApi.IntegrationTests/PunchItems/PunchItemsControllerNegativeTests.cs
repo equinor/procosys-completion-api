@@ -154,7 +154,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             expectedStatusCode: HttpStatusCode.Unauthorized);
 
     [TestMethod]
@@ -164,7 +163,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.Unknown,
             "PA",
             "PunchItem1",
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -181,7 +179,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             expectedStatusCode: HttpStatusCode.BadRequest,
             expectedMessageOnBadRequest: "is not a valid plant");
 
@@ -192,7 +189,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             "PA",
             "PunchItem1",
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -208,11 +204,10 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.ProjectGuidWithoutAccess,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             expectedStatusCode: HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownProject()
+    public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownCheckList()
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
@@ -221,9 +216,8 @@ public class PunchItemsControllerNegativeTests : TestBase
             Guid.NewGuid(),
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             expectedStatusCode: HttpStatusCode.BadRequest,
-            expectedMessageOnBadRequest: "Project with this guid does not exist");
+            expectedMessageOnBadRequest: "Check list with this guid does not exist");
 
     [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
@@ -232,7 +226,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithoutAccess,
             "PA",
             "PunchItem1",
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -245,7 +238,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             "PunchItem1",
-            TestFactory.ProjectGuidWithAccess,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -425,7 +417,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -517,7 +508,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.PlantWithAccess,
             "PA",
             Guid.NewGuid().ToString(),
-            TestFactory.ProjectGuidWithAccess, 
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -1620,7 +1610,6 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -1725,7 +1714,6 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -1818,7 +1806,6 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterClear) = await PunchItemsControllerTestsHelper.CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);
@@ -1909,7 +1896,6 @@ public class PunchItemsControllerNegativeTests : TestBase
         var (guid, rowVersionAfterVerify) = await PunchItemsControllerTestsHelper.CreateVerifiedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithAccess,
             TestFactory.CheckListGuidNotRestricted,
             TestFactory.RaisedByOrgGuid,
             TestFactory.ClearingByOrgGuid);

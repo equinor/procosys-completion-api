@@ -12,8 +12,7 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
         => new(
             Category.PA,
             null!,
-            ProjectGuidWithAccess,
-            CheckListGuidWithAccessToContent,
+            CheckListWithAccessToBothProjectAndContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -29,13 +28,15 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessToBothProjectAndContent
+        };
 
     protected override CreatePunchItemCommand GetCommandWithAccessToProjectButNotContent()
         => new(Category.PA, 
-            null!, 
-            ProjectGuidWithAccess, 
-            CheckListGuidWithoutAccessToContent,
+            null!,
+            CheckListWithAccessToProjectButNotContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -51,13 +52,15 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessToProjectButNotContent
+        };
 
     protected override CreatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(Category.PA,
             null!,
-            ProjectGuidWithoutAccess,
-            Guid.NewGuid(),
+            CheckListWithAccessCheckListButNotProject.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -73,5 +76,8 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForC
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessCheckListButNotProject
+        };
 }

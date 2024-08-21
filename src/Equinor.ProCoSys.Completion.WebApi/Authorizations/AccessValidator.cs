@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Domain;
@@ -21,7 +19,7 @@ public class AccessValidator(
     ILogger<AccessValidator> logger)
     : IAccessValidator
 {
-    public async Task<bool> ValidateAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IBaseRequest
+    public bool HasAccess<TRequest>(TRequest request) where TRequest : IBaseRequest
     {
         if (request is null)
         {
@@ -42,11 +40,11 @@ public class AccessValidator(
 
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
-            var checkListGuidForWriteAccessCheck = checkListRequest.GetCheckListGuidForWriteAccessCheck();
-            if (!await accessChecker.HasCurrentUserWriteAccessToCheckListAsync(checkListGuidForWriteAccessCheck, cancellationToken))
+            var checkListDetailsDto = checkListRequest.CheckListDetailsDto;
+            if (!accessChecker.HasCurrentUserWriteAccessToCheckList(checkListDetailsDto))
             {
                 logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
-                    userOid, checkListGuidForWriteAccessCheck);
+                    userOid, checkListDetailsDto.CheckListGuid);
                 return false;
             }
         }

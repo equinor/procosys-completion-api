@@ -9,22 +9,10 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 // The class will probably die when Pcs5 become master of CheckLists 
 public class ProCoSys4CheckListValidator(ICheckListCache checkListCache) : ICheckListValidator
 {
-    public async Task<bool> ExistsAsync(Guid checkListGuid, CancellationToken cancellationToken)
-    {
-        var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-        return proCoSys4CheckList is not null;
-    }
-
     public async Task<bool> TagOwningCheckListIsVoidedAsync(Guid checkListGuid,
         CancellationToken cancellationToken)
     {
         var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
         return proCoSys4CheckList is not null && proCoSys4CheckList.IsVoided;
-    }
-
-    public async Task<bool> InProjectAsync(Guid checkListGuid, Guid projectGuid, CancellationToken cancellationToken)
-    {
-        var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-        return proCoSys4CheckList is not null && proCoSys4CheckList.ProjectGuid == projectGuid;
     }
 }

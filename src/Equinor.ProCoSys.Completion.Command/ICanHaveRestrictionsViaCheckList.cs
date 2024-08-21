@@ -1,4 +1,5 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command;
@@ -14,4 +15,5 @@ namespace Equinor.ProCoSys.Completion.Command;
 public interface ICanHaveRestrictionsViaCheckList : INeedProjectAccess
 {
     public Guid GetCheckListGuidForWriteAccessCheck();
+    CheckListDetailsDto CheckListDetailsDto { get; set; }
 }

@@ -25,29 +25,6 @@ public class CheckListValidatorTests
         _dut = new ProCoSys4CheckListValidator(_checkListCacheMock);
     }
 
-    #region ExistsAsync
-    [TestMethod]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenCheckListExists()
-    {
-        // Act
-        var result = await _dut.ExistsAsync(_checkListGuid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task ExistsAsync_ShouldReturnFalse_WhenCheckListNotExist()
-    {
-        // Act
-        var result = await _dut.ExistsAsync(Guid.Empty, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
-
-    #region TagOwningCheckListIsVoidedAsync
     [TestMethod]
     public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnFalse_WhenCheckListExistsAndTagNotVoided()
     {
@@ -70,46 +47,4 @@ public class CheckListValidatorTests
         // Assert
         Assert.IsTrue(result);
     }
-
-    [TestMethod]
-    public async Task TagOwningCheckListIsVoidedAsync_ShouldReturnFalse_WhenCheckListNotExist()
-    {
-        // Act
-        var result = await _dut.ExistsAsync(Guid.Empty, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
-
-    #region InProjectAsync
-    [TestMethod]
-    public async Task InProjectAsync_ShouldReturnTrue_WhenCheckListExistsAndProjectMatch()
-    {
-        // Act
-        var result = await _dut.InProjectAsync(_checkListGuid, s_projectGuid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-    [TestMethod]
-    public async Task InProjectAsync_ShouldReturnFalse_WhenCheckListExistsAndProjectMismatch()
-    {
-        // Act
-        var result = await _dut.InProjectAsync(_checkListGuid, Guid.NewGuid(), default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task InProjectAsync_ShouldReturnFalse_WhenCheckListNotExist()
-    {
-        // Act
-        var result = await _dut.ExistsAsync(Guid.Empty, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
 }

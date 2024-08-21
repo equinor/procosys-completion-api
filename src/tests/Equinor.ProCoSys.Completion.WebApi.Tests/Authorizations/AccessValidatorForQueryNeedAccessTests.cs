@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,26 +12,26 @@ public abstract class AccessValidatorForQueryNeedAccessTests<TQuery> : AccessVal
     protected abstract TQuery GetQueryWithoutAccessToProjectToTest();
 
     [TestMethod]
-    public async Task Validate_ShouldReturnTrue_WhenAccessToProject()
+    public void Validate_ShouldReturnTrue_WhenAccessToProject()
     {
         // Arrange
         var query = GetQueryWithAccessToProjectToTest();
 
         // act
-        var result = await _dut.ValidateAsync(query, default);
+        var result = _dut.HasAccess(query);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task Validate_ShouldReturnFalse_WhenNoAccessToProject()
+    public void Validate_ShouldReturnFalse_WhenNoAccessToProject()
     {
         // Arrange
         var query = GetQueryWithoutAccessToProjectToTest();
 
         // act
-        var result = await _dut.ValidateAsync(query, default);
+        var result = _dut.HasAccess(query);
 
         // Assert
         Assert.IsFalse(result);

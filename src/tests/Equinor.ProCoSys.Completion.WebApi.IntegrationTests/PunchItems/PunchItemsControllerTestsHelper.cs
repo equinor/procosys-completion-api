@@ -88,7 +88,6 @@ public static class PunchItemsControllerTestsHelper
         string plant,
         string category,
         string description,
-        Guid projectGuid,
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid,
@@ -107,7 +106,6 @@ public static class PunchItemsControllerTestsHelper
         {
             category,
             description,
-            projectGuid = projectGuid.ToString(),
             checkListGuid = checkListGuid.ToString(),
             raisedByOrgGuid = raisedByOrgGuid.ToString(),
             clearingByOrgGuid = clearingByOrgGuid.ToString(),
@@ -671,7 +669,6 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<(Guid guid, string rowVersion)> CreateVerifiedPunchItemAsync(
         UserType userType,
         string plant,
-        Guid projectGuid,
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
@@ -679,7 +676,6 @@ public static class PunchItemsControllerTestsHelper
         var (guid, rowVersionAfterClear) = await CreateClearedPunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            projectGuid,
             checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
@@ -695,7 +691,6 @@ public static class PunchItemsControllerTestsHelper
     public static async Task<(Guid guid, string rowVersion)> CreateClearedPunchItemAsync(
         UserType userType,
         string plant,
-        Guid projectGuid,
         Guid checkListGuid,
         Guid raisedByOrgGuid,
         Guid clearingByOrgGuid)
@@ -705,7 +700,6 @@ public static class PunchItemsControllerTestsHelper
             plant,
             "PA",
             Guid.NewGuid().ToString(),
-            projectGuid,
             checkListGuid,
             raisedByOrgGuid,
             clearingByOrgGuid);
