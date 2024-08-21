@@ -12,6 +12,7 @@ public class UpdatePunchItemLinkCommand(Guid punchItemGuid, Guid linkGuid, strin
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public Guid LinkGuid { get; } = linkGuid;
     public string Title { get; } = title;
     public string Url { get; } = url;

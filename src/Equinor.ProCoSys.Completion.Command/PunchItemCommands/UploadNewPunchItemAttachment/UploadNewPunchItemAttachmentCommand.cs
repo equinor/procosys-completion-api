@@ -17,6 +17,7 @@ public class UploadNewPunchItemAttachmentCommand(
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public string FileName { get; } = fileName;
     public string ContentType { get; } = contentType;
 }

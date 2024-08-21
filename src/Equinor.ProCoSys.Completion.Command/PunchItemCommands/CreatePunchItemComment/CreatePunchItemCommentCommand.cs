@@ -17,6 +17,7 @@ public class CreatePunchItemCommentCommand(
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
 
     public string Text { get; } = text;
     public IEnumerable<string> Labels { get; } = labels;

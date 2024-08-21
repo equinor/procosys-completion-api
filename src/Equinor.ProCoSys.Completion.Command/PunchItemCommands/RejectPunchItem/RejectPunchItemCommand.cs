@@ -17,6 +17,7 @@ public class RejectPunchItemCommand(
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public string Comment { get; } = comment;
     public IEnumerable<Guid> Mentions { get; } = mentions;
     public string RowVersion { get; } = rowVersion;

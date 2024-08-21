@@ -11,6 +11,7 @@ public class UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category categor
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public PunchItem PunchItem { get; set; } = null!;
     public Category Category { get; } = category;
     public string RowVersion { get; } = rowVersion;
