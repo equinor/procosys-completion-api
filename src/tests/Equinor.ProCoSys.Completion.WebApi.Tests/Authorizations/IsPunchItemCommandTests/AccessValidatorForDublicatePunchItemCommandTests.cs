@@ -11,20 +11,20 @@ public class AccessValidatorForDuplicatePunchItemCommandTests : AccessValidatorF
         => new(PunchItemWithAccessToProjectAndContent.Guid, [CheckListWithAccessToBothProjectAndContent.CheckListGuid], false)
         {
             PunchItem = PunchItemWithAccessToProjectAndContent,
-            CheckListDetailsDtoList = [CheckListWithAccessToBothProjectAndContent]
+            CheckListDetailsDtoList = CheckListsWithAccessToBothProjectAndContent
         };
 
     protected override DuplicatePunchItemCommand GetCommandWithAccessToProjectButNotContent()
         => new(PunchItemWithAccessToProjectButNotContent.Guid, [CheckListWithAccessToProjectButNotContent.CheckListGuid], false)
         {
             PunchItem = PunchItemWithAccessToProjectButNotContent,
-            CheckListDetailsDtoList = [CheckListWithAccessToProjectButNotContent]
+            CheckListDetailsDtoList = CheckListsWithAccessToProjectButNotContent
         };
 
     protected override DuplicatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(PunchItemWithAccessCheckListButNotProject.Guid,[CheckListWithAccessCheckListButNotProject.CheckListGuid], false)
         {
             PunchItem = PunchItemWithAccessCheckListButNotProject,
-            CheckListDetailsDtoList = [CheckListWithAccessCheckListButNotProject]
+            CheckListDetailsDtoList = CheckListsWithAccessCheckListButNotProject
         };
 }
