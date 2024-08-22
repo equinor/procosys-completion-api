@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,9 +15,14 @@ public class DeletePunchItemCommandValidatorTests : PunchItemCommandTestsBase
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new DeletePunchItemCommand(Guid.NewGuid(), "r")
+        _command = new DeletePunchItemCommand(_existingPunchItem[TestPlantA].Guid, "r")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _dut = new DeletePunchItemCommandValidator();
