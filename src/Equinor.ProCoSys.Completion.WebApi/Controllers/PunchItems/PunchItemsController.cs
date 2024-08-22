@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DuplicatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
@@ -211,7 +212,7 @@ public class PunchItemsController : ControllerBase
     /// <response code="400">Input validation error (error returned in body)</response>
     [AuthorizeAny(Permissions.PUNCHITEM_CREATE, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Duplicate")]
-    public Task<ActionResult<List<GuidAndRowVersion>>> DuplicatePunchItem(
+    public async Task<ActionResult<List<GuidAndRowVersion>>> DuplicatePunchItem(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
@@ -220,9 +221,12 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] DuplicatePunchItemDto dto)
     {
-
-        throw new NotImplementedException();
+        var result = await _mediator.Send(
+            new DuplicatePunchItemCommand(guid, dto.CheckListGuids, dto.DuplicateAttachments),
+            cancellationToken);
+        return this.FromResult(result);
     }
+
     /// <summary>
     /// Update (patch) a PunchItem
     /// </summary>
