@@ -33,7 +33,6 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = new();
-    //private readonly List<IDisposable> _disposables = new();
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
@@ -264,20 +263,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             dbContext.Database.EnsureDeleted();
         });
 
-    //private CompletionContext DatabaseContext(IServiceCollection services)
-    //{
-    //    services.AddDbContext<CompletionContext>(options 
-    //        => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
-
-    //    var sp = services.BuildServiceProvider();
-    //    _disposables.Add(sp);
-
-    //    var spScope = sp.CreateScope();
-    //    _disposables.Add(spScope);
-
-    //    return spScope.ServiceProvider.GetRequiredService<CompletionContext>();
-    //}
-
     private string GetTestDbConnectionString(string projectDir)
     {
         var dbName = "IntegrationTestsDB";
@@ -428,6 +413,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
             .Returns(checkListRestrictedProject);
 
+        CheckListApiServiceMock.GetManyCheckListsAsync(Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
         CheckListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidNotRestricted)), Arg.Any<CancellationToken>())
             .Returns([checkListNotRestricted]);
