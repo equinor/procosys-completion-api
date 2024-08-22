@@ -909,6 +909,27 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicate()
+    {
+        // Act
+        var result = await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            [TestFactory.CheckListGuidNotRestricted],
+            false);
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(
+            UserType.Writer, 
+            TestFactory.PlantWithAccess, 
+            result.ElementAt(0).Guid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeCleared);
+    }
+
+    [TestMethod]
     public async Task PerformanceTest_For_Create_Clear()
     {
         var sw = Stopwatch.StartNew();

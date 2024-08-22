@@ -417,12 +417,26 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
+        var checkListNotRestricted = new ProCoSys4CheckList(CheckListGuidNotRestricted, ResponsibleCodeWithAccess, false, ProjectGuidWithAccess);
+        var checkListRestricted = new ProCoSys4CheckList(CheckListGuidRestricted, ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess);
+        var checkListRestrictedProject = new ProCoSys4CheckList(CheckListGuidRestrictedProject, ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess);
+
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(CheckListGuidNotRestricted, ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
+            .Returns(checkListNotRestricted);
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(CheckListGuidRestricted, ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
+            .Returns(checkListRestricted);
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(CheckListGuidRestrictedProject, ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
+            .Returns(checkListRestrictedProject);
+
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidNotRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListNotRestricted]);
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListRestricted]);
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidRestrictedProject)), Arg.Any<CancellationToken>())
+            .Returns([checkListRestrictedProject]);
 
         CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(

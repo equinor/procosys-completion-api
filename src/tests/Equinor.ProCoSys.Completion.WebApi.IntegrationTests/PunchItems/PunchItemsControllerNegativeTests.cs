@@ -2085,6 +2085,82 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
     #endregion
 
+    #region DuplicatePunchItem
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.Unknown,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPunchItem()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.BadRequest,
+            "Punch item with this guid does not exist");
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            [_checkListGuidUnderTest],
+            false,
+            HttpStatusCode.Forbidden);
+
+    #endregion
+
     private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()
     {
         var punchItemUnderTest = await GetPunchItemUnderTest();
