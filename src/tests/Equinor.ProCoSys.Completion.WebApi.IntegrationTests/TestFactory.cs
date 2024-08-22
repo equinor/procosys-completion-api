@@ -33,7 +33,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = new();
-    private readonly List<IDisposable> _disposables = new();
+    //private readonly List<IDisposable> _disposables = new();
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
@@ -133,10 +133,10 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             testUser.Value.HttpClient.Dispose();
         }
             
-        foreach (var disposable in _disposables)
-        {
-            try { disposable.Dispose(); } catch { /* Ignore */ }
-        }
+        //foreach (var disposable in _disposables)
+        //{
+        //    try { disposable.Dispose(); } catch { /* Ignore */ }
+        //}
             
         lock (s_padlock)
         {
@@ -264,19 +264,19 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             dbContext.Database.EnsureDeleted();
         });
 
-    private CompletionContext DatabaseContext(IServiceCollection services)
-    {
-        services.AddDbContext<CompletionContext>(options 
-            => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+    //private CompletionContext DatabaseContext(IServiceCollection services)
+    //{
+    //    services.AddDbContext<CompletionContext>(options 
+    //        => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
-        var sp = services.BuildServiceProvider();
-        _disposables.Add(sp);
+    //    var sp = services.BuildServiceProvider();
+    //    _disposables.Add(sp);
 
-        var spScope = sp.CreateScope();
-        _disposables.Add(spScope);
+    //    var spScope = sp.CreateScope();
+    //    _disposables.Add(spScope);
 
-        return spScope.ServiceProvider.GetRequiredService<CompletionContext>();
-    }
+    //    return spScope.ServiceProvider.GetRequiredService<CompletionContext>();
+    //}
 
     private string GetTestDbConnectionString(string projectDir)
     {
@@ -418,11 +418,11 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person2
                 ]);
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
+            .Returns(new ProCoSys4CheckList(CheckListGuidNotRestricted, ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
+            .Returns(new ProCoSys4CheckList(CheckListGuidRestricted, ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
+            .Returns(new ProCoSys4CheckList(CheckListGuidRestrictedProject, ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
 
         CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(

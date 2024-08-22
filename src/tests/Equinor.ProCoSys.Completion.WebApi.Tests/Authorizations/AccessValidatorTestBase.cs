@@ -58,6 +58,10 @@ public abstract class AccessValidatorTestBase
             .Returns(true);
         accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessCheckListButNotProject)
             .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToAllCheckLists([CheckListWithAccessToBothProjectAndContent])
+            .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToAllCheckLists([CheckListWithAccessCheckListButNotProject])
+            .Returns(true);
         _dut = new AccessValidator(
             Substitute.For<ICurrentUserProvider>(),
             projectAccessCheckerMock,

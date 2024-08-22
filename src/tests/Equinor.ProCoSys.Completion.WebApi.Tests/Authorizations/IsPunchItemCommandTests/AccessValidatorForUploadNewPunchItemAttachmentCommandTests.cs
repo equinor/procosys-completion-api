@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForUploadNewPunchItemAttachmentCommandTests : AccessValidatorForCommandNeedAccessTests<UploadNewPunchItemAttachmentCommand>
+public class AccessValidatorForUploadNewPunchItemAttachmentCommandTests : AccessValidatorForCommandNeedCheckListAccessTests<UploadNewPunchItemAttachmentCommand>
 {
     protected override UploadNewPunchItemAttachmentCommand GetCommandWithAccessToBothProjectAndContent()
         => new(Guid.Empty, null!, null!, null!)

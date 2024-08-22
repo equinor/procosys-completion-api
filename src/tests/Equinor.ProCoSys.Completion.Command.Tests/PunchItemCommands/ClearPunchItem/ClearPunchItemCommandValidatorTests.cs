@@ -7,7 +7,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem;
 
 [TestClass]
-public class ClearPunchItemCommandValidatorTests : PunchItemCommandTestsBase
+public class DuplicatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
 {
     private ClearPunchItemCommandValidator _dut;
     private ClearPunchItemCommand _command;
