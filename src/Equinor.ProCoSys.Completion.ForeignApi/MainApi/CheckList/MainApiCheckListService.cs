@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -28,7 +29,7 @@ public class MainApiCheckListService(
                   $"?proCoSysGuid={checkListGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        // Execute as application. The recalc endpoint in Main Api requires
+        // Execute as application. The get checklist endpoint in Main Api requires
         // a special role "Checklist.RecalcStatus", which the Azure application registration has
         return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
     }
@@ -59,5 +60,21 @@ public class MainApiCheckListService(
                   $"&api-version={_apiVersion}";
 
         return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
+    }
+
+    // Do not pass plant to the GET endpoint for many checklists in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
+    public async Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken)
+    {
+        var url = $"{_baseAddress}CheckLists/ForProCoSys5" +
+                  $"?api-version={_apiVersion}";
+
+        foreach (var checkListGuid in checkListGuids)
+        {
+            url += $"&proCoSysGuids={checkListGuid:N}";
+        }
+
+        // Execute as application. The get checklists endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        return await mainApiClientForApplication.TryQueryAndDeserializeAsync<List<ProCoSys4CheckList>>(url, cancellationToken);
     }
 }
