@@ -127,8 +127,6 @@ public class AttachmentService(
     public async Task<List<AttachmentDto>> CopyAttachments(List<Attachment> attachments, string parentType, Guid parentGuid, string project, CancellationToken cancellationToken)
     {
         var newAttachments = new List<Attachment>();
-
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
         foreach (var att in attachments)
         {
             var attachment =

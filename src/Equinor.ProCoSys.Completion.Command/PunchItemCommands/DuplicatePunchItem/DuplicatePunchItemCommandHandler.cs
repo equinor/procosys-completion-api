@@ -56,47 +56,50 @@ public class DuplicatePunchItemCommandHandler : IRequestHandler<DuplicatePunchIt
     {
         var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
         var attachments = await _attachmentRepository.GetAttachmentsByParentGuid(request.PunchItemGuid, cancellationToken);
-
-        // _attachmentRepository.GetAllAsync(cancellationToken)
-
+        
         var copies = request.CheckListGuids.Select(punchItem.ShallowCopy).ToList();
 
-        foreach (var copy in copies)
+        var integrationEvents = new List<PunchItemCreatedIntegrationEvent>();
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            //await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-            try
+            foreach (var copy in copies)
             {
-                //  var properties = GetRequiredProperties(punchItem);
                 _punchItemRepository.Add(copy);
-                //    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Add property for ItemNo first in list, since it is an "important" property
-                //    properties.Insert(0,
-                //         new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
-
-                //   var integrationEvent =
-                //       await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
-
+                var isNull = copy.Priority == null;
+                // must save twice when creating. Must save before publishing events both to set with internal database ID
+                // since ItemNo depend on it. Must save after publishing events because we use outbox pattern
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+            
+                //expand based on all values in punch
+                var properties = GetRequiredProperties(punchItem);
+            
+                //send history message: Duplicated from Guid, with attachments
+                properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
+                //TODO expand properies with lib items etc
 
-                var res = await _attachmentService.CopyAttachments(attachments, typeof(PunchItem).Name, copy.Guid, punchItem.Project.Name,
+                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
+                integrationEvents.Add(integrationEvent);
+                await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
+            
+                // copy attachments and publish attachment copied event this method should not commit.
+                await _attachmentService.CopyAttachments(attachments, typeof(PunchItem).Name, copy.Guid, punchItem.Project.Name,
                     cancellationToken);
-
-                //  await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
-
-                //  await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid,
-                //      cancellationToken);
-
-                //       await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error occurred on insertion of PunchListItem");
-                //           await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                throw;
-            }
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred on insertion of PunchListItem");
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        
+      
+        
+        //TODO Sync to PCS 4 og recalc
 
         return new SuccessResult<string>("Ok");
     }
