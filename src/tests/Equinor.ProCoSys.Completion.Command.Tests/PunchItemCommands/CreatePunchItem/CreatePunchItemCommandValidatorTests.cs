@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -15,7 +16,6 @@ public class CreatePunchItemCommandValidatorTests
     private CreatePunchItemCommandValidator _dut;
     private CreatePunchItemCommand _command;
     private IProjectValidator _projectValidatorMock;
-    private ICheckListValidator _checkListValidatorMock;
     private ILibraryItemValidator _libraryItemValidatorMock;
     private IWorkOrderValidator _workOrderValidatorMock;
     private ISWCRValidator _swcrValidatorMock;
@@ -24,11 +24,11 @@ public class CreatePunchItemCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
+        var checkListGuid = Guid.NewGuid();
         _command = new CreatePunchItemCommand(
             Category.PA,
             "Test desc",
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            checkListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -44,12 +44,12 @@ public class CreatePunchItemCommandValidatorTests
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = new CheckListDetailsDto(checkListGuid, "R", false, Guid.NewGuid())
+        };
         _projectValidatorMock = Substitute.For<IProjectValidator>();
-        _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(true);
-        _checkListValidatorMock = Substitute.For<ICheckListValidator>();
-        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid, default).Returns(true);
-        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid, default).Returns(true);
+        _projectValidatorMock.ExistsAsync(_command.CheckListDetailsDto.ProjectGuid, default).Returns(true);
 
         _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
 
@@ -69,7 +69,6 @@ public class CreatePunchItemCommandValidatorTests
 
         _dut = new CreatePunchItemCommandValidator(
             _projectValidatorMock,
-            _checkListValidatorMock,
             _libraryItemValidatorMock,
             _workOrderValidatorMock,
             _swcrValidatorMock,
@@ -96,7 +95,7 @@ public class CreatePunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectNotExists()
     {
         // Arrange
-        _projectValidatorMock.ExistsAsync(_command.ProjectGuid, default).Returns(false);
+        _projectValidatorMock.ExistsAsync(_command.CheckListDetailsDto.ProjectGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -104,14 +103,14 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project with this guid does not exist!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project for given check list does not exist!"));
     }
 
     [TestMethod]
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.IsClosedAsync(_command.ProjectGuid, default).Returns(true);
+        _projectValidatorMock.IsClosedAsync(_command.CheckListDetailsDto.ProjectGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -119,7 +118,7 @@ public class CreatePunchItemCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project is closed!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project for given check list is closed!"));
     }
 
     [TestMethod]
@@ -366,25 +365,10 @@ public class CreatePunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_CheckListNotExists()
-    {
-        // Arrange
-        _checkListValidatorMock.ExistsAsync(_command.CheckListGuid, default).Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Check list does not exist!"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_When_TagOwningCheckListIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.CheckListGuid, default).Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(_command.CheckListGuid, "R", true, _command.CheckListDetailsDto.ProjectGuid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -393,21 +377,6 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Tag owning check list is voided!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_CheckListNotInGivenProject()
-    {
-        // Arrange
-        _checkListValidatorMock.InProjectAsync(_command.CheckListGuid, _command.ProjectGuid, default).Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Check list is not in given project!"));
     }
 
     [TestMethod]

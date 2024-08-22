@@ -20,7 +20,8 @@ public class CommentCreatedEventV1Tests : ContractTestBase<ICommentCreatedEventV
             { "Text", typeof(string) },
             { "CreatedBy", typeof(User) },
             { "CreatedAtUtc", typeof(DateTime) },
-            { "Labels", typeof(IEnumerable<string>) }
+            { "Labels", typeof(IEnumerable<string>) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

@@ -21,7 +21,8 @@ public static class MediatorModule
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         // HACK validation of request need to become before checking access
         // if checking access before validation, access check will fail with Exception when
-        // checking access on items which don't exists
+        // checking access on items which don't exist
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PrefetchBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CheckAccessBehavior<,>));
         return services;

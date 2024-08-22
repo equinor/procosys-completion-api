@@ -4,6 +4,7 @@ using System.Linq;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.Comment;
+using MassTransit;
 
 namespace Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.CommentEvents;
 
@@ -26,6 +27,8 @@ public record CommentCreatedIntegrationEvent(
         comment.Text,
         comment.Labels.Select(x => x.Text))
     { }
+
+    public Guid MessageId { get; } = NewId.NextGuid();
 }
 
 

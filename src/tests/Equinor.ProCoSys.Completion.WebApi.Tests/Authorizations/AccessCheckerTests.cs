@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Authorization;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.WebApi.Authorizations;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -16,197 +13,56 @@ public class AccessCheckerTests
 {
     private readonly ProCoSys4CheckList _proCoSys4CheckList = new("EQ", false, Guid.NewGuid());
     private readonly Guid _checkListGuid = Guid.NewGuid();
-    private readonly Guid _punchItemGuid = Guid.NewGuid();
     private AccessChecker _dut = null!;
     private IRestrictionRolesChecker _restrictionRolesCheckerMock = null!;
-    private ICheckListCache _checkListCacheMock = null!;
-    private IPunchItemHelper _punchItemHelperMock = null!;
-    private IProjectAccessChecker _projectAccessCheckerMock = null!;
-    private IPlantProvider _plantProviderMock = null!;
+    private readonly CheckListDetailsDto _checkListDetailsDto = new(Guid.NewGuid(), "R", false, Guid.NewGuid());
 
     [TestInitialize]
     public void Setup()
     {
         _restrictionRolesCheckerMock = Substitute.For<IRestrictionRolesChecker>();
-        _checkListCacheMock = Substitute.For<ICheckListCache>();
-        _punchItemHelperMock = Substitute.For<IPunchItemHelper>();
-        _projectAccessCheckerMock = Substitute.For<IProjectAccessChecker>();
-        _plantProviderMock = Substitute.For<IPlantProvider>();
-        _plantProviderMock.Plant.Returns("PLANT");
 
-        _dut = new AccessChecker(
-            _restrictionRolesCheckerMock,
-            _checkListCacheMock,
-            _punchItemHelperMock,
-            _projectAccessCheckerMock,
-            _plantProviderMock
-            );
+        _dut = new AccessChecker(_restrictionRolesCheckerMock);
     }
 
     [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasNoRestrictions()
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnTrue_WhenUserHasNoRestrictions()
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(true);
 
         // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListAsync(Guid.Empty, default);
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnTrue_WhenUserHasAccessToCheckList()
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_checkListDetailsDto.ResponsibleCode).Returns(true);
 
         // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListAsync(_checkListGuid, default);
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
 
         // Assert
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListAsync_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
+    public void HasCurrentUserWriteAccessToCheckList_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
     {
         // Arrange
         _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
+        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_checkListDetailsDto.ResponsibleCode).Returns(false);
 
         // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListAsync(_checkListGuid, default);
+        var result = _dut.HasCurrentUserWriteAccessToCheckList(_checkListDetailsDto);
 
         // Assert
         Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListAsync_ShouldThrowException_WhenCheckListNotFound()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(null as ProCoSys4CheckList);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserWriteAccessToCheckListAsync(_checkListGuid, default));
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListOwningPunchItemAsync_ShouldReturnTrue_WhenUserHasNoRestrictions()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(true);
-
-        // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid.Empty, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListOwningPunchItemAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(true);
-
-        // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListOwningPunchItemAsync_ShouldReturnFalse_WhenUserDoNotHaveAccessToCheckList()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitAccessToContent(_proCoSys4CheckList.ResponsibleCode).Returns(false);
-
-        // Act
-        var result = await _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListOwningPunchItemAsync_ShouldThrowException_WhenCheckListGuidNotFoundForPunchItem()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(null as Guid?);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid, default));
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserAccessToCheckListOwningPunchItemAsync_ShouldThrowException_WhenCheckListNotFound()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _punchItemHelperMock.GetCheckListGuidForPunchItemAsync(_punchItemGuid).Returns(_checkListGuid);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(null as ProCoSys4CheckList);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(_punchItemGuid, default));
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldReturnTrue_WhenUserHasAccessToCheckList()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, default).Returns(_proCoSys4CheckList);
-        _projectAccessCheckerMock.HasCurrentUserAccessToProject(_proCoSys4CheckList.ProjectGuid).Returns(true);
-
-        // Act
-        var result = await _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid, default);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldReturnFalse_WhenUserHasNoAccessToCheckList()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(_proCoSys4CheckList);
-        _projectAccessCheckerMock.HasCurrentUserAccessToProject(_proCoSys4CheckList.ProjectGuid).Returns(false);
-
-        // Act
-        var result = await _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid, default);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task HasCurrentUserReadAccessToCheckListAsync_ShouldThrowException_WhenCheckListNotFound()
-    {
-        // Arrange
-        _restrictionRolesCheckerMock.HasCurrentUserExplicitNoRestrictions().Returns(false);
-        _checkListCacheMock.GetCheckListAsync("PLANT", _checkListGuid, Arg.Any<CancellationToken>()).Returns(null as ProCoSys4CheckList);
-
-        // Act and Assert
-        await Assert.ThrowsExceptionAsync<Exception>(
-            () => _dut.HasCurrentUserReadAccessToCheckListAsync(_checkListGuid, default));
     }
 }

@@ -6,15 +6,13 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 
-public class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Result<PunchItemDetailsDto>>
+public sealed class GetPunchItemQueryHandler : IRequestHandler<GetPunchItemQuery, Result<PunchItemDetailsDto>>
 {
-    private readonly IPunchItemService _punchItemService;
-
-    public GetPunchItemQueryHandler(IPunchItemService punchItemService) => _punchItemService = punchItemService;
-
-    public async Task<Result<PunchItemDetailsDto>> Handle(GetPunchItemQuery request, CancellationToken cancellationToken)
+    public Task<Result<PunchItemDetailsDto>> Handle(GetPunchItemQuery request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemService.GetByGuid(request.PunchItemGuid, cancellationToken);
-        return new SuccessResult<PunchItemDetailsDto>(punchItem);
+        // we want to use MediatR pipeline to handle the request even if the handler do nothing
+        // the reason is that MediatR pipeline performs access check
+        var result = new SuccessResult<PunchItemDetailsDto>(request.PunchItemDetailsDto);
+        return Task.FromResult<Result<PunchItemDetailsDto>>(result);
     }
 }

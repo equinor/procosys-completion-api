@@ -25,7 +25,6 @@ using ServiceResult;
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
 public class RejectPunchItemCommandHandler(
-    IPunchItemRepository punchItemRepository,
     ILabelRepository labelRepository,
     ICommentRepository commentRepository,
     IPersonRepository personRepository,
@@ -45,7 +44,7 @@ public class RejectPunchItemCommandHandler(
     public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
         var rejectLabel = await labelRepository.GetByTextAsync(options.CurrentValue.RejectLabel, cancellationToken);
-        var punchItem = await punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
 
         var change = await RejectAsync(punchItem, request.Comment, cancellationToken);
 

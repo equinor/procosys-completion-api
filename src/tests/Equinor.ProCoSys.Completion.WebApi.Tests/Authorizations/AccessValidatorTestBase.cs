@@ -1,69 +1,67 @@
 ﻿using System;
-using System.Threading;
+using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Equinor.ProCoSys.Common.Misc;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public class AccessValidatorTestBase
+public abstract class AccessValidatorTestBase
 {
-    protected AccessValidator _dut = null!;
-    protected readonly Guid PunchItemGuidWithAccessToProjectAndContent = new("11111111-1111-1111-1111-111111111111");
-    protected readonly Guid PunchItemGuidWithoutAccessToProject = new("22222222-2222-2222-2222-222222222222");
-    protected readonly Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
-    protected readonly Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
-    protected readonly Guid CheckListGuidWithAccessToContent = new("55555555-5555-5555-5555-555555555555");
-    protected readonly Guid CheckListGuidWithAccessToProjectAndContent = new("99999999-9999-9999-9999-999999999999");
-    protected readonly Guid CheckListGuidWithoutAccessToContent = new("66666666-6666-6666-6666-666666666666");
-    protected readonly Guid PunchItemGuidWithAccessToProjectButNotContent = new("77777777-7777-7777-7777-777777777777");
+    protected static string Plant = "P";
 
-    private IProjectAccessChecker _projectAccessCheckerMock = null!;
-    private IAccessChecker _accessCheckerMock = null!;
-    private ILogger<AccessValidator> _loggerMock = null!;
-    private ICurrentUserProvider _currentUserProviderMock = null!;
+    protected static LibraryItem Org = new(Plant, Guid.Empty, null!, null!, LibraryType.COMPLETION_ORGANIZATION);
+
+    protected static Guid CheckListGuidWithAccessToContent = new("55555555-5555-5555-5555-555555555555");
+    protected static Guid CheckListGuidWithAccessToProjectAndContent = new("99999999-9999-9999-9999-999999999999");
+    protected static Guid CheckListGuidWithoutAccessToContent = new("66666666-6666-6666-6666-666666666666");
+
+    protected static Guid ProjectGuidWithAccess = new("33333333-3333-3333-3333-333333333333");
+    private static readonly Project s_projectWithAccess = new(Plant, ProjectGuidWithAccess, null!, null!);
+    protected static PunchItem PunchItemWithAccessToProjectAndContent
+        = new(Plant, s_projectWithAccess, CheckListGuidWithAccessToProjectAndContent, Category.PA, null!, Org, Org);
+
+    protected static Guid ProjectGuidWithoutAccess = new("44444444-4444-4444-4444-444444444444");
+    private static readonly Project s_projectWithoutAccess = new(Plant, ProjectGuidWithoutAccess, null!, null!);
+    protected static PunchItem PunchItemWithAccessCheckListButNotProject
+        = new(Plant, s_projectWithoutAccess, CheckListGuidWithAccessToContent, Category.PA, null!, Org, Org);
+
+    protected static PunchItem PunchItemWithAccessToProjectButNotContent
+        = new(Plant, s_projectWithAccess, CheckListGuidWithoutAccessToContent, Category.PA, null!, Org, Org);
+
+    protected static CheckListDetailsDto CheckListWithAccessToBothProjectAndContent =
+        new(CheckListGuidWithAccessToContent, "R", false, ProjectGuidWithAccess);
+    protected static CheckListDetailsDto CheckListWithAccessToProjectButNotContent =
+        new(CheckListGuidWithoutAccessToContent, "R", false, ProjectGuidWithAccess);
+    protected static CheckListDetailsDto CheckListWithAccessCheckListButNotProject =
+        new(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess);
+
+    protected AccessValidator _dut = null!;
 
     [TestInitialize]
     public void Setup()
     {
-        _currentUserProviderMock = Substitute.For<ICurrentUserProvider>();
+        var projectAccessCheckerMock = Substitute.For<IProjectAccessChecker>();
+        projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess).Returns(false);
+        projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
 
-        _projectAccessCheckerMock = Substitute.For<IProjectAccessChecker>();
-
-        _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithoutAccess).Returns(false);
-        _projectAccessCheckerMock.HasCurrentUserAccessToProject(ProjectGuidWithAccess).Returns(true);
-
-        _accessCheckerMock = Substitute.For<IAccessChecker>();
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithoutAccessToContent, Arg.Any<CancellationToken>())
+        var accessCheckerMock = Substitute.For<IAccessChecker>();
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToProjectButNotContent)
             .Returns(false);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListAsync(CheckListGuidWithAccessToContent, Arg.Any<CancellationToken>())
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToBothProjectAndContent)
             .Returns(true);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent, Arg.Any<CancellationToken>())
-            .Returns(false);
-        _accessCheckerMock.HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
+        accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessCheckListButNotProject)
             .Returns(true);
-        _accessCheckerMock.HasCurrentUserReadAccessToCheckListAsync(CheckListGuidWithAccessToProjectAndContent, Arg.Any<CancellationToken>())
-            .Returns(true);
-
-        var punchItemHelperMock = Substitute.For<IPunchItemHelper>();
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectAndContent)
-            .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithAccessToProjectButNotContent)
-            .Returns(ProjectGuidWithAccess);
-        punchItemHelperMock.GetProjectGuidForPunchItemAsync(PunchItemGuidWithoutAccessToProject)
-            .Returns(ProjectGuidWithoutAccess);
-
-        _loggerMock = Substitute.For<ILogger<AccessValidator>>();
-
         _dut = new AccessValidator(
-            _currentUserProviderMock,
-            _projectAccessCheckerMock,
-            _accessCheckerMock,
-            punchItemHelperMock,
-            _loggerMock);
+            Substitute.For<ICurrentUserProvider>(),
+            projectAccessCheckerMock,
+            accessCheckerMock,
+            Substitute.For<ILogger<AccessValidator>>());
     }
 }

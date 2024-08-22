@@ -5,16 +5,14 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
-public class UpdatePunchItemCategoryCommand : IRequest<Result<string>>, IIsPunchItemCommand
+public class UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category category, string rowVersion)
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
-    public UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category category, string rowVersion)
-    {
-        PunchItemGuid = punchItemGuid;
-        Category = category;
-        RowVersion = rowVersion;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public Category Category { get; }
-    public string RowVersion { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
+    public PunchItem PunchItem { get; set; } = null!;
+    public Category Category { get; } = category;
+    public string RowVersion { get; } = rowVersion;
 }

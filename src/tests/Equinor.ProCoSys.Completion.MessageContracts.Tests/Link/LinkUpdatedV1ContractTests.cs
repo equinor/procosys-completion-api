@@ -21,7 +21,8 @@ public class LinkUpdatedV1ContractTests : ContractTestBase<ILinkUpdatedV1>
             { "Title", typeof(string) },
             { "Url", typeof(string) },
             { "ModifiedBy", typeof(User) },
-            { "ModifiedAtUtc", typeof(DateTime) }
+            { "ModifiedAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

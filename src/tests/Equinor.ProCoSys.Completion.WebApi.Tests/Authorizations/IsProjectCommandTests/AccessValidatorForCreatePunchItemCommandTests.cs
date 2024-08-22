@@ -6,14 +6,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForIIsProjectCommandTests<CreatePunchItemCommand>
+public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForCommandNeedAccessTests<CreatePunchItemCommand>
 {
-    protected override CreatePunchItemCommand GetProjectCommandWithAccessToBothProjectAndContent()
+    protected override CreatePunchItemCommand GetCommandWithAccessToBothProjectAndContent()
         => new(
             Category.PA,
             null!,
-            ProjectGuidWithAccess,
-            CheckListGuidWithAccessToContent,
+            CheckListWithAccessToBothProjectAndContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -29,13 +28,15 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessToBothProjectAndContent
+        };
 
-    protected override CreatePunchItemCommand GetProjectCommandWithAccessToProjectButNotContent()
+    protected override CreatePunchItemCommand GetCommandWithAccessToProjectButNotContent()
         => new(Category.PA, 
-            null!, 
-            ProjectGuidWithAccess, 
-            CheckListGuidWithoutAccessToContent,
+            null!,
+            CheckListWithAccessToProjectButNotContent.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -51,13 +52,15 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessToProjectButNotContent
+        };
 
-    protected override CreatePunchItemCommand GetProjectCommandWithoutAccessToProject()
+    protected override CreatePunchItemCommand GetCommandWithoutAccessToProject()
         => new(Category.PA,
             null!,
-            ProjectGuidWithoutAccess,
-            Guid.NewGuid(),
+            CheckListWithAccessCheckListButNotProject.CheckListGuid,
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -73,5 +76,8 @@ public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForI
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto = CheckListWithAccessCheckListButNotProject
+        };
 }

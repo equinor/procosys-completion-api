@@ -1,19 +1,18 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 
-public class CreatePunchItemLinkCommand : IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+public class CreatePunchItemLinkCommand(Guid punchItemGuid, string title, string url)
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
 {
-    public CreatePunchItemLinkCommand(Guid punchItemGuid, string title, string url)
-    {
-        PunchItemGuid = punchItemGuid;
-        Title = title;
-        Url = url;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public string Title { get; }
-    public string Url { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
+    public string Title { get; } = title;
+    public string Url { get; } = url;
 }

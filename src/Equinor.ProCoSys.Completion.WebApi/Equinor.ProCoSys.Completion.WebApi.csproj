@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -10,16 +8,15 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.11.2" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.11.2" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.2" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.21" />
     <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.11.2" />
     <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.11.2" />
     <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.11.2" />
@@ -27,6 +24,11 @@
     
     <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.7" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.19" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="2.0.7" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.19" />
+
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.2" />
+    <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.21" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.2" />
     <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
@@ -41,13 +43,12 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.6" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.19.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.2.0" />
     <PackageReference Include="ServiceResult.ApiExtensions" Version="1.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj" />
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.TieImport\Equinor.ProCoSys.Completion.TieImport.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Domain\Equinor.ProCoSys.Completion.Domain.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.ForeignApi\Equinor.ProCoSys.Completion.ForeignApi.csproj" />
@@ -57,11 +58,18 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
-  </ItemGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
   <ItemGroup>
-    <Content Include="..\.dockerignore">
       <Link>.dockerignore</Link>
     </Content>
   </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

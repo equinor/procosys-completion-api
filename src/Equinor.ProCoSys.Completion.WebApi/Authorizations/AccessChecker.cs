@@ -1,80 +1,16 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Authorization;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
+﻿using Equinor.ProCoSys.Auth.Authorization;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public class AccessChecker : IAccessChecker
+public class AccessChecker(IRestrictionRolesChecker restrictionRolesChecker) : IAccessChecker
 {
-    private readonly IRestrictionRolesChecker _restrictionRolesChecker;
-    private readonly ICheckListCache _checkListCache;
-    private readonly IPunchItemHelper _punchItemHelper;
-    private readonly IProjectAccessChecker _projectAccessChecker;
-    private readonly IPlantProvider _plantProvider;
-
-    public AccessChecker(
-        IRestrictionRolesChecker restrictionRolesChecker,
-        ICheckListCache checkListCache,
-        IPunchItemHelper punchItemHelper,
-        IProjectAccessChecker projectAccessChecker,
-        IPlantProvider plantProvider)
+    public bool HasCurrentUserWriteAccessToCheckList(CheckListDetailsDto checkListDetailsDto)
     {
-        _restrictionRolesChecker = restrictionRolesChecker;
-        _checkListCache = checkListCache;
-        _punchItemHelper = punchItemHelper;
-        _projectAccessChecker = projectAccessChecker;
-        _plantProvider = plantProvider;
-    }
-
-    public async Task<bool> HasCurrentUserWriteAccessToCheckListAsync(Guid checkListGuid,
-        CancellationToken cancellationToken)
-    {
-        if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
+        if (restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
         {
             return true;
         }
-
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid, cancellationToken);
-    }
-
-    public async Task<bool> HasCurrentUserWriteAccessToCheckListOwningPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        if (_restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())
-        {
-            return true;
-        }
-
-        var checkListGuid = await _punchItemHelper.GetCheckListGuidForPunchItemAsync(punchItemGuid);
-
-        if (!checkListGuid.HasValue)
-        {
-            throw new Exception($"CheckListGuid for PunchItem '{punchItemGuid}' not found");
-        }
-
-        return await HasCurrentUserExplicitAccessToContent(checkListGuid.Value, cancellationToken);
-    }
-
-    public async Task<bool> HasCurrentUserReadAccessToCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-    {
-        var checkList = await _checkListCache.GetCheckListAsync(_plantProvider.Plant, checkListGuid, cancellationToken);
-        return checkList == null
-            ? throw new Exception($"CheckList with guid '{checkListGuid}' not found")
-            : _projectAccessChecker.HasCurrentUserAccessToProject(checkList.ProjectGuid);
-    }
-
-    private async Task<bool> HasCurrentUserExplicitAccessToContent(Guid checkListGuid,
-        CancellationToken cancellationToken)
-    {
-        var checkList = await _checkListCache.GetCheckListAsync(_plantProvider.Plant, checkListGuid, cancellationToken);
-        if (checkList is null)
-        {
-            throw new Exception($"CheckList '{checkListGuid}' not found");
-        }
-
-        return _restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkList.ResponsibleCode);
+        return restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkListDetailsDto.ResponsibleCode);
     }
 }

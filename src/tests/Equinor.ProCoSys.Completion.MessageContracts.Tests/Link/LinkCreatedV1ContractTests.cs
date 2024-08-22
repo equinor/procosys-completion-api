@@ -21,7 +21,8 @@ public class LinkCreatedV1ContractTests : ContractTestBase<ILinkCreatedV1>
             { "Title", typeof(string) },
             { "Url", typeof(string) },
             { "CreatedBy", typeof(User) },
-            { "CreatedAtUtc", typeof(DateTime) }
+            { "CreatedAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

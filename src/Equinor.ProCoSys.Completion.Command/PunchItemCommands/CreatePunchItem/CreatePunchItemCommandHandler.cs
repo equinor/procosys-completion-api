@@ -73,7 +73,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
     public async Task<Result<GuidAndRowVersion>> Handle(CreatePunchItemCommand request,
         CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetAsync(request.ProjectGuid, cancellationToken);
+        var project = await _projectRepository.GetAsync(request.CheckListDetailsDto.ProjectGuid, cancellationToken);
 
         var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
             request.RaisedByOrgGuid,

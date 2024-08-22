@@ -179,7 +179,6 @@ public class PunchItemsController : ControllerBase
         var result = await _mediator.Send(new CreatePunchItemCommand(
                 dto.Category,
                 dto.Description,
-                dto.ProjectGuid,
                 dto.CheckListGuid,
                 dto.RaisedByOrgGuid,
                 dto.ClearingByOrgGuid,
@@ -419,7 +418,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="dto"></param>
     /// <returns>Guid and RowVersion of created link</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
-    [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Links")]
     public async Task<ActionResult<GuidAndRowVersion>> CreatePunchItemLink(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -577,7 +576,7 @@ public class PunchItemsController : ControllerBase
     /// <returns>Guid and RowVersion of created attachment/picture</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
     /// <remarks>Will give validation error if uploading same attachment with same filename as an existing attachment. Use PUT endpoint if overwrite is intended</remarks>
-    [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPost("{guid}/Attachments")]
     public async Task<ActionResult<GuidAndRowVersion>> UploadPunchItemAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -609,7 +608,7 @@ public class PunchItemsController : ControllerBase
     /// <returns>New RowVersion of attachment/picture</returns>
     /// <response code="400">Input validation error (error returned in body)</response>
     /// <remarks>Will give validation error if attachment with same filename don't exist. Use POST endpoint if uploading new attachment is intended</remarks>
-    [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Attachments")]
     public async Task<ActionResult<string>> OverwriteExistingPunchItemAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -715,7 +714,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="guid">Guid on PunchItem</param>
     /// <param name="attachmentGuid">Guid on attachment/picture</param>
     /// <param name="dto"></param>
-    [AuthorizeAny(Permissions.PUNCHITEM_DETACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpDelete("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult> DeleteAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
@@ -776,7 +775,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="dto"></param>
     /// <returns>New RowVersion of attachment/picture</returns>
     /// <response code="404">PunchItem or attachment/picture not found</response>
-    [AuthorizeAny(Permissions.PUNCHITEM_ATTACH, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_WRITE, Permissions.APPLICATION_TESTER)]
     [HttpPut("{guid}/Attachments/{attachmentGuid}")]
     public async Task<ActionResult<string>> UpdatePunchItemAttachment(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]

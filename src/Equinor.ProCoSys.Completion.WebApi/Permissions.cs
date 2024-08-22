@@ -11,8 +11,6 @@ public class Permissions
     public const string PUNCHITEM_CREATE = "PUNCHLISTITEM/CREATE";
     public const string PUNCHITEM_DELETE = "PUNCHLISTITEM/DELETE";
     public const string PUNCHITEM_WRITE = "PUNCHLISTITEM/WRITE";
-    public const string PUNCHITEM_ATTACH = "PUNCHLISTITEM/ATTACH";
-    public const string PUNCHITEM_DETACH = "PUNCHLISTITEM/DETACH";
     public const string PUNCHITEM_CLEAR = "PUNCHLISTITEM/CLEAR";
     public const string PUNCHITEM_VERIFY = "PUNCHLISTITEM/VERIFY";
     public const string USER_READ = "USER/READ";

@@ -22,7 +22,6 @@ public class CreatePunchItemDtoValidatorTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             DateTime.UtcNow, 
             Guid.Empty,
             Guid.Empty,
@@ -51,7 +50,6 @@ public class CreatePunchItemDtoValidatorTests
         var dto = new CreatePunchItemDto(
             Category.PA,
             null!,
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -90,7 +88,6 @@ public class CreatePunchItemDtoValidatorTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             DateTime.UtcNow,
             Guid.Empty,
             Guid.Empty,
@@ -120,7 +117,6 @@ public class CreatePunchItemDtoValidatorTests
         // Arrange
         var dto = new CreatePunchItemDto(Category.PA,
             new string('x', Domain.AggregateModels.PunchItemAggregate.PunchItem.DescriptionLengthMax + 1),
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
@@ -159,7 +155,6 @@ public class CreatePunchItemDtoValidatorTests
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,
-            Guid.Empty,
             DateTime.Now,
             Guid.Empty,
             Guid.Empty,
@@ -190,7 +185,6 @@ public class CreatePunchItemDtoValidatorTests
         var dto = new CreatePunchItemDto(
             Category.PA,
             "New item",
-            Guid.Empty,
             Guid.Empty,
             Guid.Empty,
             Guid.Empty,

@@ -144,9 +144,10 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsTrue(2 == dtos.First(x => x.Guid == _createdPunchItem.Guid).AttachmentCount);
         Assert.IsTrue(0 == dtos.First(x => x.Guid == _modifiedPunchItem.Guid).AttachmentCount);
     }
-    
+
+    #region GetPunchItemOrNullByPunchItemGuid
     [TestMethod]
-    public async Task Handle_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -155,7 +156,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -180,7 +181,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -189,7 +190,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -213,7 +214,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnCorrectClearedPunchItem_WhenPunchItemCleared()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnCorrectClearedPunchItem_WhenPunchItemCleared()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -222,7 +223,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -244,7 +245,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnCorrectVerifiedPunchItem_WhenPunchItemVerified()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnCorrectVerifiedPunchItem_WhenPunchItemVerified()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -253,7 +254,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -275,7 +276,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnCorrectRejectedPunchItem_WhenPunchItemRejected()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnCorrectRejectedPunchItem_WhenPunchItemRejected()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -284,7 +285,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -306,7 +307,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithPriority()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithPriority()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -315,7 +316,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -326,7 +327,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithSorting()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithSorting()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -335,7 +336,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -346,7 +347,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithType()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithType()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -355,7 +356,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -366,7 +367,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithDocument()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithDocument()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -375,7 +376,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -386,7 +387,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithWorkOrder()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithWorkOrder()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -395,7 +396,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -406,7 +407,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithOriginalWorkOrder()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithOriginalWorkOrder()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -415,7 +416,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -426,7 +427,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithSWCR()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithSWCR()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -435,7 +436,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -446,7 +447,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutPriority()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutPriority()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -455,7 +456,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -464,7 +465,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutSorting()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutSorting()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -473,7 +474,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -482,7 +483,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutType()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutType()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -491,7 +492,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -500,7 +501,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutDocument()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutDocument()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -509,7 +510,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -518,7 +519,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutOriginalWorkOrder()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutOriginalWorkOrder()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -527,7 +528,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -536,7 +537,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutSWCR()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutSWCR()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -545,7 +546,7 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
@@ -553,9 +554,8 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsNull(punchItemDetailsDto.SWCR);
     }
 
-
     [TestMethod]
-    public async Task Handle_ShouldReturnPunchItem_WithoutWorkOrder()
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnPunchItem_WithoutWorkOrder()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -564,14 +564,63 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         var dut = new PunchItemService(context);
 
         // Act
-        var punchItemDetailsDto = await dut.GetByGuid(testPunchItem.Guid, default);
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
 
         // Assert
         Assert.IsNotNull(punchItemDetailsDto);
 
         Assert.IsNull(punchItemDetailsDto.WorkOrder);
     }
-    
+
+    [TestMethod]
+    public async Task GetPunchItemOrNullByPunchItemGuid_ShouldReturnNull_WhenUnknownPunch()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDto = await dut.GetPunchItemOrNullByPunchItemGuidAsync(Guid.NewGuid(), default);
+
+        // Assert
+        Assert.IsNull(punchItemDetailsDto);
+    }
+    #endregion
+
+    #region GetProjectOrNullByPunchItemGuid
+    [TestMethod]
+    public async Task GetProjectOrNullByPunchItemGuid_ShouldReturnProjectDetails_WhenKnownPunch()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        var testPunchItem = _createdPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var projectDto = await dut.GetProjectOrNullByPunchItemGuidAsync(testPunchItem.Guid, default);
+
+        // Assert
+        Assert.IsNotNull(projectDto);
+        Assert.AreEqual(testPunchItem.Project.Guid, projectDto.Guid);
+        Assert.AreEqual(testPunchItem.Project.Name, projectDto.Name);
+    }
+
+    [TestMethod]
+    public async Task GetProjectOrNullByPunchItemGuid_ShouldReturnProjectDetails_WhenUnknownPunch()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        var dut = new PunchItemService(context);
+
+        // Act
+        var projectDto = await dut.GetProjectOrNullByPunchItemGuidAsync(Guid.NewGuid(), default);
+
+        // Assert
+        Assert.IsNull(projectDto);
+    }
+    #endregion
+
+    #region privats
     private void AssertRejected(PunchItemDetailsDto punchItemDetailsDto, PunchItem testPunchItem)
     {
         var rejectedBy = punchItemDetailsDto.RejectedBy;
@@ -686,4 +735,5 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.AreEqual(swcr.Guid, swcrDto.Guid);
         Assert.AreEqual(swcr.No, swcrDto.No);
     }
+    #endregion
 }

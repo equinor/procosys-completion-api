@@ -17,7 +17,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemC
 
 public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCategoryCommand, Result<string>>
 {
-    private readonly IPunchItemRepository _punchItemRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMessageProducer _messageProducer;
@@ -25,14 +24,12 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
     private readonly ILogger<UpdatePunchItemCategoryCommandHandler> _logger;
 
     public UpdatePunchItemCategoryCommandHandler(
-        IPunchItemRepository punchItemRepository,
         ISyncToPCS4Service syncToPCS4Service,
         IUnitOfWork unitOfWork,
         IMessageProducer messageProducer,
         ICheckListApiService checkListApiService,
         ILogger<UpdatePunchItemCategoryCommandHandler> logger)
     {
-        _punchItemRepository = punchItemRepository;
         _syncToPCS4Service = syncToPCS4Service;
         _unitOfWork = unitOfWork;
         _messageProducer = messageProducer;
@@ -42,7 +39,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
 
     public async Task<Result<string>> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await _punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
 
         var change = UpdateCategory(punchItem, request.Category);
 

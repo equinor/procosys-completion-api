@@ -55,7 +55,8 @@ public class PunchItemCreatedV1ContractTests : ContractTestBase<IPunchItemCreate
             { "VerifiedBy", typeof(User) },
             { "VerifiedAtUtc", typeof(DateTime?) },
             { "CreatedBy", typeof(User) },
-            { "CreatedAtUtc", typeof(DateTime) }
+            { "CreatedAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

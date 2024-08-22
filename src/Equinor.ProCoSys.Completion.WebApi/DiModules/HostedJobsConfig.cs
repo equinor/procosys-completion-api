@@ -1,10 +1,8 @@
 ﻿using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.WebApi.HostedServices;
-using Equinor.ProCoSys.Completion.WebApi.Seeding;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -18,14 +16,8 @@ public static class HostedJobsConfig
 
             DebugOptions.DebugEntityFrameworkInDevelopment = builder.Configuration.GetValue<bool>("DebugEntityFrameworkInDevelopment");
         }
-
-        if (!builder.Environment.IsProduction() && builder.Configuration.GetValue<bool>("SeedDummyData"))
-        {
-            builder.Services.AddHostedService<Seeder>();
-        }
         
         builder.Services.AddHostedService<VerifyApplicationExistsAsPerson>();
-        // VerifyLabelEntitiesExists need to come after VerifyApplicationExistsAsPerson!
         builder.Services.AddHostedService<ConfigureRequiredLabels>();
         
         return builder;

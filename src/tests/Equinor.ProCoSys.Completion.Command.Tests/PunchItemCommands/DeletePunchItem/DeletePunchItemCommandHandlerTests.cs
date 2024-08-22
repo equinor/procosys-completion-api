@@ -15,20 +15,18 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItem;
 
 [TestClass]
-public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class DeletePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private DeletePunchItemCommand _command;
     private DeletePunchItemCommandHandler _dut;
-    private ILogger<DeletePunchItemCommandHandler> _logger;
-    
 
     [TestInitialize]
     public void Setup()
     {
-        _command = new DeletePunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
-
-        _logger = Substitute.For<ILogger<DeletePunchItemCommandHandler>>();
+        _command = new DeletePunchItemCommand(_existingPunchItem[TestPlantA].Guid, RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
         _dut = new DeletePunchItemCommandHandler(
             _punchItemRepositoryMock,
@@ -36,7 +34,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             _unitOfWorkMock,
             _messageProducerMock,
             _checkListApiServiceMock,
-            _logger,
+            Substitute.For<ILogger<DeletePunchItemCommandHandler>>(),
             Substitute.For<ICommentRepository>(),
             Substitute.For<IAttachmentRepository>(),
             Substitute.For<ILinkRepository>());
@@ -49,7 +47,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem[_testPlant]);
+        _punchItemRepositoryMock.Received(1).Remove(_existingPunchItem[TestPlantA]);
     }
 
     [TestMethod]
@@ -81,7 +79,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 
 
@@ -101,7 +99,7 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         Assert.AreEqual(punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(punchItem.Guid, integrationEvent.Guid);
         Assert.AreEqual(punchItem.CheckListGuid, integrationEvent.ParentGuid);
@@ -129,10 +127,10 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertHistoryDeletedIntegrationEvent(
             historyEvent,
             _plantProviderMock.Plant,
-            $"Punch item {_existingPunchItem[_testPlant].Category} {_existingPunchItem[_testPlant].ItemNo} deleted",
-            _existingPunchItem[_testPlant].CheckListGuid,
-            _existingPunchItem[_testPlant],
-            _existingPunchItem[_testPlant]);
+            $"Punch item {_existingPunchItem[TestPlantA].Category} {_existingPunchItem[TestPlantA].ItemNo} deleted",
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            _existingPunchItem[TestPlantA],
+            _existingPunchItem[TestPlantA]);
     }
 
     #region Unit Tests which can be removed when no longer sync to pcs4
@@ -143,8 +141,8 @@ public class DeletePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        var punchItem = _existingPunchItem[TestPlantA];
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, punchItem.CheckListGuid, default);
     }
 
     [TestMethod]

@@ -19,7 +19,8 @@ public class AttachmentDeletedV1ContractTests : ContractTestBase<IAttachmentDele
             { "ParentGuid", typeof(Guid) },
             { "DeletedBy", typeof(User) },
             { "DeletedAtUtc", typeof(DateTime) },
-            { "FullBlobPath", typeof(string)}
+            { "FullBlobPath", typeof(string)},
+            { "MessageId", typeof(Guid)}
         };
 
         // Act

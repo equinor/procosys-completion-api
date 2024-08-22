@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\pipelines\templates\dockerbuild.yml = ..\pipelines\templates\dockerbuild.yml
 		Dockerfile = Dockerfile
 		..\pipelines\templates\execute-db-migration.yml = ..\pipelines\templates\execute-db-migration.yml
+		..\pipelines\nuget-publish.yml = ..\pipelines\nuget-publish.yml
 		nuget.config = nuget.config
 		..\pipelines\templates\radix-deploy.yml = ..\pipelines\templates\radix-deploy.yml
 		..\pipelines\templates\radix-promote-env.yml = ..\pipelines\templates\radix-promote-env.yml
@@ -34,7 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 		..\pipelines\templates\runtest.yml = ..\pipelines\templates\runtest.yml
 		usersecrets_minimum.json = usersecrets_minimum.json
-		..\pipelines\nuget-publish.yml = ..\pipelines\nuget-publish.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DFB50BC5-5201-42FD-A049-CF0259AA7AE8}"

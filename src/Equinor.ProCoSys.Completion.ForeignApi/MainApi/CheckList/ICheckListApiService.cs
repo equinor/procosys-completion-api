@@ -7,7 +7,8 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public interface ICheckListApiService
 {
-    Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid, CancellationToken cancellationToken);
+    // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
+    Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken);
     Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken);
     Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken);
     Task<TagCheckList[]> GetCheckListsByTagIdAndPlantAsync(int tagId, string plant, CancellationToken cancellationToken);

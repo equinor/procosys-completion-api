@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Imports;
@@ -14,8 +13,8 @@ using Microsoft.Extensions.Options;
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class MainApiCheckListService(
-    IMainApiClient mainApiClient,
-    IMainApiAuthenticator mainApiAuthenticator,
+    IMainApiClientForApplication mainApiClientForApplication,
+    IMainApiClientForUser mainApiClientForUser,
     IOptionsMonitor<MainApiOptions> mainApiOptions,
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : ICheckListApiService
@@ -24,24 +23,16 @@ public class MainApiCheckListService(
     private readonly Uri _baseAddress = new(mainApiOptions.CurrentValue.BaseAddress);
     private readonly bool _recalculateStatusInPcs4 = applicationOptions.CurrentValue.RecalculateStatusInPcs4;
 
-    public async Task<ProCoSys4CheckList?> GetCheckListAsync(string plant, Guid checkListGuid,
-        CancellationToken cancellationToken)
+    // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
+    public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
     {
-        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
-        try
-        {
-            mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
-            var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                      $"?plantId={plant}" +
-                      $"&proCoSysGuid={checkListGuid:N}" +
-                      $"&api-version={_apiVersion}";
+        var url = $"{_baseAddress}CheckList/ForProCoSys5" +
+                  $"?proCoSysGuid={checkListGuid:N}" +
+                  $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, default, cancellationToken);
-        }
-        finally
-        {
-            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
-        }
+        // Execute as application. The recalc endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
     }
 
     public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
@@ -51,22 +42,15 @@ public class MainApiCheckListService(
             return;
         }
 
-        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
-        try
-        {
-            mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
-            var url = $"{_baseAddress}CheckList/ForProCoSys5" +
-                      $"?plantId={plant}" +
-                      $"&api-version={_apiVersion}";
+        var url = $"{_baseAddress}CheckList/ForProCoSys5" +
+                  $"?plantId={plant}" +
+                  $"&api-version={_apiVersion}";
 
-            var requestBody = JsonSerializer.Serialize(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
-            var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            await mainApiClient.PostAsync(url, content, cancellationToken);
-        }
-        finally
-        {
-            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
-        }
+        var requestBody = JsonSerializer.Serialize(new CheckListGuidDto { ProCoSysGuid = checkListGuid });
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        // Execute as application. The recalc endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        await mainApiClientForApplication.PostAsync(url, content, cancellationToken);
     }
 
     public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
@@ -76,7 +60,7 @@ public class MainApiCheckListService(
                   $"&proCoSysGuid={punchItemGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await mainApiClient.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, null, cancellationToken);
+        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
     }
 
     public async Task<TagCheckList[]> GetCheckListsByTagIdAndPlantAsync(int tagId, string plant, CancellationToken cancellationToken)

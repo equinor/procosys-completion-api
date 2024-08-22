@@ -50,7 +50,7 @@ public class DeletePunchItemCommandHandler(
         {
             linkRepository.Remove(link);
         }
-        var punchItem = await punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
             
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency

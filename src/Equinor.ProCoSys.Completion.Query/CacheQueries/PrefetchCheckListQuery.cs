@@ -6,11 +6,11 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Query.CacheQueries;
 
-public readonly record struct PrefetchCheckListQuery(Guid CheckListGuid, string Plant) : IRequest;
+public readonly record struct PrefetchCheckListQuery(Guid CheckListGuid) : IRequest;
 
 public sealed class PrefetchCheckListQueryHandler(ICheckListCache checkListCache)
     : IRequestHandler<PrefetchCheckListQuery>
 {
     public async Task Handle(PrefetchCheckListQuery request, CancellationToken cancellationToken) =>
-        await checkListCache.GetCheckListAsync(request.Plant, request.CheckListGuid, cancellationToken);
+        await checkListCache.GetCheckListAsync(request.CheckListGuid, cancellationToken);
 }

@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Test.Common;
-using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
-using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
-using Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
@@ -16,54 +12,52 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 /// <summary>
 /// This unit test don't test any business logic.
 /// Just a helper for developer to remember to add Unit Test for AccessValidator when implementing
-/// a new IIsProjectCommand, IIsPunchItemCommand or IIsPunchItemQuery
+/// a new MediatR command which need access check
 /// </summary>
 [TestClass]
 public class AccessValidatorTestCoverageTests
 {
     [TestMethod]
-    public void Each_IIsProjectCommand_ShouldHaveUnitTest_ForAccessValidator()
+    public void Each_Command_NeedProjectAccess_ShouldHaveUnitTest_ForAccessValidator()
     {
         var classes =
-            TestHelper.GetClassesImplementingInterface(
+            TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Command",
-                typeof(IIsProjectCommand));
+                typeof(INeedProjectAccess));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
-                typeof(AccessValidatorForIIsProjectCommandTests<>));
+                typeof(AccessValidatorTestBase));
 
         AssertAllHasUnitTest(classes, testClassList);
     }
 
     [TestMethod]
-    public void Each_IIsPunchItemCommand_ShouldHaveUnitTest_ForAccessValidator()
+    public void Each_Query_NeedProjectAccess_ShouldHaveUnitTest_ForAccessValidator()
     {
         var classes =
-            TestHelper.GetClassesImplementingInterface(
-                "Equinor.ProCoSys.Completion.Command",
-                typeof(IIsPunchItemCommand));
-
-        var testClassList
-            = TestHelper.GetTestsWhichInheritsBaseClass(
-                Assembly.GetExecutingAssembly(),
-                typeof(AccessValidatorForIIsPunchItemCommandTests<>));
-
-        AssertAllHasUnitTest(classes, testClassList);
-    }
-
-    [TestMethod]
-    public void Each_IIsPunchItemQuery_ShouldHaveUnitTest_ForAccessValidator()
-    {
-        var classes =
-            TestHelper.GetClassesImplementingInterface(
+            TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Query",
-                typeof(IIsPunchItemQuery));
-
+                typeof(INeedProjectAccess));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
-                typeof(AccessValidatorForIIsPunchItemQueryTests<>));
+                typeof(AccessValidatorTestBase));
+
+        AssertAllHasUnitTest(classes, testClassList);
+    }
+
+    [TestMethod]
+    public void Each_Command_NeedRestrictionAccessCheck_ShouldHaveUnitTest_ForAccessValidator()
+    {
+        var classes =
+            TestHelper.GetClassesInheritsBaseClass(
+                "Equinor.ProCoSys.Completion.Command",
+                typeof(ICanHaveRestrictionsViaCheckList));
+        var testClassList
+            = TestHelper.GetTestsWhichInheritsBaseClass(
+                Assembly.GetExecutingAssembly(),
+                typeof(AccessValidatorTestBase));
 
         AssertAllHasUnitTest(classes, testClassList);
     }

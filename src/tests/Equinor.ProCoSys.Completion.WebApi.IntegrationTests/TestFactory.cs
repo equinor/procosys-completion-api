@@ -289,13 +289,13 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         
     private void SetupPermissionMock(string plant, ITestUser testUser)
     {
-        _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant)
+        _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.Permissions));
                         
-        _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant)
+        _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.AccessableProjects));
 
-        _permissionApiServiceMock.GetRestrictionRolesForCurrentUserAsync(plant)
+        _permissionApiServiceMock.GetRestrictionRolesForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.Restrictions));
     }
 
@@ -388,7 +388,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                         Arg.Any<CancellationToken>())
                     .Returns(Task.FromResult((ProCoSysPerson)null));
             }
-            _permissionApiServiceMock.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid))
+            _permissionApiServiceMock.GetAllPlantsForUserAsync(new Guid(testUser.Profile.Oid), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
@@ -417,11 +417,11 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidRestricted, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(Arg.Any<string>(), CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
             .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
 
         CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
@@ -512,8 +512,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
                     Permissions.PUNCHITEM_WRITE,
-                    Permissions.PUNCHITEM_ATTACH,
-                    Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ,
@@ -547,8 +545,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_CLEAR,
                     Permissions.PUNCHITEM_VERIFY,
                     Permissions.PUNCHITEM_WRITE,
-                    Permissions.PUNCHITEM_ATTACH,
-                    Permissions.PUNCHITEM_DETACH,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.LIBRARY_READ

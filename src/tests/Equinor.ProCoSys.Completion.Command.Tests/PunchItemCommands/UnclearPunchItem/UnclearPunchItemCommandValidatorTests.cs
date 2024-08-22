@@ -1,30 +1,32 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
-using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
- using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnclearPunchItem;
 
 [TestClass]
-public class UnclearPunchItemCommandValidatorTests
+public class UnclearPunchItemCommandValidatorTests : PunchItemCommandTestsBase
 {
     private UnclearPunchItemCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private UnclearPunchItemCommand _command;
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UnclearPunchItemCommand(Guid.NewGuid(), "r");
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command = new UnclearPunchItemCommand(_existingPunchItem[TestPlantA].Guid, "r")
+        {
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
+        };
 
-        _dut = new UnclearPunchItemCommandValidator(_punchItemValidatorMock);
+        _command.PunchItem.Clear(_currentPerson);
+
+        _dut = new UnclearPunchItemCommandValidator();
     }
 
     [TestMethod]
@@ -38,27 +40,14 @@ public class UnclearPunchItemCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
+    public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemIsVoided()
-    {
-        // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -73,8 +62,7 @@ public class UnclearPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -89,8 +77,7 @@ public class UnclearPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemNotCleared()
     {
         // Arrange
-        _punchItemValidatorMock.IsClearedAsync(_command.PunchItemGuid, default)
-            .Returns(false);
+        _command.PunchItem.Unclear();
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -105,8 +92,7 @@ public class UnclearPunchItemCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVerified()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Verify(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

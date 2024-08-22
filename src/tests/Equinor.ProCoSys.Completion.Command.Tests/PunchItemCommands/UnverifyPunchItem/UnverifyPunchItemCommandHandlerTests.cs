@@ -12,22 +12,23 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UnverifyPunchItem;
 
 [TestClass]
-public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private UnverifyPunchItemCommand _command;
     private UnverifyPunchItemCommandHandler _dut;
 
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem[_testPlant].Clear(_currentPerson);
-        _existingPunchItem[_testPlant].Verify(_currentPerson);
+        _command = new UnverifyPunchItemCommand(_existingPunchItem[TestPlantA].Guid, RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
-        _command = new UnverifyPunchItemCommand(_existingPunchItem[_testPlant].Guid, RowVersion);
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_currentPerson);
 
         _dut = new UnverifyPunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _syncToPCS4ServiceMock,
             _unitOfWorkMock,
             _messageProducerMock,
@@ -38,15 +39,15 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
     public async Task HandlingCommand_ShouldUnverifyPunchItem()
     {
         // Assert
-        Assert.IsTrue(_existingPunchItem[_testPlant].VerifiedAtUtc.HasValue);
-        Assert.IsTrue(_existingPunchItem[_testPlant].VerifiedById.HasValue);
+        Assert.IsTrue(_existingPunchItem[TestPlantA].VerifiedAtUtc.HasValue);
+        Assert.IsTrue(_existingPunchItem[TestPlantA].VerifiedById.HasValue);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsFalse(_existingPunchItem[_testPlant].VerifiedAtUtc.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].VerifiedById.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].VerifiedAtUtc.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].VerifiedById.HasValue);
     }
 
     [TestMethod]
@@ -79,7 +80,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -98,7 +99,6 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
         AssertNotVerified(integrationEvent);
     }
@@ -119,7 +119,7 @@ public class UnverifyPunchItemCommandHandlerTests : PunchItemCommandHandlerTests
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
             punchItem.Plant,

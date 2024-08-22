@@ -20,10 +20,9 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.RejectPunchItem;
 
 [TestClass]
-public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class RejectPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
     private const string RejectLabelText = "Reject";
-    private readonly string _testPlant = TestPlantA;
     private RejectPunchItemCommand _command;
     private RejectPunchItemCommandHandler _dut;
     private ILabelRepository _labelRepositoryMock;
@@ -38,16 +37,19 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestInitialize]
     public void Setup()
     {
-        _existingPunchItem[_testPlant].Clear(_currentPerson);
-
         var person = new Person(Guid.NewGuid(), null!, null!, null!, "p1@pcs.no", false);
         _personList = [person];
 
         _command = new RejectPunchItemCommand(
-            _existingPunchItem[_testPlant].Guid,
+            _existingPunchItem[TestPlantA].Guid,
             Guid.NewGuid().ToString(),
             new List<Guid> { person.Guid },
-            RowVersion);
+            RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
+        _command.PunchItem.Clear(_currentPerson);
 
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
         _rejectedLabel = new Label(RejectLabelText);
@@ -77,7 +79,6 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             .Returns(_personList);
 
         _dut = new RejectPunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _labelRepositoryMock,
             _commentRepositoryMock,
             _personRepositoryMock,
@@ -94,12 +95,15 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestMethod]
     public async Task HandlingCommand_ShouldRejectPunchItem()
     {
+        // Arrange
+        Assert.IsTrue(_command.PunchItem.IsCleared);
+        Assert.IsFalse(_command.PunchItem.IsRejected);
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_utcNow, _existingPunchItem[_testPlant].RejectedAtUtc);
-        Assert.AreEqual(_currentPerson.Id, _existingPunchItem[_testPlant].RejectedById);
+        Assert.IsFalse(_command.PunchItem.IsCleared);
+        Assert.IsTrue(_command.PunchItem.IsRejected);
     }
 
     [TestMethod]
@@ -132,7 +136,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _command.PunchItem.RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -165,10 +169,9 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         Assert.IsNotNull(integrationEvent);
         AssertNotCleared(integrationEvent);
-        AssertIsRejected(punchItem, punchItem.RejectedBy, integrationEvent);
+        AssertIsRejected(_command.PunchItem, _command.PunchItem.RejectedBy, integrationEvent);
     }
 
     [TestMethod]
@@ -187,13 +190,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
-            punchItem.Plant,
+            _command.PunchItem.Plant,
             "Punch item rejected",
-            punchItem,
-            punchItem);
+            _command.PunchItem,
+            _command.PunchItem);
         Assert.IsNotNull(historyEvent.ChangedProperties);
         Assert.AreEqual(1, historyEvent.ChangedProperties.Count);
         var changedProperty = historyEvent.ChangedProperties[0];
@@ -240,8 +242,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, _command.PunchItem.CheckListGuid, default);
     }
 
     [TestMethod]

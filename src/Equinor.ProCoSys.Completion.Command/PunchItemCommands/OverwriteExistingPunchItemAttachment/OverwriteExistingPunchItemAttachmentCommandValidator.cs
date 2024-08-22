@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
@@ -10,41 +11,25 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistin
 public class OverwriteExistingPunchItemAttachmentCommandValidator : AbstractValidator<OverwriteExistingPunchItemAttachmentCommand>
 {
     public OverwriteExistingPunchItemAttachmentCommandValidator(
-        IPunchItemValidator punchItemValidator,
+        IPunchItemValidator punchItemValidator, 
         IAttachmentService attachmentService)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(command => command)
-            .MustAsync((command, cancellationToken) => NotBeInAClosedProjectForPunchItemAsync(command.PunchItemGuid, cancellationToken))
+            .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => BeAnExistingPunchItemAsync(command.PunchItemGuid, cancellationToken))
-            .WithMessage(command => $"Punch item with this guid does not exist! Guid={command.PunchItemGuid}")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForPunchItemAsync(command.PunchItemGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => HaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName, cancellationToken))
             .WithMessage(command => $"Punch item don't have an attachment with filename {command.FileName}!")
-            .MustAsync((command, cancellationToken) => NotBeVerifiedAsync(command.PunchItemGuid, cancellationToken))
+            .Must(command => !command.PunchItem.IsVerified)
             .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}")
-            .UnlessAsync((command, cancellationToken)
-                => CurrentUserIsVerifier(command.PunchItemGuid, cancellationToken), ApplyConditionTo.CurrentValidator);
-
-        async Task<bool> NotBeInAClosedProjectForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-            => !await punchItemValidator.ProjectOwningPunchItemIsClosedAsync(punchItemGuid, cancellationToken);
-
-        async Task<bool> NotBeInAVoidedTagForPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-            => !await punchItemValidator.TagOwningPunchItemIsVoidedAsync(punchItemGuid, cancellationToken);
-
-        async Task<bool> BeAnExistingPunchItemAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-            => await punchItemValidator.ExistsAsync(punchItemGuid, cancellationToken);
+            .Unless(command => CurrentUserIsVerifier(command.PunchItem), ApplyConditionTo.CurrentValidator);
 
         async Task<bool> HaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName, CancellationToken cancellationToken)
             => await attachmentService.FileNameExistsForParentAsync(punchItemGuid, fileName, cancellationToken);
 
-        async Task<bool> NotBeVerifiedAsync(Guid punchItemGuid, CancellationToken cancellationToken)
-            => !await punchItemValidator.IsVerifiedAsync(punchItemGuid, cancellationToken);
-
-        async Task<bool> CurrentUserIsVerifier(Guid punchItemGuid, CancellationToken cancellationToken)
-            => await punchItemValidator.CurrentUserIsVerifierAsync(punchItemGuid, cancellationToken);
+        bool CurrentUserIsVerifier(PunchItem punchItem) => punchItemValidator.CurrentUserIsVerifier(punchItem);
     }
 }

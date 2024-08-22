@@ -10,7 +10,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemAttachment;
 
 [TestClass]
-public class UpdatePunchItemAttachmentCommandHandlerTests
+public class UpdatePunchItemAttachmentCommandHandlerTests : PunchItemCommandTestsBase
 {
     private UpdatePunchItemAttachmentCommandHandler _dut;
     private UpdatePunchItemAttachmentCommand _command;
@@ -22,11 +22,14 @@ public class UpdatePunchItemAttachmentCommandHandlerTests
     public void Setup()
     {
         var labelText = "a";
-        _command = new UpdatePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "d", new List<string> { labelText }, "r");
+        _command = new UpdatePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "d", new List<string> { labelText }, "r")
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
 
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _labelRepositoryMock = Substitute.For<ILabelRepository>();
-        _labelList = new List<Label>{new (labelText)};
+        _labelList = [new(labelText)];
         _labelRepositoryMock.GetManyAsync(_command.Labels, default).Returns(_labelList);
 
         _dut = new UpdatePunchItemAttachmentCommandHandler(_attachmentServiceMock, _labelRepositoryMock);

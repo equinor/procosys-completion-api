@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,10 +10,9 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItemComment;
 
 [TestClass]
-public class CreatePunchItemCommentCommandValidatorTests
+public class CreatePunchItemCommentCommandValidatorTests : PunchItemCommandTestsBase
 {
     private CreatePunchItemCommentCommandValidator _dut;
-    private IPunchItemValidator _punchItemValidatorMock;
     private ILabelValidator _labelValidatorMock;
     private CreatePunchItemCommentCommand _command;
     private readonly string _labelTextA = "a";
@@ -22,16 +22,23 @@ public class CreatePunchItemCommentCommandValidatorTests
     public void Setup_OkState()
     {
         _command = new CreatePunchItemCommentCommand(
-            Guid.NewGuid(), 
-            "Test title", 
+            _existingPunchItem[TestPlantA].Guid,
+            "Test title",
             new List<string> { _labelTextA, _labelTextB },
-            new List<Guid>());
-        _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default).Returns(true);
+            new List<Guid>())
+        {
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
+        };
+
         _labelValidatorMock = Substitute.For<ILabelValidator>();
         _labelValidatorMock.ExistsAsync(_labelTextA, default).Returns(true);
         _labelValidatorMock.ExistsAsync(_labelTextB, default).Returns(true);
-        _dut = new CreatePunchItemCommentCommandValidator(_punchItemValidatorMock, _labelValidatorMock);
+        _dut = new CreatePunchItemCommentCommandValidator(_labelValidatorMock);
     }
 
     [TestMethod]
@@ -43,27 +50,14 @@ public class CreatePunchItemCommentCommandValidatorTests
     }
 
     [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
-    {
-        // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
-    }
-
-    [TestMethod]
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -78,8 +72,7 @@ public class CreatePunchItemCommentCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -124,8 +117,8 @@ public class CreatePunchItemCommentCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVerified()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_currentPerson);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -133,6 +126,6 @@ public class CreatePunchItemCommentCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item is verified!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item comments can't be added. Punch item is verified!"));
     }
 }

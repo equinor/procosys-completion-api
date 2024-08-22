@@ -5,14 +5,26 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemCommandTests;
 
 [TestClass]
-public class AccessValidatorForUpdatePunchItemAttachmentCommandTests : AccessValidatorForIIsPunchItemCommandTests<UpdatePunchItemAttachmentCommand>
+public class AccessValidatorForUpdatePunchItemAttachmentCommandTests : AccessValidatorForCommandNeedAccessTests<UpdatePunchItemAttachmentCommand>
 {
-    protected override UpdatePunchItemAttachmentCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
-        => new(PunchItemGuidWithAccessToProjectAndContent, Guid.Empty, "a", null!, null!);
+    protected override UpdatePunchItemAttachmentCommand GetCommandWithAccessToBothProjectAndContent()
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessToProjectAndContent,
+            CheckListDetailsDto = CheckListWithAccessToBothProjectAndContent
+        };
 
-    protected override UpdatePunchItemAttachmentCommand GetPunchItemCommandWithAccessToProjectButNotContent()
-        => new(PunchItemGuidWithAccessToProjectButNotContent, Guid.Empty, "a", null!, null!);
+    protected override UpdatePunchItemAttachmentCommand GetCommandWithAccessToProjectButNotContent()
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessToProjectButNotContent,
+            CheckListDetailsDto = CheckListWithAccessToProjectButNotContent
+        };
 
-    protected override UpdatePunchItemAttachmentCommand GetPunchItemCommandWithoutAccessToProject()
-        => new(PunchItemGuidWithoutAccessToProject, Guid.Empty, "a", null!, null!);
+    protected override UpdatePunchItemAttachmentCommand GetCommandWithoutAccessToProject()
+        => new(Guid.Empty, Guid.Empty, "a", null!, null!)
+        {
+            PunchItem = PunchItemWithAccessCheckListButNotProject,
+            CheckListDetailsDto = CheckListWithAccessCheckListButNotProject
+        };
 }

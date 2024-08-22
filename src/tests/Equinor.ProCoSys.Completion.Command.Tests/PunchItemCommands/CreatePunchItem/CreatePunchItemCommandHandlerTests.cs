@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -16,9 +17,8 @@ using User = Equinor.ProCoSys.Completion.MessageContracts.User;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunchItem;
 
 [TestClass]
-public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private readonly Guid _existingCheckListGuid = Guid.NewGuid();
     private PunchItem _punchItemAddedToRepository;
     private readonly int _punchItemId = 17;
@@ -29,7 +29,9 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     [TestInitialize]
     public void Setup()
     {
-        _punchItemRepositoryMock
+        var punchItemRepositoryMock = Substitute.For<IPunchItemRepository>();
+
+        punchItemRepositoryMock
             .When(x => x.Add(Arg.Any<PunchItem>()))
             .Do(callInfo =>
             {
@@ -47,28 +49,31 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[_testPlant].Guid,
             _existingCheckListGuid,
-            _existingRaisedByOrg1[_testPlant].Guid,
-            _existingClearingByOrg1[_testPlant].Guid,
+            _existingRaisedByOrg1[TestPlantA].Guid,
+            _existingClearingByOrg1[TestPlantA].Guid,
             _existingPerson1.Guid,
             DateTime.UtcNow,
-            _existingPriority1[_testPlant].Guid,
-            _existingSorting1[_testPlant].Guid,
-            _existingType1[_testPlant].Guid,
+            _existingPriority1[TestPlantA].Guid,
+            _existingSorting1[TestPlantA].Guid,
+            _existingType1[TestPlantA].Guid,
             100,
-            _existingWorkOrder1[_testPlant].Guid,
-            _existingWorkOrder2[_testPlant].Guid,
-            _existingSWCR1[_testPlant].Guid,
-            _existingDocument1[_testPlant].Guid,
+            _existingWorkOrder1[TestPlantA].Guid,
+            _existingWorkOrder2[TestPlantA].Guid,
+            _existingSWCR1[TestPlantA].Guid,
+            _existingDocument1[TestPlantA].Guid,
             "123",
             true,
             DateTime.UtcNow,
-            "123.1");
+            "123.1")
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         _dut = new CreatePunchItemCommandHandler(
             _plantProviderMock,
-            _punchItemRepositoryMock,
+            punchItemRepositoryMock,
             _libraryItemRepositoryMock,
             _projectRepositoryMock,
             _personRepositoryMock,
@@ -101,19 +106,19 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.AreEqual(_command.Description, _punchItemAddedToRepository.Description);
-        Assert.AreEqual(_existingProject[_testPlant].Id, _punchItemAddedToRepository.ProjectId);
-        Assert.AreEqual(_existingRaisedByOrg1[_testPlant].Id, _punchItemAddedToRepository.RaisedByOrgId);
-        Assert.AreEqual(_existingClearingByOrg1[_testPlant].Id, _punchItemAddedToRepository.ClearingByOrgId);
+        Assert.AreEqual(_existingProject[TestPlantA].Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingRaisedByOrg1[TestPlantA].Id, _punchItemAddedToRepository.RaisedByOrgId);
+        Assert.AreEqual(_existingClearingByOrg1[TestPlantA].Id, _punchItemAddedToRepository.ClearingByOrgId);
         Assert.AreEqual(_existingPerson1.Id, _punchItemAddedToRepository.ActionById);
         Assert.AreEqual(_command.DueTimeUtc, _punchItemAddedToRepository.DueTimeUtc);
-        Assert.AreEqual(_existingPriority1[_testPlant].Id, _punchItemAddedToRepository.PriorityId);
-        Assert.AreEqual(_existingSorting1[_testPlant].Id, _punchItemAddedToRepository.SortingId);
-        Assert.AreEqual(_existingType1[_testPlant].Id, _punchItemAddedToRepository.TypeId);
+        Assert.AreEqual(_existingPriority1[TestPlantA].Id, _punchItemAddedToRepository.PriorityId);
+        Assert.AreEqual(_existingSorting1[TestPlantA].Id, _punchItemAddedToRepository.SortingId);
+        Assert.AreEqual(_existingType1[TestPlantA].Id, _punchItemAddedToRepository.TypeId);
         Assert.AreEqual(_command.Estimate, _punchItemAddedToRepository.Estimate);
-        Assert.AreEqual(_existingWorkOrder1[_testPlant].Id, _punchItemAddedToRepository.OriginalWorkOrderId);
-        Assert.AreEqual(_existingWorkOrder2[_testPlant].Id, _punchItemAddedToRepository.WorkOrderId);
-        Assert.AreEqual(_existingSWCR1[_testPlant].Id, _punchItemAddedToRepository.SWCRId);
-        Assert.AreEqual(_existingDocument1[_testPlant].Id, _punchItemAddedToRepository.DocumentId);
+        Assert.AreEqual(_existingWorkOrder1[TestPlantA].Id, _punchItemAddedToRepository.OriginalWorkOrderId);
+        Assert.AreEqual(_existingWorkOrder2[TestPlantA].Id, _punchItemAddedToRepository.WorkOrderId);
+        Assert.AreEqual(_existingSWCR1[TestPlantA].Id, _punchItemAddedToRepository.SWCRId);
+        Assert.AreEqual(_existingDocument1[TestPlantA].Id, _punchItemAddedToRepository.DocumentId);
         Assert.AreEqual(_command.ExternalItemNo, _punchItemAddedToRepository.ExternalItemNo);
         Assert.AreEqual(_command.MaterialRequired, _punchItemAddedToRepository.MaterialRequired);
         Assert.AreEqual(_command.MaterialETAUtc, _punchItemAddedToRepository.MaterialETAUtc);
@@ -127,10 +132,9 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[_testPlant].Guid,
             _existingCheckListGuid,
-            _existingRaisedByOrg1[_testPlant].Guid,
-            _existingClearingByOrg1[_testPlant].Guid,
+            _existingRaisedByOrg1[TestPlantA].Guid,
+            _existingClearingByOrg1[TestPlantA].Guid,
             null,
             null,
             null,
@@ -144,7 +148,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         // Act
         await _dut.Handle(command, default);
@@ -152,9 +160,9 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // Assert
         Assert.IsNotNull(_punchItemAddedToRepository);
         Assert.AreEqual(_command.Description, _punchItemAddedToRepository.Description);
-        Assert.AreEqual(_existingProject[_testPlant].Id, _punchItemAddedToRepository.ProjectId);
-        Assert.AreEqual(_existingRaisedByOrg1[_testPlant].Id, _punchItemAddedToRepository.RaisedByOrgId);
-        Assert.AreEqual(_existingClearingByOrg1[_testPlant].Id, _punchItemAddedToRepository.ClearingByOrgId);
+        Assert.AreEqual(_existingProject[TestPlantA].Id, _punchItemAddedToRepository.ProjectId);
+        Assert.AreEqual(_existingRaisedByOrg1[TestPlantA].Id, _punchItemAddedToRepository.RaisedByOrgId);
+        Assert.AreEqual(_existingClearingByOrg1[TestPlantA].Id, _punchItemAddedToRepository.ClearingByOrgId);
         Assert.IsFalse(_punchItemAddedToRepository.ActionById.HasValue);
         Assert.IsFalse(_punchItemAddedToRepository.DueTimeUtc.HasValue);
         Assert.IsFalse(_punchItemAddedToRepository.PriorityId.HasValue);
@@ -337,10 +345,9 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var command = new CreatePunchItemCommand(
             Category.PA,
             "P123",
-            _existingProject[_testPlant].Guid,
             _existingCheckListGuid,
-            _existingRaisedByOrg1[_testPlant].Guid,
-            _existingClearingByOrg1[_testPlant].Guid,
+            _existingRaisedByOrg1[TestPlantA].Guid,
+            _existingClearingByOrg1[TestPlantA].Guid,
             null,
             null,
             null,
@@ -354,7 +361,11 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             null,
             false,
             null,
-            null);
+            null)
+        {
+            CheckListDetailsDto =
+                new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
+        };
 
         // Act
         await _dut.Handle(command, default);
@@ -401,7 +412,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(_testPlant, _command.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, _command.CheckListGuid, default);
     }
 
     [TestMethod]

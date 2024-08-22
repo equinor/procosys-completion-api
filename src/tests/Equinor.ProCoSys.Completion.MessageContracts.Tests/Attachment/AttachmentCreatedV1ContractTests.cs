@@ -21,7 +21,9 @@ public class AttachmentCreatedV1ContractTests : ContractTestBase<IAttachmentCrea
             { "FileName", typeof(string) },
             { "BlobPath", typeof(string) },
             { "CreatedBy", typeof(User) },
-            { "CreatedAtUtc", typeof(DateTime) }
+            { "CreatedAtUtc", typeof(DateTime) },
+            { "MessageId", typeof(Guid)}
+            
         };
 
         // Act

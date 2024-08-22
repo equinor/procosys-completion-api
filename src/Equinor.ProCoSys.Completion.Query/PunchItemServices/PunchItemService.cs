@@ -18,27 +18,73 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemServices;
 
 public class PunchItemService(IReadOnlyContext context) : IPunchItemService
 {
-    public async Task<PunchItemDetailsDto> GetByGuid(Guid punchItemGuid, CancellationToken cancellationToken)
+    private IQueryable<PunchItem> PunchItemsQueryable => context.QuerySet<PunchItem>()
+        .TagWith($"name:{nameof(PunchItemService)}.PunchItemsQueryable")
+        .Include(p => p.Project)
+        .Include(p => p.CreatedBy)
+        .Include(p => p.ModifiedBy)
+        .Include(p => p.ClearedBy)
+        .Include(p => p.RejectedBy)
+        .Include(p => p.VerifiedBy)
+        .Include(p => p.RaisedByOrg)
+        .Include(p => p.ClearingByOrg)
+        .Include(p => p.Priority)
+        .Include(p => p.Sorting)
+        .Include(p => p.Type)
+        .Include(p => p.ActionBy)
+        .Include(p => p.WorkOrder)
+        .Include(p => p.OriginalWorkOrder)
+        .Include(p => p.SWCR)
+        .Include(p => p.Document);
+
+    public async Task<PunchItemDetailsDto?> GetPunchItemOrNullByPunchItemGuidAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
-            query.Where(pi => pi.Guid == punchItemGuid)
-        );
-        var punchItem = (await GetPunchItems(whereClause, cancellationToken)).First();
+        var punchItem = await PunchItemsQueryable
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItemOrNullByPunchItemGuidAsync)}")
+            .FirstOrDefaultAsync(pi => pi.Guid == punchItemGuid, cancellationToken);
+        
+        if (punchItem is null)
+        {
+            return null;
+        }
+
         var attCount = await context.QuerySet<Attachment>()
-           .Where(x => x.ParentGuid == punchItem.Guid).CountAsync(cancellationToken);
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItemOrNullByPunchItemGuidAsync)}-GetAttachmentCounts")
+            .Where(x => x.ParentGuid == punchItem.Guid)
+            .CountAsync(cancellationToken);
 
         return MapPunchToDto(punchItem, attCount);
     }
 
-    public async Task<IEnumerable<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task<ProjectDetailsDto?> GetProjectOrNullByPunchItemGuidAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
-        var whereClause = new Func<IQueryable<PunchItem>, IQueryable<PunchItem>>(query =>
-            query.Where(pi => pi.CheckListGuid == checkListGuid)
-        );
-        var punchItems = await GetPunchItems(whereClause, cancellationToken);
+        var dto = await context.QuerySet<PunchItem>()
+            .Include(p => p.Project)
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetProjectOrNullByPunchItemGuidAsync)}")
+            .Where(p => p.Guid == punchItemGuid)
+            .Select(p => new { ProjectName = p.Project.Name, ProjectGuid = p.Project.Guid })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (dto is null)
+        {
+            return null;
+        }
+
+        return new ProjectDetailsDto(dto.ProjectName, dto.ProjectGuid);
+    }
+
+    public async Task<IEnumerable<PunchItemDetailsDto>> GetByCheckListGuid(Guid checkListGuid,
+        CancellationToken cancellationToken)
+    {
+        var punchItems = await PunchItemsQueryable
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByCheckListGuid)}")
+            .Where(pi => pi.CheckListGuid == checkListGuid)
+            .ToListAsync(cancellationToken);
+
         var punchItemGuids = punchItems.Select(p => p.Guid);
 
         var attachmentCounts = await context.QuerySet<Attachment>()
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetByCheckListGuid)}-GetAttachmentCounts")
             .Where(a => punchItemGuids.Contains(a.ParentGuid))
             .GroupBy(a => a.ParentGuid)
             .Select(g => new { PunchItemGuid = g.Key, AttachmentCount = g.Count() })
@@ -47,32 +93,6 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
 
         return punchItems.Select(p => MapPunchToDto(p,
             attachmentCounts.GetValueOrDefault(p.Guid, 0)));
-    }
-
-    private async Task<List<PunchItem>> GetPunchItems(Func<IQueryable<PunchItem>, IQueryable<PunchItem>> whereClause, CancellationToken cancellationToken)
-    {
-        var query = context.QuerySet<PunchItem>()
-            .Include(p => p.Project)
-            .Include(p => p.CreatedBy)
-            .Include(p => p.ModifiedBy)
-            .Include(p => p.ClearedBy)
-            .Include(p => p.RejectedBy)
-            .Include(p => p.VerifiedBy)
-            .Include(p => p.RaisedByOrg)
-            .Include(p => p.ClearingByOrg)
-            .Include(p => p.Priority)
-            .Include(p => p.Sorting)
-            .Include(p => p.Type)
-            .Include(p => p.ActionBy)
-            .Include(p => p.WorkOrder)
-            .Include(p => p.OriginalWorkOrder)
-            .Include(p => p.SWCR)
-            .Include(p => p.Document)
-            .AsQueryable();
-        query = whereClause(query);
-
-        return await (query)
-                .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItems)}").ToListAsync(cancellationToken);
     }
 
     private static PunchItemDetailsDto MapPunchToDto(PunchItem punchItem, int attachmentCount)
@@ -97,6 +117,7 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             punchItem.Guid,
             punchItem.CheckListGuid,
             punchItem.Project.Name,
+            punchItem.Project.Guid,
             punchItem.ItemNo,
             punchItem.Category.ToString(),
             punchItem.Description,
@@ -126,14 +147,14 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             punchItem.ExternalItemNo,
             punchItem.MaterialRequired,
             punchItem.MaterialETAUtc,
-            punchItem.MaterialExternalNo, 
+            punchItem.MaterialExternalNo,
             workOrderDto,
             originalWorkOrderDto,
             documentDto,
             swcrDto,
             attachmentCount,
             punchItem.RowVersion.ConvertToString()
-            );
+        );
     }
 
     private static SWCRDto? MapToSWCRDto(SWCR? swcr)
@@ -154,7 +175,8 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
     private static LibraryItemDto? MapToLibraryItemDto(LibraryItem? libraryItem)
         => libraryItem is null
             ? null
-            : new LibraryItemDto(libraryItem.Guid, libraryItem.Code, libraryItem.Description, libraryItem.Type.ToString());
+            : new LibraryItemDto(libraryItem.Guid, libraryItem.Code, libraryItem.Description,
+                libraryItem.Type.ToString());
 
     private static PersonDto? MapToPersonDto(Person? person)
         => person is null

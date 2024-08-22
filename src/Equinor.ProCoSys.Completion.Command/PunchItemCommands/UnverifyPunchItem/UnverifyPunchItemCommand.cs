@@ -1,17 +1,17 @@
 ﻿using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 
-public class UnverifyPunchItemCommand : IRequest<Result<string>>, IIsPunchItemCommand
+public class UnverifyPunchItemCommand(Guid punchItemGuid, string rowVersion)
+    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
 {
-    public UnverifyPunchItemCommand(Guid punchItemGuid, string rowVersion)
-    {
-        PunchItemGuid = punchItemGuid;
-        RowVersion = rowVersion;
-    }
-
-    public Guid PunchItemGuid { get; }
-    public string RowVersion { get; }
+    public Guid PunchItemGuid { get; } = punchItemGuid;
+    public PunchItem PunchItem { get; set; } = null!;
+    public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;
+    public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
+    public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
+    public string RowVersion { get; } = rowVersion;
 }

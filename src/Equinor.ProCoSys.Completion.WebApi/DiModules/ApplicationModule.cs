@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.TemplateTransforming;
-using Equinor.ProCoSys.Completion.Cache;
 using Equinor.ProCoSys.Completion.Command.Email;
 using Equinor.ProCoSys.Completion.Command.EventHandlers;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
@@ -31,19 +30,15 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
-using Equinor.ProCoSys.Completion.Domain.Authentication;
 using Equinor.ProCoSys.Completion.Domain.Validators;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.TieImport;
-using Equinor.ProCoSys.Completion.WebApi.Authentication;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
-using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using Microsoft.EntityFrameworkCore;
@@ -61,7 +56,7 @@ public static class ApplicationModule
         services.Configure<ApplicationOptions>(configuration.GetSection("Application"));
         services.Configure<MainApiOptions>(configuration.GetSection("MainApi"));
         services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
-        services.Configure<AzureAdOptions>(configuration.GetSection("AzureAd"));
+        services.Configure<MainApiAuthenticatorOptions>(configuration.GetSection("AzureAd"));
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
@@ -97,7 +92,6 @@ public static class ApplicationModule
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
         services.AddScoped<IPersonCache, PersonCache>();
-        services.AddScoped<IPunchItemHelper, PunchItemHelper>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddScoped<IUnitOfWork>(x => x.GetRequiredService<CompletionContext>());
         services.AddScoped<IReadOnlyContext, CompletionContext>();
@@ -139,7 +133,6 @@ public static class ApplicationModule
         services.AddScoped<ILabelValidator, LabelValidator>();
         services.AddScoped<ILabelEntityValidator, LabelEntityValidator>();
         services.AddScoped<IDocumentValidator, DocumentValidator>();
-        services.AddScoped<ICheckListValidator, ProCoSys4CheckListValidator>();
         services.AddScoped<IRowVersionInputValidator, RowVersionInputValidator>();
         services.AddScoped<IPatchOperationInputValidator, PatchOperationInputValidator>();
         services.AddScoped<IMessageProducer, MessageProducer>();
@@ -160,12 +153,12 @@ public static class ApplicationModule
         services.AddTransient<SyncBearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
-        services.AddHttpClient("SyncHttpClient")
-        .ConfigureHttpClient((serviceProvider, client) =>
-        {
-            var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
-            client.BaseAddress = new Uri(options.Endpoint);
-        })
-        .AddHttpMessageHandler<SyncBearerTokenHandler>();
+        services.AddHttpClient(SyncToPCS4Service.ClientName)
+            .ConfigureHttpClient((serviceProvider, client) =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptionsMonitor<SyncToPCS4Options>>().CurrentValue;
+                client.BaseAddress = new Uri(options.Endpoint);
+            })
+            .AddHttpMessageHandler<SyncBearerTokenHandler>();
     }
 }

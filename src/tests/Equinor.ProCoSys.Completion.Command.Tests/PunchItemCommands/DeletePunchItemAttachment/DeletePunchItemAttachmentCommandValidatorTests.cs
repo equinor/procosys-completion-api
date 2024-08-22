@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,7 +10,7 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.DeletePunchItemAttachment;
 
 [TestClass]
-public class DeletePunchItemAttachmentCommandValidatorTests
+public class DeletePunchItemAttachmentCommandValidatorTests : PunchItemCommandTestsBase
 {
     private DeletePunchItemAttachmentCommandValidator _dut;
     private IPunchItemValidator _punchItemValidatorMock;
@@ -19,10 +20,17 @@ public class DeletePunchItemAttachmentCommandValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new DeletePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "r");
+        _command = new DeletePunchItemAttachmentCommand(_existingPunchItem[TestPlantA].Guid, Guid.NewGuid(), "r")
+        {
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
+        };
+
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(true);
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _attachmentServiceMock.ExistsAsync(_command.AttachmentGuid, default)
             .Returns(true);
@@ -39,22 +47,6 @@ public class DeletePunchItemAttachmentCommandValidatorTests
 
         // Assert
         Assert.IsTrue(result.IsValid);
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_PunchItemNotExists()
-    {
-        // Arrange
-        _punchItemValidatorMock.ExistsAsync(_command.PunchItemGuid, default)
-            .Returns(false);
-
-        // Act
-        var result = await _dut.ValidateAsync(_command);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item with this guid does not exist!"));
     }
 
     [TestMethod]
@@ -77,8 +69,11 @@ public class DeletePunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _punchItemValidatorMock.TagOwningPunchItemIsVoidedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -93,8 +88,7 @@ public class DeletePunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _punchItemValidatorMock.ProjectOwningPunchItemIsClosedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Project.IsClosed = true;
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -109,8 +103,8 @@ public class DeletePunchItemAttachmentCommandValidatorTests
     public async Task Validate_ShouldFail_When_PunchItemIsVerified_AndCurrentUserIsNotVerifier()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_existingPerson1);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
@@ -118,16 +112,16 @@ public class DeletePunchItemAttachmentCommandValidatorTests
         // Assert
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item attachments can't be changed. The punch item is verified!"));
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Punch item attachments can't be deleted. The punch item is verified!"));
     }
 
     [TestMethod]
     public async Task Validate_ShouldBeValid_When_PunchItemIsVerified_AndCurrentUserIsVerifier()
     {
         // Arrange
-        _punchItemValidatorMock.IsVerifiedAsync(_command.PunchItemGuid, default)
-            .Returns(true);
-        _punchItemValidatorMock.CurrentUserIsVerifierAsync(_command.PunchItemGuid, default)
+        _command.PunchItem.Clear(_currentPerson);
+        _command.PunchItem.Verify(_existingPerson1);
+        _punchItemValidatorMock.CurrentUserIsVerifier(_command.PunchItem)
             .Returns(true);
 
         // Act

@@ -17,9 +17,8 @@ using NSubstitute;
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItem;
 
 [TestClass]
-public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBase
+public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 {
-    private readonly string _testPlant = TestPlantA;
     private UpdatePunchItemCommand _command;
     private UpdatePunchItemCommandHandler _dut;
     private readonly string _newDescription = Guid.NewGuid().ToString();
@@ -34,22 +33,26 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public void Setup()
     {
         _command = new UpdatePunchItemCommand(
-            _existingPunchItem[_testPlant].Guid,
+            _existingPunchItem[TestPlantA].Guid,
             new JsonPatchDocument<PatchablePunchItem>(),
-            RowVersion);
+            RowVersion)
+        {
+            PunchItem = _existingPunchItem[TestPlantA]
+        };
+
         _command.PatchDocument.Replace(p => p.Description, _newDescription);
-        _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _existingRaisedByOrg1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _existingClearingByOrg1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPriority1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.SortingGuid, _existingSorting1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.TypeGuid, _existingType1[_testPlant].Guid);
+        _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _existingRaisedByOrg1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _existingClearingByOrg1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPriority1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.SortingGuid, _existingSorting1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.TypeGuid, _existingType1[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.ActionByPersonOid, _existingPerson1.Guid);
         _command.PatchDocument.Replace(p => p.DueTimeUtc, _newDueTimeUtc);
         _command.PatchDocument.Replace(p => p.Estimate, _newEstimate);
-        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR1[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument1[_testPlant].Guid);
+        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR1[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument1[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.ExternalItemNo, _newExternalItemNo);
         _command.PatchDocument.Replace(p => p.MaterialRequired, _newMaterialRequired);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, _newMaterialETAUtc);
@@ -58,7 +61,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _command.EnsureValidInputValidation();
 
         _dut = new UpdatePunchItemCommandHandler(
-            _punchItemRepositoryMock,
             _libraryItemRepositoryMock,
             _personRepositoryMock,
             _workOrderRepositoryMock,
@@ -75,13 +77,13 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldUpdateMaterialRequired_OnPunchItem_WhenOperationsGiven()
     {
         // Arrange. Test MaterialRequired outside other tests since its neither required or can't be set null
-        Assert.AreNotEqual(_newMaterialRequired, _existingPunchItem[_testPlant].MaterialRequired);
+        Assert.AreNotEqual(_newMaterialRequired, _existingPunchItem[TestPlantA].MaterialRequired);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_newMaterialRequired, _existingPunchItem[_testPlant].MaterialRequired);
+        Assert.AreEqual(_newMaterialRequired, _existingPunchItem[TestPlantA].MaterialRequired);
     }
 
     [TestMethod]
@@ -91,9 +93,9 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_newDescription, _existingPunchItem[_testPlant].Description);
-        Assert.AreEqual(_existingRaisedByOrg1[_testPlant].Id, _existingPunchItem[_testPlant].RaisedByOrgId);
-        Assert.AreEqual(_existingClearingByOrg1[_testPlant].Id, _existingPunchItem[_testPlant].ClearingByOrgId);
+        Assert.AreEqual(_newDescription, _existingPunchItem[TestPlantA].Description);
+        Assert.AreEqual(_existingRaisedByOrg1[TestPlantA].Id, _existingPunchItem[TestPlantA].RaisedByOrgId);
+        Assert.AreEqual(_existingClearingByOrg1[TestPlantA].Id, _existingPunchItem[TestPlantA].ClearingByOrgId);
     }
 
     [TestMethod]
@@ -101,37 +103,37 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Don't test MaterialRequired here. Can't be null
         // Arrange
-        Assert.IsNull(_existingPunchItem[_testPlant].PriorityId);
-        Assert.IsNull(_existingPunchItem[_testPlant].SortingId);
-        Assert.IsNull(_existingPunchItem[_testPlant].TypeId);
-        Assert.IsNull(_existingPunchItem[_testPlant].ActionById);
-        Assert.IsNull(_existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.IsNull(_existingPunchItem[_testPlant].Estimate);
-        Assert.IsNull(_existingPunchItem[_testPlant].OriginalWorkOrder);
-        Assert.IsNull(_existingPunchItem[_testPlant].WorkOrder);
-        Assert.IsNull(_existingPunchItem[_testPlant].SWCR);
-        Assert.IsNull(_existingPunchItem[_testPlant].Document);
-        Assert.IsNull(_existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.IsNull(_existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.IsNull(_existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.IsNull(_existingPunchItem[TestPlantA].PriorityId);
+        Assert.IsNull(_existingPunchItem[TestPlantA].SortingId);
+        Assert.IsNull(_existingPunchItem[TestPlantA].TypeId);
+        Assert.IsNull(_existingPunchItem[TestPlantA].ActionById);
+        Assert.IsNull(_existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.IsNull(_existingPunchItem[TestPlantA].Estimate);
+        Assert.IsNull(_existingPunchItem[TestPlantA].OriginalWorkOrder);
+        Assert.IsNull(_existingPunchItem[TestPlantA].WorkOrder);
+        Assert.IsNull(_existingPunchItem[TestPlantA].SWCR);
+        Assert.IsNull(_existingPunchItem[TestPlantA].Document);
+        Assert.IsNull(_existingPunchItem[TestPlantA].ExternalItemNo);
+        Assert.IsNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.IsNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_existingPriority1[_testPlant].Id, _existingPunchItem[_testPlant].PriorityId);
-        Assert.AreEqual(_existingSorting1[_testPlant].Id, _existingPunchItem[_testPlant].SortingId);
-        Assert.AreEqual(_existingType1[_testPlant].Id, _existingPunchItem[_testPlant].TypeId);
-        Assert.AreEqual(_existingPerson1.Id, _existingPunchItem[_testPlant].ActionById);
-        Assert.AreEqual(_newDueTimeUtc, _existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.AreEqual(_newEstimate, _existingPunchItem[_testPlant].Estimate);
-        Assert.AreEqual(_existingWorkOrder1[_testPlant].Id, _existingPunchItem[_testPlant].OriginalWorkOrderId);
-        Assert.AreEqual(_existingWorkOrder1[_testPlant].Id, _existingPunchItem[_testPlant].WorkOrderId);
-        Assert.AreEqual(_existingSWCR1[_testPlant].Id, _existingPunchItem[_testPlant].SWCRId);
-        Assert.AreEqual(_existingDocument1[_testPlant].Id, _existingPunchItem[_testPlant].DocumentId);
-        Assert.AreEqual(_newExternalItemNo, _existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.AreEqual(_newMaterialETAUtc, _existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.AreEqual(_newMaterialExternalNo, _existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.AreEqual(_existingPriority1[TestPlantA].Id, _existingPunchItem[TestPlantA].PriorityId);
+        Assert.AreEqual(_existingSorting1[TestPlantA].Id, _existingPunchItem[TestPlantA].SortingId);
+        Assert.AreEqual(_existingType1[TestPlantA].Id, _existingPunchItem[TestPlantA].TypeId);
+        Assert.AreEqual(_existingPerson1.Id, _existingPunchItem[TestPlantA].ActionById);
+        Assert.AreEqual(_newDueTimeUtc, _existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.AreEqual(_newEstimate, _existingPunchItem[TestPlantA].Estimate);
+        Assert.AreEqual(_existingWorkOrder1[TestPlantA].Id, _existingPunchItem[TestPlantA].OriginalWorkOrderId);
+        Assert.AreEqual(_existingWorkOrder1[TestPlantA].Id, _existingPunchItem[TestPlantA].WorkOrderId);
+        Assert.AreEqual(_existingSWCR1[TestPlantA].Id, _existingPunchItem[TestPlantA].SWCRId);
+        Assert.AreEqual(_existingDocument1[TestPlantA].Id, _existingPunchItem[TestPlantA].DocumentId);
+        Assert.AreEqual(_newExternalItemNo, _existingPunchItem[TestPlantA].ExternalItemNo);
+        Assert.AreEqual(_newMaterialETAUtc, _existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.AreEqual(_newMaterialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
     }
 
     [TestMethod]
@@ -139,33 +141,33 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Don't test MaterialRequired here. Can't be set null
         // Arrange
-        _existingPunchItem[_testPlant].SetPriority(_existingPriority1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSorting(_existingSorting1[_testPlant]);
-        _existingPunchItem[_testPlant].SetType(_existingType1[_testPlant]);
-        _existingPunchItem[_testPlant].SetActionBy(_existingPerson1);
-        _existingPunchItem[_testPlant].DueTimeUtc = _newDueTimeUtc;
-        _existingPunchItem[_testPlant].Estimate = _newEstimate;
-        _existingPunchItem[_testPlant].SetOriginalWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
-        _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
-        _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
+        _existingPunchItem[TestPlantA].SetPriority(_existingPriority1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSorting(_existingSorting1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetType(_existingType1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetActionBy(_existingPerson1);
+        _existingPunchItem[TestPlantA].DueTimeUtc = _newDueTimeUtc;
+        _existingPunchItem[TestPlantA].Estimate = _newEstimate;
+        _existingPunchItem[TestPlantA].SetOriginalWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
+        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
+        _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
+        _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
 
-        Assert.IsNotNull(_existingPunchItem[_testPlant].PriorityId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].SortingId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].TypeId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].ActionById);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].Estimate);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].OriginalWorkOrder);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].WorkOrder);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].SWCR);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].Document);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].PriorityId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].SortingId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].TypeId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].ActionById);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].Estimate);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].OriginalWorkOrder);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].WorkOrder);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].SWCR);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].Document);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].ExternalItemNo);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
         _command.PatchDocument.Operations.Clear();
         _command.PatchDocument.Replace(p => p.PriorityGuid, null);
@@ -186,19 +188,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsFalse(_existingPunchItem[_testPlant].PriorityId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].SortingId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].TypeId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].ActionById.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].DueTimeUtc.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].Estimate.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].OriginalWorkOrderId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].WorkOrderId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].SWCRId.HasValue);
-        Assert.IsFalse(_existingPunchItem[_testPlant].DocumentId.HasValue);
-        Assert.IsTrue(_existingPunchItem[_testPlant].ExternalItemNo is null);
-        Assert.IsFalse(_existingPunchItem[_testPlant].MaterialETAUtc.HasValue);
-        Assert.IsTrue(_existingPunchItem[_testPlant].MaterialExternalNo is null);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].PriorityId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].SortingId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].TypeId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].ActionById.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].DueTimeUtc.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].Estimate.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].OriginalWorkOrderId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].WorkOrderId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].SWCRId.HasValue);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].DocumentId.HasValue);
+        Assert.IsTrue(_existingPunchItem[TestPlantA].ExternalItemNo is null);
+        Assert.IsFalse(_existingPunchItem[TestPlantA].MaterialETAUtc.HasValue);
+        Assert.IsTrue(_existingPunchItem[TestPlantA].MaterialExternalNo is null);
     }
 
     [TestMethod]
@@ -206,33 +208,33 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Don't test MaterialRequired here. Covered in HandlingCommand_ShouldUpdateMaterialRequired_OnPunchItem_WhenOperationsGiven
         // Arrange
-        _existingPunchItem[_testPlant].SetPriority(_existingPriority1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSorting(_existingSorting1[_testPlant]);
-        _existingPunchItem[_testPlant].SetType(_existingType1[_testPlant]);
-        _existingPunchItem[_testPlant].SetActionBy(_existingPerson1);
-        _existingPunchItem[_testPlant].DueTimeUtc = _newDueTimeUtc;
-        _existingPunchItem[_testPlant].Estimate = _newEstimate;
-        _existingPunchItem[_testPlant].SetOriginalWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
-        _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
-        _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
+        _existingPunchItem[TestPlantA].SetPriority(_existingPriority1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSorting(_existingSorting1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetType(_existingType1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetActionBy(_existingPerson1);
+        _existingPunchItem[TestPlantA].DueTimeUtc = _newDueTimeUtc;
+        _existingPunchItem[TestPlantA].Estimate = _newEstimate;
+        _existingPunchItem[TestPlantA].SetOriginalWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
+        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
+        _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
+        _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
 
-        Assert.IsNotNull(_existingPunchItem[_testPlant].PriorityId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].SortingId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].TypeId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].ActionById);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].Estimate);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].OriginalWorkOrderId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].WorkOrderId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].SWCRId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].DocumentId);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.IsNotNull(_existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].PriorityId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].SortingId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].TypeId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].ActionById);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].Estimate);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].OriginalWorkOrderId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].WorkOrderId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].SWCRId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].DocumentId);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].ExternalItemNo);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
         var dueTimeUtc = _newDueTimeUtc.AddDays(1);
         var estimate = _newEstimate * 2;
@@ -241,16 +243,16 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         var materialExternalNo = $"{_newMaterialExternalNo}-X1";
 
         _command.PatchDocument.Operations.Clear();
-        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPriority2[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.SortingGuid, _existingSorting2[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.TypeGuid, _existingType2[_testPlant].Guid);
+        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPriority2[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.SortingGuid, _existingSorting2[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.TypeGuid, _existingType2[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.ActionByPersonOid, _existingPerson2.Guid);
         _command.PatchDocument.Replace(p => p.DueTimeUtc, dueTimeUtc);
         _command.PatchDocument.Replace(p => p.Estimate, estimate);
-        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder2[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder2[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR2[_testPlant].Guid);
-        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument2[_testPlant].Guid);
+        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder2[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder2[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR2[TestPlantA].Guid);
+        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument2[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.ExternalItemNo, externalItemNo);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, materialETAUtc);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, materialExternalNo);
@@ -259,19 +261,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_existingPriority2[_testPlant].Id, _existingPunchItem[_testPlant].PriorityId);
-        Assert.AreEqual(_existingSorting2[_testPlant].Id, _existingPunchItem[_testPlant].SortingId);
-        Assert.AreEqual(_existingType2[_testPlant].Id, _existingPunchItem[_testPlant].TypeId);
-        Assert.AreEqual(_existingPerson2.Id, _existingPunchItem[_testPlant].ActionById);
-        Assert.AreEqual(dueTimeUtc, _existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.AreEqual(estimate, _existingPunchItem[_testPlant].Estimate);
-        Assert.AreEqual(_existingWorkOrder2[_testPlant].Id, _existingPunchItem[_testPlant].OriginalWorkOrderId);
-        Assert.AreEqual(_existingWorkOrder2[_testPlant].Id, _existingPunchItem[_testPlant].WorkOrderId);
-        Assert.AreEqual(_existingSWCR2[_testPlant].Id, _existingPunchItem[_testPlant].SWCRId);
-        Assert.AreEqual(_existingDocument2[_testPlant].Id, _existingPunchItem[_testPlant].DocumentId);
-        Assert.AreEqual(externalItemNo, _existingPunchItem[_testPlant].ExternalItemNo);
-        Assert.AreEqual(materialETAUtc, _existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.AreEqual(materialExternalNo, _existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.AreEqual(_existingPriority2[TestPlantA].Id, _existingPunchItem[TestPlantA].PriorityId);
+        Assert.AreEqual(_existingSorting2[TestPlantA].Id, _existingPunchItem[TestPlantA].SortingId);
+        Assert.AreEqual(_existingType2[TestPlantA].Id, _existingPunchItem[TestPlantA].TypeId);
+        Assert.AreEqual(_existingPerson2.Id, _existingPunchItem[TestPlantA].ActionById);
+        Assert.AreEqual(dueTimeUtc, _existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.AreEqual(estimate, _existingPunchItem[TestPlantA].Estimate);
+        Assert.AreEqual(_existingWorkOrder2[TestPlantA].Id, _existingPunchItem[TestPlantA].OriginalWorkOrderId);
+        Assert.AreEqual(_existingWorkOrder2[TestPlantA].Id, _existingPunchItem[TestPlantA].WorkOrderId);
+        Assert.AreEqual(_existingSWCR2[TestPlantA].Id, _existingPunchItem[TestPlantA].SWCRId);
+        Assert.AreEqual(_existingDocument2[TestPlantA].Id, _existingPunchItem[TestPlantA].DocumentId);
+        Assert.AreEqual(externalItemNo, _existingPunchItem[TestPlantA].ExternalItemNo);
+        Assert.AreEqual(materialETAUtc, _existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.AreEqual(materialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
     }
 
     [TestMethod]
@@ -304,7 +306,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 
     [TestMethod]
@@ -323,7 +325,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         Assert.IsNotNull(integrationEvent);
         AssertRequiredProperties(punchItem, integrationEvent);
         AssertOptionalProperties(punchItem, integrationEvent);
@@ -333,10 +335,10 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     public async Task HandlingCommand_ShouldSendHistoryUpdatedIntegrationEvent_WhenOperationsGiven()
     {
         // Arrange
-        var oldDescription = _existingPunchItem[_testPlant].Description;
-        var oldRaisedByOrg = _existingPunchItem[_testPlant].RaisedByOrg.ToString();
-        var oldClearingByOrg = _existingPunchItem[_testPlant].ClearingByOrg.ToString();
-        var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
+        var oldDescription = _existingPunchItem[TestPlantA].Description;
+        var oldRaisedByOrg = _existingPunchItem[TestPlantA].RaisedByOrg.ToString();
+        var oldClearingByOrg = _existingPunchItem[TestPlantA].ClearingByOrg.ToString();
+        var oldMaterialRequired = _existingPunchItem[TestPlantA].MaterialRequired;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
         _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
@@ -349,7 +351,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
             punchItem.Plant,
@@ -371,27 +373,27 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.RaisedByOrg)),
             oldRaisedByOrg,
-            _existingRaisedByOrg1[_testPlant].ToString());
+            _existingRaisedByOrg1[TestPlantA].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ClearingByOrg)),
             oldClearingByOrg,
-            _existingClearingByOrg1[_testPlant].ToString());
+            _existingClearingByOrg1[TestPlantA].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
             null,
-            _existingPriority1[_testPlant].ToString());
+            _existingPriority1[TestPlantA].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
             null,
-            _existingSorting1[_testPlant].ToString());
+            _existingSorting1[TestPlantA].ToString());
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
             null,
-            _existingType1[_testPlant].ToString());
+            _existingType1[TestPlantA].ToString());
         AssertPersonChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ActionBy)),
@@ -413,23 +415,23 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
             null,
-            _existingWorkOrder1[_testPlant].No);
+            _existingWorkOrder1[TestPlantA].No);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
             null,
-            _existingWorkOrder1[_testPlant].No);
+            _existingWorkOrder1[TestPlantA].No);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
             null,
-            _existingSWCR1[_testPlant].No,
+            _existingSWCR1[TestPlantA].No,
             ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
             null,
-            _existingDocument1[_testPlant].No);
+            _existingDocument1[TestPlantA].No);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
@@ -474,19 +476,19 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, null);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, null);
 
-        _existingPunchItem[_testPlant].SetPriority(_existingPriority1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSorting(_existingSorting1[_testPlant]);
-        _existingPunchItem[_testPlant].SetType(_existingType1[_testPlant]);
-        _existingPunchItem[_testPlant].SetActionBy(_existingPerson1);
-        _existingPunchItem[_testPlant].DueTimeUtc = _newDueTimeUtc;
-        _existingPunchItem[_testPlant].Estimate = _newEstimate;
-        _existingPunchItem[_testPlant].SetOriginalWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetWorkOrder(_existingWorkOrder1[_testPlant]);
-        _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
-        _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
-        _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
-        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
-        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
+        _existingPunchItem[TestPlantA].SetPriority(_existingPriority1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSorting(_existingSorting1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetType(_existingType1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetActionBy(_existingPerson1);
+        _existingPunchItem[TestPlantA].DueTimeUtc = _newDueTimeUtc;
+        _existingPunchItem[TestPlantA].Estimate = _newEstimate;
+        _existingPunchItem[TestPlantA].SetOriginalWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
+        _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
+        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
+        _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
+        _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
         _messageProducerMock
             .When(x => x.SendHistoryAsync(Arg.Any<HistoryUpdatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
@@ -499,7 +501,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         await _dut.Handle(_command, default);
 
         // Assert
-        var punchItem = _existingPunchItem[_testPlant];
+        var punchItem = _existingPunchItem[TestPlantA];
         AssertHistoryUpdatedIntegrationEvent(
             historyEvent,
             punchItem.Plant,
@@ -515,17 +517,17 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Priority)),
-            _existingPriority1[_testPlant].ToString(),
+            _existingPriority1[TestPlantA].ToString(),
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Sorting)),
-            _existingSorting1[_testPlant].ToString(),
+            _existingSorting1[TestPlantA].ToString(),
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Type)),
-            _existingType1[_testPlant].ToString(),
+            _existingType1[TestPlantA].ToString(),
             null);
         AssertPersonChange(
             changedProperties
@@ -547,23 +549,23 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.OriginalWorkOrder)),
-            _existingWorkOrder1[_testPlant].No,
+            _existingWorkOrder1[TestPlantA].No,
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
-            _existingWorkOrder1[_testPlant].No,
+            _existingWorkOrder1[TestPlantA].No,
             null);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.SWCR)),
-            _existingSWCR1[_testPlant].No,
+            _existingSWCR1[TestPlantA].No,
             null, 
             ValueDisplayType.IntAsText);
         AssertChange(
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
-            _existingDocument1[_testPlant].No,
+            _existingDocument1[TestPlantA].No,
             null);
         AssertChange(
             changedProperties
@@ -588,7 +590,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _command.PatchDocument.Replace(p => p.Description, _existingPunchItem[_testPlant].Description);
+        _command.PatchDocument.Replace(p => p.Description, _existingPunchItem[TestPlantA].Description);
 
         // Act
         await _dut.Handle(_command, default);
@@ -603,7 +605,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _existingPunchItem[_testPlant].RaisedByOrg.Guid);
+        _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _existingPunchItem[TestPlantA].RaisedByOrg.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -618,7 +620,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _existingPunchItem[_testPlant].ClearingByOrg.Guid);
+        _command.PatchDocument.Replace(p => p.ClearingByOrgGuid, _existingPunchItem[TestPlantA].ClearingByOrg.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -633,8 +635,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetPriority(_existingPriority1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPunchItem[_testPlant].Priority!.Guid);
+        _existingPunchItem[TestPlantA].SetPriority(_existingPriority1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.PriorityGuid, _existingPunchItem[TestPlantA].Priority!.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -649,8 +651,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetSorting(_existingSorting1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.SortingGuid, _existingPunchItem[_testPlant].Sorting!.Guid);
+        _existingPunchItem[TestPlantA].SetSorting(_existingSorting1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.SortingGuid, _existingPunchItem[TestPlantA].Sorting!.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -665,8 +667,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetType(_existingType1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.TypeGuid, _existingPunchItem[_testPlant].Type!.Guid);
+        _existingPunchItem[TestPlantA].SetType(_existingType1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.TypeGuid, _existingPunchItem[TestPlantA].Type!.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -681,8 +683,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetActionBy(_existingPerson1);
-        _command.PatchDocument.Replace(p => p.ActionByPersonOid, _existingPunchItem[_testPlant].ActionBy!.Guid);
+        _existingPunchItem[TestPlantA].SetActionBy(_existingPerson1);
+        _command.PatchDocument.Replace(p => p.ActionByPersonOid, _existingPunchItem[TestPlantA].ActionBy!.Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -697,7 +699,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].DueTimeUtc = _newDueTimeUtc;
+        _existingPunchItem[TestPlantA].DueTimeUtc = _newDueTimeUtc;
         _command.PatchDocument.Replace(p => p.DueTimeUtc, _newDueTimeUtc);
 
         // Act
@@ -713,7 +715,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].Estimate = _newEstimate;
+        _existingPunchItem[TestPlantA].Estimate = _newEstimate;
         _command.PatchDocument.Replace(p => p.Estimate, _newEstimate);
 
         // Act
@@ -729,8 +731,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetOriginalWorkOrder(_existingWorkOrder1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder1[_testPlant].Guid);
+        _existingPunchItem[TestPlantA].SetOriginalWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.OriginalWorkOrderGuid, _existingWorkOrder1[TestPlantA].Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -745,8 +747,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetWorkOrder(_existingWorkOrder1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder1[_testPlant].Guid);
+        _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder1[TestPlantA].Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -761,8 +763,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetSWCR(_existingSWCR1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR1[_testPlant].Guid);
+        _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR1[TestPlantA].Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -777,8 +779,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].SetDocument(_existingDocument1[_testPlant]);
-        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument1[_testPlant].Guid);
+        _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
+        _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument1[TestPlantA].Guid);
 
         // Act
         await _dut.Handle(_command, default);
@@ -793,7 +795,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].ExternalItemNo = _newExternalItemNo;
+        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
         _command.PatchDocument.Replace(p => p.ExternalItemNo, _newExternalItemNo);
 
         // Act
@@ -809,7 +811,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].MaterialRequired = _newMaterialRequired;
+        _existingPunchItem[TestPlantA].MaterialRequired = _newMaterialRequired;
         _command.PatchDocument.Replace(p => p.MaterialRequired, _newMaterialRequired);
 
         // Act
@@ -825,7 +827,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].MaterialETAUtc = _newMaterialETAUtc;
+        _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, _newMaterialETAUtc);
 
         // Act
@@ -841,7 +843,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[_testPlant].MaterialExternalNo = _newMaterialExternalNo;
+        _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
 
         // Act
@@ -860,44 +862,44 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
-        var oldDescription = _existingPunchItem[_testPlant].Description;
-        var oldRaisedByOrgId = _existingPunchItem[_testPlant].RaisedByOrgId;
-        var oldClearingByOrgId = _existingPunchItem[_testPlant].ClearingByOrgId;
-        var oldPriorityId = _existingPunchItem[_testPlant].PriorityId;
-        var oldTypeId = _existingPunchItem[_testPlant].TypeId;
-        var oldSortingId = _existingPunchItem[_testPlant].SortingId;
-        var oldActionById = _existingPunchItem[_testPlant].ActionById;
-        var oldDueTimeUtc = _existingPunchItem[_testPlant].DueTimeUtc;
-        var oldEstimate = _existingPunchItem[_testPlant].Estimate;
-        var oldOriginalWorkOrderId = _existingPunchItem[_testPlant].OriginalWorkOrderId;
-        var oldWorkOrderId = _existingPunchItem[_testPlant].WorkOrder;
-        var oldSWCRId = _existingPunchItem[_testPlant].SWCRId;
-        var oldDocumentId = _existingPunchItem[_testPlant].DocumentId;
-        var oldMaterialRequired = _existingPunchItem[_testPlant].MaterialRequired;
-        var oldMaterialETAUtc = _existingPunchItem[_testPlant].MaterialETAUtc;
-        var oldMaterialExternalNo = _existingPunchItem[_testPlant].MaterialExternalNo;
+        var oldDescription = _existingPunchItem[TestPlantA].Description;
+        var oldRaisedByOrgId = _existingPunchItem[TestPlantA].RaisedByOrgId;
+        var oldClearingByOrgId = _existingPunchItem[TestPlantA].ClearingByOrgId;
+        var oldPriorityId = _existingPunchItem[TestPlantA].PriorityId;
+        var oldTypeId = _existingPunchItem[TestPlantA].TypeId;
+        var oldSortingId = _existingPunchItem[TestPlantA].SortingId;
+        var oldActionById = _existingPunchItem[TestPlantA].ActionById;
+        var oldDueTimeUtc = _existingPunchItem[TestPlantA].DueTimeUtc;
+        var oldEstimate = _existingPunchItem[TestPlantA].Estimate;
+        var oldOriginalWorkOrderId = _existingPunchItem[TestPlantA].OriginalWorkOrderId;
+        var oldWorkOrderId = _existingPunchItem[TestPlantA].WorkOrder;
+        var oldSWCRId = _existingPunchItem[TestPlantA].SWCRId;
+        var oldDocumentId = _existingPunchItem[TestPlantA].DocumentId;
+        var oldMaterialRequired = _existingPunchItem[TestPlantA].MaterialRequired;
+        var oldMaterialETAUtc = _existingPunchItem[TestPlantA].MaterialETAUtc;
+        var oldMaterialExternalNo = _existingPunchItem[TestPlantA].MaterialExternalNo;
 
         // Act
         await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(oldDescription, _existingPunchItem[_testPlant].Description);
-        Assert.AreEqual(oldRaisedByOrgId, _existingPunchItem[_testPlant].RaisedByOrgId);
-        Assert.AreEqual(oldClearingByOrgId, _existingPunchItem[_testPlant].ClearingByOrgId);
-        Assert.AreEqual(oldPriorityId, _existingPunchItem[_testPlant].PriorityId);
-        Assert.AreEqual(oldSortingId, _existingPunchItem[_testPlant].SortingId);
-        Assert.AreEqual(oldTypeId, _existingPunchItem[_testPlant].TypeId);
-        Assert.AreEqual(oldActionById, _existingPunchItem[_testPlant].ActionById);
-        Assert.AreEqual(oldDueTimeUtc, _existingPunchItem[_testPlant].DueTimeUtc);
-        Assert.AreEqual(oldEstimate, _existingPunchItem[_testPlant].Estimate);
-        Assert.AreEqual(oldOriginalWorkOrderId, _existingPunchItem[_testPlant].OriginalWorkOrderId);
-        Assert.AreEqual(oldWorkOrderId, _existingPunchItem[_testPlant].WorkOrder);
-        Assert.AreEqual(oldSWCRId, _existingPunchItem[_testPlant].SWCRId);
-        Assert.AreEqual(oldDocumentId, _existingPunchItem[_testPlant].DocumentId);
-        Assert.AreEqual(oldMaterialExternalNo, _existingPunchItem[_testPlant].MaterialExternalNo);
-        Assert.AreEqual(oldMaterialRequired, _existingPunchItem[_testPlant].MaterialRequired);
-        Assert.AreEqual(oldMaterialETAUtc, _existingPunchItem[_testPlant].MaterialETAUtc);
-        Assert.AreEqual(oldMaterialExternalNo, _existingPunchItem[_testPlant].MaterialExternalNo);
+        Assert.AreEqual(oldDescription, _existingPunchItem[TestPlantA].Description);
+        Assert.AreEqual(oldRaisedByOrgId, _existingPunchItem[TestPlantA].RaisedByOrgId);
+        Assert.AreEqual(oldClearingByOrgId, _existingPunchItem[TestPlantA].ClearingByOrgId);
+        Assert.AreEqual(oldPriorityId, _existingPunchItem[TestPlantA].PriorityId);
+        Assert.AreEqual(oldSortingId, _existingPunchItem[TestPlantA].SortingId);
+        Assert.AreEqual(oldTypeId, _existingPunchItem[TestPlantA].TypeId);
+        Assert.AreEqual(oldActionById, _existingPunchItem[TestPlantA].ActionById);
+        Assert.AreEqual(oldDueTimeUtc, _existingPunchItem[TestPlantA].DueTimeUtc);
+        Assert.AreEqual(oldEstimate, _existingPunchItem[TestPlantA].Estimate);
+        Assert.AreEqual(oldOriginalWorkOrderId, _existingPunchItem[TestPlantA].OriginalWorkOrderId);
+        Assert.AreEqual(oldWorkOrderId, _existingPunchItem[TestPlantA].WorkOrder);
+        Assert.AreEqual(oldSWCRId, _existingPunchItem[TestPlantA].SWCRId);
+        Assert.AreEqual(oldDocumentId, _existingPunchItem[TestPlantA].DocumentId);
+        Assert.AreEqual(oldMaterialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
+        Assert.AreEqual(oldMaterialRequired, _existingPunchItem[TestPlantA].MaterialRequired);
+        Assert.AreEqual(oldMaterialETAUtc, _existingPunchItem[TestPlantA].MaterialETAUtc);
+        Assert.AreEqual(oldMaterialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
     }
 
     [TestMethod]
@@ -939,7 +941,7 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandHandlerTestsBa
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
         Assert.AreEqual(_command.RowVersion, result.Data);
-        Assert.AreEqual(_command.RowVersion, _existingPunchItem[_testPlant].RowVersion.ConvertToString());
+        Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 
     [TestMethod]
