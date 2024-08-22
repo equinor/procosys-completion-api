@@ -1,14 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Validators;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 
 public class UnverifyPunchItemCommandValidator : AbstractValidator<UnverifyPunchItemCommand>
 {
-    public UnverifyPunchItemCommandValidator(ICheckListValidator checkListValidator)
+    public UnverifyPunchItemCommandValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -16,12 +12,9 @@ public class UnverifyPunchItemCommandValidator : AbstractValidator<UnverifyPunch
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .Must(command => command.PunchItem.IsVerified)
             .WithMessage(command => $"Punch item can not be unverified. The punch item is not verified! Guid={command.PunchItemGuid}");
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
     }
 }

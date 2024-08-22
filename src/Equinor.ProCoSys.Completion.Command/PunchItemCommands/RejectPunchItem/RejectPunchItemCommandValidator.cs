@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
@@ -11,7 +10,6 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItemCommand>
 {
     public RejectPunchItemCommandValidator(
-        ICheckListValidator checkListValidator,
         ILabelValidator labelValidator,
         IOptionsMonitor<ApplicationOptions> options)
     {
@@ -23,7 +21,7 @@ public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItem
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .Must(command => command.PunchItem.IsCleared)
             .WithMessage(command => $"Punch item can not be rejected. The punch item is not cleared! Guid={command.PunchItemGuid}")
@@ -31,9 +29,6 @@ public class RejectPunchItemCommandValidator : AbstractValidator<RejectPunchItem
             .WithMessage(command => $"Punch item can not be rejected. The punch item is verified! Guid={command.PunchItemGuid}")
             .MustAsync((_, cancellationToken) => RejectLabelMustExistsAsync(cancellationToken))
             .WithMessage($"The required Label '{rejectLabelText}' is not available");
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
 
         async Task<bool> RejectLabelMustExistsAsync(CancellationToken cancellationToken)
             => await labelValidator.ExistsAsync(rejectLabelText, cancellationToken);
