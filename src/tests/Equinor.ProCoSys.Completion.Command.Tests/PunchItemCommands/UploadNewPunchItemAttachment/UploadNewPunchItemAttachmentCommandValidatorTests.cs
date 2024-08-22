@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -20,16 +21,20 @@ public class UploadNewPunchItemAttachmentCommandValidatorTests : PunchItemComman
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UploadNewPunchItemAttachmentCommand(Guid.NewGuid(), "f.txt", new MemoryStream(), "image/jpeg")
+        _command = new UploadNewPunchItemAttachmentCommand(_existingPunchItem[TestPlantA].Guid, "f.txt", new MemoryStream(), "image/jpeg")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
         _attachmentServiceMock = Substitute.For<IAttachmentService>();
         _dut = new UploadNewPunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
-            _checkListValidatorMock,
             _attachmentServiceMock);
     }
 
@@ -45,8 +50,11 @@ public class UploadNewPunchItemAttachmentCommandValidatorTests : PunchItemComman
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

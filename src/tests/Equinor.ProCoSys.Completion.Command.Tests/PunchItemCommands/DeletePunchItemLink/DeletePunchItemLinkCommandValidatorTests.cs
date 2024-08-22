@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Links;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -18,17 +19,20 @@ public class DeletePunchItemLinkCommandValidatorTests : PunchItemCommandTestsBas
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new DeletePunchItemLinkCommand(Guid.NewGuid(), Guid.NewGuid(), "r1")
+        _command = new DeletePunchItemLinkCommand(_existingPunchItem[TestPlantA].Guid, Guid.NewGuid(), "r1")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _linkServiceMock = Substitute.For<ILinkService>();
         _linkServiceMock.ExistsAsync(_command.LinkGuid, default).Returns(true);
 
-        _dut = new DeletePunchItemLinkCommandValidator(
-            _checkListValidatorMock,
-            _linkServiceMock);
+        _dut = new DeletePunchItemLinkCommandValidator(_linkServiceMock);
     }
 
     [TestMethod]
@@ -61,8 +65,11 @@ public class DeletePunchItemLinkCommandValidatorTests : PunchItemCommandTestsBas
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

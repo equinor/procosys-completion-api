@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.UpdatePunchItemCategory;
 
@@ -17,10 +17,15 @@ public class UpdatePunchItemCategoryCommandValidatorTests: PunchItemCommandTests
     {
         _command = new UpdatePunchItemCategoryCommand(_punchItemPa[TestPlantA].Guid, Category.PB, RowVersion)
         {
-            PunchItem = _punchItemPa[TestPlantA]
+            PunchItem = _punchItemPa[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _punchItemPa[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _punchItemPa[TestPlantA].Project.Guid)
         };
 
-        _dut = new UpdatePunchItemCategoryCommandValidator(_checkListValidatorMock);
+        _dut = new UpdatePunchItemCategoryCommandValidator();
     }
 
     [TestMethod]
@@ -37,8 +42,11 @@ public class UpdatePunchItemCategoryCommandValidatorTests: PunchItemCommandTests
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

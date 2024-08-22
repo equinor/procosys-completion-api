@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,9 +20,14 @@ public class DeletePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new DeletePunchItemAttachmentCommand(Guid.NewGuid(), Guid.NewGuid(), "r")
+        _command = new DeletePunchItemAttachmentCommand(_existingPunchItem[TestPlantA].Guid, Guid.NewGuid(), "r")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
@@ -30,7 +36,6 @@ public class DeletePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
             .Returns(true);
         _dut = new DeletePunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
-            _checkListValidatorMock,
             _attachmentServiceMock);
     }
 
@@ -64,8 +69,11 @@ public class DeletePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

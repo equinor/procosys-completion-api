@@ -12,7 +12,6 @@ public class UploadNewPunchItemAttachmentCommandValidator : AbstractValidator<Up
 {
     public UploadNewPunchItemAttachmentCommandValidator(
         IPunchItemValidator punchItemValidator, 
-        ICheckListValidator checkListValidator,
         IAttachmentService attachmentService)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
@@ -20,16 +19,13 @@ public class UploadNewPunchItemAttachmentCommandValidator : AbstractValidator<Up
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => NotHaveAttachmentWithFileNameAsync(command.PunchItemGuid, command.FileName, cancellationToken))
             .WithMessage(command => $"Punch item already has an attachment with filename {command.FileName}! Please rename file or choose to overwrite")
             .Must(command => !command.PunchItem.IsVerified)
             .WithMessage(command => $"Punch item attachments can't be changed. The punch item is verified! Guid={command.PunchItemGuid}")
             .Unless(command => CurrentUserIsVerifier(command.PunchItem), ApplyConditionTo.CurrentValidator);
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
 
         async Task<bool> NotHaveAttachmentWithFileNameAsync(Guid punchItemGuid, string fileName, CancellationToken cancellationToken)
             => !await attachmentService.FileNameExistsForParentAsync(punchItemGuid, fileName, cancellationToken);

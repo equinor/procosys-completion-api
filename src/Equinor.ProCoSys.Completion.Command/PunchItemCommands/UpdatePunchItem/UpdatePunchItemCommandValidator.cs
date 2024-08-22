@@ -14,7 +14,6 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
     // Business Validation is based on that Input Validation is done in advance, thus all replaced ...
     // ... guid values are validated to be Guids
     public UpdatePunchItemCommandValidator(
-        ICheckListValidator checkListValidator,
         ILibraryItemValidator libraryItemValidator,
         IWorkOrderValidator workOrderValidator,
         ISWCRValidator swcrValidator,
@@ -26,7 +25,7 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
              .Must(command => !command.PunchItem.IsCleared)
             .WithMessage(command => $"Punch item is cleared! Guid={command.PunchItemGuid}")
@@ -329,9 +328,6 @@ public class UpdatePunchItemCommandValidator : AbstractValidator<UpdatePunchItem
                     command.PatchDocument.Operations,
                     nameof(PatchablePunchItem.DocumentGuid)),
                 ApplyConditionTo.CurrentValidator);
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
 
         Guid GetGuidValue(List<Operation<PatchablePunchItem>> operations, string propName)
         {

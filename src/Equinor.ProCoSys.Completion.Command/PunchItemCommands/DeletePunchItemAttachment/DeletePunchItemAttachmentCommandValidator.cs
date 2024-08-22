@@ -12,7 +12,6 @@ public class DeletePunchItemAttachmentCommandValidator : AbstractValidator<Delet
 {
     public DeletePunchItemAttachmentCommandValidator(
         IPunchItemValidator punchItemValidator,
-        ICheckListValidator checkListValidator,
         IAttachmentService attachmentService)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
@@ -23,14 +22,11 @@ public class DeletePunchItemAttachmentCommandValidator : AbstractValidator<Delet
             .WithMessage("Project is closed!")
             .MustAsync((command, cancellationToken) => BeAnExistingAttachment(command.AttachmentGuid, cancellationToken))
             .WithMessage(command => $"Attachment with this guid does not exist! Guid={command.AttachmentGuid}")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .Must(command => !command.PunchItem.IsVerified)
             .WithMessage(command => $"Punch item attachments can't be deleted. The punch item is verified! Guid={command.PunchItemGuid}")
             .Unless(command => CurrentUserIsVerifier(command.PunchItem), ApplyConditionTo.CurrentValidator);
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
 
         async Task<bool> BeAnExistingAttachment(Guid attachmentGuid, CancellationToken cancellationToken)
             => await attachmentService.ExistsAsync(attachmentGuid, cancellationToken);

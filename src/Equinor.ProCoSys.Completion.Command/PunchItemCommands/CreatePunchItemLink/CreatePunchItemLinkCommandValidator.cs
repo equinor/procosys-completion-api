@@ -1,14 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Validators;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 
 public class CreatePunchItemLinkCommandValidator : AbstractValidator<CreatePunchItemLinkCommand>
 {
-    public CreatePunchItemLinkCommandValidator(ICheckListValidator checkListValidator)
+    public CreatePunchItemLinkCommandValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -16,12 +12,9 @@ public class CreatePunchItemLinkCommandValidator : AbstractValidator<CreatePunch
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .Must(command => !command.PunchItem.IsCleared)
             .WithMessage(command => $"Punch item links can't be added. Punch item is cleared! Guid={command.PunchItemGuid}");
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
     }
 }
