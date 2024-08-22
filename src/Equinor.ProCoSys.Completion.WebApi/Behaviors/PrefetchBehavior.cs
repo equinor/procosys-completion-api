@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
@@ -92,17 +93,36 @@ public class PrefetchBehavior<TRequest, TResponse>(
             var checkListDto = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
             if (checkListDto is not null)
             {
-                checkListRequest.CheckListDetailsDto =
-                    new CheckListCommandDetailsDto(
-                        checkListGuid,
-                        checkListDto.ResponsibleCode,
-                        checkListDto.IsVoided,
-                        checkListDto.ProjectGuid);
+                checkListRequest.CheckListDetailsDto = new CheckListCommandDetailsDto(checkListDto);
             }
             else
             {
                 // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
                 throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListGuid}");
+            }
+        }
+
+        // This check must come AFTER prefetching PunchList. GetCheckListGuidForWriteAccessCheck() uses PunchList
+        if (request is ICanHaveRestrictionsViaCheckLists checkListsRequest)
+        {
+            var checkListGuids = checkListsRequest.GetCheckListGuidsForWriteAccessCheck();
+            var checkListDtos = await checkListCache.GetManyCheckListsAsync(checkListGuids, cancellationToken);
+
+            checkListsRequest.CheckListDetailsDtos = new();
+
+            foreach (var checkListGuid in checkListGuids)
+            {
+                var checkListDto = checkListDtos.SingleOrDefault(c => c.CheckListGuid == checkListGuid);
+
+                if (checkListDto is not null)
+                {
+                    checkListsRequest.CheckListDetailsDtos.Add(new CheckListCommandDetailsDto(checkListDto));
+                }
+                else
+                {
+                    // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
+                    throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListGuid}");
+                }
             }
         }
 
