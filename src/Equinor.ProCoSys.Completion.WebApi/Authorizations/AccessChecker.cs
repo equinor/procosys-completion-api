@@ -15,7 +15,6 @@ public class AccessChecker(IRestrictionRolesChecker restrictionRolesChecker) : I
         return restrictionRolesChecker.HasCurrentUserExplicitAccessToContent(checkListDetailsDto.ResponsibleCode);
     }
 
-    // todo unit tests
     public bool HasCurrentUserWriteAccessToAllCheckLists(List<CheckListDetailsDto> checkListDetailsDtos)
     {
         if (restrictionRolesChecker.HasCurrentUserExplicitNoRestrictions())

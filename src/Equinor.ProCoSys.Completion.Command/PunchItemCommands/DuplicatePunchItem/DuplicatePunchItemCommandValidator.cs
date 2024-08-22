@@ -21,13 +21,13 @@ public class DuplicatePunchItemCommandValidator : AbstractValidator<DuplicatePun
 
         bool NotBeInAVoidedTagForAnyCheckList(DuplicatePunchItemCommand command)
         {
-            var voidedTagCount = command.CheckListDetailsDtos.Where(c => c.IsOwningTagVoided).Count();
+            var voidedTagCount = command.CheckListDetailsDtoList.Where(c => c.IsOwningTagVoided).Count();
             return voidedTagCount == 0;
         }
 
         bool ExistInSameProject(DuplicatePunchItemCommand command)
         {
-            var projectGuids = command.CheckListDetailsDtos.Select(c => c.ProjectGuid).ToList();
+            var projectGuids = command.CheckListDetailsDtoList.Select(c => c.ProjectGuid).ToList();
             projectGuids.Add(command.PunchItem.Project.Guid);
             return projectGuids.Distinct().Count() == 1;
         }

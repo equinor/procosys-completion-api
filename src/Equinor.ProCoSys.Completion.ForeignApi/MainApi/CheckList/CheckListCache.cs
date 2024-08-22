@@ -23,7 +23,6 @@ public class CheckListCache(
             applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
             cancellationToken);
 
-    // todo unit tests
     public async Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken)
     {
         var cacheKeys = new List<string>();
@@ -57,6 +56,6 @@ public class CheckListCache(
         return checkListsFromCache;
     }
 
-    private static string CheckListGuidCacheKey(Guid checkListGuid)
+    public static string CheckListGuidCacheKey(Guid checkListGuid)
         => $"CHECKLIST_{checkListGuid.ToString().ToUpper()}";
 }

@@ -50,10 +50,9 @@ public class AccessValidator(
             }
         }
 
-        // todo unit tests
-        if (request is ICanHaveRestrictionsViaCheckLists checkListsRequest)
+        if (request is ICanHaveRestrictionsViaManyCheckLists checkListsRequest)
         {
-            var checkListDetailsDtos = checkListsRequest.CheckListDetailsDtos;
+            var checkListDetailsDtos = checkListsRequest.CheckListDetailsDtoList;
             if (!accessChecker.HasCurrentUserWriteAccessToAllCheckLists(checkListDetailsDtos))
             {
                 var checkListGuids = checkListDetailsDtos.Select(c => c.CheckListGuid);

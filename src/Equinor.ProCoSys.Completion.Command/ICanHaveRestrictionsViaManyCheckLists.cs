@@ -13,8 +13,8 @@ namespace Equinor.ProCoSys.Completion.Command;
 // Sample: If user has Restrictions Role for responsible code RespA and RespB, the user should be denied changing data on
 // objects with a responsible, and the responsible is other than RespA or RespB. A checklist has a responsible. Punch responsible
 // is found via the checklist owning the punch
-public interface ICanHaveRestrictionsViaCheckLists : INeedProjectAccess
+public interface ICanHaveRestrictionsViaManyCheckLists : INeedProjectAccess
 {
     public List<Guid> GetCheckListGuidsForWriteAccessCheck();
-    List<CheckListDetailsDto> CheckListDetailsDtos { get; set; }
+    List<CheckListDetailsDto> CheckListDetailsDtoList { get; set; }
 }

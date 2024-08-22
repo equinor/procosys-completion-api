@@ -103,12 +103,12 @@ public class PrefetchBehavior<TRequest, TResponse>(
         }
 
         // This check must come AFTER prefetching PunchList. GetCheckListGuidForWriteAccessCheck() uses PunchList
-        if (request is ICanHaveRestrictionsViaCheckLists checkListsRequest)
+        if (request is ICanHaveRestrictionsViaManyCheckLists checkListsRequest)
         {
             var checkListGuids = checkListsRequest.GetCheckListGuidsForWriteAccessCheck();
             var checkListDtos = await checkListCache.GetManyCheckListsAsync(checkListGuids, cancellationToken);
 
-            checkListsRequest.CheckListDetailsDtos = new();
+            checkListsRequest.CheckListDetailsDtoList = new();
 
             foreach (var checkListGuid in checkListGuids)
             {
@@ -116,7 +116,7 @@ public class PrefetchBehavior<TRequest, TResponse>(
 
                 if (checkListDto is not null)
                 {
-                    checkListsRequest.CheckListDetailsDtos.Add(new CheckListCommandDetailsDto(checkListDto));
+                    checkListsRequest.CheckListDetailsDtoList.Add(new CheckListCommandDetailsDto(checkListDto));
                 }
                 else
                 {
