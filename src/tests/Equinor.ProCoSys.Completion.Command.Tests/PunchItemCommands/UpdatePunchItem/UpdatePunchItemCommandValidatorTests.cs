@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
@@ -33,9 +34,14 @@ public class UpdatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new UpdatePunchItemCommand(Guid.NewGuid(), _jsonPatchDocument, "AAAAAAAAABA=")
+        _command = new UpdatePunchItemCommand(_existingPunchItem[TestPlantA].Guid, _jsonPatchDocument, "AAAAAAAAABA=")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _command.PatchDocument.Replace(p => p.RaisedByOrgGuid, _raisedByOrgGuid);
@@ -66,7 +72,6 @@ public class UpdatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
         SetupOkLibraryItem(_typeGuid, LibraryType.PUNCHLIST_TYPE);
 
         _dut = new UpdatePunchItemCommandValidator(
-            _checkListValidatorMock,
             _libraryItemValidatorMock,
             _workOrderValidatorMock,
             _swcrValidatorMock,
@@ -149,8 +154,11 @@ public class UpdatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

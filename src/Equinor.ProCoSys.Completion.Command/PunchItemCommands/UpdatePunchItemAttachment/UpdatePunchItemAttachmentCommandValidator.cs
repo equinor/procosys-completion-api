@@ -12,7 +12,6 @@ public class UpdatePunchItemAttachmentCommandValidator : AbstractValidator<Updat
 {
     public UpdatePunchItemAttachmentCommandValidator(
         IPunchItemValidator punchItemValidator, 
-        ICheckListValidator checkListValidator,
         ILabelValidator labelValidator,
         IAttachmentService attachmentService)
     {
@@ -21,7 +20,7 @@ public class UpdatePunchItemAttachmentCommandValidator : AbstractValidator<Updat
         RuleFor(command => command)
             .Must(command => !command.PunchItem.Project.IsClosed)
             .WithMessage("Project is closed!")
-            .MustAsync((command, cancellationToken) => NotBeInAVoidedTagForCheckListAsync(command.PunchItem.CheckListGuid, cancellationToken))
+            .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage("Tag owning punch item is voided!")
             .MustAsync((command, cancellationToken) => BeAnExistingAttachment(command.AttachmentGuid, cancellationToken))
             .WithMessage(command => $"Attachment with this guid does not exist! Guid={command.AttachmentGuid}")
@@ -34,9 +33,6 @@ public class UpdatePunchItemAttachmentCommandValidator : AbstractValidator<Updat
             .WithMessage((_, label) => $"Label doesn't exist! Label={label}")
             .MustAsync((_, label, _, token) => NotBeAVoidedLabelAsync(label, token))
             .WithMessage((_, label) => $"Label is voided! Label={label}");
-
-        async Task<bool> NotBeInAVoidedTagForCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
-            => !await checkListValidator.TagOwningCheckListIsVoidedAsync(checkListGuid, cancellationToken);
 
         async Task<bool> BeAnExistingAttachment(Guid attachmentGuid, CancellationToken cancellationToken)
             => await attachmentService.ExistsAsync(attachmentGuid, cancellationToken);

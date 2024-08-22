@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.ClearPunchItem;
 
@@ -15,12 +14,17 @@ public class DuplicatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
     [TestInitialize]
     public void Setup_OkState()
     {
-        _command = new ClearPunchItemCommand(Guid.NewGuid(), "r")
+        _command = new ClearPunchItemCommand(_existingPunchItem[TestPlantA].Guid, "r")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
-        _dut = new ClearPunchItemCommandValidator(_checkListValidatorMock);
+        _dut = new ClearPunchItemCommandValidator();
     }
 
     [TestMethod]
@@ -37,8 +41,11 @@ public class DuplicatePunchItemCommandValidatorTests : PunchItemCommandTestsBase
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);

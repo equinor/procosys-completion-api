@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,13 +25,18 @@ public class UpdatePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
     public void Setup_OkState()
     {
         _command = new UpdatePunchItemAttachmentCommand(
-            Guid.NewGuid(), 
+            _existingPunchItem[TestPlantA].Guid, 
             Guid.NewGuid(), 
             "d", 
             new List<string> { _labelTextA, _labelTextB }, 
             "r")
         {
-            PunchItem = _existingPunchItem[TestPlantA]
+            PunchItem = _existingPunchItem[TestPlantA],
+            CheckListDetailsDto = new CheckListDetailsDto(
+                _existingPunchItem[TestPlantA].CheckListGuid,
+                "R",
+                false,
+                _existingPunchItem[TestPlantA].Project.Guid)
         };
 
         _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
@@ -42,7 +48,6 @@ public class UpdatePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
         _labelValidatorMock.ExistsAsync(_labelTextB, default).Returns(true);
         _dut = new UpdatePunchItemAttachmentCommandValidator(
             _punchItemValidatorMock,
-            _checkListValidatorMock,
             _labelValidatorMock,
             _attachmentServiceMock);
     }
@@ -75,8 +80,11 @@ public class UpdatePunchItemAttachmentCommandValidatorTests : PunchItemCommandTe
     public async Task Validate_ShouldFail_When_TagOwningPunchItemIsVoided()
     {
         // Arrange
-        _checkListValidatorMock.TagOwningCheckListIsVoidedAsync(_command.PunchItem.CheckListGuid, default)
-            .Returns(true);
+        _command.CheckListDetailsDto = new CheckListDetailsDto(
+            _existingPunchItem[TestPlantA].CheckListGuid,
+            "R",
+            true,
+            _existingPunchItem[TestPlantA].Project.Guid);
 
         // Act
         var result = await _dut.ValidateAsync(_command);
