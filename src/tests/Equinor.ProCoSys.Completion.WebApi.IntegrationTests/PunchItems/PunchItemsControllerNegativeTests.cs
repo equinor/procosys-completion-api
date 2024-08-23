@@ -2016,11 +2016,11 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.NotFound);
 
     [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldReturnForbidden_WhenNoAccessToCheckList()
+    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldReturnForbidden_WhenNoAccessToProjectForCheckList()
         => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
             UserType.Reader,
             TestFactory.PlantWithAccess,
-            TestFactory.CheckListGuidRestrictedProject,
+            TestFactory.CheckListGuidInProjectWithoutAccess,
             HttpStatusCode.Forbidden);
 
     #endregion
