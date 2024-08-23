@@ -121,10 +121,7 @@ public static class ApplicationModule
         services.AddScoped<IPunchItemService, PunchItemService>();
         services.AddScoped<ICacheManager, DistributedCacheManager>();
         services.AddScoped<IImportDataFetcher, ImportDataFetcher>();
-
-        services.AddScoped<IAuthenticatorOptions, AuthenticatorOptions>();
-        services.AddScoped<IMainApiAuthenticator, DistributedCacheMainApiAuthenticator>();
-
+        
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();

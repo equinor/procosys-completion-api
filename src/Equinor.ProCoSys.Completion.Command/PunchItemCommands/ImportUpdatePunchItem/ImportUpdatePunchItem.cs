@@ -41,10 +41,12 @@ public sealed record ImportUpdatePunchItemCommand(
     Optional<ActionByPerson?> ClearedBy,
     Optional<ActionByPerson?> VerifiedBy,
     Optional<ActionByPerson?> RejectedBy,
-    string RowVersion) : IRequest<Result<ImportError[]>>, IIsPunchItemCommand;
+    string RowVersion) : IRequest<Result<ImportError[]>>, IIsPunchItemCommand
+{
+    public PunchItem PunchItem { get; set; } = null!;
+}
 
 public sealed class ImportUpdatePunchItemHandler(
-    IPunchItemValidator punchItemValidator,
     ILabelValidator labelValidator,
     IOptionsMonitor<ApplicationOptions> options,
     ILibraryItemValidator libraryItemValidator,
@@ -77,12 +79,12 @@ public sealed class ImportUpdatePunchItemHandler(
     private async Task<ImportError[]> Validate(ImportUpdatePunchItemCommand request,
         CancellationToken cancellationToken)
     {
-        var clearValidator = new ClearPunchItemCommandValidator(punchItemValidator);
-        var verifyValidator = new VerifyPunchItemCommandValidator(punchItemValidator);
-        var rejectValidator = new RejectPunchItemCommandValidator(punchItemValidator, labelValidator, options);
-        var updateValidator = new UpdatePunchItemCommandValidator(punchItemValidator, libraryItemValidator,
+        var clearValidator = new ClearPunchItemCommandValidator();
+        var verifyValidator = new VerifyPunchItemCommandValidator();
+        var rejectValidator = new RejectPunchItemCommandValidator( labelValidator, options);
+        var updateValidator = new UpdatePunchItemCommandValidator( libraryItemValidator,
             workOrderValidator, swcrValidator, documentValidator);
-        var categoryValidator = new UpdatePunchItemCategoryCommandValidator(punchItemValidator);
+        var categoryValidator = new UpdatePunchItemCategoryCommandValidator();
 
         var errors = new List<ImportError>();
 

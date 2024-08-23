@@ -65,23 +65,14 @@ public class MainApiCheckListService(
 
     public async Task<TagCheckList[]> GetCheckListsByTagIdAndPlantAsync(int tagId, string plant, CancellationToken cancellationToken)
     {
-        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
-        try
-        {
-            mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
-            var url = $"{_baseAddress}Tag/CheckLists" +
-                      $"?plantId={plant}" +
-                      $"&tagId={tagId}" +
-                      $"&api-version={_apiVersion}";
+        var url = $"{_baseAddress}Tag/CheckLists" +
+                  $"?plantId={plant}" +
+                  $"&tagId={tagId}" +
+                  $"&api-version={_apiVersion}";
 
-            var checkLists = await mainApiClient.TryQueryAndDeserializeAsync<TagCheckList[]>(url, null, cancellationToken);
-            return checkLists
-                .Select(x => x with {Plant = plant})
-                .ToArray();
-        }
-        finally
-        {
-            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
-        }
+        var checkLists = await mainApiClientForApplication.TryQueryAndDeserializeAsync<TagCheckList[]>(url, cancellationToken);
+        return checkLists
+            .Select(x => x with {Plant = plant})
+            .ToArray();
     }
 }

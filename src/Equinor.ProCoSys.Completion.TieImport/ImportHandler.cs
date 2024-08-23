@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using System.Security.Claims;
+using Equinor.ProCoSys.Auth.Client;
 using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Domain;
@@ -243,27 +244,20 @@ public sealed class ImportHandler(
         var tieConfig = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
-        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiAuthenticator>();
+        var mainApiAuthenticator = scope.ServiceProvider.GetRequiredService<IMainApiClientForApplication>();
         var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
         var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
         var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
-        var authenticatorOptions = scope.ServiceProvider.GetService<IAuthenticatorOptions>();
+      
 
         if (claimsTransformation is null)
         {
             throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
         }
-
-        if (authenticatorOptions is null)
-        {
-            throw new Exception("Could not get a valid IAuthenticatorOptions instance, value is null");
-        }
-
+        
         plantSetter.SetPlant(scopedImportDataContext.Plant);
-
-        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
-
-        await SetScopeAuthorizationForCommand(importResult, scopedImportDataContext, tieConfig, currentUserSetter, claimsPrincipalProvider, claimsTransformation);
+        
+        // await SetScopeAuthorizationForCommand(importResult, scopedImportDataContext, tieConfig, currentUserSetter, claimsPrincipalProvider, claimsTransformation);
 
         await mediator.Send(importResult.Command, cancellationToken);
 
@@ -274,22 +268,22 @@ public sealed class ImportHandler(
         return importResult;
     }
 
-    private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
-        PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
-        ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
-        IClaimsTransformation claimsTransformation)
-    {
-        var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
-        currentUserSetter.SetCurrentUserOid(importUser.Guid);
+    // private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
+    //     PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
+    //     ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
+    //     IClaimsTransformation claimsTransformation)
+    // {
+    //     var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+    //     currentUserSetter.SetCurrentUserOid(importUser.Guid);
 
-        var projectGuid = Guid.Empty;
-        if (importResult.Command is IIsProjectCommand pc)
-        {
-            projectGuid = pc.ProjectGuid;
-        }
-        
-        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
-    }
+        // var projectGuid = Guid.Empty;
+        // if (importResult.Command is IIsProjectCommand pc)
+        // {
+        //     projectGuid = pc.ProjectGuid;
+        // }
+        //
+        // await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
+    // }
 
     private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
         IClaimsTransformation claimsTransformation, Guid oid, Guid projectGuid, string responsible)

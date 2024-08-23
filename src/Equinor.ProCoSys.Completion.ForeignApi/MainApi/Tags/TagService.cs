@@ -15,8 +15,7 @@ public interface ITagService
 }
 
 public sealed class TagService(
-    IMainApiClient mainApiClient,
-    IMainApiAuthenticator mainApiAuthenticator,
+    IMainApiClientForApplication mainApiClient,
     IOptionsMonitor<MainApiOptions> mainApiOptions) : ITagService
 {
     private readonly string _apiVersion = mainApiOptions.CurrentValue.ApiVersion;
@@ -25,23 +24,14 @@ public sealed class TagService(
     public async Task<ProCoSys4Tag[]> GetTagsByTagNosAsync(string plant, string projectName, string[] tagNos,
         CancellationToken cancellationToken)
     {
-        var oldAuthenticationType = mainApiAuthenticator.AuthenticationType;
-        mainApiAuthenticator.AuthenticationType = AuthenticationType.AsApplication;
         var encodedTagNos = tagNos.Select(HttpUtility.UrlEncode);
-        try
-        {
-            var url = $"{_baseAddress}Tag/ByTagNos" +
-                         $"?plantId={plant}" +
-                         string.Join(string.Empty, encodedTagNos.Select(x => $"&tagNos={x}")) +
-                         $"&projectName={projectName}" +
-                         $"&api-version={_apiVersion}";
+      
+        var url = $"{_baseAddress}Tag/ByTagNos" 
+                  + $"?plantId={plant}" 
+                  + string.Join(string.Empty, encodedTagNos.Select(x => $"&tagNos={x}"))
+                  + $"&projectName={projectName}" + $"&api-version={_apiVersion}";
 
-            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4Tag[]>(url, null, cancellationToken)
+            return await mainApiClient.TryQueryAndDeserializeAsync<ProCoSys4Tag[]>(url, cancellationToken)
                 ?? [];
-        }
-        finally
-        {
-            mainApiAuthenticator.AuthenticationType = oldAuthenticationType;
-        }
     }
 }

@@ -65,10 +65,6 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equinor.ProCoSys.Completion.DbSyncToPCS4", "Equinor.ProCoSys.Completion.DbSyncToPCS4\Equinor.ProCoSys.Completion.DbSyncToPCS4.csproj", "{BBB1A8AA-7CEC-4B13-BE40-D1E0EFF1C3FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Cache", "Equinor.ProCoSys.Completion.Cache\Equinor.ProCoSys.Completion.Cache.csproj", "{66418B78-B408-4552-969D-22623B2C2459}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Cache.Tests", "tests\Equinor.ProCoSys.Completion.Cache.Tests\Equinor.ProCoSys.Completion.Cache.Tests.csproj", "{3E50ECD2-D3F2-460E-8D53-8097F7CF9816}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.TieImport", "Equinor.ProCoSys.Completion.TieImport\Equinor.ProCoSys.Completion.TieImport.csproj", "{95DF7EC7-5A6B-4C0C-8BA7-63DFC90EB775}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Equinor.ProCoSys.Completion.Extensions", "Equinor.ProCoSys.Completion.Extensions\Equinor.ProCoSys.Completion.Extensions.csproj", "{760D2EE0-9B72-43DE-9400-FD86E0D01A7D}"

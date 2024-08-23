@@ -15,10 +15,16 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class CheckListCache(
     ICacheManager cacheManager,
+    IDistributedCache distributedCache,
     ICheckListApiService checkListApiService,
-    IOptionsMonitor<ApplicationOptions> applicationOptions)
+    IOptionsMonitor<ApplicationOptions> applicationOptions,
+    ILogger<CheckListCache> logger)
     : ICheckListCache
 {
+    private readonly DistributedCacheEntryOptions _options = new()
+    {
+        SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.CurrentValue.CheckListCacheExpirationMinutes)
+    };
 
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
         => await cacheManager.GetOrCreateAsync(
@@ -32,7 +38,7 @@ public class CheckListCache(
     {
         var checkListGuidCacheKey = CheckListBygTagAndPlantCacheKey(tagId, plant);
 
-        var cachedChecklist = await distributedCache.GetStringAsync(checkListGuidCacheKey, cancellationToken);
+        var cachedChecklist = await cacheManager.GetAsync<string>(checkListGuidCacheKey, cancellationToken);
         if (string.IsNullOrEmpty(cachedChecklist))
         {
             var checkList = await checkListApiService.GetCheckListsByTagIdAndPlantAsync(tagId, plant, cancellationToken);

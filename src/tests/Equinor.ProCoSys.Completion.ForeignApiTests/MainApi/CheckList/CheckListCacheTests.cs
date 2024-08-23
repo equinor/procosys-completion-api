@@ -35,8 +35,10 @@ public class CheckListCacheTests
         );
         _dut = new CheckListCache(
             new DistributedCacheManager(new MemoryDistributedCache(options), Substitute.For<ILogger<DistributedCacheManager>>()),
+            new MemoryDistributedCache(options),
             _checkListApiServiceMock, 
-            applicationOptionsMock);
+            applicationOptionsMock,
+        Substitute.For<ILogger<CheckListCache>>());
     }
 
     [TestMethod]

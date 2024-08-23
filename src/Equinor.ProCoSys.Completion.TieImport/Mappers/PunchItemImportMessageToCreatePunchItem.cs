@@ -31,7 +31,6 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
         var command = new CreatePunchItemCommand(
             message.Category!.Value,
             message.Description.Value ?? string.Empty,
-            references.ProjectGuid,
             references.CheckListGuid,
             references.RaisedByOrgGuid,
             references.ClearedByOrgGuid,
