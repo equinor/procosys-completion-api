@@ -909,24 +909,62 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicate()
+    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicateWithoutAttachments()
     {
+        // Arrange
+        var fileName = Guid.NewGuid().ToString();
+        var (punchItemGuidAndRowVersion, _)
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
+
         // Act
         var result = await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
             UserType.Writer,
             TestFactory.PlantWithAccess,
-            _punchItemGuidUnderTest,
+            punchItemGuidAndRowVersion.Guid,
             [TestFactory.CheckListGuidNotRestricted],
             false);
 
         // Assert
         Assert.AreEqual(1, result.Count);
+        var newPunchItemGuid = result.ElementAt(0).Guid;
         var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(
             UserType.Writer, 
             TestFactory.PlantWithAccess, 
-            result.ElementAt(0).Guid);
+            newPunchItemGuid);
         Assert.IsNotNull(punchItem);
         Assert.IsTrue(punchItem.IsReadyToBeCleared);
+
+        var punchItemAttachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            newPunchItemGuid);
+        Assert.AreEqual(0, punchItemAttachments.Count);
+    }
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicateWithAttachments()
+    {
+        // Arrange
+        var fileName = Guid.NewGuid().ToString();
+        var (punchItemGuidAndRowVersion, _)
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
+
+        // Act
+        var result = await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItemGuidAndRowVersion.Guid,
+            [TestFactory.CheckListGuidNotRestricted],
+            true);
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        var newPunchItemGuid = result.ElementAt(0).Guid;
+        var punchItemAttachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            newPunchItemGuid);
+        Assert.AreEqual(1, punchItemAttachments.Count);
     }
 
     [TestMethod]
