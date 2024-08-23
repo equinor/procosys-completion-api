@@ -106,4 +106,23 @@ public class MainApiCheckListService(
 
         return checkLists;
     }
+
+    public async Task RecalculateCheckListStatusForMany(string plant, List<Guid> checkListGuids,
+        CancellationToken cancellationToken)
+    {
+        if (!_recalculateStatusInPcs4)
+        {
+            return;
+        }
+
+        var url = $"{_baseAddress}CheckLists/ForProCoSys5" +
+                  $"?plantId={plant}" +
+                  $"&api-version={_apiVersion}";
+
+        var requestBody = JsonSerializer.Serialize(new CheckListGuidsDto(checkListGuids));
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        // Execute as application. The recalc endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        await mainApiClientForApplication.PostAsync(url, content, cancellationToken);
+    }
 }
