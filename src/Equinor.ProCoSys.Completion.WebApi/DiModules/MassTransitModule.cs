@@ -322,6 +322,17 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
+                cfg.SubscriptionEndpoint("completion_query", "query", e =>
+                {
+                    e.ClearSerialization();
+                    e.UseRawJsonSerializer();
+                    e.UseRawJsonDeserializer();
+                    e.ConfigureConsumer<QueryEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                });
+                
+                
                 cfg.SubscriptionEndpoint("completion_swcr", "swcr", e =>
                 {
                     e.ClearSerialization();
