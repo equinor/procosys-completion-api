@@ -904,7 +904,7 @@ public class PunchItemsControllerTests : TestBase
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest);
 
-        Assert.IsInstanceOfType(res, typeof(ChecklistsByPunchGuidInstance));
+        Assert.IsInstanceOfType(res, typeof(CheckListsByPunchGuidInstance));
     }
 
     [TestMethod]

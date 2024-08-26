@@ -426,7 +426,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
         CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(
-                new ChecklistsByPunchGuidInstance(
+                new CheckListsByPunchGuidInstance(
                     new SourceCheckListDto(CheckListGuidNotRestricted, "projectA", "FormType",  "Resp", "TagFunc"),
                     new List<CheckListDto> { new(Guid.NewGuid(), 3, 4, "ASD543", "OK", "TagFunc", "McPkg", "CommPkg") })
             );

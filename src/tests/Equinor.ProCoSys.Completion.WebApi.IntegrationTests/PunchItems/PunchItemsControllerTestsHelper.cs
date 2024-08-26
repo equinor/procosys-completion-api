@@ -618,7 +618,7 @@ public static class PunchItemsControllerTestsHelper
             .AsReadOnly();
     }
 
-    public static async Task<ChecklistsByPunchGuidInstance> GetCheckListsByPunchItemGuid(
+    public static async Task<CheckListsByPunchGuidInstance> GetCheckListsByPunchItemGuid(
         UserType userType,
         string plant,
         Guid guid,
@@ -635,7 +635,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ChecklistsByPunchGuidInstance>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<CheckListsByPunchGuidInstance>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
     private static async Task<string> PostAsync(

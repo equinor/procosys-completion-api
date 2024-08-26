@@ -51,13 +51,13 @@ public class MainApiCheckListService(
         await mainApiClientForApplication.PostAsync(url, content, cancellationToken);
     }
 
-    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
+    public async Task<CheckListsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
                   $"?plantId={plant}" +
                   $"&proCoSysGuid={punchItemGuid:N}" +
                   $"&api-version={_apiVersion}";
 
-        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
+        return await mainApiClientForUser.TryQueryAndDeserializeAsync<CheckListsByPunchGuidInstance>(url, cancellationToken);
     }
 }

@@ -22,13 +22,13 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private const string Plant = "plant_a";
 
-    private ChecklistsByPunchGuidInstance _checkList;
+    private CheckListsByPunchGuidInstance _checkList;
 
     [TestInitialize]
     public void Setup_OkState()
     {
         _checkList =
-            new ChecklistsByPunchGuidInstance(
+            new CheckListsByPunchGuidInstance(
                 new SourceCheckListDto(_checkListGuid, "projectA", "FormType", "Resp", "TagFunc"),
                 new List<CheckListDto> { new(Guid.NewGuid(), 3, 4, "ASD543", "OK", "TagFunc", "McPkg", "CommPkg") });
 

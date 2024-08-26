@@ -146,7 +146,7 @@ public class PunchItemsController : ControllerBase
     /// <response code="404">CheckLists not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/CheckLists")]
-    public async Task<ActionResult<ChecklistsByPunchGuidInstance>> GetCheckListsByPunchItemGuid(
+    public async Task<ActionResult<CheckListsByPunchGuidInstance>> GetCheckListsByPunchItemGuid(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
         [Required]
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]

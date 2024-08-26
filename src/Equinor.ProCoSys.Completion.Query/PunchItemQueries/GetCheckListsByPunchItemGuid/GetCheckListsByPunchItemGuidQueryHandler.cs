@@ -10,9 +10,9 @@ namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunc
 public class GetCheckListsByPunchItemGuidQueryHandler(
     IPlantProvider plantProvider,
     ICheckListApiService checkListApiService)
-    : IRequestHandler<GetCheckListsByPunchItemGuidQuery, Result<ChecklistsByPunchGuidInstance>>
+    : IRequestHandler<GetCheckListsByPunchItemGuidQuery, Result<CheckListsByPunchGuidInstance>>
 {
-    public async Task<Result<ChecklistsByPunchGuidInstance>> Handle(
+    public async Task<Result<CheckListsByPunchGuidInstance>> Handle(
         GetCheckListsByPunchItemGuidQuery request,
         CancellationToken cancellationToken)
     {
@@ -20,7 +20,7 @@ public class GetCheckListsByPunchItemGuidQueryHandler(
             plantProvider.Plant, 
             request.PunchItemGuid, 
             cancellationToken);
-        return new SuccessResult<ChecklistsByPunchGuidInstance>(res);
+        return new SuccessResult<CheckListsByPunchGuidInstance>(res);
     }
 }
 

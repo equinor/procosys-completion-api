@@ -22,7 +22,7 @@ public record CheckListDto(
     string CommPkgNo
 );
 
-public record ChecklistsByPunchGuidInstance
+public record CheckListsByPunchGuidInstance
 (
     SourceCheckListDto SourceCheckList, 
     IList<CheckListDto> CheckLists
