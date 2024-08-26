@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;

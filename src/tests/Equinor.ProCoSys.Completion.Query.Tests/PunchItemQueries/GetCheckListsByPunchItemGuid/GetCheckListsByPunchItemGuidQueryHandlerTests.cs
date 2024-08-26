@@ -20,7 +20,6 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
     private IPlantProvider _plantProviderMock;
     private readonly Guid _punchItemGuid = Guid.NewGuid();
     private readonly Guid _checkListGuid = Guid.NewGuid();
-    private const string ProjectName = "gooseberry_c";
     private const string Plant = "plant_a";
 
     private ChecklistsByPunchGuidInstance _checkList;
@@ -28,8 +27,10 @@ public class GetCheckListsByPunchItemGuidQueryHandlerTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _checkList = new ChecklistsByPunchGuidInstance(new PICheckListDto(_checkListGuid, ProjectName, string.Empty, string.Empty), 
-            new List<CheckListDto>(){new(Guid.NewGuid(), 3, 4, "ASD543", "OK")});
+        _checkList =
+            new ChecklistsByPunchGuidInstance(
+                new SourceCheckListDto(_checkListGuid, "projectA", "FormType", "Resp", "TagFunc"),
+                new List<CheckListDto> { new(Guid.NewGuid(), 3, 4, "ASD543", "OK", "TagFunc", "McPkg", "CommPkg") });
 
         _plantProviderMock = Substitute.For<IPlantProvider>();
         _plantProviderMock.Plant.Returns(Plant);

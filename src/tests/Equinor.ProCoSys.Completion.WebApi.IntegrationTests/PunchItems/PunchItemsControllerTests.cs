@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
