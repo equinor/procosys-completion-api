@@ -60,7 +60,7 @@ public class AttachmentService(
         attachmentRepository.Add(attachment);
         await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
-        var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+        var integrationEvent = await PublishCreatedEventsAsync(attachment, "uploaded", cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -147,7 +147,7 @@ public class AttachmentService(
             attachmentRepository.Add(attachment);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+            var integrationEvent = await PublishCreatedEventsAsync(attachment, "duplicated", cancellationToken);
             integrationEvents.Add(integrationEvent);
 
             await messageProducer.PublishAsync(new AttachmentCopyIntegrationEvent(att.Guid, att.GetFullBlobPath(),
@@ -271,7 +271,7 @@ public class AttachmentService(
             attachment.ParentGuid);
     }
 
-    private async Task<AttachmentCreatedIntegrationEvent> PublishCreatedEventsAsync(Attachment attachment, CancellationToken cancellationToken)
+    private async Task<AttachmentCreatedIntegrationEvent> PublishCreatedEventsAsync(Attachment attachment, string eventType, CancellationToken cancellationToken)
     {
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
         await unitOfWork.SetAuditDataAsync();
@@ -284,7 +284,7 @@ public class AttachmentService(
             new Property(nameof(Attachment.FileName), attachment.FileName)
         };
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            $"Attachment {attachment.FileName} uploaded",
+            $"Attachment {attachment.FileName} {eventType}",
             attachment.Guid,
             attachment.ParentGuid,
             new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),

@@ -41,10 +41,11 @@ public class DuplicatePunchItemCommandHandler(
 {
     public async Task<Result<List<GuidAndRowVersion>>> Handle(DuplicatePunchItemCommand request, CancellationToken cancellationToken)
     {
-        var punchItem = await punchItemRepository.GetAsync(request.PunchItemGuid, cancellationToken);
+        var punchItem = request.PunchItem;
         var attachments = (await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken)).ToList();
 
-        var copiesAndProperties = request.CheckListGuids.Select(x => CreatePunchCopy(punchItem, x)).ToList();
+        var punchCopiesAndProperties = request.CheckListGuids.Select(checkListGuid
+            => CreatePunchCopy(punchItem, checkListGuid)).ToList();
 
         var integrationEvents = new List<PunchItemCreatedIntegrationEvent>();
         var attachmentIntegrationEvents = new List<AttachmentCreatedIntegrationEvent>();
@@ -52,9 +53,9 @@ public class DuplicatePunchItemCommandHandler(
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            foreach (var (copy, properties) in copiesAndProperties)
+            foreach (var (punchCopy, properties) in punchCopiesAndProperties)
             {
-                punchItemRepository.Add(copy);
+                punchItemRepository.Add(punchCopy);
 
                 // must save twice when creating. Must save before publishing events both to set with internal database ID
                 // since ItemNo depend on it. Must save after publishing events because we use outbox pattern
@@ -63,12 +64,12 @@ public class DuplicatePunchItemCommandHandler(
                 // Add property for ItemNo first in list, since it is an "important" property
                 properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
-                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
+                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchCopy.ItemNo, punchItem, properties, cancellationToken);
                 integrationEvents.Add(integrationEvent);
                 await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
                 // copy attachments and collect attachment copied events.
-                var attachmentEvents = await attachmentService.CopyAttachments(attachments, nameof(PunchItem), copy.Guid, copy.Project.Name,
+                var attachmentEvents = await attachmentService.CopyAttachments(attachments, nameof(PunchItem), punchCopy.Guid, punchCopy.Project.Name,
                      cancellationToken);
                 attachmentIntegrationEvents.AddRange(attachmentEvents);
             }
@@ -91,16 +92,17 @@ public class DuplicatePunchItemCommandHandler(
         await Task.WhenAll(attachmentIntegrationEvents.Select(x =>
            syncToPCS4Service.SyncNewPunchListItemAsync(x, cancellationToken)));
 
-        await Task.WhenAll(copiesAndProperties.Select(x =>
+        await Task.WhenAll(punchCopiesAndProperties.Select(x =>
             checkListApiService.RecalculateCheckListStatus(x.Item1.Plant, x.Item1.CheckListGuid, cancellationToken)));
         
 
-        return new SuccessResult<List<GuidAndRowVersion>>(copiesAndProperties.Select(
+        return new SuccessResult<List<GuidAndRowVersion>>(punchCopiesAndProperties.Select(
             x => new GuidAndRowVersion(x.Item1.Guid, x.Item1.RowVersion.ConvertToString())).ToList()
         );
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
+        long sourceItemNo,
         PunchItem punchItem,
         List<IProperty> properties,
         CancellationToken cancellationToken)
@@ -109,7 +111,7 @@ public class DuplicatePunchItemCommandHandler(
         await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
+            $"Punch item {punchItem.Category} {punchItem.ItemNo} duplicated from {sourceItemNo}",
             punchItem.Guid,
             punchItem.CheckListGuid,
             new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
