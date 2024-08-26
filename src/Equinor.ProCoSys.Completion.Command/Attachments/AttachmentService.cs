@@ -124,6 +124,47 @@ public class AttachmentService(
         return attachment is not null;
     }
 
+    public async Task<List<AttachmentCreatedIntegrationEvent>> CopyAttachments(List<Attachment> attachments, string parentType, Guid parentGuid, string project, CancellationToken cancellationToken)
+    {
+        var integrationEvents = new List<AttachmentCreatedIntegrationEvent>();
+        foreach (var att in attachments)
+        {
+            var attachment =
+                await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, att.FileName,
+                    cancellationToken);
+            if (attachment is not null)
+            {
+                throw new Exception(
+                    $"{parentType} {parentGuid} already has an attachment with filename {att.FileName}");
+            }
+
+            attachment = new Attachment(
+                project,
+                parentType,
+                parentGuid,
+                att.FileName);
+
+            attachmentRepository.Add(attachment);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+            integrationEvents.Add(integrationEvent);
+
+            await messageProducer.PublishAsync(new AttachmentCopyIntegrationEvent(att.Guid, att.GetFullBlobPath(),
+                attachment.Guid, attachment.GetFullBlobPath()), cancellationToken);
+            /*
+            var copied = await azureBlobService.CopyBlobAsync(
+                blobStorageOptions.Value.BlobContainer,
+                att.GetFullBlobPath(),
+                attachment.GetFullBlobPath(),
+                true,
+                cancellationToken
+            );*/
+        }
+
+        return integrationEvents;
+    }
+
     public async Task DeleteAsync(
         Guid guid,
         string rowVersion,
