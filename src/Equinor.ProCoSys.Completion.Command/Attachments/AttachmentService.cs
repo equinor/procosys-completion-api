@@ -150,6 +150,7 @@ public class AttachmentService(
             var integrationEvent = await PublishCreatedEventsAsync(attachment, "duplicated", cancellationToken);
             integrationEvents.Add(integrationEvent);
 
+            // todo use .Send, and send to a queue
             await messageProducer.PublishAsync(new AttachmentCopyIntegrationEvent(att.Guid, att.GetFullBlobPath(),
                 attachment.Guid, attachment.GetFullBlobPath()), cancellationToken);
             /*

@@ -143,15 +143,18 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             throw;
         }
 
+        var guidAndRowVersion = new GuidAndRowVersion(punchItem.Guid,
+            punchItem.RowVersion.ConvertToString());
         try
         {
             await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", punchItem.Guid);
-            return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
-                punchItem.RowVersion.ConvertToString()));
+            _logger.LogError(e, 
+                "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", 
+                punchItem.Guid);
+            return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
         }
 
         try
@@ -160,11 +163,12 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            _logger.LogError(e,
+                "Error occurred while trying to Recalculate the completion status for check list with guid {CheckListGuid}", 
+                punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
-            punchItem.RowVersion.ConvertToString()));
+        return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
