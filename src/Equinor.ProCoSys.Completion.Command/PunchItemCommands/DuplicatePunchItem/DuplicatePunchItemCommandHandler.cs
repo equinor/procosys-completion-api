@@ -42,12 +42,14 @@ public class DuplicatePunchItemCommandHandler(
     public async Task<Result<List<GuidAndRowVersion>>> Handle(DuplicatePunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
-        var attachments = (await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken)).ToList();
+        var attachments = 
+            request.DuplicateAttachments ? 
+                (await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken)).ToList() : [];
 
         var punchCopiesAndProperties = request.CheckListGuids.Select(checkListGuid
             => CreatePunchCopy(punchItem, checkListGuid)).ToList();
 
-        var integrationEvents = new List<PunchItemCreatedIntegrationEvent>();
+        var punchItemIntegrationEvents = new List<PunchItemCreatedIntegrationEvent>();
         var attachmentIntegrationEvents = new List<AttachmentCreatedIntegrationEvent>();
 
         await unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -64,41 +66,78 @@ public class DuplicatePunchItemCommandHandler(
                 // Add property for ItemNo first in list, since it is an "important" property
                 properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
-                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchCopy.ItemNo, punchItem, properties, cancellationToken);
-                integrationEvents.Add(integrationEvent);
-                await messageProducer.PublishAsync(integrationEvent, cancellationToken);
+                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchCopy.ItemNo, punchCopy, properties, cancellationToken);
+                punchItemIntegrationEvents.Add(integrationEvent);
 
-                // copy attachments and collect attachment copied events.
-                var attachmentEvents = await attachmentService.CopyAttachments(attachments, nameof(PunchItem), punchCopy.Guid, punchCopy.Project.Name,
-                     cancellationToken);
-                attachmentIntegrationEvents.AddRange(attachmentEvents);
+                if (request.DuplicateAttachments)
+                {
+                    // copy attachments and collect attachment copied events.
+                    var attachmentEvents = await attachmentService.CopyAttachments(
+                        attachments, 
+                        nameof(PunchItem),
+                        punchCopy.Guid, 
+                        punchCopy.Project.Name,
+                        cancellationToken);
+                    attachmentIntegrationEvents.AddRange(attachmentEvents);
+                }
             }
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} duplicated to check lists {CheckListGuids}", 
+                punchItem.ItemNo,
+                punchItem.Guid,
+                string.Join(",", request.CheckListGuids));
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred on insertion of PunchListItem");
+            logger.LogError(e, "Error occurred on duplication of PunchListItem");
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
 
-        await unitOfWork.CommitTransactionAsync(cancellationToken);
+        var guidAndRowVersions = punchCopiesAndProperties.Select(
+            x => new GuidAndRowVersion(x.Item1.Guid, x.Item1.RowVersion.ConvertToString())).ToList();
 
-        //TODO Sync to PCS 4 og recalc
+        try
+        {
+            await Task.WhenAll(punchItemIntegrationEvents.Select(integrationEvent =>
+                syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken)));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e,
+                "Error occurred while trying to Sync duplicate on punch items with guids {PunchItemGuids}",
+                string.Join(",", punchItemIntegrationEvents.Select(i => i.Guid)));
+            return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
+        }
 
-        await Task.WhenAll(integrationEvents.Select(x =>
-           syncToPCS4Service.SyncNewPunchListItemAsync(x, cancellationToken)));
+        try
+        {
+            await checkListApiService.RecalculateCheckListStatusForMany(punchItem.Plant, request.CheckListGuids, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e,
+                "Error occurred while trying to Recalculate the completion status for check lists with guids {CheckListGuids}",
+                string.Join(",", request.CheckListGuids));
+            return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
+        }
 
-        await Task.WhenAll(attachmentIntegrationEvents.Select(x =>
-           syncToPCS4Service.SyncNewPunchListItemAsync(x, cancellationToken)));
+        try
+        {
+            await Task.WhenAll(attachmentIntegrationEvents.Select(integrationEvent =>
+                syncToPCS4Service.SyncNewAttachmentAsync(integrationEvent, cancellationToken)));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e,
+                "Error occurred while trying to Sync duplicate on attachments with guids {AttachmentGuids}",
+                string.Join(",", attachmentIntegrationEvents.Select(i => i.Guid)));
+        }
 
-        await Task.WhenAll(punchCopiesAndProperties.Select(x =>
-            checkListApiService.RecalculateCheckListStatus(x.Item1.Plant, x.Item1.CheckListGuid, cancellationToken)));
-        
-
-        return new SuccessResult<List<GuidAndRowVersion>>(punchCopiesAndProperties.Select(
-            x => new GuidAndRowVersion(x.Item1.Guid, x.Item1.RowVersion.ConvertToString())).ToList()
-        );
+        return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
@@ -122,35 +161,35 @@ public class DuplicatePunchItemCommandHandler(
         return integrationEvent;
     }
 
-    private static (PunchItem, List<IProperty>) CreatePunchCopy(PunchItem src, Guid checkListGuid)
+    private static (PunchItem, List<IProperty>) CreatePunchCopy(PunchItem sourcePunchItem, Guid checkListGuid)
     {
-        var punchItem = new PunchItem(
-            src.Plant,
-            src.Project,
+        var newPunchItem = new PunchItem(
+            sourcePunchItem.Plant,
+            sourcePunchItem.Project,
             checkListGuid,
-            src.Category,
-            src.Description,
-            src.RaisedByOrg,
-            src.ClearingByOrg);
+            sourcePunchItem.Category,
+            sourcePunchItem.Description,
+            sourcePunchItem.RaisedByOrg,
+            sourcePunchItem.ClearingByOrg);
 
-        var properties = GetRequiredProperties(punchItem);
+        var properties = GetRequiredProperties(newPunchItem);
 
-        SetActionBy(punchItem, src.ActionBy, properties);
-        SetDueTime(punchItem, src.DueTimeUtc, properties);
-        SetLibraryItem(punchItem, src.Priority, LibraryType.COMM_PRIORITY, properties);
-        SetLibraryItem(punchItem, src.Sorting, LibraryType.PUNCHLIST_SORTING, properties);
-        SetLibraryItem(punchItem, src.Type, LibraryType.PUNCHLIST_TYPE, properties);
-        SetEstimate(punchItem, src.Estimate, properties);
-        SetOriginalWorkOrder(punchItem, src.OriginalWorkOrder, properties);
-        SetWorkOrder(punchItem, src.WorkOrder, properties);
-        SetSWCR(punchItem, src.SWCR, properties);
-        SetDocument(punchItem, src.Document, properties);
-        SetExternalItemNo(punchItem, src.ExternalItemNo, properties);
-        SetMaterialRequired(punchItem, src.MaterialRequired, properties);
-        SetMaterialETAUtc(punchItem, src.MaterialETAUtc, properties);
-        SetMaterialExternalNo(punchItem, src.MaterialExternalNo, properties);
+        SetActionBy(newPunchItem, sourcePunchItem.ActionBy, properties);
+        SetDueTime(newPunchItem, sourcePunchItem.DueTimeUtc, properties);
+        SetLibraryItem(newPunchItem, sourcePunchItem.Priority, LibraryType.COMM_PRIORITY, properties);
+        SetLibraryItem(newPunchItem, sourcePunchItem.Sorting, LibraryType.PUNCHLIST_SORTING, properties);
+        SetLibraryItem(newPunchItem, sourcePunchItem.Type, LibraryType.PUNCHLIST_TYPE, properties);
+        SetEstimate(newPunchItem, sourcePunchItem.Estimate, properties);
+        SetOriginalWorkOrder(newPunchItem, sourcePunchItem.OriginalWorkOrder, properties);
+        SetWorkOrder(newPunchItem, sourcePunchItem.WorkOrder, properties);
+        SetSWCR(newPunchItem, sourcePunchItem.SWCR, properties);
+        SetDocument(newPunchItem, sourcePunchItem.Document, properties);
+        SetExternalItemNo(newPunchItem, sourcePunchItem.ExternalItemNo, properties);
+        SetMaterialRequired(newPunchItem, sourcePunchItem.MaterialRequired, properties);
+        SetMaterialETAUtc(newPunchItem, sourcePunchItem.MaterialETAUtc, properties);
+        SetMaterialExternalNo(newPunchItem, sourcePunchItem.MaterialExternalNo, properties);
 
-        return (punchItem, properties);
+        return (newPunchItem, properties);
     }
 
     private static List<IProperty> GetRequiredProperties(PunchItem punchItem)
@@ -158,8 +197,8 @@ public class DuplicatePunchItemCommandHandler(
         [
             new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
             new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.Code),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.Code)
+            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.ToString()),
+            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.ToString())
         ];
 
     private static void SetActionBy(
