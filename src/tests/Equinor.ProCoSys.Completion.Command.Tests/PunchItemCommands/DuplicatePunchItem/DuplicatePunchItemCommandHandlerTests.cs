@@ -158,7 +158,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
 
         // Assert
-        await _attachmentRepositoryMock.Received(0).GetAllByParentGuidAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _attachmentRepositoryMock.DidNotReceive().GetAllByParentGuidAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -449,7 +449,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _unitOfWorkMock.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
-        await _unitOfWorkMock.Received(0).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        await _unitOfWorkMock.DidNotReceive().RollbackTransactionAsync(Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -465,7 +465,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             () => _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None));
 
         // Assert
-        await _unitOfWorkMock.Received(0).CommitTransactionAsync(Arg.Any<CancellationToken>());
+        await _unitOfWorkMock.DidNotReceive().CommitTransactionAsync(Arg.Any<CancellationToken>());
         await _unitOfWorkMock.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
         Assert.IsInstanceOfType(exception, typeof(Exception));
     }
@@ -485,6 +485,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _syncToPCS4ServiceMock.DidNotReceive().SyncNewPunchListItemAsync(Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewAttachmentAsync(Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -506,7 +507,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotRecalculate_WhenSyncingWithPcs4Fails()
+    public async Task HandlingCommand_ShouldNotRecalculate_WhenSyncingPunchItemWithPcs4Fails()
     {
         // Arrange
         _syncToPCS4ServiceMock.When(x => x.SyncNewPunchListItemAsync(Arg.Any<object>(), Arg.Any<CancellationToken>()))
@@ -518,6 +519,35 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         // Assert
         await _checkListApiServiceMock.DidNotReceive()
             .RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncAttachments_WhenSyncingPunchItemWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewPunchListItemAsync(Arg.Any<object>(), Arg.Any<CancellationToken>()))
+            .Do(_ => throw new Exception("SyncNewPunchListItemAsync error"));
+
+        // Act
+        await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewAttachmentAsync(Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task HandlingCommand_ShouldNotSyncAttachments_WhenRecalculatingFails()
+    {
+        // Arrange
+        _checkListApiServiceMock
+            .When(x => x.RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>()))
+            .Do(_ => throw new Exception("RecalculateCheckListStatusForMany error"));
+
+        // Act
+        await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
+
+        // Assert
+        await _syncToPCS4ServiceMock.DidNotReceive().SyncNewAttachmentAsync(Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -558,17 +588,38 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     }
 
     [TestMethod]
+    public async Task HandlingCommand_ShouldNotThrowError_WhenSyncingAttachmentsWithPcs4Fails()
+    {
+        // Arrange
+        _syncToPCS4ServiceMock.When(x => x.SyncNewAttachmentAsync(Arg.Any<object>(), Arg.Any<CancellationToken>()))
+            .Do(_ => throw new Exception("SyncNewAttachmentAsync error"));
+
+        // Act and Assert
+        try
+        {
+            await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Excepted no exception, but got: " + ex.Message);
+        }
+    }
+
+    [TestMethod]
     public async Task HandlingCommand_ShouldSyncNewAttachmentsWithPcs4_WhenPunchHasAttachments_AndCopy()
     {
         // Arrange
-        SetupAttachmentDuplication(_commandWithCopyAttachments);
+        var attachmentCreatedIntegrationEvents = SetupAttachmentDuplication(_commandWithCopyAttachments);
 
         // Act
         await _dut.Handle(_commandWithCopyAttachments, CancellationToken.None);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(2)
-            .SyncNewAttachmentAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>());
+        Assert.AreEqual(2, attachmentCreatedIntegrationEvents.Count);
+        await _syncToPCS4ServiceMock.Received(1)
+            .SyncNewAttachmentAsync(attachmentCreatedIntegrationEvents.ElementAt(0), Arg.Any<CancellationToken>());
+        await _syncToPCS4ServiceMock.Received(1)
+            .SyncNewAttachmentAsync(attachmentCreatedIntegrationEvents.ElementAt(1), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -581,7 +632,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
 
         // Assert
-        await _syncToPCS4ServiceMock.Received(0)
+        await _syncToPCS4ServiceMock.DidNotReceive()
             .SyncNewAttachmentAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
@@ -607,22 +658,31 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         punchItemToDuplicate.MaterialRequired = true;
     }
 
-    private void SetupAttachmentDuplication(DuplicatePunchItemCommand command)
+    private List<AttachmentCreatedIntegrationEvent> SetupAttachmentDuplication(DuplicatePunchItemCommand command)
     {
         var sourceAttachment = CreateAttachment(command.PunchItem.Guid);
-        var duplicatedAttachment = CreateAttachment(Guid.NewGuid());
-
         var attachments = new List<Attachment> { sourceAttachment };
         _attachmentRepositoryMock
             .GetAllByParentGuidAsync(command.PunchItem.Guid, Arg.Any<CancellationToken>())
             .Returns(attachments);
+
+        var attachmentCreatedIntegrationEvent1 = new AttachmentCreatedIntegrationEvent(CreateAttachment(Guid.NewGuid()), TestPlantA);
+        var attachmentCreatedIntegrationEvent2 = new AttachmentCreatedIntegrationEvent(CreateAttachment(Guid.NewGuid()), TestPlantA);
+        List<AttachmentCreatedIntegrationEvent> attachmentCreatedIntegrationEvents1 = [attachmentCreatedIntegrationEvent1];
+        List<AttachmentCreatedIntegrationEvent> attachmentCreatedIntegrationEvents2 = [attachmentCreatedIntegrationEvent2];
+        
         _attachmentServiceMock.CopyAttachments(
-                Arg.Is<List<Attachment>>(aList => aList.Any(a => a.Guid == sourceAttachment.Guid)),
+                Arg.Is<List<Attachment>>(aList => aList.Count == 1 && aList.ElementAt(0).Guid == sourceAttachment.Guid),
                 nameof(PunchItem),
                 Arg.Any<Guid>(),
                 command.PunchItem.Project.Name,
                 Arg.Any<CancellationToken>())
-            .Returns([new(duplicatedAttachment, TestPlantA)]);
+            .Returns(
+                attachmentCreatedIntegrationEvents1, 
+                attachmentCreatedIntegrationEvents2 
+                );
+
+        return [attachmentCreatedIntegrationEvent1, attachmentCreatedIntegrationEvent2];
     }
 
     private Attachment CreateAttachment(Guid guid)

@@ -46,16 +46,18 @@ public class DuplicatePunchItemCommandHandler(
             request.DuplicateAttachments ? 
                 (await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken)).ToList() : [];
 
-        var punchCopiesAndProperties = request.CheckListGuids.Select(checkListGuid
-            => CreatePunchCopy(punchItem, checkListGuid)).ToList();
+        var punchCopiesAndProperties =
+            request.CheckListGuids.Select(checkListGuid => CreatePunchCopy(punchItem, checkListGuid))
+                .ToList();
 
         var punchItemIntegrationEvents = new List<PunchItemCreatedIntegrationEvent>();
         var attachmentIntegrationEvents = new List<AttachmentCreatedIntegrationEvent>();
 
         await unitOfWork.BeginTransactionAsync(cancellationToken);
+        var checkListGuidsAsString = string.Join(",", request.CheckListGuids);
         try
         {
-            foreach (var (punchCopy, properties) in punchCopiesAndProperties)
+            foreach (var (punchCopy, punchCopyProperties) in punchCopiesAndProperties)
             {
                 punchItemRepository.Add(punchCopy);
 
@@ -64,9 +66,13 @@ public class DuplicatePunchItemCommandHandler(
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Add property for ItemNo first in list, since it is an "important" property
-                properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
+                punchCopyProperties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
-                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchCopy.ItemNo, punchCopy, properties, cancellationToken);
+                var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(
+                    punchCopy.ItemNo, 
+                    punchCopy,
+                    punchCopyProperties, 
+                    cancellationToken);
                 punchItemIntegrationEvents.Add(integrationEvent);
 
                 if (request.DuplicateAttachments)
@@ -88,7 +94,7 @@ public class DuplicatePunchItemCommandHandler(
             logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} duplicated to check lists {CheckListGuids}", 
                 punchItem.ItemNo,
                 punchItem.Guid,
-                string.Join(",", request.CheckListGuids));
+                checkListGuidsAsString);
         }
         catch (Exception e)
         {
@@ -108,7 +114,7 @@ public class DuplicatePunchItemCommandHandler(
         catch (Exception e)
         {
             logger.LogError(e,
-                "Error occurred while trying to Sync duplicate on punch items with guids {PunchItemGuids}",
+                "Error occurred while trying to Sync Duplicated punch items with guids {PunchItemGuids}",
                 string.Join(",", punchItemIntegrationEvents.Select(i => i.Guid)));
             return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
         }
@@ -121,7 +127,7 @@ public class DuplicatePunchItemCommandHandler(
         {
             logger.LogError(e,
                 "Error occurred while trying to Recalculate the completion status for check lists with guids {CheckListGuids}",
-                string.Join(",", request.CheckListGuids));
+                checkListGuidsAsString);
             return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
         }
 
@@ -133,7 +139,7 @@ public class DuplicatePunchItemCommandHandler(
         catch (Exception e)
         {
             logger.LogError(e,
-                "Error occurred while trying to Sync duplicate on attachments with guids {AttachmentGuids}",
+                "Error occurred while trying to Sync Duplicated attachments with guids {AttachmentGuids}",
                 string.Join(",", attachmentIntegrationEvents.Select(i => i.Guid)));
         }
 
@@ -326,6 +332,7 @@ public class DuplicatePunchItemCommandHandler(
         punchItem.SetDocument(document);
         properties.Add(new Property(nameof(PunchItem.Document), punchItem.Document!.No));
     }
+
     private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo, ICollection<IProperty> properties)
     {
         if (externalItemNo is null)
