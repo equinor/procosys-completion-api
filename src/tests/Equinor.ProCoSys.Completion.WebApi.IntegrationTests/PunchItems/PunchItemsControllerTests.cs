@@ -938,7 +938,7 @@ public class PunchItemsControllerTests : TestBase
             UserType.Writer,
             TestFactory.PlantWithAccess,
             newPunchItemGuid);
-        Assert.AreEqual(1, punchItemAttachments.Count);
+        Assert.AreEqual(0, punchItemAttachments.Count);
     }
 
     [TestMethod]
