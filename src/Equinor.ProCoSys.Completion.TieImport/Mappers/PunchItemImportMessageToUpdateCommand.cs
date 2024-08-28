@@ -120,29 +120,29 @@ public sealed class PunchItemImportMessageToUpdateCommand(PlantScopedImportDataC
         }
     }
 
-    public ImportResult Map(ImportResult message)
+    public ImportResult SetCommandToImportResult(ImportResult importResult)
     {
-        if (message.Message is null)
+        if (importResult.Message is null)
         {
-            return message;
+            return importResult;
         }
         
-        var errors = Validate(message.Message);
+        var errors = Validate(importResult.Message);
         if (errors.Length != 0)
         {
-            return message with { Errors = [..message.Errors, ..errors] };
+            return importResult with { Errors = [..importResult.Errors, ..errors] };
         }
 
         var referencesService = new CommandReferencesService(scopedImportDataContext);
-        var references = referencesService.GetUpdatePunchItemReferences(message.Message);
+        var references = referencesService.GetUpdatePunchItemReferences(importResult.Message);
         if (references.Errors.Length != 0)
         {
-            return message with { Errors = [..message.Errors, ..references.Errors] };
+            return importResult with { Errors = [..importResult.Errors, ..references.Errors] };
         }
 
 
-        var command = MapToCommand(message, references);
+        var command = MapToCommand(importResult, references);
 
-        return message with { Command = command };
+        return importResult with { Command = command };
     }
 }

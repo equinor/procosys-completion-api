@@ -18,6 +18,6 @@ public sealed class PlantScopedImportDataContext(string plant)
     public void AddLibraryItems(IReadOnlyCollection<LibraryItem> libraryItems) => Library.AddRange(libraryItems);
     public void AddPersons(IReadOnlyCollection<Person> persons) => Persons.AddRange(persons);
     public void AddProjects(IReadOnlyCollection<Project> projects) => Projects.AddRange(projects);
-    public void AddCheckList(IReadOnlyCollection<TagCheckList> checkLists) => CheckLists.AddRange(checkLists);
+    public void AddCheckLists(IReadOnlyCollection<TagCheckList> checkLists) => CheckLists.AddRange(checkLists);
     public void AddPunchItems(PunchItem[] punchItems) => PunchItems.AddRange(punchItems);
 }

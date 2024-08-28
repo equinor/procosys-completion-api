@@ -40,7 +40,7 @@ public class CommandReferencesServiceShould
     private void AddProjects() =>
         _context.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
 
-    private void AddCheckLists() => _context.AddCheckList(new[]
+    private void AddCheckLists() => _context.AddCheckLists(new[]
     {
         new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
         new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),

@@ -8,7 +8,18 @@ namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataContext scopedImportDataContext)
     : ICommandMapper
 {
-    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) Map(
+    public ImportResult SetCommandToImportResult(ImportResult importResult)
+    {
+        if (importResult.Message is null)
+        {
+            return importResult;
+        }
+
+        var (command, errors) = ValidateAndCreateCommand(importResult.Message);
+
+        return importResult with { Command = command, Errors = [..importResult.Errors, ..errors] };
+    }
+    private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) ValidateAndCreateCommand(
         PunchItemImportMessage message)
     {
         var validator = new PunchItemImportMessageValidator(scopedImportDataContext);
@@ -53,15 +64,5 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
         return (command, Array.Empty<ImportError>());
     }
 
-    public ImportResult Map(ImportResult message)
-    {
-        if (message.Message is null)
-        {
-            return message;
-        }
 
-        var (command, errors) = Map(message.Message);
-
-        return message with { Command = command, Errors = [..message.Errors, ..errors] };
-    }
 }

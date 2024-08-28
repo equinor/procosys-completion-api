@@ -18,6 +18,7 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public sealed class TestFactory : WebApplicationFactory<Program>
+public class TestFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
     private readonly string _configPath;
@@ -79,6 +80,11 @@ public sealed class TestFactory : WebApplicationFactory<Program>
         LastName = "Olsen",
         UserName = "hans@mail.com"
     };
+    
+    public IServiceProvider GetServiceProvider()
+    {
+        return Server.Services ?? throw new InvalidOperationException("Server has not been initialized yet.");
+    }
 
 public Dictionary<string, KnownTestData> SeededData { get; }
 
@@ -100,8 +106,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     }
                 }
             }
-
-            
             return s_instance;
         }
     }
@@ -115,7 +119,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         _configPath = Path.Combine(projectDir, "appsettings.json");
 
         SetupTestUsers();
-       
     }
 
     #endregion
@@ -162,6 +165,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment(EnvironmentExtensions.IntegrationTestEnvironmentName);
+        builder.ConfigureAppConfiguration((_, conf) => conf.AddJsonFile(_configPath));
         builder.ConfigureTestServices(services =>
         {
             services.AddAuthentication()
@@ -230,7 +235,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         var dbContext = scopeServiceProvider.GetRequiredService<CompletionContext>();
 
         dbContext.Database.EnsureDeleted();
-
+        
         dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
         dbContext.CreateNewDatabaseWithCorrectSchema();
@@ -341,25 +346,17 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         SetupReaderUser(accessablePlants, accessableProjects);
     
         SetupNoPermissionUser();
-            
-        var webHostBuilder = WithWebHostBuilder(builder =>
-        {
-            // Important to set Test environment so Program.cs don't try to get 
-            // config from Azure
-            builder.UseEnvironment(EnvironmentExtensions.IntegrationTestEnvironmentName);
-            builder.ConfigureAppConfiguration((_, conf) => conf.AddJsonFile(_configPath));
-        });
-
+        
         SetupProCoSysServiceMocks();
 
-        CreateAuthenticatedHttpClients(webHostBuilder);
+        CreateAuthenticatedHttpClients();
     }
 
-    private void CreateAuthenticatedHttpClients(WebApplicationFactory<Program> webHostBuilder)
+    private void CreateAuthenticatedHttpClients()
     {
         foreach (var testUser in _testUsers.Values)
         {
-            testUser.HttpClient = webHostBuilder.CreateClient();
+            testUser.HttpClient = CreateClient();
 
             if (testUser.Profile is not null)
             {

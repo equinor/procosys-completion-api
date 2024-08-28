@@ -55,7 +55,7 @@ public sealed class PunchItemImportMessageToUpdateCommandShould
         };
 
         _scopedContext.AddProjects([_project]);
-        _scopedContext.AddCheckList([_tagCheckList]);
+        _scopedContext.AddCheckLists([_tagCheckList]);
         _scopedContext.AddLibraryItems([_libraryItemClearing, _libraryItemRaisedBy]);
         _scopedContext.AddPersons([new Person(Guid.NewGuid(), "Sindre", "Smistad", "SKS@equinor.com", "SKS@equinor.com", false)]);
         _scopedContext.AddPunchItems([
@@ -68,7 +68,7 @@ public sealed class PunchItemImportMessageToUpdateCommandShould
 
 
         // Act
-        var importResults = _mapper.Map(new ImportResult(default!, message, default!, []));
+        var importResults = _mapper.SetCommandToImportResult(new ImportResult(default!, message, default!, []));
 
         // Assert
         Assert.AreEqual(0, importResults.Errors.Length);

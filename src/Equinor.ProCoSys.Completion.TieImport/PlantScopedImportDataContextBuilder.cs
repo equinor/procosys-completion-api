@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher importDataFetcher, IOptionsMonitor<TieImportOptions> tieOptions)
-    : IScopedContextLibraryTypeBuilder
+    : IScopedContextLibraryTypeBuilder //TODO interface needed?
 {
     private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
 
@@ -23,8 +23,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         _plantScopedImportDataContexts = importMessages
                 .GroupBy(x => x.Plant)
                 .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
-                .ToDictionary(k => k.Key, v => v.Value)
-            ;
+                .ToDictionary(k => k.Key, v => v.Value);
 
         var tagTasks = CreateFetchTagsByPlantTasks(tagNoByPlantKeys.Distinct().ToArray(), cancellationToken);
         await FetchLibraryItemsForPlantAsync(
@@ -65,7 +64,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
 
         foreach (var checkLists in checkListsByPlant)
         {
-            _plantScopedImportDataContexts[checkLists.Key].AddCheckList(checkLists.ToArray());
+            _plantScopedImportDataContexts[checkLists.Key].AddCheckLists(checkLists.ToArray());
         }
     }
 

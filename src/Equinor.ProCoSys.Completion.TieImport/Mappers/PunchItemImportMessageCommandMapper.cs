@@ -5,22 +5,23 @@ namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public sealed class PunchItemImportMessageCommandMapper(PlantScopedImportDataContext context)
 {
-    public IEnumerable<ImportResult> Map(ImportResult[] messages)
+    private readonly Dictionary<string, ICommandMapper> _commandMappersByMethod = new()
     {
-        var mappersByMethod = new Dictionary<string, ICommandMapper>
+        {PunchObjectAttributes.Methods.Create, new PunchItemImportMessageToCreateCommand(context)},
+        {PunchObjectAttributes.Methods.Update, new PunchItemImportMessageToUpdateCommand(context)},
+        {PunchObjectAttributes.Methods.Delete, new PunchItemImportMessageToDeleteCommand(context)},
+    };
+    public IEnumerable<ImportResult> Map(ImportResult[] importResults)
+    {
+        foreach (var message in importResults)
         {
-            {PunchObjectAttributes.Methods.Create, new PunchItemImportMessageToCreateCommand(context)},
-            {PunchObjectAttributes.Methods.Update, new PunchItemImportMessageToUpdateCommand(context)},
-            {PunchObjectAttributes.Methods.Delete, new PunchItemImportMessageToDeleteCommand(context)},
-        };
-        foreach (var message in messages)
-        {
-            yield return mappersByMethod[message.TiObject.Method].Map(message);
+            var commandMapper = _commandMappersByMethod[message.TiObject.Method];
+            yield return commandMapper.SetCommandToImportResult(message);
         }
     }
 }
 
 public interface ICommandMapper
 {
-    public ImportResult Map(ImportResult message);
+    public ImportResult SetCommandToImportResult(ImportResult importResult);
 }

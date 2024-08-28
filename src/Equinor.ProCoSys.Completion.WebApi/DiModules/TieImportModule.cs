@@ -9,33 +9,38 @@ using Equinor.TI.TIE.Adapter.TIE1.Setup;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.TIE1.Message;
 using System;
+using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
+using MassTransit;
+using Microsoft.AspNetCore.Builder;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class TieImportModule
 {
-    public static void AddTieImportModule(this IServiceCollection services, IConfiguration configuration)
+    public static void AddTieImportModule(this IServiceCollection services, WebApplicationBuilder builder)
     {
         var configOptions = new TieImportOptions();
 
-        services.AddOptions<TieImportOptions>()
-            .BindConfiguration("TieImport")
-            .ValidateDataAnnotations();
-        configuration.Bind("TieImport", configOptions);
-
-        services.AddOptions<CommonLibOptions>()
-            .BindConfiguration("CommonLib")
-            .ValidateDataAnnotations();
-
-        //TODO: JSOI Scoped or Singleton or Transient?
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddAdapterHosting();
+        if (!builder.Environment.IsIntegrationTest())
+        {
+            services.AddOptions<TieImportOptions>()
+                .BindConfiguration("TieImport")
+                .ValidateDataAnnotations();
+            builder.Configuration.Bind("TieImport", configOptions);
+
+            services.AddOptions<CommonLibOptions>()
+                .BindConfiguration("CommonLib")
+                .ValidateDataAnnotations();
+            
+        //TODO: JSOI Scoped or Singleton or Transient?
 
         var tiClientOptions = GetTiClientOptions(configOptions);
         var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
@@ -76,6 +81,7 @@ public static class TieImportModule
 
         // Apply test/mock settings, if any
         services.SetTestSettings(configOptions);
+        }
     }
 
     private static void SetTestSettings(this IServiceCollection services, TieImportOptions configOptions)

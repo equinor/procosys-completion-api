@@ -19,29 +19,29 @@ public sealed class PunchItemImportMessageToDeleteCommand(PlantScopedImportDataC
             .ToArray();
     }
 
-    public ImportResult Map(ImportResult message)
+    public ImportResult SetCommandToImportResult(ImportResult importResult)
     {
-        if (message.Message is null) return message;
-        var errors = Validate(message.Message);
+        if (importResult.Message is null) return importResult;
+        var errors = Validate(importResult.Message);
         if (errors.Length != 0)
         {
-            return message with { Errors = [..message.Errors, ..errors] };
+            return importResult with { Errors = [..importResult.Errors, ..errors] };
         }
 
         var referencesService = new CommandReferencesService(scopedImportDataContext);
-        var references = referencesService.GetUpdatePunchItemReferences(message.Message);
+        var references = referencesService.GetUpdatePunchItemReferences(importResult.Message);
 
         if (references.Errors.Length != 0)
         {
-            return message with { Errors = [..message.Errors, ..references.Errors] };
+            return importResult with { Errors = [..importResult.Errors, ..references.Errors] };
         }
 
-        message = message with
+        importResult = importResult with
         {
             Command = new DeletePunchItemCommand(references.PunchItem!.Guid,
                 references.PunchItem.RowVersion.ConvertToString())
         };
 
-        return message;
+        return importResult;
     }
 }

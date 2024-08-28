@@ -201,8 +201,8 @@ public sealed class ImportDataFetcher(
         var results = await Task.WhenAll(tasks);
 
         return results
-            .SelectMany(x => x)
-            .Where(x => keys.Any(y => y.FormType == x.FormularType))
+            .SelectMany(x => x) // Flatten
+            .Where(x => keys.Any(y => y.FormType == x.FormularType)) //if we had more specific webApi endpoint, this is not needed
             .ToArray();
     }
 }
