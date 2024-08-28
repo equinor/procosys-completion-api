@@ -12,7 +12,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public class PunchItemsControllerNegativeTests : TestBase
 {
     private Guid _punchItemGuidUnderTest;
-    private Guid _punchItemBGuidUnderTest;
     private Guid _checkListGuidUnderTest;
     private Guid _linkGuidUnderTest;
     private Guid _attachmentGuidUnderTest;
@@ -21,7 +20,6 @@ public class PunchItemsControllerNegativeTests : TestBase
     public async Task TestInitialize()
     {
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemA.Guid;
-        _punchItemBGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemB.Guid;
         _checkListGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemA.CheckListGuid;
         _linkGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].LinkInPunchItemAGuid;
         _attachmentGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].AttachmentInPunchItemAGuid;
@@ -2023,66 +2021,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.CheckListGuidRestrictedProject,
             HttpStatusCode.Forbidden);
 
-    #endregion
-
-    #region GetCheckListsByPunchItemGuid
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.Anonymous,
-            TestFactory.Unknown,
-            _punchItemGuidUnderTest,
-            HttpStatusCode.Unauthorized);
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-     => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-         UserType.NoPermissionUser,
-         TestFactory.Unknown,
-         _punchItemGuidUnderTest,
-         HttpStatusCode.BadRequest,
-         "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.Writer,
-            TestFactory.Unknown,
-            _punchItemGuidUnderTest,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.NoPermissionUser,
-            TestFactory.PlantWithoutAccess,
-            _punchItemGuidUnderTest,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.Writer,
-            TestFactory.PlantWithoutAccess,
-            _punchItemGuidUnderTest,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            Guid.NewGuid(),
-            HttpStatusCode.NotFound);
-
-    [TestMethod]
-    public async Task GetCheckListsByPunchItemGuid_AsReader_ShouldReturnForbidden_WhenNoAccessToPunchItemProject()
-        => await PunchItemsControllerTestsHelper.GetCheckListsByPunchItemGuid(
-            UserType.Reader,
-            TestFactory.PlantWithAccess,
-            _punchItemBGuidUnderTest,
-            HttpStatusCode.Forbidden);
     #endregion
 
     private async Task EnsureWrongRowVersionDifferFromCorrectRowVersion()

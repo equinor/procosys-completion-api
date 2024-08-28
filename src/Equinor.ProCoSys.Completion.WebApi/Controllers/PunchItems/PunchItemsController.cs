@@ -24,11 +24,9 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCateg
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Query.Links;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetCheckListsByPunchItemGuid;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments;
@@ -133,28 +131,6 @@ public class PunchItemsController : ControllerBase
         [Required][FromRoute] Guid checkListGuid)
     {
         var result = await _mediator.Send(new GetPunchItemsByCheckListGuidQuery(checkListGuid), cancellationToken);
-        return this.FromResult(result);
-    }
-
-    /// <summary>
-    /// Get all CheckLists By PunchItem Guid
-    /// </summary>
-    ///  /// <param name="plant">ID of plant in PCS$PLANT format</param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="guid">Guid on PunchItem</param>
-    /// <returns>Found CheckLists</returns>
-    /// <response code="404">CheckLists not found</response>
-    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
-    [HttpGet("{guid}/CheckLists")]
-    public async Task<ActionResult<ChecklistsByPunchGuidInstance>> GetCheckListsByPunchItemGuid(
-        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
-        [Required]
-        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant,
-        CancellationToken cancellationToken,
-        [FromRoute] Guid guid)
-    {
-        var result = await _mediator.Send(new GetCheckListsByPunchItemGuidQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
