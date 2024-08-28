@@ -11,11 +11,13 @@ using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Command.ModifiedEvents;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -822,6 +824,33 @@ public class AttachmentServiceTests : TestsBase
         {
             Assert.Fail("Excepted no exception, but got: " + ex.Message);
         }
+    }
+    #endregion
+
+    #region Unit Test Copy Attachment
+    [TestMethod]
+    public async Task CopyAttachmentAsync()
+    {
+        // Act
+        await _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), Guid.NewGuid(), _project, default);
+
+        // Assert
+        await _messageProducerMock.Received(1)
+            .SendCopyAttachmentEventAsync(Arg.Any<AttachmentCopyIntegrationEvent>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task CopyAttachmentAsync_Should_Throw_Exception_If_Exists()
+    {
+        _attachmentRepositoryMock
+            .GetAttachmentWithFileNameForParentAsync(_parentGuid, _existingAttachment.FileName, default)
+            .Returns(_existingAttachment);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<Exception>(()
+            => _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), _parentGuid, _project, default));
+        await _messageProducerMock.Received(0)
+            .SendCopyAttachmentEventAsync(Arg.Any<AttachmentCopyIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
     #endregion
 }

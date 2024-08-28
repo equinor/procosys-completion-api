@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MassTransit;
@@ -47,4 +48,18 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
             address);
         await sender.Send(message, cancellationToken);
     }
+
+    public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message,
+        CancellationToken cancellationToken)
+    {
+        var address = new Uri($"queue:completion-attachment-copy-event");
+        var sender = await sendEndpointProvider.GetSendEndpoint(address);
+        logger.LogInformation("Sending: Event: {EventName}, Guid: {Guid}, CopyGuid: {DestGuid}, Address: {Address}",
+            nameof(message),
+            message.Guid,
+            message.DestGuid,
+            address);
+        await sender.Send(message!, cancellationToken);
+    }
+
 }
