@@ -23,5 +23,5 @@ public class CheckListCache(
             cancellationToken);
 
     private static string CheckListGuidCacheKey(Guid checkListGuid)
-        => $"CHECKLIST_{checkListGuid.ToString().ToUpper()}";
+        => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";
 }

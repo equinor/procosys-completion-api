@@ -1,7 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -11,8 +10,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 [TestClass]
 public class AccessCheckerTests
 {
-    private readonly ProCoSys4CheckList _proCoSys4CheckList = new("EQ", false, Guid.NewGuid());
-    private readonly Guid _checkListGuid = Guid.NewGuid();
     private AccessChecker _dut = null!;
     private IRestrictionRolesChecker _restrictionRolesCheckerMock = null!;
     private readonly CheckListDetailsDto _checkListDetailsDto = new(Guid.NewGuid(), "R", false, Guid.NewGuid());
