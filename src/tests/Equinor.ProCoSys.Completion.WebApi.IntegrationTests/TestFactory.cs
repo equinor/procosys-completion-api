@@ -132,11 +132,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             testUser.Value.HttpClient.Dispose();
         }
             
-        //foreach (var disposable in _disposables)
-        //{
-        //    try { disposable.Dispose(); } catch { /* Ignore */ }
-        //}
-            
         lock (s_padlock)
         {
             s_instance = null;

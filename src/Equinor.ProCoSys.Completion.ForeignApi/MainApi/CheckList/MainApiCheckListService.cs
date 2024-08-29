@@ -103,7 +103,6 @@ public class MainApiCheckListService(
 
         } while (pageCheckListGuids.Count() == pageSize);
 
-
         return checkLists;
     }
 

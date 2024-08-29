@@ -16,14 +16,10 @@ public class DuplicatePunchItemCommandValidator : AbstractValidator<DuplicatePun
             .Must(ExistInSameProject)
             .WithMessage("Punch item to duplicate and all check lists to copy to must be in same project!")
             .Must(NotBeInAVoidedTagForAnyCheckList)
-            .WithMessage("Check lists to copy to can not belong to a voided tag!")
-            ;
+            .WithMessage("Check lists to copy to can not belong to a voided tag!");
 
         bool NotBeInAVoidedTagForAnyCheckList(DuplicatePunchItemCommand command)
-        {
-            var voidedTagCount = command.CheckListDetailsDtoList.Where(c => c.IsOwningTagVoided).Count();
-            return voidedTagCount == 0;
-        }
+            => command.CheckListDetailsDtoList.Count(c => c.IsOwningTagVoided) == 0;
 
         bool ExistInSameProject(DuplicatePunchItemCommand command)
         {

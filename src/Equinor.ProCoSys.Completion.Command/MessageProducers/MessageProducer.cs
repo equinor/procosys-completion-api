@@ -52,7 +52,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
     public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message,
         CancellationToken cancellationToken)
     {
-        var address = new Uri($"queue:completion-attachment-copy-event");
+        var address = new Uri("queue:completion-attachment-copy-event");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
         logger.LogInformation("Sending: Event: {EventName}, Guid: {Guid}, CopyGuid: {DestGuid}, Address: {Address}",
             nameof(message),
