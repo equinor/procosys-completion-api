@@ -25,6 +25,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.Query.Attachments;
+using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -33,7 +34,6 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
@@ -120,6 +120,7 @@ public class PunchItemsController : ControllerBase
     /// <param name="checkListGuid">Guid of checklist</param>
     /// <returns>List of PunchItems (or empty list)</returns>
     /// <response code="404">Project not found</response>
+    [Obsolete]
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("CheckList/{checkListGuid}")]
     public async Task<ActionResult<IEnumerable<PunchItemDetailsDto>>> GetPunchItemsByCheckListGuid(
@@ -130,7 +131,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [Required][FromRoute] Guid checkListGuid)
     {
-        var result = await _mediator.Send(new GetPunchItemsByCheckListGuidQuery(checkListGuid), cancellationToken);
+        var result = await _mediator.Send(new GetPunchItemsQuery(checkListGuid), cancellationToken);
         return this.FromResult(result);
     }
 
