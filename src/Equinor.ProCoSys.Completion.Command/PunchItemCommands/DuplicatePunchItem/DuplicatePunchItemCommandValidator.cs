@@ -23,9 +23,8 @@ public class DuplicatePunchItemCommandValidator : AbstractValidator<DuplicatePun
 
         bool ExistInSameProject(DuplicatePunchItemCommand command)
         {
-            var projectGuids = command.CheckListDetailsDtoList.Select(c => c.ProjectGuid).ToList();
-            projectGuids.Add(command.PunchItem.Project.Guid);
-            return projectGuids.Distinct().Count() == 1;
+            var punchItemProjectGuid = command.PunchItem.Project.Guid;
+            return command.CheckListDetailsDtoList.All(c => c.ProjectGuid == punchItemProjectGuid);
         }
     }
 }

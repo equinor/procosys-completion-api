@@ -93,7 +93,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             raisedByOrg,
             clearingByOrg);
 
-        var properties = GetRequiredProperties(punchItem);
+        var properties = punchItem.GetRequiredProperties();
 
         await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
         SetDueTime(punchItem, request.DueTimeUtc, properties);
@@ -190,15 +190,6 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         return integrationEvent;
     }
-
-    private List<IProperty> GetRequiredProperties(PunchItem punchItem)
-        =>
-        [
-            new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
-            new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.ToString()),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.ToString())
-        ];
 
     private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo, List<IProperty> properties)
     {

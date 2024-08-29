@@ -47,7 +47,7 @@ public class DuplicatePunchItemCommandHandler(
                 (await attachmentRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken)).ToList() : [];
 
         var punchCopiesAndProperties =
-            request.CheckListGuids.Select(checkListGuid => CreatePunchCopy(punchItem, checkListGuid))
+            request.CheckListGuids.Select(checkListGuid => CreatePunchCopyAndBuildHistoryProperties(punchItem, checkListGuid))
                 .ToList();
 
         var punchItemIntegrationEvents = new List<PunchItemCreatedIntegrationEvent>();
@@ -167,7 +167,7 @@ public class DuplicatePunchItemCommandHandler(
         return integrationEvent;
     }
 
-    private static (PunchItem, List<IProperty>) CreatePunchCopy(PunchItem sourcePunchItem, Guid checkListGuid)
+    private static (PunchItem, List<IProperty>) CreatePunchCopyAndBuildHistoryProperties(PunchItem sourcePunchItem, Guid checkListGuid)
     {
         var newPunchItem = new PunchItem(
             sourcePunchItem.Plant,
@@ -178,7 +178,7 @@ public class DuplicatePunchItemCommandHandler(
             sourcePunchItem.RaisedByOrg,
             sourcePunchItem.ClearingByOrg);
 
-        var properties = GetRequiredProperties(newPunchItem);
+        var properties = newPunchItem.GetRequiredProperties();
 
         SetActionBy(newPunchItem, sourcePunchItem.ActionBy, properties);
         SetDueTime(newPunchItem, sourcePunchItem.DueTimeUtc, properties);
@@ -197,15 +197,6 @@ public class DuplicatePunchItemCommandHandler(
 
         return (newPunchItem, properties);
     }
-
-    private static List<IProperty> GetRequiredProperties(PunchItem punchItem)
-        =>
-        [
-            new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
-            new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.ToString()),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.ToString())
-        ];
 
     private static void SetActionBy(
         PunchItem punchItem,

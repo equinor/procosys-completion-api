@@ -145,7 +145,6 @@ public class AttachmentService(
                 att.FileName);
 
             attachmentRepository.Add(attachment);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var integrationEvent = await PublishCreatedEventsAsync(attachment, "duplicated", cancellationToken);
             integrationEvents.Add(integrationEvent);

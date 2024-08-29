@@ -834,7 +834,6 @@ public class AttachmentServiceTests : TestsBase
         await _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), Guid.NewGuid(), _project, default);
 
         // Assert
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
         Assert.IsNotNull(_attachmentAddedToRepository);
         await _messageProducerMock.Received(1)
             .SendCopyAttachmentEventAsync(Arg.Any<AttachmentCopyIntegrationEvent>(), Arg.Any<CancellationToken>());
