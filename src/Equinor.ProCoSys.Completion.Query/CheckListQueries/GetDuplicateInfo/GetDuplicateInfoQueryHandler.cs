@@ -9,7 +9,6 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.CheckListQueries.GetDuplicateInfo;
 
-// todo unit tests
 public class GetDuplicateInfoQueryHandler(
     IPlantProvider plantProvider, 
     IResponsibleApiService responsibleService,
@@ -20,8 +19,13 @@ public class GetDuplicateInfoQueryHandler(
     {
         var checkList = request.CheckListDetailsDto;
 
-        var responsibles = await responsibleService.GetAllAsync(plantProvider.Plant, cancellationToken);
-        var tagFunctions = await tagFunctionService.GetAllAsync(plantProvider.Plant, cancellationToken);
+        // run in parallel
+        var responsiblesTask = responsibleService.GetAllAsync(plantProvider.Plant, cancellationToken);
+        var tagFunctionsTask = tagFunctionService.GetAllAsync(plantProvider.Plant, cancellationToken);
+        await Task.WhenAll(responsiblesTask, tagFunctionsTask);
+
+        var responsibles = await responsiblesTask;
+        var tagFunctions = await tagFunctionsTask;
 
         var responsibleDtos = responsibles.Select(r => new ResponsibleDto(r.Code, r.Description));
         var tagFunctionDtos = tagFunctions.Select(tf => new TagFunctionDto(tf.ToString(), tf.Description));
