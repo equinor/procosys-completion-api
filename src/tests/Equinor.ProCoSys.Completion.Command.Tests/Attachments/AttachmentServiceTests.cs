@@ -239,7 +239,7 @@ public class AttachmentServiceTests : TestsBase
 
         // Assert
         var p = _attachmentAddedToRepository.GetFullBlobPath();
-       await _azureBlobServiceMock.Received(1).UploadAsync(_blobContainer, p, stream, _contentTypeJpeg);
+        await _azureBlobServiceMock.Received(1).UploadAsync(_blobContainer, p, stream, _contentTypeJpeg);
 
     }
     #endregion
@@ -852,6 +852,64 @@ public class AttachmentServiceTests : TestsBase
             => _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), _parentGuid, _project, default));
         await _messageProducerMock.Received(0)
             .SendCopyAttachmentEventAsync(Arg.Any<AttachmentCopyIntegrationEvent>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task CopyAttachmentAsync_ShouldPublishAttachmentCreatedIntegrationEvent_WhenFileNameNotExist()
+    {
+        // Arrange
+        AttachmentCreatedIntegrationEvent integrationEvent = null!;
+        _messageProducerMock
+            .When(x => x.PublishAsync(Arg.Any<AttachmentCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                integrationEvent = callbackInfo.Arg<AttachmentCreatedIntegrationEvent>();
+            }));
+
+        // Act
+        await _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), Guid.NewGuid(), _project, default);
+
+        // Assert
+        Assert.IsNotNull(integrationEvent);
+        Assert.AreEqual(TestPlantA, integrationEvent.Plant);
+        Assert.AreEqual(_attachmentAddedToRepository.Guid, integrationEvent.Guid);
+        Assert.AreEqual(_attachmentAddedToRepository.ParentGuid, integrationEvent.ParentGuid);
+        Assert.AreEqual(_attachmentAddedToRepository.ParentType, integrationEvent.ParentType);
+        Assert.AreEqual(_attachmentAddedToRepository.BlobPath, integrationEvent.BlobPath);
+        Assert.AreEqual(_attachmentAddedToRepository.FileName, integrationEvent.FileName);
+        Assert.AreEqual(_attachmentAddedToRepository.CreatedAtUtc, integrationEvent.CreatedAtUtc);
+        Assert.AreEqual(_attachmentAddedToRepository.CreatedBy.Guid, integrationEvent.CreatedBy.Oid);
+        Assert.AreEqual(_attachmentAddedToRepository.CreatedBy.GetFullName(), integrationEvent.CreatedBy.FullName);
+    }
+    
+    [TestMethod]
+    public async Task CopyAttachmentAsync_ShouldSendHistoryCreatedIntegrationEvent_WhenFileNameNotExist()
+    {
+        // Arrange
+        HistoryCreatedIntegrationEvent historyEvent = null!;
+        _messageProducerMock
+            .When(x => x.SendHistoryAsync(Arg.Any<HistoryCreatedIntegrationEvent>(), Arg.Any<CancellationToken>()))
+            .Do(Callback.First(callbackInfo =>
+            {
+                historyEvent = callbackInfo.Arg<HistoryCreatedIntegrationEvent>();
+            }));
+
+        // Act
+        await _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), Guid.NewGuid(), _project, default);
+
+        // Assert
+        AssertHistoryCreatedIntegrationEvent(
+            historyEvent,
+            $"Attachment {_attachmentAddedToRepository.FileName} duplicated",
+            _attachmentAddedToRepository.ParentGuid,
+            _attachmentAddedToRepository,
+            _attachmentAddedToRepository);
+
+        Assert.AreEqual(1, historyEvent.Properties.Count);
+        AssertProperty(
+            historyEvent.Properties
+                .SingleOrDefault(c => c.Name == nameof(Attachment.FileName)),
+            _attachmentAddedToRepository.FileName);
     }
     #endregion
 }
