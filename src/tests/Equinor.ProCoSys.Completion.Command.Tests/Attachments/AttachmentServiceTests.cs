@@ -17,7 +17,6 @@ using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -829,18 +828,20 @@ public class AttachmentServiceTests : TestsBase
 
     #region Unit Test Copy Attachment
     [TestMethod]
-    public async Task CopyAttachmentAsync()
+    public async Task CopyAttachmentsAsync_ShouldCreateCopyWithGivenParentGuid()
     {
         // Act
         await _dut.CopyAttachments([_existingAttachment], nameof(PunchItem), Guid.NewGuid(), _project, default);
 
         // Assert
+        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        Assert.IsNotNull(_attachmentAddedToRepository);
         await _messageProducerMock.Received(1)
             .SendCopyAttachmentEventAsync(Arg.Any<AttachmentCopyIntegrationEvent>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
-    public async Task CopyAttachmentAsync_Should_Throw_Exception_If_Exists()
+    public async Task CopyAttachmentsAsync_ShouldThrowException_IfAlreadyExistsForParent()
     {
         _attachmentRepositoryMock
             .GetAttachmentWithFileNameForParentAsync(_parentGuid, _existingAttachment.FileName, default)
