@@ -7,6 +7,7 @@ using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.WorkOrderQueries.WorkOrderSearch;
 
@@ -18,7 +19,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnEmptyList_WhenNoMatchesExists()
+    public async Task Handle_ShouldReturnEmptyList_WhenNoMatchesExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -36,7 +37,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
     }
 
     [TestMethod]
-    public async Task Handler_ShouldReturnWorkOrder_WhenMatchesExists()
+    public async Task Handle_ShouldReturnWorkOrder_WhenMatchesExists()
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
@@ -51,6 +52,29 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(1, result.Data.Count());
+    }
+    
+    [TestMethod]
+    public async Task Handle_ShouldExcludeVoidedWorkOrders()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        
+        var woNo = "SomeWorkOrderNo";
+        var workOrder = new WorkOrder("PCS$PlantA", Guid.NewGuid(), woNo) { IsVoided = true };
+        context.WorkOrders.Add(workOrder);
+        await context.SaveChangesAsync();
+        
+        var dut = new WorkOrderSearchQueryHandler(context);
+        WorkOrderSearchQuery query = new(woNo);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.AreEqual(0, result.Data.Count());
     }
 }
 
