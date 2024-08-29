@@ -368,16 +368,6 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                /*
-                cfg.SubscriptionEndpoint("completion_attachment_copy", "attachment-copy", e =>
-                {
-                    //e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<AttachmentCopyEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                });*/
                 cfg.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("completion"));
                 #endregion
 

@@ -17,12 +17,12 @@ public class AttachmentCopyEventConsumer (
     {
         var busEvent = context.Message;
 
-        var copied = await azureBlobService.CopyBlobAsync(
-        blobStorageOptions.Value.BlobContainer,
-        busEvent.SrcBlobPath,
-        busEvent.DestBlobPath,
-        true,
-        context.CancellationToken
+        await azureBlobService.CopyBlobAsync(
+            blobStorageOptions.Value.BlobContainer,
+            busEvent.SrcBlobPath,
+            busEvent.DestBlobPath,
+            true,
+            context.CancellationToken
         );
 
         logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Source Guid {Source} \n Destination Guid {Target}",
