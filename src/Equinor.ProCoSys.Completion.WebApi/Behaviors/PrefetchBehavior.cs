@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.Query.CheckListQueries;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
@@ -72,11 +73,19 @@ public class PrefetchBehavior<TRequest, TResponse>(
 
         else if (request is IIsCheckListQuery checkListQuery)
         {
-            var checkListDto = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
-            if (checkListDto is not null)
+            var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
+            if (proCoSys4CheckList is not null)
             {
                 checkListQuery.CheckListDetailsDto =
-                    new CheckListQueryDetailsDto(checkListQuery.CheckListGuid, checkListDto.ProjectGuid);
+                    new CheckListQueryDetailsDto(
+                        checkListQuery.CheckListGuid,
+                        proCoSys4CheckList.FormularType,
+                        proCoSys4CheckList.ResponsibleCode,
+                        proCoSys4CheckList.TagRegisterCode,
+                        proCoSys4CheckList.TagRegisterDescription,
+                        proCoSys4CheckList.TagFunctionCode,
+                        proCoSys4CheckList.TagFunctionDescription,
+                        proCoSys4CheckList.ProjectGuid);
             }
             else
             {
@@ -89,15 +98,15 @@ public class PrefetchBehavior<TRequest, TResponse>(
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
             var checkListGuid = checkListRequest.GetCheckListGuidForWriteAccessCheck();
-            var checkListDto = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-            if (checkListDto is not null)
+            var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+            if (proCoSys4CheckList is not null)
             {
                 checkListRequest.CheckListDetailsDto =
                     new CheckListCommandDetailsDto(
                         checkListGuid,
-                        checkListDto.ResponsibleCode,
-                        checkListDto.IsVoided,
-                        checkListDto.ProjectGuid);
+                        proCoSys4CheckList.ResponsibleCode,
+                        proCoSys4CheckList.IsVoided,
+                        proCoSys4CheckList.ProjectGuid);
             }
             else
             {
