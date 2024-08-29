@@ -73,7 +73,9 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
+        
         Assert.AreEqual(1, result.Data.Count());
+        Assert.IsTrue(result.Data.First().No == DocumentNo);
     }
 }
 
