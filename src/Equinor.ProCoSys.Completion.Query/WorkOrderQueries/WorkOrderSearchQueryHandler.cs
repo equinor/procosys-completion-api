@@ -10,16 +10,13 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
 
-public class WorkOrderSearchQueryHandler : IRequestHandler<WorkOrderSearchQuery, Result<IEnumerable<WorkOrderDto>>>
+public class WorkOrderSearchQueryHandler(IReadOnlyContext context)
+    : IRequestHandler<WorkOrderSearchQuery, Result<IEnumerable<WorkOrderDto>>>
 {
-    private readonly IReadOnlyContext _context;
-
-    public WorkOrderSearchQueryHandler(IReadOnlyContext context) => _context = context;
-
     public async Task<Result<IEnumerable<WorkOrderDto>>> Handle(WorkOrderSearchQuery request, CancellationToken cancellationToken)
     {
-        var workOrders = await (from workOrder in _context.QuerySet<WorkOrder>()
-            where workOrder.No.Contains(request.SearchPhrase)
+        var workOrders = await (from workOrder in context.QuerySet<WorkOrder>()
+            where workOrder.No.Contains(request.SearchPhrase) && !workOrder.IsVoided
             select new WorkOrderDto(
                 workOrder.Guid,
                 workOrder.No

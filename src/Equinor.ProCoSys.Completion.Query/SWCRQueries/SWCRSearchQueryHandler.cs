@@ -19,7 +19,7 @@ public class SWCRSearchQueryHandler : IRequestHandler<SWCRSearchQuery, Result<IE
     public async Task<Result<IEnumerable<SWCRDto>>> Handle(SWCRSearchQuery request, CancellationToken cancellationToken)
     {
         var swcrs = await (from swcr in _context.QuerySet<SWCR>()
-                where swcr.No.ToString().Contains(request.SearchPhrase)
+                where swcr.No.ToString().Contains(request.SearchPhrase) && !swcr.IsVoided
                 select new SWCRDto(
                     swcr.Guid,
                     swcr.No

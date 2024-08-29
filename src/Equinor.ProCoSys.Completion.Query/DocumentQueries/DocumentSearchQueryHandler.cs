@@ -19,7 +19,7 @@ public class DocumentSearchQueryHandler : IRequestHandler<DocumentSearchQuery, R
     public async Task<Result<IEnumerable<DocumentDto>>> Handle(DocumentSearchQuery request, CancellationToken cancellationToken)
     {
         var documents = await (from document in _context.QuerySet<Document>()
-                where document.No.Contains(request.SearchPhrase)
+                where document.No.Contains(request.SearchPhrase) && !document.IsVoided
                 select new DocumentDto(
                     document.Guid,
                     document.No
