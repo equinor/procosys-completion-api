@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsByCheckList;
+using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemsByCheckList;
+namespace Equinor.ProCoSys.Completion.Query.Tests.CheckListQueries.GetPunchItems;
 
 [TestClass]
-public class GetPunchItemsByCheckListGuidQueryHandlerTests
+public class GetPunchItemsQueryHandlerTests
 {
     private PunchItemDetailsDto _punchItemDetails;
 
     private IPunchItemService _punchItemServiceMock;
-    private GetPunchItemsByCheckListGuidQuery _query;
-    private GetPunchItemsByCheckListGuidQueryHandler _dut;
+    private GetPunchItemsQuery _query;
+    private GetPunchItemsQueryHandler _dut;
 
     [TestInitialize]
     public void Setup_OkState()
@@ -29,8 +29,8 @@ public class GetPunchItemsByCheckListGuidQueryHandlerTests
         _punchItemServiceMock.GetByCheckListGuid(_punchItemDetails.CheckListGuid, default)
             .Returns(new List<PunchItemDetailsDto>{ _punchItemDetails });
 
-        _query = new GetPunchItemsByCheckListGuidQuery(_punchItemDetails.CheckListGuid);
-        _dut = new GetPunchItemsByCheckListGuidQueryHandler(_punchItemServiceMock);
+        _query = new GetPunchItemsQuery(_punchItemDetails.CheckListGuid);
+        _dut = new GetPunchItemsQueryHandler(_punchItemServiceMock);
     }
 
     [TestMethod]

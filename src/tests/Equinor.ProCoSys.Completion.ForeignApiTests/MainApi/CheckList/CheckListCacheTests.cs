@@ -27,7 +27,16 @@ public class CheckListCacheTests
         var applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
         applicationOptionsMock.CurrentValue.Returns(new ApplicationOptions { CheckListCacheExpirationMinutes = 1 });
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-        _checkList = new ProCoSys4CheckList("RX", false, Guid.NewGuid());
+        _checkList = new ProCoSys4CheckList(
+            _checkListGuid,
+            "FT", 
+            "RC",
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            false, 
+            Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid, Arg.Any<CancellationToken>()).Returns(_checkList);
 
         var options = new OptionsWrapper<MemoryDistributedCacheOptions>(

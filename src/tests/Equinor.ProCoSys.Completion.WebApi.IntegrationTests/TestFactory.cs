@@ -418,18 +418,38 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person2
                 ]);
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithAccess, false, ProjectGuidWithAccess));
+            .Returns(new ProCoSys4CheckList(
+                CheckListGuidNotRestricted,
+                "FT", 
+                ResponsibleCodeWithAccess, 
+                "TRC",
+                "TRD",
+                "TFC",
+                "TFD",
+                false, 
+                ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess));
+            .Returns(new ProCoSys4CheckList(
+                CheckListGuidRestricted,
+                "FT",
+                ResponsibleCodeWithoutAccess,
+                "TRC",
+                "TRD",
+                "TFC",
+                "TFD",
+                false, 
+                ProjectGuidWithAccess));
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess));
-
-        CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(
-                new ChecklistsByPunchGuidInstance(
-                    new PICheckListDto(CheckListGuidNotRestricted, "projectA", string.Empty, string.Empty),
-                    new List<CheckListDto>() { new(Guid.NewGuid(), 3, 4, "ASD543", "OK") })
-            );
+            .Returns(new ProCoSys4CheckList(
+                CheckListGuidRestrictedProject,
+                "FT",
+                ResponsibleCodeWithoutAccess,
+                "TRC",
+                "TRD",
+                "TFC",
+                "TFD",
+                false, 
+                ProjectGuidWithoutAccess));
     }
 
     // Authenticated client without any roles
