@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -7,6 +8,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.Query.CheckListQueries;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
@@ -73,11 +75,10 @@ public class PrefetchBehavior<TRequest, TResponse>(
 
         else if (request is IIsCheckListQuery checkListQuery)
         {
-            var checkListDto = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
-            if (checkListDto is not null)
+            var pcs4CheckList = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
+            if (pcs4CheckList is not null)
             {
-                checkListQuery.CheckListDetailsDto =
-                    new CheckListQueryDetailsDto(checkListQuery.CheckListGuid, checkListDto.ProjectGuid);
+                checkListQuery.CheckListDetailsDto = new CheckListQueryDetailsDto(pcs4CheckList);
             }
             else
             {
@@ -90,10 +91,10 @@ public class PrefetchBehavior<TRequest, TResponse>(
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
             var checkListGuid = checkListRequest.GetCheckListGuidForWriteAccessCheck();
-            var checkListDto = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-            if (checkListDto is not null)
+            var pcs4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+            if (pcs4CheckList is not null)
             {
-                checkListRequest.CheckListDetailsDto = new CheckListCommandDetailsDto(checkListDto);
+                checkListRequest.CheckListDetailsDto = new CheckListCommandDetailsDto(pcs4CheckList);
             }
             else
             {
@@ -106,17 +107,17 @@ public class PrefetchBehavior<TRequest, TResponse>(
         if (request is ICanHaveRestrictionsViaManyCheckLists checkListsRequest)
         {
             var checkListGuids = checkListsRequest.GetCheckListGuidsForWriteAccessCheck();
-            var checkListDtos = await checkListCache.GetManyCheckListsAsync(checkListGuids, cancellationToken);
+            var pcs4CheckLists = await checkListCache.GetManyCheckListsAsync(checkListGuids, cancellationToken);
 
             checkListsRequest.CheckListDetailsDtoList = new();
 
             foreach (var checkListGuid in checkListGuids)
             {
-                var checkListDto = checkListDtos.SingleOrDefault(c => c.CheckListGuid == checkListGuid);
+                var pcs4CheckList = pcs4CheckLists.SingleOrDefault(c => c.CheckListGuid == checkListGuid);
 
-                if (checkListDto is not null)
+                if (pcs4CheckList is not null)
                 {
-                    checkListsRequest.CheckListDetailsDtoList.Add(new CheckListCommandDetailsDto(checkListDto));
+                    checkListsRequest.CheckListDetailsDtoList.Add(new CheckListCommandDetailsDto(pcs4CheckList));
                 }
                 else
                 {

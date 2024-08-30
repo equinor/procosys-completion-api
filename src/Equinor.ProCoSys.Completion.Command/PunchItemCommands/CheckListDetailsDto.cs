@@ -9,12 +9,12 @@ public record CheckListDetailsDto(
     bool IsOwningTagVoided,
     Guid ProjectGuid)
 {
-    public CheckListDetailsDto(ProCoSys4CheckList proCoSys4CheckList)
+    public CheckListDetailsDto(ProCoSys4CheckList pcs4CheckList)
         : this(
-            proCoSys4CheckList.CheckListGuid, 
-            proCoSys4CheckList.ResponsibleCode, 
-            proCoSys4CheckList.IsVoided, 
-            proCoSys4CheckList.ProjectGuid)
+            pcs4CheckList.CheckListGuid, 
+            pcs4CheckList.ResponsibleCode, 
+            pcs4CheckList.IsVoided, 
+            pcs4CheckList.ProjectGuid)
     {
     }
 }

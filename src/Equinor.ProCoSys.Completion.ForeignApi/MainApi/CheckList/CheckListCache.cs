@@ -57,5 +57,5 @@ public class CheckListCache(
     }
 
     public static string CheckListGuidCacheKey(Guid checkListGuid)
-        => $"CHECKLIST_{checkListGuid.ToString().ToUpper()}";
+        => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";
 }

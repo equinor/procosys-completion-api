@@ -397,9 +397,36 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        var checkListNotRestricted = new ProCoSys4CheckList(CheckListGuidNotRestricted, ResponsibleCodeWithAccess, false, ProjectGuidWithAccess);
-        var checkListRestricted = new ProCoSys4CheckList(CheckListGuidRestricted, ResponsibleCodeWithoutAccess, false, ProjectGuidWithAccess);
-        var checkListInProjectWithoutAccess = new ProCoSys4CheckList(CheckListGuidInProjectWithoutAccess, ResponsibleCodeWithoutAccess, false, ProjectGuidWithoutAccess);
+        var checkListNotRestricted = new ProCoSys4CheckList(
+            CheckListGuidNotRestricted,
+            "FT",
+            ResponsibleCodeWithAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            false, 
+            ProjectGuidWithAccess);
+        var checkListRestricted = new ProCoSys4CheckList(
+            CheckListGuidRestricted,
+            "FT",
+            ResponsibleCodeWithoutAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            false, 
+            ProjectGuidWithAccess);
+        var checkListInProjectWithoutAccess = new ProCoSys4CheckList(
+            CheckListGuidInProjectWithoutAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            "FT",
+            ResponsibleCodeWithoutAccess, 
+            false, 
+            ProjectGuidWithoutAccess);
 
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(checkListNotRestricted);
@@ -419,13 +446,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         CheckListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidInProjectWithoutAccess)), Arg.Any<CancellationToken>())
             .Returns([checkListInProjectWithoutAccess]);
-
-        CheckListApiServiceMock.GetByPunchItemGuidAsync(PlantWithAccess, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(
-                new ChecklistsByPunchGuidInstance(
-                    new PICheckListDto(CheckListGuidNotRestricted, "projectA", string.Empty, string.Empty),
-                    new List<CheckListDto>() { new(Guid.NewGuid(), 3, 4, "ASD543", "OK") })
-            );
     }
 
     // Authenticated client without any roles

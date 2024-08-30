@@ -6,6 +6,7 @@ using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Query.DocumentQueries;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.DocumentQueries.DocumentSearch;
@@ -51,6 +52,30 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
         Assert.IsNotNull(result);
         Assert.AreEqual(ResultType.Ok, result.ResultType);
         Assert.AreEqual(1, result.Data.Count());
+    }
+    
+    [TestMethod]
+    public async Task Handle_ShouldReturnOnlyNonVoidedDocuments()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var voidedDocument = new Document(TestPlantA, Guid.NewGuid(), DocumentNo + "voided"){IsVoided = true};
+        context.Documents.Add(voidedDocument);
+        await context.SaveChangesAsync();
+        
+        var dut = new DocumentSearchQueryHandler(context);
+        DocumentSearchQuery query = new(DocumentNo);
+
+        // Act
+        var result = await dut.Handle(query, default);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        
+        Assert.AreEqual(1, result.Data.Count());
+        Assert.IsTrue(result.Data.First().No == DocumentNo);
     }
 }
 

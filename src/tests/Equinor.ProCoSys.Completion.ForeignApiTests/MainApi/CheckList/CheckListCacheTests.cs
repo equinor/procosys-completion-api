@@ -34,8 +34,26 @@ public class CheckListCacheTests
         _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
         _applicationOptionsMock.CurrentValue.Returns(new ApplicationOptions { CheckListCacheExpirationMinutes = 1 });
         _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-        _checkList1 = new ProCoSys4CheckList(_checkListGuid1, "RX", false, Guid.NewGuid());
-        _checkList2 = new ProCoSys4CheckList(_checkListGuid2, "RX", false, Guid.NewGuid());
+        _checkList1 = new ProCoSys4CheckList(
+            _checkListGuid1,
+            "FT1",
+            "RC1",
+            "TRC1",
+            "TRD1",
+            "TFC1",
+            "TFD1",
+            false, 
+            Guid.NewGuid());
+        _checkList2 = new ProCoSys4CheckList(
+            _checkListGuid2,
+            "FT2",
+            "RC2",
+            "TRC2",
+            "TRD2",
+            "TFC2",
+            "TFD2",
+            false, 
+            Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid1, Arg.Any<CancellationToken>()).Returns(_checkList1);
         _cacheManagerMock = Substitute.For<ICacheManager>();
 

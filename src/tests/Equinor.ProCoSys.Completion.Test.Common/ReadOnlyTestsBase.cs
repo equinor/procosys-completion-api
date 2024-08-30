@@ -17,6 +17,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using NSubstitute;
 using Azure.Core;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Equinor.ProCoSys.Completion.Test.Common;
 
@@ -202,18 +203,18 @@ public abstract class ReadOnlyTestsBase : TestsBase
         return document.Id;
     }
 
-    private void AddLabel(CompletionContext context, Label label)
+    private async Task AddLabel(CompletionContext context, Label label)
     {
         context.Labels.Add(label);
-        context.SaveChangesAsync().Wait();
+        await context.SaveChangesAsync();
     }
 
-    public void Add4UnorderedLabelsInclusiveAVoidedLabel(CompletionContext context)
-    {
-        AddLabel(context, new Label(LabelTextA));
-        AddLabel(context, new Label(LabelTextC));
-        AddLabel(context, new Label(LabelTextVoided) { IsVoided = true });
-        AddLabel(context, new Label(LabelTextB));
+    protected async Task Add4UnorderedLabelsInclusiveAVoidedLabel(CompletionContext context)
+    { 
+        await AddLabel(context, new Label(LabelTextA)); 
+        await AddLabel(context, new Label(LabelTextC)); 
+        await AddLabel(context, new Label(LabelTextVoided) { IsVoided = true }); 
+        await AddLabel(context, new Label(LabelTextB));
     }
 
     private void AddMailTemplate(CompletionContext context, MailTemplate mailTemplate)
