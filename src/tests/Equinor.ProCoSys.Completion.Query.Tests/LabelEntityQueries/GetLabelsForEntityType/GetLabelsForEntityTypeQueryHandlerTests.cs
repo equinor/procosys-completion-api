@@ -18,11 +18,11 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
     private readonly EntityTypeWithLabel _entityTypeWith3NonVoidedLabels = EntityTypeWithLabel.PunchComment;
     private readonly EntityTypeWithLabel _entityTypeWithoutLabels = EntityTypeWithLabel.PunchPicture;
 
-    protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
+    protected override async void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
         var labelA = context.Labels.Single(l => l.Text == LabelTextA);
         var labelB = context.Labels.Single(l => l.Text == LabelTextB);
         var labelC = context.Labels.Single(l => l.Text == LabelTextC);

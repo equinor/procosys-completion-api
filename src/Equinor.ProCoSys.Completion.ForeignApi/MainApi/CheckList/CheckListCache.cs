@@ -63,8 +63,8 @@ public class CheckListCache(
     }
 
     private static string CheckListGuidCacheKey(Guid checkListGuid)
-        => $"CHECKLIST_{checkListGuid.ToString().ToUpper()}";
+        => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";
 
     private static string CheckListBygTagAndPlantCacheKey(int tagId, string plant)
-        => $"CHECKLIST_tagId_{tagId}_plant_{plant}";
+        => $"CHKLIST_tagId_{tagId}_plant_{plant}";
 }

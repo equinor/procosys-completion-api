@@ -19,11 +19,11 @@ public class CommentServiceTests : ReadOnlyTestsBase
     private Comment _createdComment;
     private Guid _parentGuid;
 
-    protected override void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
+    protected override async void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
         using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
 
         var labelA = context.Labels.Single(l => l.Text == LabelTextA);
         var labelB = context.Labels.Single(l => l.Text == LabelTextB);

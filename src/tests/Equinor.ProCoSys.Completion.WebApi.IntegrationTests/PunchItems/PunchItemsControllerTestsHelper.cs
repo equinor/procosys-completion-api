@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
@@ -13,8 +12,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public static class PunchItemsControllerTestsHelper
 {
     private const string Route = "PunchItems";
-
-    public static TestFactory GetTestFactory() => TestFactory.Instance;
 
     public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
         UserType userType,
@@ -617,26 +614,6 @@ public static class PunchItemsControllerTestsHelper
             content, 
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             .AsReadOnly();
-    }
-
-    public static async Task<ChecklistsByPunchGuidInstance> GetCheckListsByPunchItemGuid(
-        UserType userType,
-        string plant,
-        Guid guid,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/CheckLists");
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (expectedStatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ChecklistsByPunchGuidInstance>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
     private static async Task<string> PostAsync(

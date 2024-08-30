@@ -33,6 +33,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
@@ -89,6 +91,8 @@ public static class ApplicationModule
         services.AddScoped<IAccessChecker, AccessChecker>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<ICheckListApiService, MainApiCheckListService>();
+        services.AddScoped<IResponsibleApiService, MainApiResponsibleService>();
+        services.AddScoped<ITagFunctionApiService, MainApiTagFunctionService>();
         services.AddScoped<ICheckListCache, CheckListCache>();
         services.AddScoped<IPersonApiService, MainApiPersonService>();
         services.AddScoped<IPersonCache, PersonCache>();

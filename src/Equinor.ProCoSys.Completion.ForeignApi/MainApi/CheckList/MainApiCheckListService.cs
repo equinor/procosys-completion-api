@@ -14,7 +14,6 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class MainApiCheckListService(
     IMainApiClientForApplication mainApiClientForApplication,
-    IMainApiClientForUser mainApiClientForUser,
     IOptionsMonitor<MainApiOptions> mainApiOptions,
     IOptionsMonitor<ApplicationOptions> applicationOptions)
     : ICheckListApiService
@@ -53,15 +52,15 @@ public class MainApiCheckListService(
         await mainApiClientForApplication.PostAsync(url, content, cancellationToken);
     }
 
-    public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
-    {
-        var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
-                  $"?plantId={plant}" +
-                  $"&proCoSysGuid={punchItemGuid:N}" +
-                  $"&api-version={_apiVersion}";
-
-        return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
-    }
+    // public async Task<ChecklistsByPunchGuidInstance> GetByPunchItemGuidAsync(string plant, Guid punchItemGuid, CancellationToken cancellationToken)
+    // {
+    //     var url = $"{_baseAddress}CheckList/ByPunchItemGuid" +
+    //               $"?plantId={plant}" +
+    //               $"&proCoSysGuid={punchItemGuid:N}" +
+    //               $"&api-version={_apiVersion}";
+    //
+    //     return await mainApiClientForUser.TryQueryAndDeserializeAsync<ChecklistsByPunchGuidInstance>(url, cancellationToken);
+    // }
 
     public async Task<TagCheckList[]> GetCheckListsByTagIdAndPlantAsync(int tagId, string plant, CancellationToken cancellationToken)
     {
