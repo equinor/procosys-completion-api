@@ -159,7 +159,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {

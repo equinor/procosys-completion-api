@@ -402,7 +402,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         await _dut.Handle(_commandWithoutCopyAttachments, CancellationToken.None);
 
         // Assert
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatusForMany(
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatusForManyAsync(
             TestPlantA, 
             Arg.Is<List<Guid>>(guids => guids.Count == 2 && 
                                         guids.Contains(_checkListGuid1) && 
@@ -503,7 +503,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _checkListApiServiceMock.DidNotReceive()
-            .RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>());
+            .RecalculateCheckListStatusForManyAsync(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -518,7 +518,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _checkListApiServiceMock.DidNotReceive()
-            .RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>());
+            .RecalculateCheckListStatusForManyAsync(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -540,7 +540,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     {
         // Arrange
         _checkListApiServiceMock
-            .When(x => x.RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>()))
+            .When(x => x.RecalculateCheckListStatusForManyAsync(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>()))
             .Do(_ => throw new Exception("RecalculateCheckListStatusForMany error"));
 
         // Act
@@ -573,7 +573,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     {
         // Arrange
         _checkListApiServiceMock
-            .When(x => x.RecalculateCheckListStatusForMany(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>()))
+            .When(x => x.RecalculateCheckListStatusForManyAsync(Arg.Any<string>(), Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>()))
             .Do(_ => throw new Exception("RecalculateCheckListStatusForMany error"));
 
         // Act and Assert

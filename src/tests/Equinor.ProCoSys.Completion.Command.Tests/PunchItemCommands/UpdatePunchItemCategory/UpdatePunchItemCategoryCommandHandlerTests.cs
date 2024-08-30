@@ -140,7 +140,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandTestsB
 
         // Assert
         var punchItem = await _punchItemRepositoryMock.GetAsync(_command.PunchItemGuid, default);
-        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatus(TestPlantA, punchItem.CheckListGuid, default);
+        await _checkListApiServiceMock.Received(1).RecalculateCheckListStatusAsync(TestPlantA, punchItem.CheckListGuid, default);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandTestsB
         });
 
         // Assert
-        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandTestsB
         await _dut.Handle(_command, default);
 
         // Assert
-        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default);
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public class UpdatePunchItemCategoryCommandHandlerTests : PunchItemCommandTestsB
     public async Task HandlingCommand_ShouldNotThrowError_WhenRecalculatingFails()
     {
         // Arrange
-        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default))
+        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default))
             .Do(_ => throw new Exception("RecalculateCheckListStatus error"));
 
         // Act and Assert

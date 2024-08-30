@@ -20,11 +20,11 @@ public interface ICheckListApiService
         int? currentPage,
         int? itemsPerPage,
         CancellationToken cancellationToken);
-
-    // todo rename with Async prefix
-    Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken);
     // Do not pass plant to the GET endpoint for many checklists in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
     Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken);
-    // todo rename with Async prefix
-    Task RecalculateCheckListStatusForMany(string plant, List<Guid> checkListGuids, CancellationToken cancellationToken);
+
+    // Recalculate endpoints MUST have plant due to VPD in PCS4 Database
+    Task RecalculateCheckListStatusAsync(string plant, Guid checkListGuid, CancellationToken cancellationToken);
+    // Recalculate endpoints MUST have plant due to VPD in PCS4 Database
+    Task RecalculateCheckListStatusForManyAsync(string plant, List<Guid> checkListGuids, CancellationToken cancellationToken);
 }

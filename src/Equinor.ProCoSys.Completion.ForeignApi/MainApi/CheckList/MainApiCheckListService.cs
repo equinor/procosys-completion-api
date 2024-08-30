@@ -35,7 +35,7 @@ public class MainApiCheckListService(
         return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
     }
 
-    public async Task RecalculateCheckListStatus(string plant, Guid checkListGuid, CancellationToken cancellationToken)
+    public async Task RecalculateCheckListStatusAsync(string plant, Guid checkListGuid, CancellationToken cancellationToken)
     {
         if (!_recalculateStatusInPcs4)
         {
@@ -95,7 +95,7 @@ public class MainApiCheckListService(
         return checkLists;
     }
 
-    public async Task RecalculateCheckListStatusForMany(string plant, List<Guid> checkListGuids,
+    public async Task RecalculateCheckListStatusForManyAsync(string plant, List<Guid> checkListGuids,
         CancellationToken cancellationToken)
     {
         if (!_recalculateStatusInPcs4)

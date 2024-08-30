@@ -121,7 +121,7 @@ public class DuplicatePunchItemCommandHandler(
 
         try
         {
-            await checkListApiService.RecalculateCheckListStatusForMany(punchItem.Plant, request.CheckListGuids, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatusForManyAsync(punchItem.Plant, request.CheckListGuids, cancellationToken);
         }
         catch (Exception e)
         {
