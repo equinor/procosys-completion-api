@@ -279,17 +279,15 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             .Returns(Task.FromResult(testUser.Restrictions));
     }
 
-    public void SetupBlobStorageMock(Uri uri) 
-    {
-        BlobStorageMock.GetDownloadSasUri(
-            Arg.Any<string>(), 
-            Arg.Any<string>(), 
-            Arg.Any<DateTimeOffset>(), 
-            Arg.Any<DateTimeOffset>(), 
-            Arg.Any<string>(), 
-            Arg.Any<string>())
+    public void SetupBlobStorageMock(Uri uri)
+        => BlobStorageMock.GetDownloadSasUri(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<string>(),
+                Arg.Any<string>())
             .Returns(uri);
-    }
 
     private void SetupTestUsers()
     {
@@ -492,6 +490,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 Permissions =
                 [
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ,
                     Permissions.USER_READ,
                     Permissions.WO_READ,
@@ -530,6 +529,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ,
                     Permissions.USER_READ
                 ],
@@ -563,6 +563,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ
                 ],
                 AccessableProjects = accessableProjects,

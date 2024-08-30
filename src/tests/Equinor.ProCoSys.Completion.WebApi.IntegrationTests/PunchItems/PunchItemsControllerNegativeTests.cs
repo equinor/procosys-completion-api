@@ -1962,68 +1962,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.NotFound);
     #endregion
 
-    #region GetPunchItemsByCheckListGuid
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Anonymous,
-            TestFactory.Unknown,
-            _checkListGuidUnderTest,
-            HttpStatusCode.Unauthorized);
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.NoPermissionUser,
-            TestFactory.Unknown,
-            _checkListGuidUnderTest,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Writer,
-            TestFactory.Unknown,
-            _checkListGuidUnderTest,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.NoPermissionUser,
-            TestFactory.PlantWithoutAccess,
-            _checkListGuidUnderTest,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Writer,
-            TestFactory.PlantWithoutAccess,
-            _checkListGuidUnderTest,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            Guid.NewGuid(),
-            HttpStatusCode.NotFound);
-
-    [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldReturnForbidden_WhenNoAccessToProjectForCheckList()
-        => await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Reader,
-            TestFactory.PlantWithAccess,
-            TestFactory.CheckListGuidInProjectWithoutAccess,
-            HttpStatusCode.Forbidden);
-
-    #endregion
-
-
     #region DuplicatePunchItem
     [TestMethod]
     public async Task DuplicatePunchItem_AsAnonymous_ShouldReturnUnauthorized()

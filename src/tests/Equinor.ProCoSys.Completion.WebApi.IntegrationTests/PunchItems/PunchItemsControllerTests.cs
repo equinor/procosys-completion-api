@@ -883,20 +883,6 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldGetPunchItems()
-    {
-        // Act
-        var punchItems = await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Reader,
-            TestFactory.PlantWithAccess,
-            TestFactory.CheckListGuidNotRestricted
-            );
-
-        // Assert
-        Assert.IsTrue(0 < punchItems.Count);
-    }
-
-    [TestMethod]
     public async Task DuplicatePunchItem_AsWriter_ShouldDuplicateWithoutAttachments()
     {
         // Arrange

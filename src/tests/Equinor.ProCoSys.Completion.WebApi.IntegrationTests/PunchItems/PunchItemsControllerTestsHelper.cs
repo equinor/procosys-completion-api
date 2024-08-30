@@ -623,29 +623,6 @@ public static class PunchItemsControllerTestsHelper
         return JsonSerializer.Deserialize<List<HistoryDto>>(content, s_jsonSerializerOptions);
     }
 
-    public static async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetPunchItemsByCheckListGuid(
-        UserType userType,
-        string plant,
-        Guid checkListGuid,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/CheckList/{checkListGuid}");
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (expectedStatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<PunchItemDetailsDto>>(
-            content, 
-            s_jsonSerializerOptions)
-            .AsReadOnly();
-    }
-
     private static async Task<string> PostAsync(
         UserType userType,
         string plant,
