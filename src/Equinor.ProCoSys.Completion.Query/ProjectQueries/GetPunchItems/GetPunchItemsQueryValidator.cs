@@ -4,11 +4,11 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
-namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 
-public class GetPunchItemsInProjectQueryValidator : AbstractValidator<GetPunchItemsInProjectQuery>
+public class GetPunchItemsQueryValidator : AbstractValidator<GetPunchItemsQuery>
 {
-    public GetPunchItemsInProjectQueryValidator(IProjectValidator projectValidator)
+    public GetPunchItemsQueryValidator(IProjectValidator projectValidator)
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         ClassLevelCascadeMode = CascadeMode.Stop;
@@ -18,7 +18,7 @@ public class GetPunchItemsInProjectQueryValidator : AbstractValidator<GetPunchIt
             .WithMessage(query => $"Project with this guid does not exist! Guid={query.ProjectGuid}")
             .WithState(_ => new EntityNotFoundException());
 
-        async Task<bool> BeAnExistingProjectAsync(GetPunchItemsInProjectQuery query, CancellationToken cancellationToken)
+        async Task<bool> BeAnExistingProjectAsync(GetPunchItemsQuery query, CancellationToken cancellationToken)
             => await projectValidator.ExistsAsync(query.ProjectGuid, cancellationToken);
     }
 }

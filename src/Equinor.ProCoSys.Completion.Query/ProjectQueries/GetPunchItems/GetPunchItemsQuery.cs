@@ -4,10 +4,9 @@ using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 
-// todo move to namespace Equinor.ProCoSys.Completion.Query.ProjectQueries. and move endpoint to ProjectController
-public class GetPunchItemsInProjectQuery(Guid projectGuid)
+public class GetPunchItemsQuery(Guid projectGuid)
     : INeedProjectAccess, IRequest<Result<IEnumerable<PunchItemDto>>>
 {
     public Guid ProjectGuid { get; } = projectGuid;

@@ -11,6 +11,11 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public static class TestsHelper
 {
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public static async Task AssertResponseAsync(
         HttpResponseMessage response, 
         HttpStatusCode expectedStatusCode,

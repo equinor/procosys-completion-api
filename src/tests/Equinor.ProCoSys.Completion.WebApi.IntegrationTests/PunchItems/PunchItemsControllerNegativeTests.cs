@@ -80,67 +80,6 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.NotFound);
     #endregion
 
-    #region GetAllPunchItemsInProject
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsAnonymous_ShouldReturnUnauthorized()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.Anonymous,
-            TestFactory.Unknown,
-            Guid.Empty,
-            HttpStatusCode.Unauthorized);
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.NoPermissionUser,
-            TestFactory.Unknown,
-            Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.Writer,
-            TestFactory.Unknown,
-            Guid.Empty,
-            HttpStatusCode.BadRequest,
-            "is not a valid plant");
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.NoPermissionUser,
-            TestFactory.PlantWithoutAccess,
-            Guid.Empty,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.Writer,
-            TestFactory.PlantWithoutAccess,
-            Guid.Empty,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnForbidden_WhenNoAccessToProject()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            TestFactory.ProjectGuidWithoutAccess,
-            HttpStatusCode.Forbidden);
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsWriter_ShouldReturnNotFound_WhenUnknownProject()
-        => await PunchItemsControllerTestsHelper.GetAllPunchItemsInProjectAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            Guid.NewGuid(),
-            HttpStatusCode.NotFound);
-
-    #endregion
-
     #region CreatePunchItem
     [TestMethod]
     public async Task CreatePunchItem_AsAnonymous_ShouldReturnUnauthorized()

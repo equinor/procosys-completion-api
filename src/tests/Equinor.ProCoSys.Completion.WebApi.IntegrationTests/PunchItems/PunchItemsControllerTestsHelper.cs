@@ -11,7 +11,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
 public static class PunchItemsControllerTestsHelper
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private const string Route = "PunchItems";
 
     public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
@@ -31,7 +30,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<List<LinkDto>> GetPunchItemLinksAsync(
@@ -51,34 +50,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<LinkDto>>(content, s_jsonSerializerOptions);
-    }
-
-    public static async Task<List<PunchItemDto>> GetAllPunchItemsInProjectAsync(
-        UserType userType,
-        string plant,
-        Guid projectGuid,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var parameters = new ParameterCollection
-        {
-            { "projectGuid", projectGuid.ToString() },
-            { "includeVoided", "true" }
-        };
-        var url = $"{Route}{parameters}";
-
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync(url);
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (expectedStatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<PunchItemDto>>(content, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<List<LinkDto>>(content, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
@@ -128,7 +100,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<List<GuidAndRowVersion>> DuplicatePunchItemAsync(
@@ -157,7 +129,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<GuidAndRowVersion>>(jsonString, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<List<GuidAndRowVersion>>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemLinkAsync(
@@ -186,7 +158,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemCommentAsync(
@@ -217,7 +189,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
 
@@ -238,7 +210,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<AttachmentDto>>(content, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<List<AttachmentDto>>(content, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<string> GetPunchItemAttachmentDownloadUrlAsync(
@@ -279,7 +251,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<string> OverwriteExistingPunchItemAttachmentAsync(
@@ -600,7 +572,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<CommentDto>>(content, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<List<CommentDto>>(content, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<List<HistoryDto>> GetPunchItemHistoryAsync(
@@ -620,7 +592,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<HistoryDto>>(content, s_jsonSerializerOptions);
+        return JsonSerializer.Deserialize<List<HistoryDto>>(content, TestsHelper.JsonSerializerOptions);
     }
 
     private static async Task<string> PostAsync(

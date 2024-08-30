@@ -5,16 +5,16 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Infrastructure;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
+using Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.Tests.ProjectQueries.GetPunchItems;
 
 [TestClass]
-public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
+public class GetPunchItemsQueryHandlerTests : ReadOnlyTestsBase
 {
     private readonly string _testPlant = TestPlantA;
     private PunchItem _punchItemInProjectA;
@@ -45,8 +45,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var query = new GetPunchItemsInProjectQuery(Guid.Empty);
-        var dut = new GetPunchItemsInProjectQueryHandler(context);
+        var query = new GetPunchItemsQuery(Guid.Empty);
+        var dut = new GetPunchItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);
@@ -63,8 +63,8 @@ public class GetPunchItemsInProjectQueryHandlerTests : ReadOnlyTestsBase
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        var query = new GetPunchItemsInProjectQuery(_projectA.Guid);
-        var dut = new GetPunchItemsInProjectQueryHandler(context);
+        var query = new GetPunchItemsQuery(_projectA.Guid);
+        var dut = new GetPunchItemsQueryHandler(context);
 
         // Act
         var result = await dut.Handle(query, default);

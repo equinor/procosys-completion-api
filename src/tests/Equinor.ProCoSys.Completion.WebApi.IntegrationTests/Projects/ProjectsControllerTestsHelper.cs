@@ -4,13 +4,13 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.CheckLists;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Projects;
 
-public class CheckListsControllerTestsHelper
+public class ProjectsControllerTestsHelper
 {
-    private const string Route = "CheckLists";
+    private const string Route = "Projects";
 
-    public static async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetPunchItemsAsync(
+    public static async Task<List<PunchItemDto>> GetAllPunchItemsAsync(
         UserType userType,
         string plant,
         Guid guid,
@@ -27,9 +27,6 @@ public class CheckListsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<PunchItemDetailsDto>>(
-                content,
-                TestsHelper.JsonSerializerOptions)
-            .AsReadOnly();
+        return JsonSerializer.Deserialize<List<PunchItemDto>>(content, TestsHelper.JsonSerializerOptions);
     }
 }

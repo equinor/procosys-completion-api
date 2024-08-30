@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common;
+using Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
@@ -56,6 +58,28 @@ public class ProjectsController(IMediator mediator) : ControllerBase
             formularType,
             currentPage,
             itemsPerPage), cancellationToken);
+        return this.FromResult(result);
+    }
+
+    /// <summary>
+    /// Get all PunchItems in project (no filtering available yet)
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid of project where to search</param>
+    /// <returns>List of PunchItems (or empty list)</returns>
+    /// <response code="404">Project not found</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
+    [HttpGet("{guid}/PunchItems")]
+    public async Task<ActionResult<IEnumerable<PunchItemDto>>> GetPunchItems(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [Required][FromRoute] Guid guid)
+    {
+        var result = await mediator.Send(new GetPunchItemsQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 }
