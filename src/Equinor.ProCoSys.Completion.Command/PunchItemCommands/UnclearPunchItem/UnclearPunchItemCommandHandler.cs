@@ -67,7 +67,7 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await _checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {

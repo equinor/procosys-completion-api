@@ -11,6 +11,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 
 public static class PunchItemsControllerTestsHelper
 {
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private const string Route = "PunchItems";
 
     public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
@@ -30,7 +31,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<List<LinkDto>> GetPunchItemLinksAsync(
@@ -50,7 +51,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<LinkDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<LinkDto>>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<List<PunchItemDto>> GetAllPunchItemsInProjectAsync(
@@ -77,7 +78,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<PunchItemDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<PunchItemDto>>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
@@ -127,7 +128,36 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
+    }
+
+    public static async Task<List<GuidAndRowVersion>> DuplicatePunchItemAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        List<Guid> checkListGuids,
+        bool duplicateAttachments,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var bodyPayload = new
+        {
+            checkListGuids,
+            duplicateAttachments
+        };
+
+        var serializePayload = JsonSerializer.Serialize(bodyPayload);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Duplicate", content);
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var jsonString = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<GuidAndRowVersion>>(jsonString, s_jsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemLinkAsync(
@@ -156,7 +186,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemCommentAsync(
@@ -187,7 +217,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
     }
 
 
@@ -208,7 +238,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<AttachmentDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<AttachmentDto>>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<string> GetPunchItemAttachmentDownloadUrlAsync(
@@ -249,7 +279,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, s_jsonSerializerOptions);
     }
 
     public static async Task<string> OverwriteExistingPunchItemAttachmentAsync(
@@ -570,7 +600,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<CommentDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<CommentDto>>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<List<HistoryDto>> GetPunchItemHistoryAsync(
@@ -590,7 +620,7 @@ public static class PunchItemsControllerTestsHelper
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<HistoryDto>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<List<HistoryDto>>(content, s_jsonSerializerOptions);
     }
 
     public static async Task<IReadOnlyCollection<PunchItemDetailsDto>> GetPunchItemsByCheckListGuid(
@@ -612,7 +642,7 @@ public static class PunchItemsControllerTestsHelper
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<PunchItemDetailsDto>>(
             content, 
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            s_jsonSerializerOptions)
             .AsReadOnly();
     }
 

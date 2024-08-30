@@ -137,7 +137,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _checkListApiServiceMock.Received(1)
-            .RecalculateCheckListStatus(TestPlantA, _command.PunchItem.CheckListGuid, default);
+            .RecalculateCheckListStatusAsync(TestPlantA, _command.PunchItem.CheckListGuid, default);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
         });
 
         // Assert
-        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
         await _dut.Handle(_command, default);
 
         // Assert
-        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default);
+        await _checkListApiServiceMock.DidNotReceive().RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default);
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public class UnclearPunchItemCommandHandlerTests : PunchItemCommandTestsBase
     public async Task HandlingCommand_ShouldNotThrowError_WhenRecalculatingFails()
     {
         // Arrange
-        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatus(Arg.Any<string>(), Arg.Any<Guid>(), default))
+        _checkListApiServiceMock.When(x => x.RecalculateCheckListStatusAsync(Arg.Any<string>(), Arg.Any<Guid>(), default))
             .Do(_ => throw new Exception("RecalculateCheckListStatus error"));
 
         // Act and Assert

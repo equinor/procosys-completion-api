@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
@@ -73,19 +75,10 @@ public class PrefetchBehavior<TRequest, TResponse>(
 
         else if (request is IIsCheckListQuery checkListQuery)
         {
-            var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
-            if (proCoSys4CheckList is not null)
+            var pcs4CheckList = await checkListCache.GetCheckListAsync(checkListQuery.CheckListGuid, cancellationToken);
+            if (pcs4CheckList is not null)
             {
-                checkListQuery.CheckListDetailsDto =
-                    new CheckListQueryDetailsDto(
-                        checkListQuery.CheckListGuid,
-                        proCoSys4CheckList.FormularType,
-                        proCoSys4CheckList.ResponsibleCode,
-                        proCoSys4CheckList.TagRegisterCode,
-                        proCoSys4CheckList.TagRegisterDescription,
-                        proCoSys4CheckList.TagFunctionCode,
-                        proCoSys4CheckList.TagFunctionDescription,
-                        proCoSys4CheckList.ProjectGuid);
+                checkListQuery.CheckListDetailsDto = new CheckListQueryDetailsDto(pcs4CheckList);
             }
             else
             {
@@ -98,20 +91,39 @@ public class PrefetchBehavior<TRequest, TResponse>(
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
             var checkListGuid = checkListRequest.GetCheckListGuidForWriteAccessCheck();
-            var proCoSys4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
-            if (proCoSys4CheckList is not null)
+            var pcs4CheckList = await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+            if (pcs4CheckList is not null)
             {
-                checkListRequest.CheckListDetailsDto =
-                    new CheckListCommandDetailsDto(
-                        checkListGuid,
-                        proCoSys4CheckList.ResponsibleCode,
-                        proCoSys4CheckList.IsVoided,
-                        proCoSys4CheckList.ProjectGuid);
+                checkListRequest.CheckListDetailsDto = new CheckListCommandDetailsDto(pcs4CheckList);
             }
             else
             {
                 // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
                 throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListGuid}");
+            }
+        }
+
+        // This check must come AFTER prefetching PunchList. GetCheckListGuidForWriteAccessCheck() uses PunchList
+        if (request is ICanHaveRestrictionsViaManyCheckLists checkListsRequest)
+        {
+            var checkListGuids = checkListsRequest.GetCheckListGuidsForWriteAccessCheck();
+            var pcs4CheckLists = await checkListCache.GetManyCheckListsAsync(checkListGuids, cancellationToken);
+
+            checkListsRequest.CheckListDetailsDtoList = new();
+
+            foreach (var checkListGuid in checkListGuids)
+            {
+                var pcs4CheckList = pcs4CheckLists.SingleOrDefault(c => c.CheckListGuid == checkListGuid);
+
+                if (pcs4CheckList is not null)
+                {
+                    checkListsRequest.CheckListDetailsDtoList.Add(new CheckListCommandDetailsDto(pcs4CheckList));
+                }
+                else
+                {
+                    // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
+                    throw new BadRequestException($"Check list with this guid does not exist! Guid={checkListGuid}");
+                }
             }
         }
 

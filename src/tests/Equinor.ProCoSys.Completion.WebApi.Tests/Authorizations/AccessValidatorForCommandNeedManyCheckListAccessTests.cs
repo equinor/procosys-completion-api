@@ -1,12 +1,12 @@
-﻿using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Command;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public abstract class AccessValidatorForCommandNeedAccessTests<TCommand> : AccessValidatorTestBase
-    where TCommand : INeedProjectAccess, IBaseRequest
+public abstract class AccessValidatorForCommandNeedManyCheckListAccessTests<TCommand> : AccessValidatorTestBase
+    where TCommand : ICanHaveRestrictionsViaManyCheckLists, IBaseRequest
 {
     protected abstract TCommand GetCommandWithAccessToBothProjectAndContent();
     protected abstract TCommand GetCommandWithAccessToProjectButNotContent();

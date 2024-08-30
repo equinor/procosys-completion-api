@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Domain;
@@ -40,11 +41,21 @@ public class AccessValidator(
 
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {
-            var checkListDetailsDto = checkListRequest.CheckListDetailsDto;
-            if (!accessChecker.HasCurrentUserWriteAccessToCheckList(checkListDetailsDto))
+            if (!accessChecker.HasCurrentUserWriteAccessToCheckList(checkListRequest.CheckListDetailsDto))
             {
                 logger.LogWarning("Current user {UserOid} doesn't have write access to checkList {CheckListGuid} or other data pertaining to this checklist",
-                    userOid, checkListDetailsDto.CheckListGuid);
+                    userOid, checkListRequest.CheckListDetailsDto.CheckListGuid);
+                return false;
+            }
+        }
+
+        if (request is ICanHaveRestrictionsViaManyCheckLists checkListsRequest)
+        {
+            if (!accessChecker.HasCurrentUserWriteAccessToAllCheckLists(checkListsRequest.CheckListDetailsDtoList))
+            {
+                var checkListGuids = checkListsRequest.CheckListDetailsDtoList.Select(c => c.CheckListGuid);
+                logger.LogWarning("Current user {UserOid} doesn't have write access to all checkList {CheckListGuids} or other data pertaining to these checklists",
+                    userOid, string.Join(",", checkListGuids));
                 return false;
             }
         }

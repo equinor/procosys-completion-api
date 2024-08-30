@@ -33,7 +33,6 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = new();
-    private readonly List<IDisposable> _disposables = new();
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
@@ -51,7 +50,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
     public static Guid CheckListGuidNotRestricted => KnownData.CheckListGuidA[KnownData.PlantA];
     public static Guid CheckListGuidRestricted => KnownData.CheckListGuidB[KnownData.PlantA];
-    public static Guid CheckListGuidRestrictedProject => KnownData.CheckListGuidB[KnownData.PlantB];
+    public static Guid CheckListGuidInProjectWithoutAccess => KnownData.CheckListGuidB[KnownData.PlantB];
     public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
     public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
     public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
@@ -131,11 +130,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         foreach (var testUser in _testUsers)
         {
             testUser.Value.HttpClient.Dispose();
-        }
-            
-        foreach (var disposable in _disposables)
-        {
-            try { disposable.Dispose(); } catch { /* Ignore */ }
         }
             
         lock (s_padlock)
@@ -263,20 +257,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 
             dbContext.Database.EnsureDeleted();
         });
-
-    private CompletionContext DatabaseContext(IServiceCollection services)
-    {
-        services.AddDbContext<CompletionContext>(options 
-            => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
-
-        var sp = services.BuildServiceProvider();
-        _disposables.Add(sp);
-
-        var spScope = sp.CreateScope();
-        _disposables.Add(spScope);
-
-        return spScope.ServiceProvider.GetRequiredService<CompletionContext>();
-    }
 
     private string GetTestDbConnectionString(string projectDir)
     {
@@ -417,39 +397,55 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
+        var checkListNotRestricted = new ProCoSys4CheckList(
+            CheckListGuidNotRestricted,
+            "FT",
+            ResponsibleCodeWithAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            false, 
+            ProjectGuidWithAccess);
+        var checkListRestricted = new ProCoSys4CheckList(
+            CheckListGuidRestricted,
+            "FT",
+            ResponsibleCodeWithoutAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            false, 
+            ProjectGuidWithAccess);
+        var checkListInProjectWithoutAccess = new ProCoSys4CheckList(
+            CheckListGuidInProjectWithoutAccess,
+            "TRC",
+            "TRD",
+            "TFC",
+            "TFD",
+            "FT",
+            ResponsibleCodeWithoutAccess, 
+            false, 
+            ProjectGuidWithoutAccess);
+
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidNotRestricted,
-                "FT", 
-                ResponsibleCodeWithAccess, 
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithAccess));
+            .Returns(checkListNotRestricted);
         CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidRestricted,
-                "FT",
-                ResponsibleCodeWithoutAccess,
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidRestrictedProject,
-                "FT",
-                ResponsibleCodeWithoutAccess,
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithoutAccess));
+            .Returns(checkListRestricted);
+        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidInProjectWithoutAccess, Arg.Any<CancellationToken>())
+            .Returns(checkListInProjectWithoutAccess);
+
+        CheckListApiServiceMock.GetManyCheckListsAsync(Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidNotRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListNotRestricted]);
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListRestricted]);
+        CheckListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidInProjectWithoutAccess)), Arg.Any<CancellationToken>())
+            .Returns([checkListInProjectWithoutAccess]);
     }
 
     // Authenticated client without any roles
