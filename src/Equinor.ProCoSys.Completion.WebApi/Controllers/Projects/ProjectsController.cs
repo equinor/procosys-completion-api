@@ -12,8 +12,9 @@ using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Projects;
 
+// todo create integration tests
 [ApiController]
-[Route("CheckLists")]
+[Route("Projects")]
 public class ProjectsController(IMediator mediator) : ControllerBase
 {
     /// <summary>
