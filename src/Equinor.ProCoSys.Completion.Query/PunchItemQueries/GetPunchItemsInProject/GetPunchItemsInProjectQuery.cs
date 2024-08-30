@@ -6,6 +6,7 @@ using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 
+// todo move to namespace Equinor.ProCoSys.Completion.Query.ProjectQueries. and move endpoint to ProjectController
 public class GetPunchItemsInProjectQuery(Guid projectGuid)
     : INeedProjectAccess, IRequest<Result<IEnumerable<PunchItemDto>>>
 {
