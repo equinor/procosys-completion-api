@@ -15,6 +15,7 @@ using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.CheckLists;
 
+// todo create integration tests
 [ApiController]
 [Route("CheckLists")]
 public class CheckListsController(IMediator mediator) : ControllerBase

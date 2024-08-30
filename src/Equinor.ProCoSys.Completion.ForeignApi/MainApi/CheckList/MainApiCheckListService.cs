@@ -113,4 +113,53 @@ public class MainApiCheckListService(
         // a special role "Checklist.RecalcStatus", which the Azure application registration has
         await mainApiClientForApplication.PostAsync(url, content, cancellationToken);
     }
+
+    public async Task<ProCoSys4CheckListSearchResult> SearchCheckListsAsync(
+        Guid projectGuid,
+        string? tagNoContains,
+        string? responsibleCode,
+        string? tagRegisterCode,
+        string? tagFunctionCode,
+        string? formularType,
+        int? currentPage,
+        int? itemsPerPage,
+        CancellationToken cancellationToken)
+    {
+        var url = $"{_baseAddress}CheckList/ForProCoSys5/Search" +
+                  $"?projectGuid={projectGuid:N}" +
+                  $"&api-version={_apiVersion}";
+        if (tagNoContains is not null)
+        {
+            url += $"&tagNoContains={tagNoContains}";
+        }
+        if (responsibleCode is not null)
+        {
+            url += $"&responsibleCode={responsibleCode}";
+        }
+        if (tagRegisterCode is not null)
+        {
+            url += $"&tagRegisterCode={tagRegisterCode}";
+        }
+        if (tagFunctionCode is not null)
+        {
+            url += $"&tagFunctionCode={tagFunctionCode}";
+        }
+        if (formularType is not null)
+        {
+            url += $"&formularType={formularType}";
+        }
+        if (currentPage.HasValue)
+        {
+            url += $"&currentPage={currentPage.Value}";
+        }
+        if (itemsPerPage.HasValue)
+        {
+            url += $"&itemsPerPage={itemsPerPage.Value}";
+        }
+
+        // Execute as application. The search endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        return await mainApiClientForApplication
+            .QueryAndDeserializeAsync<ProCoSys4CheckListSearchResult>(url, cancellationToken);
+    }
 }
