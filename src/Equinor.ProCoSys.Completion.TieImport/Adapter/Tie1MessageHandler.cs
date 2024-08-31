@@ -30,6 +30,14 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
         logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid,
             message.Message.Site);
 
+        if (message.Message.ObjectType != "PUNCHITEM")
+        {
+            return new MessageHandleResult<Tie1Receipt>
+            {
+                Receipt = Tie1Receipt.Create(message.Message, ReceiptStatus.Filtered, "Invalid object type.")
+            };
+        }
+
         var response = await importHandler.Handle(message.Message);
         var result = response.Results.Single();
 
