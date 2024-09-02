@@ -7,6 +7,9 @@ public static class TiObjectExtensions
 {
     public static string? GetAttributeValueAsString(this TIBaseObject tiObject, string attributeName) =>
         tiObject.GetAttributeCaseInsensitive(attributeName)?.GetValueAsString();
+    
+    public static int? GetAttributeValueAsInt(this TIBaseObject tiObject, string attributeName) =>
+        tiObject.GetAttributeCaseInsensitive(attributeName)?.GetValue<int?>();
 
     private static TIAttribute? GetAttributeCaseInsensitive(this TIBaseObject tiObject, string attributeName)
         => tiObject.Attributes?.SingleOrDefault(a => a.Name.Equals(attributeName, StringComparison.InvariantCultureIgnoreCase));

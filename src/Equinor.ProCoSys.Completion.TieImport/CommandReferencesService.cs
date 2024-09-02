@@ -9,13 +9,10 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class CommandReferencesService(PlantScopedImportDataContext context)
 {
-    public CreatePunchReferences GetCreatePunchItemReferences(PunchItemImportMessage message)
+    public ICommandReferences GetCreatePunchItemReferences(PunchItemImportMessage message)
     {
         var references = new CreatePunchReferences();
-
-        references = (CreatePunchReferences)SetInterfaceReferences(message, references);
-
-        return references;
+        return SetInterfaceReferences(message, references);
     }
 
     public UpdatePunchReferences GetUpdatePunchItemReferences(PunchItemImportMessage message)
@@ -193,8 +190,14 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         return references;
     }
 
-    public PunchItem? GetPunchItem(PunchItemImportMessage message) =>
-        context.PunchItems
+    public PunchItem? GetPunchItem(PunchItemImportMessage message)
+    {
+        if (message.PunchItemNo is { HasValue: true, Value: not null })
+        {
+            return context.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
+
+        }
+        return context.PunchItems
             .SingleOrDefault(x =>
                 x.ExternalItemNo == message.ExternalPunchItemNo &&
                 x.Plant == message.TiObject.Site &&
@@ -203,4 +206,5 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
                                             c.Plant == x.Plant &&
                                             c.ProCoSysGuid == x.CheckListGuid)
             );
+    }
 }

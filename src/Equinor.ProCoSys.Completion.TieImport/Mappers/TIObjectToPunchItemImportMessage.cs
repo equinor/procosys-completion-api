@@ -1,6 +1,5 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Statoil.TI.InterfaceServices.Message;
@@ -57,6 +56,11 @@ public static class TiObjectToPunchItemImportMessage
         tiObject.Attributes.Any(a => a.Name == attribute)
             ? new Optional<string?>(tiObject.GetAttributeValueAsString(attribute))
             : new Optional<string?>();
+    
+    private static int? GetIntValue(TIObject tiObject, string attribute) =>
+        tiObject.Attributes.Any(a => a.Name == attribute)
+            ? tiObject.GetAttributeValueAsInt(attribute)
+            : null;
 
     private static Optional<DateTime?> GetDateValue(TIObject tiObject, string attribute)
     {
