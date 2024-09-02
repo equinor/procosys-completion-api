@@ -66,7 +66,7 @@ public static class TestHelper
         return types;
     }
 
-    public static List<Type> GetClassesInheritsBaseClass(string assemblyName, Type baseClass)
+    public static List<Type> GetClassesInheritsBaseClass(string assemblyName, Type baseClass, Type excludedInterface)
     {
         var assembly =
             AppDomain.CurrentDomain.GetAssemblies()
@@ -78,7 +78,8 @@ public static class TestHelper
                 .Where(t =>
                     IsAEquinorType(t) &&
                     !t.IsAbstract &&
-                    t.IsAssignableTo(baseClass))
+                    t.IsAssignableTo(baseClass)&&
+                    !t.IsAssignableTo(excludedInterface))
                 .ToList();
         return types;
     }
