@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Projects;
@@ -7,13 +8,25 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Projects;
 public class ProjectsControllerTests : TestBase
 {
     [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsReader_ShouldGetPunchItems()
+    public async Task GetAllPunchItemsAsync_AsReader_ShouldGetPunchItems()
     {
         // Act
         var punchItems = await ProjectsControllerTestsHelper
             .GetAllPunchItemsAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
 
         // Assert (can't assert the exact number since other tests creates items in in-memory db)
-        Assert.IsTrue(punchItems.Count > 0);
+        Assert.IsTrue(punchItems.Any());
+    }
+
+    [TestMethod]
+    public async Task SearchCheckListsAsync_AsReader_ShouldGetCheckLists()
+    {
+        // Act
+        var searchResult = await ProjectsControllerTestsHelper
+            .SearchCheckListsAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
+
+        Assert.IsNotNull(searchResult);
+        Assert.IsTrue(searchResult.MaxAvailable > 0);
+        Assert.IsTrue(searchResult.Items.Any());
     }
 }

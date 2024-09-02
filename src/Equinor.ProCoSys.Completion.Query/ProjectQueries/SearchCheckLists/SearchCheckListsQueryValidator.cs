@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 
@@ -15,7 +16,8 @@ public class SearchCheckListsQueryValidator : AbstractValidator<SearchCheckLists
         RuleFor(query => query)
             .MustAsync(BeAnExistingProjectAsync)
             .WithMessage(query =>
-                $"Project does not exist! Guid={query.ProjectGuid}")
+                $"Project with this guid does not exist! Guid={query.ProjectGuid}")
+            .WithState(_ => new EntityNotFoundException())
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage(query =>
                 $"Project is closed! Guid={query.ProjectGuid}")

@@ -32,4 +32,26 @@ public class CheckListsControllerTestsHelper
                 TestsHelper.JsonSerializerOptions)
             .AsReadOnly();
     }
+
+    public static async Task<DuplicateInfoDto> GetDuplicateInfoAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/DuplicateInfo");
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<DuplicateInfoDto>(
+                content,
+                TestsHelper.JsonSerializerOptions);
+    }
 }
