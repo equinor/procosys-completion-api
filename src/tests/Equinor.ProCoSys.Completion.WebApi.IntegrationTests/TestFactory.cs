@@ -374,7 +374,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
-        // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
+        // Need to mock getting info for current application from Main. This to satisfy VerifyApplicationExistsAsPerson
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Application:ObjectId"];
         if (apiObjectId is null)
@@ -448,6 +448,23 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         _checkListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidInProjectWithoutAccess)), Arg.Any<CancellationToken>())
             .Returns([checkListInProjectWithoutAccess]);
+
+        var searchResult = new ProCoSys4CheckListSearchResult(
+        [
+            new ProCoSys4CheckListSearchDto(
+                Guid.NewGuid(), "T", "C", "M", "FT", "OK", "RC", "TRC", "TRD", "TFC", "TFD", 1, 2, 3)
+        ], 10);
+
+        _checkListApiServiceMock.SearchCheckListsAsync(
+            ProjectGuidWithAccess,
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<int>(),
+            Arg.Any<int>(),
+            Arg.Any<CancellationToken>()).Returns(searchResult);
 
         List<ProCoSys4Responsible> responsibles = [new ProCoSys4Responsible("R1C", "R1D")];
         _responsibleApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(responsibles);

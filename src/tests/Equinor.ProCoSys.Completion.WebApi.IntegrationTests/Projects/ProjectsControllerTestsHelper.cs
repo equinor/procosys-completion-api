@@ -29,4 +29,24 @@ public class ProjectsControllerTestsHelper
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<PunchItemDto>>(content, TestsHelper.JsonSerializerOptions);
     }
+
+    public static async Task<SearchResultDto> SearchCheckListsAsync(
+        UserType userType,
+        string plant,
+        Guid guid,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/CheckLists/Search");
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<SearchResultDto>(content, TestsHelper.JsonSerializerOptions);
+    }
 }

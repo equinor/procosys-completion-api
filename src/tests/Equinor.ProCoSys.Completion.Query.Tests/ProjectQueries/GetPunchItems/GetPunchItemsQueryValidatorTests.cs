@@ -2,26 +2,26 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
-using Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
+using Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.ProjectQueries.SearchCheckLists;
+namespace Equinor.ProCoSys.Completion.Query.Tests.ProjectQueries.GetPunchItems;
 
 [TestClass]
-public class SearchCheckListsQueryValidatorTests
+public class GetPunchItemsQueryValidatorTests
 {
-    private SearchCheckListsQueryValidator _dut;
-    private SearchCheckListsQuery _query;
+    private GetPunchItemsQueryValidator _dut;
+    private GetPunchItemsQuery _query;
     private readonly Guid _projectGuid = Guid.NewGuid();
     private readonly IProjectValidator _projectValidatorMock = Substitute.For<IProjectValidator>();
 
     [TestInitialize]
     public void Setup_OkState()
     {
-        _query = new SearchCheckListsQuery(_projectGuid, null, null, null, null, null, null);
+        _query = new GetPunchItemsQuery(_projectGuid);
         _projectValidatorMock.ExistsAsync(_query.ProjectGuid, default).Returns(true);
-        _dut = new SearchCheckListsQueryValidator(_projectValidatorMock);
+        _dut = new GetPunchItemsQueryValidator(_projectValidatorMock);
     }
 
     [TestMethod]
@@ -61,35 +61,5 @@ public class SearchCheckListsQueryValidatorTests
         // Assert
         var error = result.Errors[0];
         Assert.IsTrue(error.CustomState is EntityNotFoundException);
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_ProjectIsClosed()
-    {
-        // Arrange
-        _projectValidatorMock.IsClosedAsync(_query.ProjectGuid, default).Returns(true);
-
-        // Act
-        var result = await _dut.ValidateAsync(_query);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project is closed!"));
-    }
-
-    [TestMethod]
-    public async Task Validate_ShouldFail_When_InValidFilterForRegisterAndTagFunction()
-    {
-        // Arrange
-        _query = new SearchCheckListsQuery(_projectGuid, null, null, "ILLEGAL", null, null, null);
-
-        // Act
-        var result = await _dut.ValidateAsync(_query);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.AreEqual(1, result.Errors.Count);
-        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("RegisterAndTagFunctionCode must be in form X/Y!"));
     }
 }
