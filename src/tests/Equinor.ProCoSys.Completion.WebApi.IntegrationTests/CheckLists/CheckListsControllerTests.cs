@@ -34,6 +34,8 @@ public class CheckListsControllerTests : TestBase
         // Assert
         Assert.IsNotNull(duplicateInfoDto);
         Assert.IsNotNull(duplicateInfoDto.CheckList);
+        Assert.IsNotNull(duplicateInfoDto.FormularTypes);
+        Assert.IsTrue(duplicateInfoDto.FormularTypes.Any());
         Assert.IsNotNull(duplicateInfoDto.Responsibles);
         Assert.IsTrue(duplicateInfoDto.Responsibles.Any());
         Assert.IsNotNull(duplicateInfoDto.TagFunctions);

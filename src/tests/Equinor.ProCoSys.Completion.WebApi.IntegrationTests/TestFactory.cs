@@ -13,6 +13,7 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -42,6 +43,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
+    private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
     private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
     private readonly ITagFunctionApiService _tagFunctionApiService = Substitute.For<ITagFunctionApiService>();
 
@@ -173,6 +175,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.AddScoped(_ => _checkListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _emailServiceMock);
+            services.AddScoped(_ => _formularTypeApiService);
             services.AddScoped(_ => _responsibleApiService);
             services.AddScoped(_ => _tagFunctionApiService);
         });
@@ -465,6 +468,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             Arg.Any<int>(),
             Arg.Any<int>(),
             Arg.Any<CancellationToken>()).Returns(searchResult);
+
+        List<ProCoSys4FormularType> formularTypes = [new ProCoSys4FormularType("T", "Rem", "FG")];
+        _formularTypeApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(formularTypes);
 
         List<ProCoSys4Responsible> responsibles = [new ProCoSys4Responsible("R1C", "R1D")];
         _responsibleApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(responsibles);
