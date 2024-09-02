@@ -20,9 +20,9 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
     protected override async void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
     {
-        using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        await using var context = new CompletionContext(dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
 
-        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabelAsync(context);
         var labelA = context.Labels.Single(l => l.Text == LabelTextA);
         var labelB = context.Labels.Single(l => l.Text == LabelTextB);
         var labelC = context.Labels.Single(l => l.Text == LabelTextC);

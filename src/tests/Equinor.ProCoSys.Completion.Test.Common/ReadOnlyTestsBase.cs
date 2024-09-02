@@ -209,7 +209,7 @@ public abstract class ReadOnlyTestsBase : TestsBase
         await context.SaveChangesAsync();
     }
 
-    protected async Task Add4UnorderedLabelsInclusiveAVoidedLabel(CompletionContext context)
+    protected async Task Add4UnorderedLabelsInclusiveAVoidedLabelAsync(CompletionContext context)
     { 
         await AddLabel(context, new Label(LabelTextA)); 
         await AddLabel(context, new Label(LabelTextC)); 

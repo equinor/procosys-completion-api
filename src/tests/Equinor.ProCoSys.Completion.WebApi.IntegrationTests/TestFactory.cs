@@ -13,6 +13,8 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
@@ -37,9 +39,11 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
+    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
+    private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
+    private readonly ITagFunctionApiService _tagFunctionApiService = Substitute.For<ITagFunctionApiService>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -166,9 +170,11 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
             services.AddScoped(_ => _personApiServiceMock);
             services.AddScoped(_ => _permissionApiServiceMock);
-            services.AddScoped(_ => CheckListApiServiceMock);
+            services.AddScoped(_ => _checkListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _emailServiceMock);
+            services.AddScoped(_ => _responsibleApiService);
+            services.AddScoped(_ => _tagFunctionApiService);
         });
 
         builder.ConfigureServices(services =>
@@ -185,8 +191,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             EnsureTestDatabaseDeletedAtTeardown(services);
         });
     }
-
-    
 
     private void ReplaceRealDbContextWithTestDbContext(IServiceCollection services)
     {
@@ -426,24 +430,30 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             false, 
             ProjectGuidWithoutAccess);
 
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(checkListNotRestricted);
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
             .Returns(checkListRestricted);
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidInProjectWithoutAccess, Arg.Any<CancellationToken>())
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidInProjectWithoutAccess, Arg.Any<CancellationToken>())
             .Returns(checkListInProjectWithoutAccess);
 
-        CheckListApiServiceMock.GetManyCheckListsAsync(Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>())
+        _checkListApiServiceMock.GetManyCheckListsAsync(Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>())
             .Returns([]);
-        CheckListApiServiceMock.GetManyCheckListsAsync(
+        _checkListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidNotRestricted)), Arg.Any<CancellationToken>())
             .Returns([checkListNotRestricted]);
-        CheckListApiServiceMock.GetManyCheckListsAsync(
+        _checkListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidRestricted)), Arg.Any<CancellationToken>())
             .Returns([checkListRestricted]);
-        CheckListApiServiceMock.GetManyCheckListsAsync(
+        _checkListApiServiceMock.GetManyCheckListsAsync(
                 Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidInProjectWithoutAccess)), Arg.Any<CancellationToken>())
             .Returns([checkListInProjectWithoutAccess]);
+
+        List<ProCoSys4Responsible> responsibles = [new ProCoSys4Responsible("R1C", "R1D")];
+        _responsibleApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(responsibles);
+
+        List<ProCoSys4TagFunction> tagFunctions = [new ProCoSys4TagFunction("TF1C", "TF1R", "R1C", "R1D")];
+        _tagFunctionApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(tagFunctions);
     }
 
     // Authenticated client without any roles

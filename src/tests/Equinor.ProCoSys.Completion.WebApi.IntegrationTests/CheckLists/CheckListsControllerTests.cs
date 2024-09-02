@@ -8,7 +8,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.CheckLists;
 public class CheckListsControllerTests : TestBase
 {
     [TestMethod]
-    public async Task GetPunchItems_AsReader_ShouldGetPunchItems()
+    public async Task GetPunchItemsAsync_AsReader_ShouldGetPunchItems()
     {
         // Act
         var punchItems = await CheckListsControllerTestsHelper.GetPunchItemsAsync(
@@ -19,5 +19,24 @@ public class CheckListsControllerTests : TestBase
 
         // Assert
         Assert.IsTrue(punchItems.Any());
+    }
+
+    [TestMethod]
+    public async Task GetDuplicateInfoAsync_AsReader_ShouldGetPunchItems()
+    {
+        // Act
+        var duplicateInfoDto = await CheckListsControllerTestsHelper.GetDuplicateInfoAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            TestFactory.CheckListGuidNotRestricted
+        );
+
+        // Assert
+        Assert.IsNotNull(duplicateInfoDto);
+        Assert.IsNotNull(duplicateInfoDto.CheckList);
+        Assert.IsNotNull(duplicateInfoDto.Responsibles);
+        Assert.IsTrue(duplicateInfoDto.Responsibles.Any());
+        Assert.IsNotNull(duplicateInfoDto.TagFunctions);
+        Assert.IsTrue(duplicateInfoDto.TagFunctions.Any());
     }
 }
