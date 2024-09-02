@@ -6,8 +6,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Models;
 public readonly record struct ImportResult(
     TIObject TiObject,
     PunchItemImportMessage? Message,
-    object? Command,
-    ImportError[] Errors)
+    IEnumerable<ImportError> Errors)
 {
     public ImportError GetImportError(string message) =>
         new(TiObject.Guid, TiObject.Method, TiObject.Project, TiObject.Site, message);

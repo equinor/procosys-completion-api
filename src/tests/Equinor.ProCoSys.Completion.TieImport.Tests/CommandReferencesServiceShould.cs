@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
+using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 
@@ -18,7 +19,7 @@ public class CommandReferencesServiceShould
         new("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION);
 
     private readonly PunchItemImportMessage _baseMessage = new(
-        Guid.NewGuid(), "TestPlant", "Method", "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
+        new TIObject{Guid = Guid.NewGuid(), Site = "TestPlant", Method = "Method", Project = "ProjectName"}, "TagNo", "ExternalPunchItemNo", "FormType",
         "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
         new Optional<string?>("BV"),
         Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
@@ -106,10 +107,10 @@ public class CommandReferencesServiceShould
         // Arrange
         var message = _baseMessage with
         {
-            ProjectName = "InvalidProjectName",
             RaisedByOrganization = new Optional<string?>(),
             ClearedByOrganization = new Optional<string?>()
         };
+        message.TiObject.Project = "InvalidProjectName";
 
 
         // Act
@@ -259,7 +260,7 @@ public class CommandReferencesServiceShould
     {
         // Arrange
         var message = new PunchItemImportMessage(
-            Guid.NewGuid(), "Plant", "Method", "InvalidProjectName", "TagNo", "InvalidExternalPunchItemNo", "FormType",
+            new TIObject{Guid = Guid.NewGuid(), Site = "Plant", Method = "Method", Project = "InvalidProjectName"},  "TagNo", "InvalidExternalPunchItemNo", "FormType",
             "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
             new Optional<string?>(),
             Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),

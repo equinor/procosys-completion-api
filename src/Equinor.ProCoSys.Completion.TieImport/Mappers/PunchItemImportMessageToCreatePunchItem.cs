@@ -6,8 +6,10 @@ using Equinor.ProCoSys.Completion.TieImport.Validators;
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataContext scopedImportDataContext)
-    : ICommandMapper
+     : ICommandMapper, IPunchItemImportCommand
 {
+    
+    
     public ImportResult SetCommandToImportResult(ImportResult importResult)
     {
         if (importResult.Message is null)
@@ -17,7 +19,7 @@ public sealed class PunchItemImportMessageToCreateCommand(PlantScopedImportDataC
 
         var (command, errors) = ValidateAndCreateCommand(importResult.Message);
 
-        return importResult with { Command = command, Errors = [..importResult.Errors, ..errors] };
+        return importResult with { Errors = [..importResult.Errors, ..errors] };
     }
     private (CreatePunchItemCommand? Command, IReadOnlyCollection<ImportError> Errors) ValidateAndCreateCommand(
         PunchItemImportMessage message)

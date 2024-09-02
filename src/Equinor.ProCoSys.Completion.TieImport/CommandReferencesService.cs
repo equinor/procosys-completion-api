@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using static Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryType;
 
@@ -98,11 +99,11 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private ICommandReferences GetProject(PunchItemImportMessage message, ICommandReferences references)
     {
-        var project = context.Projects.FirstOrDefault(x => x.Name == message.ProjectName);
+        var project = context.Projects.FirstOrDefault(x => x.Name == message.TiObject.Project);
         if (project is null)
         {
             references.Errors =
-                [..references.Errors, message.ToImportError($"Project '{message.ProjectName}' not found")];
+                [..references.Errors, message.ToImportError($"Project '{message.TiObject.Project}' not found")];
         }
 
         references.ProjectGuid = project?.Guid ?? Guid.Empty;
@@ -176,22 +177,14 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private UpdatePunchReferences GetPunchItem(PunchItemImportMessage message, UpdatePunchReferences references)
     {
-        var punchItem = context.PunchItems
-            .FirstOrDefault(x =>
-                x.ExternalItemNo == message.ExternalPunchItemNo &&
-                x.Plant == message.Plant &&
-                x.Project.Name == message.ProjectName &&
-                context.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
-                                            c.Plant == x.Plant &&
-                                            c.ProCoSysGuid == x.CheckListGuid)
-            );
+        var punchItem = GetPunchItem(message);
 
         if (punchItem is null)
         {
             references.Errors =
             [
                 ..references.Errors, message.ToImportError(
-                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.Plant)}: '{message.Plant}, {nameof(message.ProjectName)}: '{message.ProjectName}', {nameof(message.Responsible)}: '{message.Responsible}'` not found")
+                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.TiObject.Site)}: '{message.TiObject.Site}, {nameof(message.TiObject.Project)}: '{message.TiObject.Project}', {nameof(message.Responsible)}: '{message.Responsible}'` not found")
             ];
         }
 
@@ -199,4 +192,15 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
         return references;
     }
+
+    public PunchItem? GetPunchItem(PunchItemImportMessage message) =>
+        context.PunchItems
+            .SingleOrDefault(x =>
+                x.ExternalItemNo == message.ExternalPunchItemNo &&
+                x.Plant == message.TiObject.Site &&
+                x.Project.Name == message.TiObject.Project &&
+                context.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
+                                            c.Plant == x.Plant &&
+                                            c.ProCoSysGuid == x.CheckListGuid)
+            );
 }

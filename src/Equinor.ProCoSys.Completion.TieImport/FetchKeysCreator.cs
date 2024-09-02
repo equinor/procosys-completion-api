@@ -9,7 +9,7 @@ public static class FetchKeysCreator
     public static IEnumerable<TagNoByProjectNameAndPlantKey> CreateTagKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages) =>
         importMessages.Select(message =>
-            CreateTagKey(message.TagNo, message.ProjectName, message.Plant, message.FormType));
+            CreateTagKey(message.TagNo, message.TiObject.Project, message.TiObject.Site, message.FormType));
 
     public static ILookup<string, LibraryItemByPlant> CreateLibraryItemKeys(
         IReadOnlyCollection<PunchItemImportMessage> importMessages)
@@ -18,10 +18,10 @@ public static class FetchKeysCreator
             .SelectMany(message =>
                 new List<LibraryItemByPlant?>
                 {
-                    CreateLibraryItemKey(message.PunchListType, message.Plant, LibraryType.PUNCHLIST_TYPE),
-                    CreateLibraryItemKey(message.ClearedByOrganization, message.Plant,
+                    CreateLibraryItemKey(message.PunchListType, message.TiObject.Site, LibraryType.PUNCHLIST_TYPE),
+                    CreateLibraryItemKey(message.ClearedByOrganization, message.TiObject.Site,
                         LibraryType.COMPLETION_ORGANIZATION),
-                    CreateLibraryItemKey(message.RaisedByOrganization, message.Plant,
+                    CreateLibraryItemKey(message.RaisedByOrganization, message.TiObject.Site,
                         LibraryType.COMPLETION_ORGANIZATION)
                 }
             )
@@ -60,7 +60,7 @@ public static class FetchKeysCreator
     
     public static IReadOnlyCollection<ExternalPunchItemKey> CreateExternalPunchItemNoKeys(IReadOnlyCollection<PunchItemImportMessage> importMessages)
         => importMessages
-            .Select(x => new ExternalPunchItemKey(x.ExternalPunchItemNo, x.Responsible, x.Plant, x.ProjectName))
+            .Select(x => new ExternalPunchItemKey(x.ExternalPunchItemNo, x.Responsible, x.TiObject.Site, x.TiObject.Project))
             .Distinct()
             .ToArray();
 
@@ -92,5 +92,5 @@ public static class FetchKeysCreator
     }
 
     private static ProjectByPlantKey CreateProjectKey(PunchItemImportMessage message)
-        => new(message.ProjectName, message.Plant);
+        => new(message.TiObject.Project, message.TiObject.Site);
 }

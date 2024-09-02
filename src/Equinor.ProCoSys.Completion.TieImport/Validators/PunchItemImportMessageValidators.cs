@@ -17,7 +17,7 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
 
         RuleFor(message => message.Description)
             .Must(description => description.HasValue)
-            .When(message => message.Method == Methods.Create)
+            .When(message => message.TiObject.Method == Methods.Create)
             .WithMessage("Punch Item Description is required for Create method.");
 
         RuleFor(message => message.RejectedDate)
@@ -52,10 +52,10 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
 
         RuleFor(message => message)
             .Must(message => !scopedImportDataContext.PunchItems.Any(y =>
-                y.ExternalItemNo == message.ExternalPunchItemNo && y.Plant == message.Plant &&
-                y.Project.Name == message.ProjectName && scopedImportDataContext.CheckLists.Any(y =>
-                    y.ResponsibleCode == message.Responsible && y.Plant == message.Plant)))
-            .When(message => message.Method == Methods.Create)
+                y.ExternalItemNo == message.ExternalPunchItemNo && y.Plant == message.TiObject.Site &&
+                y.Project.Name == message.TiObject.Project && scopedImportDataContext.CheckLists.Any(y =>
+                    y.ResponsibleCode == message.Responsible && y.Plant == message.TiObject.Site)))
+            .When(message => message.TiObject.Method == Methods.Create)
             .WithMessage("An punch item already exists for the given ExternalPunchItemNo, Plant and ProjectName");
     }
 }

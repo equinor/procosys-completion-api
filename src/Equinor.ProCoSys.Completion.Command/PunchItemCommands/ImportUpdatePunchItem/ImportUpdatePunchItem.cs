@@ -41,7 +41,7 @@ public sealed record ImportUpdatePunchItemCommand(
     Optional<ActionByPerson?> ClearedBy,
     Optional<ActionByPerson?> VerifiedBy,
     Optional<ActionByPerson?> RejectedBy,
-    string RowVersion) : IRequest<Result<ImportError[]>>, IIsPunchItemCommand
+    string RowVersion) : IRequest<Result<ImportError[]>>, IIsPunchItemCommand , IImportCommand
 {
     public PunchItem PunchItem { get; set; } = null!;
 }

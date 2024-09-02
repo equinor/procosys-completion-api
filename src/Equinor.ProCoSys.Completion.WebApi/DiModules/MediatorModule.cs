@@ -1,9 +1,12 @@
 ﻿using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
 using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.Behaviors;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -16,6 +19,8 @@ public static class MediatorModule
             typeof(ICommandMarker).GetTypeInfo().Assembly,
             typeof(IQueryMarker).GetTypeInfo().Assembly
         ));
+        services.AddTransient<IRequestHandler<CreatePunchItemCommand, Result<GuidAndRowVersion>>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
+        services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, Result<GuidAndRowVersion>>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
 
         // ordering is important
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

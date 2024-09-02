@@ -13,10 +13,10 @@ public sealed class PunchItemImportMessageCommandMapper(PlantScopedImportDataCon
     };
     public IEnumerable<ImportResult> Map(ImportResult[] importResults)
     {
-        foreach (var message in importResults)
+        foreach (var importResult in importResults)
         {
-            var commandMapper = _commandMappersByMethod[message.TiObject.Method];
-            yield return commandMapper.SetCommandToImportResult(message);
+            var commandMapper = _commandMappersByMethod[importResult.TiObject.Method];
+            yield return commandMapper.SetCommandToImportResult(importResult);
         }
     }
 }

@@ -10,6 +10,7 @@ using Equinor.ProCoSys.Completion.Domain.Imports;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
@@ -38,7 +39,7 @@ public class CheckListCache(
     {
         var checkListGuidCacheKey = CheckListBygTagAndPlantCacheKey(tagId, plant);
 
-        var cachedChecklist = await cacheManager.GetAsync<string>(checkListGuidCacheKey, cancellationToken);
+        var cachedChecklist = await distributedCache.GetStringAsync(checkListGuidCacheKey, cancellationToken);
         if (string.IsNullOrEmpty(cachedChecklist))
         {
             var checkList = await checkListApiService.GetCheckListsByTagIdAndPlantAsync(tagId, plant, cancellationToken);

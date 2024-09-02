@@ -21,7 +21,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
         _plantScopedImportDataContexts = importMessages
-                .GroupBy(x => x.Plant)
+                .GroupBy(x => x.TiObject.Site)
                 .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
                 .ToDictionary(k => k.Key, v => v.Value);
 

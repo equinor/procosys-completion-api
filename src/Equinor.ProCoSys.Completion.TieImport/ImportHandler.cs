@@ -6,18 +6,18 @@ using Statoil.TI.InterfaceServices.Message;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Auth.Authorization;
-using System.Security.Claims;
-using Equinor.ProCoSys.Auth.Client;
-using Equinor.ProCoSys.Auth.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
-using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -46,7 +46,7 @@ public sealed class ImportHandler(
         try
         {
             var mapped = importSchemaMapper.Map(message);
-            if (mapped.Success is false)
+            if (mapped.Message is null)
             {
                 tiMessageResult = mapped.ErrorResult;
                 return response;
@@ -73,25 +73,245 @@ public sealed class ImportHandler(
 
     private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
+        var plant = message.Site;
         logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid,
             message.Objects.Count);
+ 
+        var validationErrors = ValidateInput(message);
+        if (validationErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
+        {
+            return CreateTiValidationErrorMessageResult(message, validationErrors);
+        }
         
-        //runs validation and maps from TIObjectMessage to PunchItemImportMessage.
-        //Stores it in an ImportResult populated with 
-        //validation errors if any or PunchItemImportMessage otherwise.
-        // import result also has a command field, not populated here.
-        var importResults = CreateImportResults(message);
+        var punchImportMessages = MapToPunchImportMessages(message).ToList();
         
-        //not sure if needed?
-        using var scope = serviceScopeFactory.CreateScope();
-
         //Creates a dictionary of data based on the plant of the message.
-        var scopedContext = await CreateScopedContexts(importResults);
-        var tasks = CreateCommandTasks(importResults, scopedContext);
+        var scopedContexts = await CreateScopedContexts(punchImportMessages);
+        
+        var importMessageErrors = ValidateBasedOnFetchedData(punchImportMessages, scopedContexts, plant);
+        if (importMessageErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
+        {
+            return CreateTiValidationErrorMessageResult(message, importMessageErrors);
+        }
 
-        var results = await Task.WhenAll(tasks);
+        var resultTasks = punchImportMessages.Select(pim 
+            => HandlePunchImportMessage(pim, scopedContexts[plant]));
+        
+        var results = await Task.WhenAll(resultTasks);
         var messageResult = CreateTiMessageResult(message, results);
 
+        return messageResult;
+    }
+
+    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages, Dictionary<string, PlantScopedImportDataContext> scopedContexts, string plant)
+    {
+        var importMessageErrors = new List<(Guid, IEnumerable<ImportError>)>();
+        punchImportMessages.ForEach(pim =>
+        {
+            var commandValidator = new PunchItemImportMessageValidator(scopedContexts[plant]);
+            var validationResult = commandValidator.Validate(pim);
+            if (validationResult.IsValid)
+            {
+                return;
+            }
+            var guidAndErrors =(pim.TiObject.Guid, validationResult.Errors.Select(e => pim.ToImportError(e.ErrorMessage)));
+            importMessageErrors.Add(guidAndErrors);
+
+        });
+        return importMessageErrors;
+    }
+
+    private static List<(Guid Guid, IEnumerable<ImportError> errors)> ValidateInput(TIInterfaceMessage message)
+    {
+        var validator = new PunchTiObjectValidator();
+
+        var validationErrors =
+            message.Objects
+                .Select(tiObject =>
+                {
+                    var errors = validator
+                        .Validate(tiObject)
+                        .Errors
+                        .Select(error => tiObject.ToImportError(error.ErrorMessage));
+                    return (tiObject.Guid,errors);
+                }).ToList();
+        return validationErrors;
+    }
+
+    private async Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message,
+        PlantScopedImportDataContext scopedContext)
+    {
+        var referencesService = new CommandReferencesService(scopedContext);
+        List<ImportError> errors = [];
+        object? command;
+        switch (message.TiObject.Method)
+        {
+             //same as create
+            case "CREATE": case "ALLOCATE": case "INSERT":
+                {
+                    var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
+                    errors = importErrors.ToList();
+                    command = createCommand;
+                    break;
+                }
+            case "MODIFY": case "APPEND":
+                {
+                    var punchItem = referencesService.GetPunchItem(message);
+                    if(punchItem is null)
+                    {
+                        var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
+                        errors = importErrors.ToList();
+                        command = createCommand;
+                    }
+                    else
+                    {
+                        var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
+                        errors =  importErrors;
+                        command = updateCommand;
+                    }
+                    break; 
+                }
+            case "UPDATE":
+                {
+                    var punchItem = referencesService.GetPunchItem(message);
+                    if(punchItem is null)
+                    {
+                        errors = [message.ToImportError("PunchItem not found, can't be updated")];
+                        return new ImportResult(message.TiObject, message, errors);
+                    }
+                    var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
+                    errors = importErrors;
+                    command = updateCommand;
+                    break;
+                }
+            case "DELETE":
+                {
+                    var punchItem = referencesService.GetPunchItem(message);
+                    if(punchItem is null)
+                    {
+                        errors = [message.ToImportError("PunchItem not found, can't be deleted")];
+                        return new ImportResult(message.TiObject, message, errors);
+                    }
+                    command = new DeletePunchItemCommand(punchItem.Guid,
+                        punchItem.RowVersion.ConvertToString());
+                    break;
+                }
+            default:
+                throw new NotImplementedException(); 
+        }
+        
+        if (errors.Count != 0)
+        {
+            return new ImportResult(message.TiObject, message, errors);
+        }
+       
+
+        var importResult = new ImportResult(message.TiObject,message,[]);
+        try
+        { 
+            CheckForScriptInjection(message.TiObject);
+            ValidateTieObjectCommonMinimumRequirements(message.TiObject);
+            await ImportObject(command!, scopedContext, CancellationToken.None);
+            return importResult;
+
+        }
+        catch (ValidationException ve)
+        {
+            var validationErrors = ve.Errors
+                .Select(x => importResult.GetImportError(x.ErrorMessage)).ToArray();
+            return importResult with { Errors = [..importResult.Errors, ..validationErrors] };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,"ImportObject failed unexpectedly");
+            return importResult with { Errors = [..importResult.Errors, importResult.GetImportError(ex.Message)] };
+        }
+    }
+
+    private static (ImportUpdatePunchItemCommand? updateCommand, List<ImportError>) GetAndValidateUpdateCommand(PunchItemImportMessage message,PunchItem punchItem,  CommandReferencesService referencesService)
+    {
+        var references = referencesService.GetCreatePunchItemReferences(message);
+        if(references.Errors.Length != 0)
+        {
+            return (null, references.Errors.ToList());
+        }
+        var patchDocument = PunchItemImportMessageToUpdateCommand.CreateJsonPatchDocument(message, punchItem, references);
+        var clearedBy = references.ClearedBy;
+        var verifiedBy = references.VerifiedBy;
+        var rejectedBy = references.RejectedBy;
+        var category = message.Category;
+
+        var command = new ImportUpdatePunchItemCommand(
+            message.TiObject.Guid,
+            references.ProjectGuid,
+             message.TiObject.Site,
+            punchItem.Guid,
+            patchDocument,
+            category,
+            clearedBy,
+            verifiedBy,
+            rejectedBy,
+            punchItem.RowVersion.ConvertToString());
+        return (command, []);
+        
+    }
+
+    private static (CreatePunchItemCommand?, IEnumerable<ImportError>) GetAndValidateCreateCommand(PunchItemImportMessage message, CommandReferencesService referencesService)
+    {
+        var references = referencesService.GetCreatePunchItemReferences(message);
+        if(references.Errors.Length != 0)
+        {
+            return (null, references.Errors);
+        }
+        
+        var command = new CreatePunchItemCommandForImport(
+            message.Category!.Value,
+            message.Description.Value ?? string.Empty,
+            references.CheckListGuid,
+            references.RaisedByOrgGuid,
+            references.ClearedByOrgGuid,
+            null,
+            message.DueDate.Value,
+            null,
+            null,
+            references.TypeGuid,
+            null,
+            null,
+            null,
+            null,
+            null,
+            message.ExternalPunchItemNo,
+            false, // FIXME
+            message.MaterialEta.Value,
+            message.MaterialNo.Value
+        );
+        return (command,references.Errors);
+    }
+    
+    private static TIMessageResult CreateTiValidationErrorMessageResult(TIInterfaceMessage message, IEnumerable<(Guid TiObjectGuid, IEnumerable<ImportError> errors)> objectErrors)
+    {
+        var messageResult = new TIMessageResult
+        {
+            Guid = message.Guid,
+            Result = MessageResults.Failed,
+            ErrorMessage = "One or more objects failed to import"
+               
+        };
+        foreach (var errorByObject in objectErrors)
+        {
+            foreach (var error in errorByObject.errors)
+            {
+                messageResult.AddLogEntry(new TILogEntry
+                {
+                    InterfaceName = "PunchItem",
+                    LogDescription = error.ToString(),
+                    Guid = errorByObject.TiObjectGuid,
+                    LogScope = "General",
+                    LogType = "Error",
+                    TimeStamp = DateTime.UtcNow
+                });
+            }
+        }
         return messageResult;
     }
 
@@ -100,15 +320,15 @@ public sealed class ImportHandler(
         var messageResult = new TIMessageResult
         {
             Guid = message.Guid,
-            Result = results.All(x => x.Errors.Length == 0)
+            Result = results.All(x => !x.Errors.Any())
                 ? MessageResults.Successful
                 : MessageResults.Failed,
-            ErrorMessage = results.Any(x => x.Errors.Length != 0)
+            ErrorMessage = results.Any(x => x.Errors.Any())
                 ? "One or more objects failed to import"
                 : string.Empty
         };
 
-        foreach (var errorResult in results.Where(x => x.Errors.Length != 0))
+        foreach (var errorResult in results.Where(x => x.Errors.Any()))
         {
             foreach (var error in errorResult.Errors)
             {
@@ -124,7 +344,7 @@ public sealed class ImportHandler(
             }
         }
 
-        foreach (var successResult in results.Where(x => x.Errors.Length == 0))
+        foreach (var successResult in results.Where(x => !x.Errors.Any()))
         {
             messageResult.AddLogEntry($"GUID '{successResult.TiObject.Guid}' imported successfully", "PunchItem");
         }
@@ -132,32 +352,32 @@ public sealed class ImportHandler(
         return messageResult;
     }
 
-    private IEnumerable<Task<ImportResult>> CreateCommandTasks(List<ImportResult> importResults, Dictionary<string, PlantScopedImportDataContext> scopedContext)
-    {
-        var tasks = importResults.GroupBy(x => x.Message?.Plant)
-            .SelectMany(plantMessage =>
-            {
-                if (plantMessage.Key is null)
-                {
-                    return plantMessage
-                        .Select(Task.FromResult);
-                }
+    // private IEnumerable<Task<ImportResult>> CreateCommandTasks(List<PunchItemImportMessage> importResults, Dictionary<string, PlantScopedImportDataContext> scopedContext)
+    // {
+    //     var tasks = importResults.GroupBy(x => x.TiObject.Site)
+    //         .SelectMany(grouping =>
+    //         {
+    //             if (grouping.Key is null)
+    //             {
+    //                 return grouping
+    //                     .Select(Task.FromResult);
+    //             }
+    //
+    //             var context = scopedContext[grouping.Key];
+    //             var mapper = new PunchItemImportMessageCommandMapper(context);
+    //
+    //             var importResultsWithCommands = mapper
+    //                 .Map(grouping.ToArray());
+    //
+    //
+    //             return importResultsWithCommands.Select(c => c.Errors.Length == 0
+    //                 ? ImportObjectExceptionWrapper(c, context, CancellationToken.None)
+    //                 : Task.FromResult(c));
+    //         });
+    //     return tasks;
+    // }
 
-                var context = scopedContext[plantMessage.Key];
-                var mapper = new PunchItemImportMessageCommandMapper(context);
-
-                var importResultsWithCommands = mapper
-                    .Map(plantMessage.ToArray());
-
-
-                return importResultsWithCommands.Select(c => c.Errors.Length == 0
-                    ? ImportObjectExceptionWrapper(c, context, CancellationToken.None)
-                    : Task.FromResult(c));
-            });
-        return tasks;
-    }
-
-    private async Task<Dictionary<string, PlantScopedImportDataContext>> CreateScopedContexts(List<ImportResult> importResults)
+    private async Task<Dictionary<string, PlantScopedImportDataContext>> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
     {
         using var scope = serviceScopeFactory.CreateScope();
 
@@ -165,93 +385,34 @@ public sealed class ImportHandler(
         var tieOptions = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
         
         var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher, tieOptions);
-        
-        //get messages from import result and filter out messages with errors(presumably)
-        var punchItemImportMessages = importResults
-            .Where(x => x.Message is not null)
-            .Select(x => x.Message!).ToArray();
-        
         var scopedContext = await contextBuilder
-            .BuildAsync(punchItemImportMessages, CancellationToken.None);
+            .BuildAsync(punchItemImportMessages.ToList(), CancellationToken.None);
         return scopedContext;
     }
 
-    private static List<ImportResult> CreateImportResults(TIInterfaceMessage message)
-    {
-        var validator = new PunchTiObjectValidator();
-
-        //Validate objects and return ImportResults with validation errors.
-        //If no validation errors, import result will only include the message
-        //Then map the messages of the import result to PunchItemImportMessage
-        var importResults = message.Objects
-            .Select(tiObject =>
-            {
-                var errors = validator
-                    .Validate(tiObject)
-                    .Errors
-                    .Select(error => tiObject.ToImportError(error.ErrorMessage))
-                    .ToArray();
-                return new ImportResult(tiObject, null, null, errors);
-            })
-            .ToList()
-            .Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage)
-            .ToList();
-        return importResults;
-    }
-
-    private async Task<ImportResult> ImportObjectExceptionWrapper(ImportResult command,
+    private static IEnumerable<PunchItemImportMessage> MapToPunchImportMessages(TIInterfaceMessage message) 
+        => message.Objects.Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage);
+    
+    private async Task ImportObject(object importResult,
         PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
     {
-        try
-        {
-            return await ImportObject(command, scopedImportDataContext, cancellationToken);
-        }
-        catch (ValidationException ve)
-        {
-            var validationErrors = ve.Errors
-                .Select(x => command.GetImportError(x.ErrorMessage)).ToArray();
-            return command with { Errors = [..command.Errors, ..validationErrors] };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex,"ImportObject failed unexpectedly");
-            return command with { Errors = [..command.Errors, command.GetImportError(ex.Message)] };
-        }
-    }
-
-    private async Task<ImportResult> ImportObject(ImportResult importResult,
-        PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
-    {
-        CheckForScriptInjection(importResult.TiObject);
-        ValidateTieObjectCommonMinimumRequirements(importResult.TiObject);
-        
-        if (importResult.Errors.Length != 0 || importResult.Command is null)
-        {
-            logger.LogInformation("Not importing object with GUID={Guid} due to errors", importResult.TiObject.Guid);
-            return importResult;
-        }
-
         //Import module is running as a background service which is lifetime singleton.
         //A singleton service cannot retrieve scoped services via constructor.
         using var scope = serviceScopeFactory.CreateScope();
-        var tieConfig = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
-        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-        var claimsPrincipalProvider = scope.ServiceProvider.GetRequiredService<IClaimsPrincipalProvider>();
         var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
+        var tieConfig = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
+        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
         
         if (claimsTransformation is null)
         {
             throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
         }
-        
         plantSetter.SetPlant(scopedImportDataContext.Plant);
-        await SetScopeAuthorizationForCommand(importResult, scopedImportDataContext, tieConfig, currentUserSetter, claimsPrincipalProvider, claimsTransformation);
-
-       await mediator.Send(importResult.Command, cancellationToken);
-       
-       return importResult;
+        var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+        currentUserSetter.SetCurrentUserOid(importUser.Guid);
+       await mediator.Send(importResult, cancellationToken);
     }
     
     private static void CheckForScriptInjection(TIObject tieObject)
@@ -291,35 +452,35 @@ public sealed class ImportHandler(
         }
     }
 
-    private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
-        PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
-        ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
-        IClaimsTransformation claimsTransformation)
-    {
-        var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
-        currentUserSetter.SetCurrentUserOid(importUser.Guid);
+    // private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
+    //     PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
+    //     ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
+    //     IClaimsTransformation claimsTransformation)
+    // {
+    //     var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+    //     currentUserSetter.SetCurrentUserOid(importUser.Guid);
+    //
+    //     var projectGuid = Guid.Empty;
+    //     if (importResult.Command is CreatePunchItemCommand pc)
+    //     {
+    //         projectGuid = pc.CheckListDetailsDto.ProjectGuid;
+    //     }
+    //     
+    //     await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
+    // }
 
-        var projectGuid = Guid.Empty;
-        if (importResult.Command is CreatePunchItemCommand pc)
-        {
-            projectGuid = pc.CheckListDetailsDto.ProjectGuid;
-        }
-        
-        await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
-    }
-
-    private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
-        IClaimsTransformation claimsTransformation, Guid oid, Guid projectGuid, string responsible)
-    {
-        var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
-        var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
-        claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetProjectClaimValue(projectGuid)));
-        claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetRestrictionRoleClaimValue(responsible)));
-        currentUser.AddIdentity(claimsIdentity);
-
-        await claimsTransformation.TransformAsync(currentUser);
-    }
+    // private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
+    //     IClaimsTransformation claimsTransformation, Guid oid, Guid projectGuid, string responsible)
+    // {
+    //     var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
+    //     var claimsIdentity = new ClaimsIdentity();
+    //     claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
+    //     claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetProjectClaimValue(projectGuid)));
+    //     claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetRestrictionRoleClaimValue(responsible)));
+    //     currentUser.AddIdentity(claimsIdentity);
+    //
+    //     await claimsTransformation.TransformAsync(currentUser);
+    // }
 
 
     private TIMessageResult CreateMessageResultFromException(TIInterfaceMessage message, Exception e)

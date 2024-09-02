@@ -10,13 +10,10 @@ namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
 public static class TiObjectToPunchItemImportMessage
 {
-    private static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
+    public static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
     {
         var message = new PunchItemImportMessage(
-            tiObject.Guid,
-            tiObject.Site,
-            tiObject.Method,
-            tiObject.Project,
+            tiObject,
             GetStringValueOrThrow(tiObject, TagNo),
             GetStringValueOrThrow(tiObject, ExternalPunchItemNo),
             GetStringValueOrThrow(tiObject, FormType),
@@ -48,7 +45,7 @@ public static class TiObjectToPunchItemImportMessage
             $"We expect the '{nameof(TIObject)}' to have a '{attributeName}', but it did not");
 
     public static ImportResult ToPunchItemImportMessage(ImportResult message)
-        => message.Errors.Length == 0
+        => !message.Errors.Any()
             ? message with { Message = ToPunchItemImportMessage(message.TiObject) }
             : message;
 
