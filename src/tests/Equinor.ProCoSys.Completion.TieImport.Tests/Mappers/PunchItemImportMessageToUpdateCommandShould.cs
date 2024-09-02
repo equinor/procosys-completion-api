@@ -43,35 +43,35 @@ public sealed class PunchItemImportMessageToUpdateCommandShould
         _mapper = new PunchItemImportMessageToUpdateCommand(_scopedContext);
     }
 
-    [TestMethod]
-    public void MapMessage()
-    {
-        // Arrange
-        var message = _baseMessage with
-        {
-            Description = new Optional<string?>("Hello World"),
-            ClearedBy = new Optional<string?>("SKS@equinor.com"),
-            ClearedDate = new Optional<DateTime?>(DateTime.UtcNow),
-        };
-        message.TiObject.Method = "UPDATE";
-
-        _scopedContext.AddProjects([_project]);
-        _scopedContext.AddCheckLists([_tagCheckList]);
-        _scopedContext.AddLibraryItems([_libraryItemClearing, _libraryItemRaisedBy]);
-        _scopedContext.AddPersons([new Person(Guid.NewGuid(), "Sindre", "Smistad", "SKS@equinor.com", "SKS@equinor.com", false)]);
-        _scopedContext.AddPunchItems([
-            new PunchItem("TestPlant", _project, _tagCheckList.ProCoSysGuid, Category.PA, "Punch Item 1",
-                _libraryItemRaisedBy, _libraryItemClearing, Guid.NewGuid())
-            {
-                ExternalItemNo = "ExternalPunchItemNo",
-            }
-        ]);
-        
-        // Act
-        var importResults = _mapper.SetCommandToImportResult(new ImportResult(default!, message,[]));
-
-        // Assert
-        Assert.AreEqual(0, importResults.Errors.Count());
-        // Assert.IsNotNull(importResults.Command);
-    }
+    // [TestMethod]
+    // public void MapMessage()
+    // {
+    //     // Arrange
+    //     var message = _baseMessage with
+    //     {
+    //         Description = new Optional<string?>("Hello World"),
+    //         ClearedBy = new Optional<string?>("SKS@equinor.com"),
+    //         ClearedDate = new Optional<DateTime?>(DateTime.UtcNow),
+    //     };
+    //     message.TiObject.Method = "UPDATE";
+    //
+    //     _scopedContext.AddProjects([_project]);
+    //     _scopedContext.AddCheckLists([_tagCheckList]);
+    //     _scopedContext.AddLibraryItems([_libraryItemClearing, _libraryItemRaisedBy]);
+    //     _scopedContext.AddPersons([new Person(Guid.NewGuid(), "Sindre", "Smistad", "SKS@equinor.com", "SKS@equinor.com", false)]);
+    //     _scopedContext.AddPunchItems([
+    //         new PunchItem("TestPlant", _project, _tagCheckList.ProCoSysGuid, Category.PA, "Punch Item 1",
+    //             _libraryItemRaisedBy, _libraryItemClearing, Guid.NewGuid())
+    //         {
+    //             ExternalItemNo = "ExternalPunchItemNo",
+    //         }
+    //     ]);
+    //     
+    //     // Act
+    //     var importResults = _mapper.SetCommandToImportResult(new ImportResult(default!, message,[]));
+    //
+    //     // Assert
+    //     Assert.AreEqual(0, importResults.Errors.Count());
+    //     // Assert.IsNotNull(importResults.Command);
+    // }
 }

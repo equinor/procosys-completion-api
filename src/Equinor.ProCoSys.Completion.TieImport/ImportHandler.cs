@@ -55,7 +55,7 @@ public sealed class ImportHandler(
         }
         catch (Exception e)
         {
-            tiMessageResult = CreateMessageResultFromException(message, e);
+            tiMessageResult = e.ToMessageResult();
             logger.LogError(
                 "Error when committing message. Exception: {ExceptionMessage} Stacktrace: {StackTrace} TIEMessage: {TieMessage}",
                 e.Message, e.StackTrace, message.ToString());
@@ -230,7 +230,7 @@ public sealed class ImportHandler(
 
     private static (ImportUpdatePunchItemCommand? updateCommand, List<ImportError>) GetAndValidateUpdateCommand(PunchItemImportMessage message,PunchItem punchItem,  CommandReferencesService referencesService)
     {
-        var references = referencesService.GetCreatePunchItemReferences(message);
+        var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
         if(references.Errors.Length != 0)
         {
             return (null, references.Errors.ToList());
@@ -258,7 +258,7 @@ public sealed class ImportHandler(
 
     private static (CreatePunchItemCommand?, IEnumerable<ImportError>) GetAndValidateCreateCommand(PunchItemImportMessage message, CommandReferencesService referencesService)
     {
-        var references = referencesService.GetCreatePunchItemReferences(message);
+        var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
         if(references.Errors.Length != 0)
         {
             return (null, references.Errors);
@@ -351,32 +351,7 @@ public sealed class ImportHandler(
 
         return messageResult;
     }
-
-    // private IEnumerable<Task<ImportResult>> CreateCommandTasks(List<PunchItemImportMessage> importResults, Dictionary<string, PlantScopedImportDataContext> scopedContext)
-    // {
-    //     var tasks = importResults.GroupBy(x => x.TiObject.Site)
-    //         .SelectMany(grouping =>
-    //         {
-    //             if (grouping.Key is null)
-    //             {
-    //                 return grouping
-    //                     .Select(Task.FromResult);
-    //             }
-    //
-    //             var context = scopedContext[grouping.Key];
-    //             var mapper = new PunchItemImportMessageCommandMapper(context);
-    //
-    //             var importResultsWithCommands = mapper
-    //                 .Map(grouping.ToArray());
-    //
-    //
-    //             return importResultsWithCommands.Select(c => c.Errors.Length == 0
-    //                 ? ImportObjectExceptionWrapper(c, context, CancellationToken.None)
-    //                 : Task.FromResult(c));
-    //         });
-    //     return tasks;
-    // }
-
+    
     private async Task<Dictionary<string, PlantScopedImportDataContext>> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
     {
         using var scope = serviceScopeFactory.CreateScope();
@@ -451,44 +426,7 @@ public sealed class ImportHandler(
           throw new Exception(message);
         }
     }
-
-    // private async Task SetScopeAuthorizationForCommand(ImportResult importResult,
-    //     PlantScopedImportDataContext scopedImportDataContext, IOptionsMonitor<TieImportOptions> tieConfig,
-    //     ICurrentUserSetter currentUserSetter, IClaimsPrincipalProvider claimsPrincipalProvider,
-    //     IClaimsTransformation claimsTransformation)
-    // {
-    //     var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
-    //     currentUserSetter.SetCurrentUserOid(importUser.Guid);
-    //
-    //     var projectGuid = Guid.Empty;
-    //     if (importResult.Command is CreatePunchItemCommand pc)
-    //     {
-    //         projectGuid = pc.CheckListDetailsDto.ProjectGuid;
-    //     }
-    //     
-    //     await AddOidClaimForCurrentUser(claimsPrincipalProvider, claimsTransformation, importUser.Guid, projectGuid, importResult.Message!.Responsible);
-    // }
-
-    // private async Task AddOidClaimForCurrentUser(IClaimsPrincipalProvider claimsPrincipalProvider,
-    //     IClaimsTransformation claimsTransformation, Guid oid, Guid projectGuid, string responsible)
-    // {
-    //     var currentUser = claimsPrincipalProvider.GetCurrentClaimsPrincipal();
-    //     var claimsIdentity = new ClaimsIdentity();
-    //     claimsIdentity.AddClaim(new Claim(ClaimsExtensions.Oid, oid.ToString()));
-    //     claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetProjectClaimValue(projectGuid)));
-    //     claimsIdentity.AddClaim(new Claim(ClaimTypes.UserData, ClaimsTransformation.GetRestrictionRoleClaimValue(responsible)));
-    //     currentUser.AddIdentity(claimsIdentity);
-    //
-    //     await claimsTransformation.TransformAsync(currentUser);
-    // }
-
-
-    private TIMessageResult CreateMessageResultFromException(TIInterfaceMessage message, Exception e)
-    {
-        var exceptionResult = e.ToMessageResult();
-        return exceptionResult;
-    }
-
+    
     private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message,
         TIMessageResult? tiMessageResult,
         TIResponseFrame response)

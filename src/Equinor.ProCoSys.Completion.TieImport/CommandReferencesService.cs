@@ -9,22 +9,12 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class CommandReferencesService(PlantScopedImportDataContext context)
 {
-    public ICommandReferences GetCreatePunchItemReferences(PunchItemImportMessage message)
+    public ICommandReferences GetAndValidatePunchItemReferencesForImport(PunchItemImportMessage message)
     {
-        var references = new CreatePunchReferences();
+        var references = new ImportPunchReferences();
         return SetInterfaceReferences(message, references);
     }
-
-    public UpdatePunchReferences GetUpdatePunchItemReferences(PunchItemImportMessage message)
-    {
-        var references = new UpdatePunchReferences();
-
-        references = (UpdatePunchReferences)SetInterfaceReferences(message, references);
-        references = GetPunchItem(message, references);
-
-        return references;
-    }
-
+    
     private ICommandReferences SetInterfaceReferences(PunchItemImportMessage message, ICommandReferences references)
     {
         references = GetProject(message, references);
@@ -172,30 +162,11 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
         return references;
     }
 
-    private UpdatePunchReferences GetPunchItem(PunchItemImportMessage message, UpdatePunchReferences references)
-    {
-        var punchItem = GetPunchItem(message);
-
-        if (punchItem is null)
-        {
-            references.Errors =
-            [
-                ..references.Errors, message.ToImportError(
-                    $"PunchItem with key `{nameof(message.ExternalPunchItemNo)}: '{message.ExternalPunchItemNo}, {nameof(message.TiObject.Site)}: '{message.TiObject.Site}, {nameof(message.TiObject.Project)}: '{message.TiObject.Project}', {nameof(message.Responsible)}: '{message.Responsible}'` not found")
-            ];
-        }
-
-        references.PunchItem = punchItem;
-
-        return references;
-    }
-
     public PunchItem? GetPunchItem(PunchItemImportMessage message)
     {
         if (message.PunchItemNo is { HasValue: true, Value: not null })
         {
             return context.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
-
         }
         return context.PunchItems
             .SingleOrDefault(x =>

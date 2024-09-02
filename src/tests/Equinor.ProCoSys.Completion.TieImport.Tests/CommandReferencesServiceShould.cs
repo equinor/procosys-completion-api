@@ -11,8 +11,8 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 [TestClass]
 public class CommandReferencesServiceShould
 {
-    private CommandReferencesService _service;
-    private PlantScopedImportDataContext _context;
+    private CommandReferencesService _service = null!;
+    private PlantScopedImportDataContext _context = null!;
     private readonly Project _project = new("TestPlant", Guid.NewGuid(), "ProjectName", "ProjectName");
 
     private readonly LibraryItem _raisedByOrg =
@@ -30,79 +30,32 @@ public class CommandReferencesServiceShould
     );
 
     private const string SksEquinorCom = "SKS@equinor.com";
-
+    
     [TestInitialize]
     public void Setup()
     {
         _context = new PlantScopedImportDataContext("TestPlant");
         _service = new CommandReferencesService(_context);
     }
-
-    private void AddProjects() =>
-        _context.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
-
-    private void AddCheckLists() => _context.AddCheckLists(new[]
-    {
-        new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
-        new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),
-    });
-
-    private void AddLibraryItems() => _context.AddLibraryItems(new[]
-    {
-        new LibraryItem("TestPlant", Guid.NewGuid(), "Lib1", "Lib1", LibraryType.COMPLETION_ORGANIZATION),
-        new LibraryItem("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION),
-        new LibraryItem("TestPlant", Guid.NewGuid(), "BV", "BV", LibraryType.COMPLETION_ORGANIZATION),
-    });
-
+    
     [TestMethod]
     public void GetCreatePunchItemReferences_ShouldPopulateReferencesCorrectly()
     {
+        // Arrange
         AddProjects();
         AddCheckLists();
         AddLibraryItems();
-
-        // Arrange
-        var message = _baseMessage;
-
+        
         // Act
-        var references = _service.GetCreatePunchItemReferences(message);
+        var references = _service.GetAndValidatePunchItemReferencesForImport(_baseMessage);
 
         // Assert
         Assert.IsNotNull(references);
         Assert.AreEqual(0, references.Errors.Length);
     }
-
-
+    
     [TestMethod]
-    public void GetUpdatePunchItemReferences_ShouldPopulateReferencesCorrectly()
-    {
-        AddProjects();
-        AddCheckLists();
-        AddLibraryItems();
-
-        _context.AddPunchItems([
-            new PunchItem("TestPlant", _project, _context.CheckLists[0].ProCoSysGuid, Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
-                Guid.NewGuid())
-            {
-                ExternalItemNo = "WrongExternalPunchItemNo"
-            },
-            new PunchItem("TestPlant", _project, _context.CheckLists[1].ProCoSysGuid, Category.PA, string.Empty, _raisedByOrg, _raisedByOrg,
-                Guid.NewGuid()) { ExternalItemNo = "ExternalPunchItemNo" }
-        ]);
-
-        // Arrange
-        var message = _baseMessage;
-
-        // Act
-        var references = _service.GetUpdatePunchItemReferences(message);
-
-        // Assert
-        Assert.IsNotNull(references);
-        Assert.AreEqual(0, references.Errors.Length);
-    }
-
-    [TestMethod]
-    public void GetCreatePunchItemReferences_ShouldHandleErrors()
+    public void GetAndValidatePunchItemReferencesForImport_ShouldHandleErrors()
     {
         // Arrange
         var message = _baseMessage with
@@ -114,7 +67,7 @@ public class CommandReferencesServiceShould
 
 
         // Act
-        var references = _service.GetCreatePunchItemReferences(message);
+        var references = _service.GetAndValidatePunchItemReferencesForImport(message);
 
         // Assert
         Assert.IsNotNull(references);
@@ -122,7 +75,7 @@ public class CommandReferencesServiceShould
     }
 
     [TestMethod]
-    public void GetCreatePunchItemReferences_ShouldMakeErrorsOnMissingDateForAction()
+    public void GetAndValidatePunchItemReferencesForImport_ShouldMakeErrorsOnMissingDateForAction()
     {
         // Arrange
         var clearedByMessage = _baseMessage with { ClearedBy = new Optional<string?>(SksEquinorCom) };
@@ -130,9 +83,9 @@ public class CommandReferencesServiceShould
         var rejectedByMessage = _baseMessage with { RejectedBy = new Optional<string?>(SksEquinorCom) };
 
         // Act
-        var clearByRefs = _service.GetCreatePunchItemReferences(clearedByMessage);
-        var verifiedByRefs = _service.GetCreatePunchItemReferences(verifiedByMessage);
-        var rejectedByRefs = _service.GetCreatePunchItemReferences(rejectedByMessage);
+        var clearByRefs = _service.GetAndValidatePunchItemReferencesForImport(clearedByMessage);
+        var verifiedByRefs = _service.GetAndValidatePunchItemReferencesForImport(verifiedByMessage);
+        var rejectedByRefs = _service.GetAndValidatePunchItemReferencesForImport(rejectedByMessage);
 
         // Assert
         Assert.IsNotNull(clearByRefs);
@@ -149,7 +102,7 @@ public class CommandReferencesServiceShould
     }
 
     [TestMethod]
-    public void GetCreatePunchItemReferences_ShouldMakeErrorsOnMissingPersonForAction()
+    public void GetAndValidatePunchItemReferencesForImport_ShouldMakeErrorsOnMissingPersonForAction()
     {
         // Arrange
 
@@ -158,30 +111,29 @@ public class CommandReferencesServiceShould
         var rejectedByMessage = _baseMessage with { RejectedDate = new Optional<DateTime?>(DateTime.Now) };
 
         // Act
-        var clearByRefs = _service.GetCreatePunchItemReferences(clearedByMessage);
-        var verifiedByRefs = _service.GetCreatePunchItemReferences(verifiedByMessage);
-        var rejectedByRefs = _service.GetCreatePunchItemReferences(rejectedByMessage);
+        var clearByRefs = _service.GetAndValidatePunchItemReferencesForImport(clearedByMessage);
+        var verifiedByRefs = _service.GetAndValidatePunchItemReferencesForImport(verifiedByMessage);
+        var rejectedByRefs = _service.GetAndValidatePunchItemReferencesForImport(rejectedByMessage);
 
         // Assert
         Assert.IsNotNull(clearByRefs);
         Assert.AreNotEqual(0, clearByRefs.Errors.Length);
-        var errorMessage = "Person is required for action (Clear, Verify, Reject) on date '";
-        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(errorMessage)));
+        const string ErrorMessage = "Person is required for action (Clear, Verify, Reject) on date '";
+        Assert.IsTrue(clearByRefs.Errors.Any(e => e.Message.Contains(ErrorMessage)));
 
         Assert.IsNotNull(verifiedByRefs);
         Assert.AreNotEqual(0, verifiedByRefs.Errors.Length);
-        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(errorMessage)));
+        Assert.IsTrue(verifiedByRefs.Errors.Any(e => e.Message.Contains(ErrorMessage)));
 
         Assert.IsNotNull(rejectedByRefs);
         Assert.AreNotEqual(0, rejectedByRefs.Errors.Length);
-        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(errorMessage)));
+        Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(ErrorMessage)));
     }
 
     [TestMethod]
-    public void GetCreatePunchItemReferences_ShouldMakeErrorsOnPersonNotFound()
+    public void GetAndValidatePunchItemReferencesForImport_ShouldMakeErrorsOnPersonNotFound()
     {
         // Arrange
-
         var clearedByMessage = _baseMessage with
         {
             ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(SksEquinorCom)
@@ -196,9 +148,9 @@ public class CommandReferencesServiceShould
         };
 
         // Act
-        var clearByRefs = _service.GetCreatePunchItemReferences(clearedByMessage);
-        var verifiedByRefs = _service.GetCreatePunchItemReferences(verifiedByMessage);
-        var rejectedByRefs = _service.GetCreatePunchItemReferences(rejectedByMessage);
+        var clearByRefs = _service.GetAndValidatePunchItemReferencesForImport(clearedByMessage);
+        var verifiedByRefs = _service.GetAndValidatePunchItemReferencesForImport(verifiedByMessage);
+        var rejectedByRefs = _service.GetAndValidatePunchItemReferencesForImport(rejectedByMessage);
 
         // Assert
         Assert.IsNotNull(clearByRefs);
@@ -215,7 +167,7 @@ public class CommandReferencesServiceShould
     }
 
     [TestMethod]
-    public void GetCreatePunchItemReferences_ShouldFindPerson()
+    public void GetAndValidatePunchItemReferencesForImport_ShouldFindPerson()
     {
         // Arrange
         AddProjects();
@@ -240,9 +192,9 @@ public class CommandReferencesServiceShould
         };
 
         // Act
-        var clearByRefs = _service.GetCreatePunchItemReferences(clearedByMessage);
-        var verifiedByRefs = _service.GetCreatePunchItemReferences(verifiedByMessage);
-        var rejectedByRefs = _service.GetCreatePunchItemReferences(rejectedByMessage);
+        var clearByRefs = _service.GetAndValidatePunchItemReferencesForImport(clearedByMessage);
+        var verifiedByRefs = _service.GetAndValidatePunchItemReferencesForImport(verifiedByMessage);
+        var rejectedByRefs = _service.GetAndValidatePunchItemReferencesForImport(rejectedByMessage);
 
         // Assert
         Assert.IsNotNull(clearByRefs);
@@ -254,27 +206,20 @@ public class CommandReferencesServiceShould
         Assert.IsNotNull(rejectedByRefs);
         Assert.AreEqual(0, rejectedByRefs.Errors.Length);
     }
+    
+    private void AddProjects() =>
+        _context.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
 
-    [TestMethod]
-    public void GetUpdatePunchItemReferences_ShouldHandleErrors()
+    private void AddCheckLists() => _context.AddCheckLists(new[]
     {
-        // Arrange
-        var message = new PunchItemImportMessage(
-            new TIObject{Guid = Guid.NewGuid(), Site = "Plant", Method = "Method", Project = "InvalidProjectName"},  "TagNo", "InvalidExternalPunchItemNo", "FormType",
-            "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
-            new Optional<string?>(),
-            Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
-            new Optional<string?>(), new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(),
-            new Optional<string?>(),
-            new Optional<DateTime?>(), new Optional<string?>()
-        );
+        new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
+        new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),
+    });
 
-        // Act
-        var references = _service.GetUpdatePunchItemReferences(message);
-
-        // Assert
-        Assert.IsNotNull(references);
-        Assert.AreNotEqual(0, references.Errors.Length);
-    }
+    private void AddLibraryItems() => _context.AddLibraryItems(new[]
+    {
+        new LibraryItem("TestPlant", Guid.NewGuid(), "Lib1", "Lib1", LibraryType.COMPLETION_ORGANIZATION),
+        new LibraryItem("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION),
+        new LibraryItem("TestPlant", Guid.NewGuid(), "BV", "BV", LibraryType.COMPLETION_ORGANIZATION),
+    });
 }
