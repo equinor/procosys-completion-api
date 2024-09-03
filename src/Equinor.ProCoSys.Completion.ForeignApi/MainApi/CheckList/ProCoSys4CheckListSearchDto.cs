@@ -8,6 +8,7 @@ public record ProCoSys4CheckListSearchDto(
     string CommPkgNo,
     string McPkgNo,
     string FormularType,
+    string FormularGroup,
     string Status,
     string ResponsibleCode,
     string TagRegisterCode,

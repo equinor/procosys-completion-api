@@ -6,6 +6,7 @@ namespace Equinor.ProCoSys.Completion.Query;
 public record CheckListDetailsDto(
     Guid CheckListGuid,
     string FormularType,
+    string FormularGroup,
     string ResponsibleCode,
     string TagRegisterCode,
     string TagRegisterDescription,
@@ -17,6 +18,7 @@ public record CheckListDetailsDto(
         : this(
             pcs4CheckList.CheckListGuid,
             pcs4CheckList.FormularType,
+            pcs4CheckList.FormularGroup,
             pcs4CheckList.ResponsibleCode,
             pcs4CheckList.TagRegisterCode,
             pcs4CheckList.TagRegisterDescription,
