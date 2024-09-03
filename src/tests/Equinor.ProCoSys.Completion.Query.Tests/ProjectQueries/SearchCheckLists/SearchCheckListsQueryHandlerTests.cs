@@ -24,8 +24,8 @@ public class SearchCheckListsQueryHandlerTests
     {
         IEnumerable<ProCoSys4CheckListSearchDto> items = new []
         {
-            new ProCoSys4CheckListSearchDto(Guid.NewGuid(), "Tag1", "CommPkg1", "McPkg1", "FT1", "PA", "RC1", "TRC1", "TRD1", "TFC1", "TFD1", 1, 1, 1),
-            new ProCoSys4CheckListSearchDto(Guid.NewGuid(), "Tag2", "CommPkg2", "McPkg2", "FT2", "PB", "RC2", "TRC2", "TRD2", "TFC2", "TFD2", 2, 2, 2)
+            new ProCoSys4CheckListSearchDto(Guid.NewGuid(), "Tag1", "CommPkg1", "McPkg1", "FT1", "FG1", "PA", "RC1", "TRC1", "TRD1", "TFC1", "TFD1", 1, 1, 1),
+            new ProCoSys4CheckListSearchDto(Guid.NewGuid(), "Tag2", "CommPkg2", "McPkg2", "FT2", "FG2", "PB", "RC2", "TRC2", "TRD2", "TFC2", "TFD2", 2, 2, 2)
         };
         _psc4SearchResultDto = new ProCoSys4CheckListSearchResult(items, 45);
         _dut = new SearchCheckListsQueryHandler(_checkListServiceMock);

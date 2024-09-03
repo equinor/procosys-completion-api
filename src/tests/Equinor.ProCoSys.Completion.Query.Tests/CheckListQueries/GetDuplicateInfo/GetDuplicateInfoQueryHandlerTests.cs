@@ -30,7 +30,7 @@ public class GetDuplicateInfoQueryHandlerTests
     {
         _query = new GetDuplicateInfoQuery(_checkListGuid)
         {
-            CheckListDetailsDto = new(_checkListGuid, "FT", "RC", "TRC", "TRD", "TFC", "TFD", Guid.NewGuid())
+            CheckListDetailsDto = new(_checkListGuid, "FT", "FG", "RC", "TRC", "TRD", "TFC", "TFD", Guid.NewGuid())
         };
 
         _plantProviderMock.Plant.Returns(_testPlant);

@@ -403,35 +403,38 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person2
                 ]);
         var checkListNotRestricted = new ProCoSys4CheckList(
-            CheckListGuidNotRestricted,
-            "FT",
-            ResponsibleCodeWithAccess,
-            "TRC",
-            "TRD",
-            "TFC",
-            "TFD",
-            false, 
-            ProjectGuidWithAccess);
+            CheckListGuid: CheckListGuidNotRestricted,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false, 
+            ProjectGuid: ProjectGuidWithAccess);
         var checkListRestricted = new ProCoSys4CheckList(
-            CheckListGuidRestricted,
-            "FT",
-            ResponsibleCodeWithoutAccess,
-            "TRC",
-            "TRD",
-            "TFC",
-            "TFD",
-            false, 
-            ProjectGuidWithAccess);
+            CheckListGuid: CheckListGuidRestricted,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithoutAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false,
+            ProjectGuid: ProjectGuidWithAccess);
         var checkListInProjectWithoutAccess = new ProCoSys4CheckList(
-            CheckListGuidInProjectWithoutAccess,
-            "TRC",
-            "TRD",
-            "TFC",
-            "TFD",
-            "FT",
-            ResponsibleCodeWithoutAccess, 
-            false, 
-            ProjectGuidWithoutAccess);
+            CheckListGuid: CheckListGuidInProjectWithoutAccess,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithoutAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false,
+            ProjectGuid: ProjectGuidWithoutAccess);
 
         _checkListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
             .Returns(checkListNotRestricted);
@@ -455,7 +458,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         var searchResult = new ProCoSys4CheckListSearchResult(
         [
             new ProCoSys4CheckListSearchDto(
-                Guid.NewGuid(), "T", "C", "M", "FT", "OK", "RC", "TRC", "TRD", "TFC", "TFD", 1, 2, 3)
+                Guid.NewGuid(), "T", "C", "M", "FT", "FG", "OK", "RC", "TRC", "TRD", "TFC", "TFD", 1, 2, 3)
         ], 10);
 
         _checkListApiServiceMock.SearchCheckListsAsync(
