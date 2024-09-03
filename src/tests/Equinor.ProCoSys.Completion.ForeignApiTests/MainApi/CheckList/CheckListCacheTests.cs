@@ -37,6 +37,7 @@ public class CheckListCacheTests
         _checkList1 = new ProCoSys4CheckList(
             _checkListGuid1,
             "FT1",
+            "FG1",
             "RC1",
             "TRC1",
             "TRD1",
@@ -47,6 +48,7 @@ public class CheckListCacheTests
         _checkList2 = new ProCoSys4CheckList(
             _checkListGuid2,
             "FT2",
+            "FG2",
             "RC2",
             "TRC2",
             "TRD2",

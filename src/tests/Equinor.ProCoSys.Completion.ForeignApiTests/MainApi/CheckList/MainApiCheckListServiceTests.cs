@@ -34,7 +34,7 @@ public class MainApiCheckListServiceTests
         _mainApiClientForApplication = Substitute.For<IMainApiClientForApplication>();
         _mainApiClientForApplication
             .TryQueryAndDeserializeAsync<List<ProCoSys4CheckList>>(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new ProCoSys4CheckList(Guid.Empty, "FT", "R", "TRC", "TRD", "TFC", "TFD", false, Guid.Empty)]);
+            .Returns([new ProCoSys4CheckList(Guid.Empty, "FT", "FG", "R", "TRC", "TRD", "TFC", "TFD", false, Guid.Empty)]);
         _dut = new MainApiCheckListService(
             _mainApiClientForApplication,
             _mainApiOptionsMock,
