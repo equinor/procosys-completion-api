@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetDuplicateInfo;
@@ -19,6 +20,7 @@ public class GetDuplicateInfoQueryHandlerTests
     private GetDuplicateInfoQueryHandler _dut;
     private readonly Guid _checkListGuid = Guid.NewGuid();
     private readonly IPlantProvider _plantProviderMock = Substitute.For<IPlantProvider>();
+    private readonly IFormularTypeApiService _formularTypeServiceMock = Substitute.For<IFormularTypeApiService>();
     private readonly IResponsibleApiService _responsibleServiceMock = Substitute.For<IResponsibleApiService>();
     private readonly ITagFunctionApiService _tagFunctionServiceMock = Substitute.For<ITagFunctionApiService>();
     private readonly string _testPlant = "PCS$P";
@@ -32,12 +34,14 @@ public class GetDuplicateInfoQueryHandlerTests
         };
 
         _plantProviderMock.Plant.Returns(_testPlant);
+        _formularTypeServiceMock.GetAllAsync(_testPlant, Arg.Any<CancellationToken>())
+            .Returns([]);
         _responsibleServiceMock.GetAllAsync(_testPlant, Arg.Any<CancellationToken>())
             .Returns([]);
         _tagFunctionServiceMock.GetAllAsync(_testPlant, Arg.Any<CancellationToken>())
             .Returns([]);
 
-        _dut = new GetDuplicateInfoQueryHandler(_plantProviderMock, _responsibleServiceMock, _tagFunctionServiceMock);
+        _dut = new GetDuplicateInfoQueryHandler(_plantProviderMock, _formularTypeServiceMock, _responsibleServiceMock, _tagFunctionServiceMock);
     }
 
     [TestMethod]
@@ -50,8 +54,10 @@ public class GetDuplicateInfoQueryHandlerTests
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
         Assert.AreEqual(_query.CheckListDetailsDto, result.Data.CheckList);
+        Assert.IsNotNull(result.Data.FormularTypes);
         Assert.IsNotNull(result.Data.Responsibles);
         Assert.IsNotNull(result.Data.TagFunctions);
+        Assert.AreEqual(0, result.Data.FormularTypes.Count());
         Assert.AreEqual(0, result.Data.Responsibles.Count());
         Assert.AreEqual(0, result.Data.TagFunctions.Count());
     }
@@ -59,6 +65,11 @@ public class GetDuplicateInfoQueryHandlerTests
     [TestMethod]
     public async Task Handle_ShouldReturnCorrectInfo_WithResponsibles_WithTagFunctions()
     {
+        var formularType1 = new ProCoSys4FormularType("T1", "R1", "G1");
+        var formularType2 = new ProCoSys4FormularType("T2", "R2", "G2");
+        _formularTypeServiceMock.GetAllAsync(_testPlant, Arg.Any<CancellationToken>())
+            .Returns([formularType1, formularType2]);
+
         var responsible1 = new ProCoSys4Responsible("C1", "D1");
         var responsible2 = new ProCoSys4Responsible("C2", "D2");
         _responsibleServiceMock.GetAllAsync(_testPlant, Arg.Any<CancellationToken>())
@@ -76,8 +87,10 @@ public class GetDuplicateInfoQueryHandlerTests
         Assert.AreEqual(ResultType.Ok, result.ResultType);
 
         Assert.AreEqual(_query.CheckListDetailsDto, result.Data.CheckList);
+        Assert.IsNotNull(result.Data.FormularTypes);
         Assert.IsNotNull(result.Data.Responsibles);
         Assert.IsNotNull(result.Data.TagFunctions);
+        Assert.AreEqual(2, result.Data.FormularTypes.Count());
         Assert.AreEqual(2, result.Data.Responsibles.Count());
         Assert.AreEqual(2, result.Data.TagFunctions.Count());
 
