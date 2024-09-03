@@ -76,7 +76,18 @@ public sealed class ImportHandler(
         var plant = message.Site;
         logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid,
             message.Objects.Count);
- 
+
+        // Only CREATE/INSERT are supported for now.
+        if (message.Objects.Any(o => !IsCreateMethod(o)))
+        {
+            return new TIMessageResult
+            {
+                Guid = message.Guid,
+                Result = MessageResults.Failed,
+                ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
+            };
+        }
+        
         var validationErrors = ValidateInput(message);
         if (validationErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
         {
@@ -102,6 +113,12 @@ public sealed class ImportHandler(
 
         return messageResult;
     }
+    
+    //Should return true if method is  one of CREATE, INSERT or ALLOCATE
+    private static bool IsCreateMethod(TIObject o) =>
+        o.Method?.ToUpperInvariant() == "CREATE" 
+          || o.Method?.ToUpperInvariant() == "INSERT" 
+          || o.Method?.ToUpperInvariant() == "ALLOCATE";
 
     private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages,  PlantScopedImportDataContext scopedContext, string plant)
     {
