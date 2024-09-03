@@ -6,7 +6,7 @@ using Equinor.ProCoSys.Completion.Domain.Imports;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
-public sealed class PlantScopedImportDataContext(string plant)
+public sealed class ImportDataBundle(string plant)
 {
     public string Plant { get; } = plant;
     public List<LibraryItem> Library { get; } = [];

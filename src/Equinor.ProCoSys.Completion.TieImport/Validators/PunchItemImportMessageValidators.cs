@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 
 public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchItemImportMessage>
 {
-    public PunchItemImportMessageValidator(PlantScopedImportDataContext scopedImportDataContext)
+    public PunchItemImportMessageValidator(ImportDataBundle scopedImportDataBundle)
     {
         RuleLevelCascadeMode = CascadeMode.Continue;
         ClassLevelCascadeMode = CascadeMode.Continue;
@@ -51,9 +51,9 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
             .WithMessage("Need to set both ClearedDate and ClearedBy");
 
         RuleFor(message => message)
-            .Must(message => !scopedImportDataContext.PunchItems.Any(y =>
+            .Must(message => !scopedImportDataBundle.PunchItems.Any(y =>
                 y.ExternalItemNo == message.ExternalPunchItemNo && y.Plant == message.TiObject.Site &&
-                y.Project.Name == message.TiObject.Project && scopedImportDataContext.CheckLists.Any(y =>
+                y.Project.Name == message.TiObject.Project && scopedImportDataBundle.CheckLists.Any(y =>
                     y.ResponsibleCode == message.Responsible && y.Plant == message.TiObject.Site)))
             .When(message => message.TiObject.Method == Methods.Create)
             .WithMessage("An punch item already exists for the given ExternalPunchItemNo, Plant and ProjectName");

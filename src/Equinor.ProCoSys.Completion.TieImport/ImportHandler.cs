@@ -120,12 +120,12 @@ public sealed class ImportHandler(
           || o.Method?.ToUpperInvariant() == "INSERT" 
           || o.Method?.ToUpperInvariant() == "ALLOCATE";
 
-    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages,  PlantScopedImportDataContext scopedContext, string plant)
+    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages,  ImportDataBundle scopedBundle, string plant)
     {
         var importMessageErrors = new List<(Guid, IEnumerable<ImportError>)>();
         punchImportMessages.ForEach(pim =>
         {
-            var commandValidator = new PunchItemImportMessageValidator(scopedContext);
+            var commandValidator = new PunchItemImportMessageValidator(scopedBundle);
             var validationResult = commandValidator.Validate(pim);
             if (validationResult.IsValid)
             {
@@ -156,9 +156,9 @@ public sealed class ImportHandler(
     }
 
     private async Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message,
-        PlantScopedImportDataContext scopedContext)
+        ImportDataBundle bundle)
     {
-        var referencesService = new CommandReferencesService(scopedContext);
+        var referencesService = new CommandReferencesService(bundle);
         List<ImportError> errors = [];
         object? command;
         switch (message.TiObject.Method)
@@ -221,14 +221,13 @@ public sealed class ImportHandler(
         {
             return new ImportResult(message.TiObject, message, errors);
         }
-       
 
         var importResult = new ImportResult(message.TiObject,message,[]);
         try
         { 
             CheckForScriptInjection(message.TiObject);
             ValidateTieObjectCommonMinimumRequirements(message.TiObject);
-            await ImportObject(command!, scopedContext, CancellationToken.None);
+            await ImportObject(command!, bundle, CancellationToken.None);
             return importResult;
 
         }
@@ -280,7 +279,8 @@ public sealed class ImportHandler(
         {
             return (null, references.Errors);
         }
-        
+
+        bool.TryParse(message.MaterialRequired.Value, out var materialRequired);
         var command = new CreatePunchItemCommandForImport(
             message.Category!.Value,
             message.Description.Value ?? string.Empty,
@@ -298,7 +298,7 @@ public sealed class ImportHandler(
             null,
             null,
             message.ExternalPunchItemNo,
-            false, // FIXME
+            materialRequired,
             message.MaterialEta.Value,
             message.MaterialNo.Value
         );
@@ -369,7 +369,7 @@ public sealed class ImportHandler(
         return messageResult;
     }
     
-    private async Task<PlantScopedImportDataContext> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
+    private async Task<ImportDataBundle> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
     {
         using var scope = serviceScopeFactory.CreateScope();
 
@@ -386,7 +386,7 @@ public sealed class ImportHandler(
         => message.Objects.Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage);
     
     private async Task ImportObject(object importResult,
-        PlantScopedImportDataContext scopedImportDataContext, CancellationToken cancellationToken)
+        ImportDataBundle scopedImportDataBundle, CancellationToken cancellationToken)
     {
         //Import module is running as a background service which is lifetime singleton.
         //A singleton service cannot retrieve scoped services via constructor.
@@ -401,8 +401,8 @@ public sealed class ImportHandler(
         {
             throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
         }
-        plantSetter.SetPlant(scopedImportDataContext.Plant);
-        var importUser = scopedImportDataContext.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+        plantSetter.SetPlant(scopedImportDataBundle.Plant);
+        var importUser = scopedImportDataBundle.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
         currentUserSetter.SetCurrentUserOid(importUser.Guid);
        await mediator.Send(importResult, cancellationToken);
     }

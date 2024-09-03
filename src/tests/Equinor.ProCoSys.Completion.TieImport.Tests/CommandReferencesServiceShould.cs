@@ -12,7 +12,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 public class CommandReferencesServiceShould
 {
     private CommandReferencesService _service = null!;
-    private PlantScopedImportDataContext _context = null!;
+    private ImportDataBundle _bundle = null!;
     private readonly Project _project = new("TestPlant", Guid.NewGuid(), "ProjectName", "ProjectName");
 
     private readonly LibraryItem _raisedByOrg =
@@ -34,8 +34,8 @@ public class CommandReferencesServiceShould
     [TestInitialize]
     public void Setup()
     {
-        _context = new PlantScopedImportDataContext("TestPlant");
-        _service = new CommandReferencesService(_context);
+        _bundle = new ImportDataBundle("TestPlant");
+        _service = new CommandReferencesService(_bundle);
     }
     
     [TestMethod]
@@ -173,7 +173,7 @@ public class CommandReferencesServiceShould
         AddProjects();
         AddCheckLists();
         AddLibraryItems();
-        _context.AddPersons(new[]
+        _bundle.AddPersons(new[]
         {
             new Person(Guid.NewGuid(), "Person 1", "Person 1", "Person 1", "Person 1", false),
             new Person(Guid.NewGuid(), SksEquinorCom, SksEquinorCom, SksEquinorCom, SksEquinorCom, false)
@@ -208,15 +208,15 @@ public class CommandReferencesServiceShould
     }
     
     private void AddProjects() =>
-        _context.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
+        _bundle.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
 
-    private void AddCheckLists() => _context.AddCheckLists(new[]
+    private void AddCheckLists() => _bundle.AddCheckLists(new[]
     {
         new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
         new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),
     });
 
-    private void AddLibraryItems() => _context.AddLibraryItems(new[]
+    private void AddLibraryItems() => _bundle.AddLibraryItems(new[]
     {
         new LibraryItem("TestPlant", Guid.NewGuid(), "Lib1", "Lib1", LibraryType.COMPLETION_ORGANIZATION),
         new LibraryItem("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION),

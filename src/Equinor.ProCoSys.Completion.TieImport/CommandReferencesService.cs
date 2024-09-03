@@ -7,7 +7,7 @@ using static Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
-public sealed class CommandReferencesService(PlantScopedImportDataContext context)
+public sealed class CommandReferencesService(ImportDataBundle bundle)
 {
     public ICommandReferences GetAndValidatePunchItemReferencesForImport(PunchItemImportMessage message)
     {
@@ -59,7 +59,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
         if (personEmail is { HasValue: true, Value: not null } && date is { HasValue: true, Value: not null })
         {
-            var person = context.Persons.FirstOrDefault(x =>
+            var person = bundle.Persons.SingleOrDefault(x =>
                 string.Equals(x.Email, personEmail.Value, StringComparison.InvariantCultureIgnoreCase));
             if (person is null)
             {
@@ -86,7 +86,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private ICommandReferences GetProject(PunchItemImportMessage message, ICommandReferences references)
     {
-        var project = context.Projects.FirstOrDefault(x => x.Name == message.TiObject.Project);
+        var project = bundle.Projects.SingleOrDefault(x => x.Name == message.TiObject.Project);
         if (project is null)
         {
             references.Errors =
@@ -101,7 +101,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private ICommandReferences GetCheckList(PunchItemImportMessage message, ICommandReferences references)
     {
         var checkList =
-            context.CheckLists.SingleOrDefault(x 
+            bundle.CheckLists.SingleOrDefault(x 
                 => x.FormularType == message.FormType 
                    && x.TagNo == message.TagNo 
                    && message.Responsible == x.ResponsibleCode);
@@ -121,7 +121,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private ICommandReferences GetRaisedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
-        var raisedByOrg = context.Library.FirstOrDefault(x =>
+        var raisedByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.RaisedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (raisedByOrg is null)
         {
@@ -139,7 +139,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private ICommandReferences GetClearedByOrg(PunchItemImportMessage message, ICommandReferences references)
     {
-        var clearingByOrg = context.Library.FirstOrDefault(x =>
+        var clearingByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.ClearedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (clearingByOrg is null)
         {
@@ -157,7 +157,7 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
 
     private ICommandReferences GetPunchType(PunchItemImportMessage message, ICommandReferences references)
     {
-        var type = context.Library.FirstOrDefault(x =>
+        var type = bundle.Library.SingleOrDefault(x =>
             x.Code == message.PunchListType.Value && x.Type == PUNCHLIST_TYPE);
 
         references.TypeGuid = type?.Guid;
@@ -169,14 +169,14 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     {
         if (message.PunchItemNo is { HasValue: true, Value: not null })
         {
-            return context.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
+            return bundle.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
         }
-        return context.PunchItems
+        return bundle.PunchItems
             .SingleOrDefault(x =>
                 x.ExternalItemNo == message.ExternalPunchItemNo &&
                 x.Plant == message.TiObject.Site &&
                 x.Project.Name == message.TiObject.Project &&
-                context.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
+                bundle.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
                                             c.Plant == x.Plant &&
                                             c.ProCoSysGuid == x.CheckListGuid)
             );

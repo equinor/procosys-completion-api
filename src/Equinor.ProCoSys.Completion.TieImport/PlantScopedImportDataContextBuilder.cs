@@ -12,7 +12,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
 {
     //private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
 
-    public async Task<PlantScopedImportDataContext> BuildAsync(
+    public async Task<ImportDataBundle> BuildAsync(
         IReadOnlyCollection<PunchItemImportMessage> importMessages, CancellationToken cancellationToken)
     {
         var tagNoByPlantKeys = FetchKeysCreator.CreateTagKeys(importMessages);
@@ -23,7 +23,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
             .ToList();
         var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
-        var context = new PlantScopedImportDataContext(importMessages.First().TiObject.Site);
+        var context = new ImportDataBundle(importMessages.First().TiObject.Site);
         // _plantScopedImportDataContexts = importMessages
         //         .GroupBy(x => x.TiObject.Site)
         //         .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
