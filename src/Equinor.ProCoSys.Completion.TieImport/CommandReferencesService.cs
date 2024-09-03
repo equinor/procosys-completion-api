@@ -101,7 +101,10 @@ public sealed class CommandReferencesService(PlantScopedImportDataContext contex
     private ICommandReferences GetCheckList(PunchItemImportMessage message, ICommandReferences references)
     {
         var checkList =
-            context.CheckLists.FirstOrDefault(x => x.FormularType == message.FormType && x.TagNo == message.TagNo);
+            context.CheckLists.SingleOrDefault(x 
+                => x.FormularType == message.FormType 
+                   && x.TagNo == message.TagNo 
+                   && message.Responsible == x.ResponsibleCode);
         if (checkList is null)
         {
             references.Errors =

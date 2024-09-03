@@ -95,7 +95,7 @@ public sealed class ImportHandler(
         }
 
         var resultTasks = punchImportMessages.Select(pim 
-            => HandlePunchImportMessage(pim, scopedContexts[plant]));
+            => HandlePunchImportMessage(pim, scopedContexts));
         
         var results = await Task.WhenAll(resultTasks);
         var messageResult = CreateTiMessageResult(message, results);
@@ -103,12 +103,12 @@ public sealed class ImportHandler(
         return messageResult;
     }
 
-    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages, Dictionary<string, PlantScopedImportDataContext> scopedContexts, string plant)
+    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages,  PlantScopedImportDataContext scopedContext, string plant)
     {
         var importMessageErrors = new List<(Guid, IEnumerable<ImportError>)>();
         punchImportMessages.ForEach(pim =>
         {
-            var commandValidator = new PunchItemImportMessageValidator(scopedContexts[plant]);
+            var commandValidator = new PunchItemImportMessageValidator(scopedContext);
             var validationResult = commandValidator.Validate(pim);
             if (validationResult.IsValid)
             {
@@ -235,7 +235,7 @@ public sealed class ImportHandler(
         {
             return (null, references.Errors.ToList());
         }
-        var patchDocument = PunchItemImportMessageToUpdateCommand.CreateJsonPatchDocument(message, punchItem, references);
+        var patchDocument = ImportUpdateHelper.CreateJsonPatchDocument(message, punchItem, references);
         var clearedBy = references.ClearedBy;
         var verifiedBy = references.VerifiedBy;
         var rejectedBy = references.RejectedBy;
@@ -352,7 +352,7 @@ public sealed class ImportHandler(
         return messageResult;
     }
     
-    private async Task<Dictionary<string, PlantScopedImportDataContext>> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
+    private async Task<PlantScopedImportDataContext> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
     {
         using var scope = serviceScopeFactory.CreateScope();
 

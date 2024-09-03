@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests.Validators;
 [TestClass]
 public sealed class PunchTiObjectValidatorShould
 {
-    private PunchTiObjectValidator _validator;
+    private PunchTiObjectValidator _validator = null!;
 
     [TestInitialize]
     public void Setup() => _validator = new PunchTiObjectValidator();

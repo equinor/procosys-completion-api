@@ -97,7 +97,10 @@ public sealed class ImportDataFetcher(
         keys = keys
             .Distinct()
             .ToList();
-        if (keys.Count == 0) return [];
+        if (keys.Count == 0)
+        {
+            return [];
+        }
 
         var query = $"""
                      SELECT Guid, Id, Code, Description, Type, Plant, IsVoided, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp

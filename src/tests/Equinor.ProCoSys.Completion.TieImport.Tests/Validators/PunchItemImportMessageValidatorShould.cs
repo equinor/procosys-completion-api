@@ -1,4 +1,3 @@
-using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using FluentValidation.TestHelper;
 using Equinor.ProCoSys.Completion.Domain;
@@ -10,7 +9,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests.Validators;
 [TestClass]
 public sealed class PunchItemImportMessageValidatorShould
 {
-    private PunchItemImportMessageValidator _validator;
+    private PunchItemImportMessageValidator _validator = null!;
 
     private readonly PunchItemImportMessage _baseMessage = new(
         new TIObject{Guid = Guid.NewGuid(), Site = "Plant", Method = "CREATE", Project = "ProjectName"},  "TagNo", "ExternalPunchItemNo",
@@ -37,8 +36,7 @@ public sealed class PunchItemImportMessageValidatorShould
     [TestMethod]
     public void ValidateDescriptionIsRequiredForCreateMethod()
     {
-        var message = _baseMessage;
-        var result = _validator.TestValidate(message);
+        var result = _validator.TestValidate(_baseMessage);
         result.ShouldHaveValidationErrorFor(x => x.Description);
     }
 

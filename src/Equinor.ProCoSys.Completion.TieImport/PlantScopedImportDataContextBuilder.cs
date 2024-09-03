@@ -1,15 +1,18 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher importDataFetcher, IOptionsMonitor<TieImportOptions> tieOptions)
-    : IScopedContextLibraryTypeBuilder //TODO interface needed?
 {
-    private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
+    //private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
 
-    public async Task<Dictionary<string, PlantScopedImportDataContext>> BuildAsync(
+    public async Task<PlantScopedImportDataContext> BuildAsync(
         IReadOnlyCollection<PunchItemImportMessage> importMessages, CancellationToken cancellationToken)
     {
         var tagNoByPlantKeys = FetchKeysCreator.CreateTagKeys(importMessages);
@@ -20,52 +23,42 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
             .ToList();
         var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
-        _plantScopedImportDataContexts = importMessages
-                .GroupBy(x => x.TiObject.Site)
-                .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
-                .ToDictionary(k => k.Key, v => v.Value);
+        var context = new PlantScopedImportDataContext(importMessages.First().TiObject.Site);
+        // _plantScopedImportDataContexts = importMessages
+        //         .GroupBy(x => x.TiObject.Site)
+        //         .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
+        //         .ToDictionary(k => k.Key, v => v.Value);
 
         var tagTasks = CreateFetchTagsByPlantTasks(tagNoByPlantKeys.Distinct().ToArray(), cancellationToken);
-        await FetchLibraryItemsForPlantAsync(
+        context.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
             libraryItemsByPlant.SelectMany(x => x).ToList(),
-            cancellationToken);
-        await FetchPersonsAsync(personByEmailKeys, cancellationToken);
-        await FetchProjectsAsync(projectByPlantKeys, cancellationToken);
-        await WhenAllFetchTagsByPlantTasksAsync(tagTasks);
-        await FetchExternalPunchItemNosAsync(externalPunchItemNoKeys, cancellationToken);
+            cancellationToken));
+        context.AddPersons(await FetchPersonsAsync(personByEmailKeys, cancellationToken));
+        context.AddProjects(await FetchProjectsAsync(projectByPlantKeys, cancellationToken));
+        context.AddCheckLists(await WhenAllFetchTagsByPlantTasksAsync(tagTasks));
+        context.AddPunchItems(await FetchExternalPunchItemNosAsync(context.CheckLists,externalPunchItemNoKeys, cancellationToken));
 
-        return _plantScopedImportDataContexts;
+        return context;
+       // return _plantScopedImportDataContexts;
     }
 
-    private async Task FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
+    private async Task<PunchItem[]> FetchExternalPunchItemNosAsync(List<TagCheckList> checkLists,
+        IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
         CancellationToken cancellationToken)
     {
-        var checkLists = _plantScopedImportDataContexts
-            .SelectMany(c => c.Value.CheckLists)
-            .ToArray();
         var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(
             externalPunchItemNoKeys,
             checkLists,
             cancellationToken);
-
-        foreach (var plantPunches in punchItems.GroupBy(x => x.Plant))
-        {
-            _plantScopedImportDataContexts[plantPunches.Key].AddPunchItems(plantPunches.ToArray());
-        }
+        return punchItems;
     }
 
-    private async Task WhenAllFetchTagsByPlantTasksAsync(
+    private async Task<IReadOnlyCollection<TagCheckList>> WhenAllFetchTagsByPlantTasksAsync(
         IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> tagTasks)
     {
         var results = await Task.WhenAll(tagTasks);
-        var checkListsByPlant = results
-            .SelectMany(x => x)
-            .GroupBy(x => x.Plant);
 
-        foreach (var checkLists in checkListsByPlant)
-        {
-            _plantScopedImportDataContexts[checkLists.Key].AddCheckLists(checkLists.ToArray());
-        }
+        return results.SelectMany(x => x).ToArray();
     }
 
     private IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
@@ -73,40 +66,25 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         CancellationToken cancellationToken) =>
         importDataFetcher.CreateFetchTagsByPlantTasks(keys, cancellationToken);
 
-    private async Task FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
+    private async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
         CancellationToken cancellationToken)
     {
         var libraryItems = await importDataFetcher
             .FetchLibraryItemsForPlantAsync(keys, cancellationToken);
 
-        var byPlant = libraryItems.GroupBy(x => x.Plant);
-        foreach (var libraryItem in byPlant)
-        {
-            _plantScopedImportDataContexts[libraryItem.Key].AddLibraryItems(libraryItem.ToArray());
-        }
+        return libraryItems;
     }
 
-    private async Task FetchPersonsAsync(IReadOnlyCollection<PersonKey> keys, CancellationToken cancellationToken)
+    private async Task<IReadOnlyCollection<Person>> FetchPersonsAsync(IReadOnlyCollection<PersonKey> keys, CancellationToken cancellationToken)
     {
         var persons = await importDataFetcher.FetchPersonsAsync(keys, cancellationToken);
-
-        foreach (var scopedContext in _plantScopedImportDataContexts)
-        {
-            scopedContext.Value.AddPersons(persons);
-        }
+        return persons;
     }
 
-    private async Task FetchProjectsAsync(IReadOnlyCollection<ProjectByPlantKey> keys,
+    private async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(IReadOnlyCollection<ProjectByPlantKey> keys,
         CancellationToken cancellationToken)
     {
         var projects = await importDataFetcher.FetchProjectsAsync(keys, cancellationToken);
-
-        var byPlant = projects.GroupBy(x => x.Plant);
-        foreach (var project in byPlant)
-        {
-            _plantScopedImportDataContexts[project.Key].AddProjects(project.ToArray());
-        }
+        return projects;
     }
 }
-
-public interface IScopedContextLibraryTypeBuilder;
