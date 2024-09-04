@@ -153,6 +153,8 @@ public sealed class ImportDataFetcher(
         var plants = keys.Select(y => y.Plant).ToList();
         var projectNames = keys.Select(y => y.ProjectName).ToList();
 
+        
+        //TODO expand to handle PunchItemNo messages also if we do Update
         var punchItems = await completionContext.PunchItems
             .IgnoreQueryFilters()
             .AsNoTracking()

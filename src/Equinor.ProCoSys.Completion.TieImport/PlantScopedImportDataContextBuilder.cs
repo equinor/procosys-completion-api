@@ -24,10 +24,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
         var context = new ImportDataBundle(importMessages.First().TiObject.Site);
-        // _plantScopedImportDataContexts = importMessages
-        //         .GroupBy(x => x.TiObject.Site)
-        //         .Select(x => new { x.Key, Value = new PlantScopedImportDataContext(x.Key) })
-        //         .ToDictionary(k => k.Key, v => v.Value);
+
 
         var tagTasks = CreateFetchTagsByPlantTasks(tagNoByPlantKeys.Distinct().ToArray(), cancellationToken);
         context.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
@@ -39,7 +36,7 @@ public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher impor
         context.AddPunchItems(await FetchExternalPunchItemNosAsync(context.CheckLists,externalPunchItemNoKeys, cancellationToken));
 
         return context;
-       // return _plantScopedImportDataContexts;
+    
     }
 
     private async Task<PunchItem[]> FetchExternalPunchItemNosAsync(List<TagCheckList> checkLists,

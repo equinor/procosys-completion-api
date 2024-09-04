@@ -307,27 +307,24 @@ public sealed class ImportHandler(
     
     private static TIMessageResult CreateTiValidationErrorMessageResult(TIInterfaceMessage message, IEnumerable<(Guid TiObjectGuid, IEnumerable<ImportError> errors)> objectErrors)
     {
+        var importErrors = objectErrors.SelectMany(oe => oe.errors).ToList();
         var messageResult = new TIMessageResult
         {
             Guid = message.Guid,
             Result = MessageResults.Failed,
-            ErrorMessage = "One or more objects failed to import"
+            ErrorMessage = $"Errors(1 of {importErrors.Count}): {message.ObjectName} {importErrors.FirstOrDefault()?.Message}"
                
         };
-        foreach (var errorByObject in objectErrors)
+        foreach (var error in importErrors)
         {
-            foreach (var error in errorByObject.errors)
+            messageResult.AddLogEntry(new TILogEntry
             {
-                messageResult.AddLogEntry(new TILogEntry
-                {
-                    InterfaceName = "PunchItem",
-                    LogDescription = error.ToString(),
-                    Guid = errorByObject.TiObjectGuid,
-                    LogScope = "General",
-                    LogType = "Error",
-                    TimeStamp = DateTime.UtcNow
-                });
-            }
+                LogDescription = error.ToString(),
+                Guid = Guid.NewGuid(),
+                LogScopeByEnum = LogScopes.General,
+                LogTypeByEnum = LogTypes.Error,
+                TimeStamp = DateTime.UtcNow,
+            });
         }
         return messageResult;
     }
@@ -345,22 +342,18 @@ public sealed class ImportHandler(
                 : string.Empty
         };
 
-        foreach (var errorResult in results.Where(x => x.Errors.Any()))
+        foreach (var error in results.SelectMany(x => x.Errors))
         {
-            foreach (var error in errorResult.Errors)
-            {
                 messageResult.AddLogEntry(new TILogEntry
                 {
-                    InterfaceName = "PunchItem",
                     LogDescription = error.ToString(),
                     Guid = Guid.NewGuid(),
                     LogScope = "General",
                     LogType = "Error",
                     TimeStamp = DateTime.UtcNow
                 });
-            }
         }
-
+        
         foreach (var successResult in results.Where(x => !x.Errors.Any()))
         {
             messageResult.AddLogEntry($"GUID '{successResult.TiObject.Guid}' imported successfully", "PunchItem");

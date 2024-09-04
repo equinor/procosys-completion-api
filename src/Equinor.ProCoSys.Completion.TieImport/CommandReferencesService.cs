@@ -22,9 +22,10 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
         references = GetRaisedByOrg(message, references);
         references = GetClearedByOrg(message, references);
         references = GetPunchType(message, references);
-        references = GetPerson(references, x => x.ClearedBy, message.ClearedBy, message.ClearedDate, message);
-        references = GetPerson(references, x => x.VerifiedBy, message.VerifiedBy, message.VerifiedDate, message);
-        references = GetPerson(references, x => x.RejectedBy, message.RejectedBy, message.RejectedDate, message);
+        //TODO removed this bit until we implement Update
+        // references = GetPerson(references, x => x.ClearedBy, message.ClearedBy, message.ClearedDate, message);
+        // references = GetPerson(references, x => x.VerifiedBy, message.VerifiedBy, message.VerifiedDate, message);
+        // references = GetPerson(references, x => x.RejectedBy, message.RejectedBy, message.RejectedDate, message);
 
         return references;
     }
