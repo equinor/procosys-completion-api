@@ -17,7 +17,6 @@
     <PackageReference Include="MediatR" Version="12.2.0"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1"/>
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2"/>
-    <PackageReference Include="Statoil.TI.InterfaceServices" Version="1.7.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
