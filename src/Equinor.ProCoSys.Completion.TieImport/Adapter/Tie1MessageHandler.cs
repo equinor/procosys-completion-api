@@ -43,9 +43,11 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
 
         //TODO: 105593 Add custom application insights tracking 
 
+        var tie1Receipt = Tie1Receipt.Create(message.Message, GetReceiptStatus(result), GetReceiptComment(result));
+        tie1Receipt.Logs = GetReceiptLogs(result, message.Message.Site);
         return new MessageHandleResult<Tie1Receipt>
         {
-            Receipt = Tie1Receipt.Create(message.Message, GetReceiptStatus(result), GetReceiptComment(result))
+            Receipt = tie1Receipt
         };
     }
 
@@ -92,4 +94,45 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
 
         return string.Join(" | ", warningLogs);
     }
+    private static List<Log> GetReceiptLogs(TIMessageResult result, string site)
+    {
+        var logs = new List<Log>
+        {
+            // default log statement
+            new Log
+            {
+                LogType = LogTypes.Information,
+                Text = $"Processed by the adapter handling site {site}."
+            }
+        };
+
+        if (result.Logs.Any())
+        {
+            // We will only return the first 100 log entries due to TIE performance issues.
+            const int LogCount = 100;
+
+            logs.AddRange(
+                result.Logs.Take(LogCount).Select(logEntry =>
+                    new Log
+                    {
+                        LogType = ConvertToEnumLogType(logEntry.LogType),
+                        Text = logEntry.LogDescription
+                    }));
+
+            if (result.Logs.Count > LogCount)
+            {
+                logs.Add(new Log
+                {
+                    LogType = LogTypes.Information,
+                    Text = $"{result.Logs.Count - LogCount} more log entries were truncated."
+                });
+            }
+        }
+
+        return logs;
+    }
+    private static LogTypes ConvertToEnumLogType(string logType)
+        => Enum.TryParse(logType, true, out LogTypes parsedLogType)
+            ? parsedLogType
+            : LogTypes.Unknown;
 }
