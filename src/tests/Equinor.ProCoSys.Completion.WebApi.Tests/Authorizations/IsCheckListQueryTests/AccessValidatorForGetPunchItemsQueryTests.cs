@@ -12,12 +12,12 @@ public class AccessValidatorForGetPunchItemsQueryTests
     protected override GetPunchItemsQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
         {
-            CheckListDetailsDto = new CheckListDetailsDto(Guid.Empty, "FT", "RC", "TRC", "TRD", "TFC", "TFD", ProjectGuidWithAccess)
+            CheckListDetailsDto = new CheckListDetailsDto(Guid.Empty, "FT", "FG", "RC", "TRC", "TRD", "TFC", "TFD", ProjectGuidWithAccess)
         };
 
     protected override GetPunchItemsQuery GetQueryWithoutAccessToProjectToTest() 
         => new (Guid.Empty)
         {
-            CheckListDetailsDto = new CheckListDetailsDto(Guid.Empty, "FT", "RC", "TRC", "TRD", "TFC", "TFD", ProjectGuidWithoutAccess)
+            CheckListDetailsDto = new CheckListDetailsDto(Guid.Empty, "FT", "FG", "RC", "TRC", "TRD", "TFC", "TFD", ProjectGuidWithoutAccess)
         };
 }

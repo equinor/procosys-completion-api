@@ -13,6 +13,9 @@ using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
@@ -34,14 +37,16 @@ public class TestFactory : WebApplicationFactory<Program>
     private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = new();
-    private readonly List<IDisposable> _disposables = new();
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    public readonly ICheckListApiService CheckListApiServiceMock = Substitute.For<ICheckListApiService>();
+    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
+    private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
+    private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
+    private readonly ITagFunctionApiService _tagFunctionApiService = Substitute.For<ITagFunctionApiService>();
 
     public static string ResponsibleCodeWithAccess = "RespA";
     public static string ResponsibleCodeWithoutAccess = "RespB";
@@ -52,7 +57,7 @@ public class TestFactory : WebApplicationFactory<Program>
     public static Guid ProjectGuidWithoutAccess => KnownData.ProjectGuidB[KnownData.PlantA];
     public static Guid CheckListGuidNotRestricted => KnownData.CheckListGuidA[KnownData.PlantA];
     public static Guid CheckListGuidRestricted => KnownData.CheckListGuidB[KnownData.PlantA];
-    public static Guid CheckListGuidRestrictedProject => KnownData.CheckListGuidB[KnownData.PlantB];
+    public static Guid CheckListGuidInProjectWithoutAccess => KnownData.CheckListGuidB[KnownData.PlantB];
     public static Guid RaisedByOrgGuid => KnownData.RaisedByOrgGuid[KnownData.PlantA];
     public static Guid ClearingByOrgGuid => KnownData.ClearingByOrgGuid[KnownData.PlantA];
     public static Guid PriorityGuid => KnownData.PriorityGuid[KnownData.PlantA];
@@ -136,11 +141,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             testUser.Value.HttpClient.Dispose();
         }
             
-        foreach (var disposable in _disposables)
-        {
-            try { disposable.Dispose(); } catch { /* Ignore */ }
-        }
-            
         lock (s_padlock)
         {
             s_instance = null;
@@ -177,9 +177,12 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
             services.AddScoped(_ => _personApiServiceMock);
             services.AddScoped(_ => _permissionApiServiceMock);
-            services.AddScoped(_ => CheckListApiServiceMock);
+            services.AddScoped(_ => _checkListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
             services.AddScoped(_ => _emailServiceMock);
+            services.AddScoped(_ => _formularTypeApiService);
+            services.AddScoped(_ => _responsibleApiService);
+            services.AddScoped(_ => _tagFunctionApiService);
         });
 
         builder.ConfigureServices(services =>
@@ -196,8 +199,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             EnsureTestDatabaseDeletedAtTeardown(services);
         });
     }
-
-    
 
     private void ReplaceRealDbContextWithTestDbContext(IServiceCollection services)
     {
@@ -269,20 +270,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             dbContext.Database.EnsureDeleted();
         });
 
-    private CompletionContext DatabaseContext(IServiceCollection services)
-    {
-        services.AddDbContext<CompletionContext>(options 
-            => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
-
-        var sp = services.BuildServiceProvider();
-        _disposables.Add(sp);
-
-        var spScope = sp.CreateScope();
-        _disposables.Add(spScope);
-
-        return spScope.ServiceProvider.GetRequiredService<CompletionContext>();
-    }
-
     private string GetTestDbConnectionString(string projectDir)
     {
         var dbName = "IntegrationTestsDB";
@@ -304,17 +291,15 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             .Returns(Task.FromResult(testUser.Restrictions));
     }
 
-    public void SetupBlobStorageMock(Uri uri) 
-    {
-        BlobStorageMock.GetDownloadSasUri(
-            Arg.Any<string>(), 
-            Arg.Any<string>(), 
-            Arg.Any<DateTimeOffset>(), 
-            Arg.Any<DateTimeOffset>(), 
-            Arg.Any<string>(), 
-            Arg.Any<string>())
+    public void SetupBlobStorageMock(Uri uri)
+        => BlobStorageMock.GetDownloadSasUri(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<string>(),
+                Arg.Any<string>())
             .Returns(uri);
-    }
 
     private void SetupTestUsers()
     {
@@ -389,7 +374,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
-        // Need to mock getting info for current application from Main. This to satisfy VerifyIpoApiClientExists middleware
+        // Need to mock getting info for current application from Main. This to satisfy VerifyApplicationExistsAsPerson
         var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
         var apiObjectId = config["Application:ObjectId"];
         if (apiObjectId is null)
@@ -414,39 +399,84 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Person1,
                     Person2
                 ]);
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidNotRestricted,
-                "FT", 
-                ResponsibleCodeWithAccess, 
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidRestricted,
-                "FT",
-                ResponsibleCodeWithoutAccess,
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithAccess));
-        CheckListApiServiceMock.GetCheckListAsync(CheckListGuidRestrictedProject, Arg.Any<CancellationToken>())
-            .Returns(new ProCoSys4CheckList(
-                CheckListGuidRestrictedProject,
-                "FT",
-                ResponsibleCodeWithoutAccess,
-                "TRC",
-                "TRD",
-                "TFC",
-                "TFD",
-                false, 
-                ProjectGuidWithoutAccess));
+        var checkListNotRestricted = new ProCoSys4CheckList(
+            CheckListGuid: CheckListGuidNotRestricted,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false, 
+            ProjectGuid: ProjectGuidWithAccess);
+        var checkListRestricted = new ProCoSys4CheckList(
+            CheckListGuid: CheckListGuidRestricted,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithoutAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false,
+            ProjectGuid: ProjectGuidWithAccess);
+        var checkListInProjectWithoutAccess = new ProCoSys4CheckList(
+            CheckListGuid: CheckListGuidInProjectWithoutAccess,
+            FormularType: "FT",
+            FormularGroup: "FG",
+            ResponsibleCode: ResponsibleCodeWithoutAccess,
+            TagFunctionCode: "TFC",
+            TagFunctionDescription: "TFD",
+            TagRegisterCode: "TRC",
+            TagRegisterDescription: "TRD",
+            IsVoided: false,
+            ProjectGuid: ProjectGuidWithoutAccess);
+
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidNotRestricted, Arg.Any<CancellationToken>())
+            .Returns(checkListNotRestricted);
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidRestricted, Arg.Any<CancellationToken>())
+            .Returns(checkListRestricted);
+        _checkListApiServiceMock.GetCheckListAsync(CheckListGuidInProjectWithoutAccess, Arg.Any<CancellationToken>())
+            .Returns(checkListInProjectWithoutAccess);
+
+        _checkListApiServiceMock.GetManyCheckListsAsync(Arg.Any<List<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _checkListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidNotRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListNotRestricted]);
+        _checkListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidRestricted)), Arg.Any<CancellationToken>())
+            .Returns([checkListRestricted]);
+        _checkListApiServiceMock.GetManyCheckListsAsync(
+                Arg.Is<List<Guid>>(guids => guids.Contains(CheckListGuidInProjectWithoutAccess)), Arg.Any<CancellationToken>())
+            .Returns([checkListInProjectWithoutAccess]);
+
+        var searchResult = new ProCoSys4CheckListSearchResult(
+        [
+            new ProCoSys4CheckListSearchDto(
+                Guid.NewGuid(), "T", "C", "M", "FT", "FG", "OK", "RC", "TRC", "TRD", "TFC", "TFD", 1, 2, 3)
+        ], 10);
+
+        _checkListApiServiceMock.SearchCheckListsAsync(
+            ProjectGuidWithAccess,
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<int>(),
+            Arg.Any<int>(),
+            Arg.Any<CancellationToken>()).Returns(searchResult);
+
+        List<ProCoSys4FormularType> formularTypes = [new ProCoSys4FormularType("T", "Rem", "FG")];
+        _formularTypeApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(formularTypes);
+
+        List<ProCoSys4Responsible> responsibles = [new ProCoSys4Responsible("R1C", "R1D")];
+        _responsibleApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(responsibles);
+
+        List<ProCoSys4TagFunction> tagFunctions = [new ProCoSys4TagFunction("TF1C", "TF1R", "R1C", "R1D")];
+        _tagFunctionApiService.GetAllAsync(PlantWithAccess, Arg.Any<CancellationToken>()).Returns(tagFunctions);
     }
 
     // Authenticated client without any roles
@@ -493,6 +523,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 Permissions =
                 [
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ,
                     Permissions.USER_READ,
                     Permissions.WO_READ,
@@ -531,6 +562,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ,
                     Permissions.USER_READ
                 ],
@@ -564,6 +596,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
+                    Permissions.MCCR_READ,
                     Permissions.LIBRARY_READ
                 ],
                 AccessableProjects = accessableProjects,

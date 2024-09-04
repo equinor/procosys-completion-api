@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -42,6 +43,14 @@ public abstract class AccessValidatorTestBase
     protected static CheckListDetailsDto CheckListWithAccessCheckListButNotProject =
         new(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess);
 
+
+    protected static List<CheckListDetailsDto> CheckListsWithAccessToBothProjectAndContent =
+        [new(CheckListGuidWithAccessToContent, "R", false, ProjectGuidWithAccess)];
+    protected static List<CheckListDetailsDto> CheckListsWithAccessToProjectButNotContent =
+        [new(CheckListGuidWithoutAccessToContent, "R", false, ProjectGuidWithAccess)];
+    protected static List<CheckListDetailsDto> CheckListsWithAccessCheckListButNotProject =
+        [new(Guid.NewGuid(), "R", false, ProjectGuidWithoutAccess)];
+
     protected AccessValidator _dut = null!;
 
     [TestInitialize]
@@ -57,6 +66,10 @@ public abstract class AccessValidatorTestBase
         accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessToBothProjectAndContent)
             .Returns(true);
         accessCheckerMock.HasCurrentUserWriteAccessToCheckList(CheckListWithAccessCheckListButNotProject)
+            .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToAllCheckLists(CheckListsWithAccessToBothProjectAndContent)
+            .Returns(true);
+        accessCheckerMock.HasCurrentUserWriteAccessToAllCheckLists(CheckListsWithAccessCheckListButNotProject)
             .Returns(true);
         _dut = new AccessValidator(
             Substitute.For<ICurrentUserProvider>(),

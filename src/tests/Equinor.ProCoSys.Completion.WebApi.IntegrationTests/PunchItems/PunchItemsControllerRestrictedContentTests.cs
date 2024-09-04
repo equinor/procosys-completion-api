@@ -11,6 +11,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.PunchItems;
 public class PunchItemsControllerRestrictedContentTests : TestBase
 {
     private readonly string _plantWithAccess = TestFactory.PlantWithAccess;
+    private readonly Guid _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemA.Guid;
 
     #region CreatePunchItem
     [TestMethod]
@@ -341,6 +342,18 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             rowVersionAfterVerify,
             HttpStatusCode.Forbidden);
     }
+    #endregion
+
+    #region DuplicatePunchItem
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsRestrictedWriter_ShouldReturnForbidden()
+        => await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.RestrictedWriter,
+            _plantWithAccess,
+            _punchItemGuidUnderTest,
+            [TestFactory.CheckListGuidRestricted],
+            false,
+            expectedStatusCode: HttpStatusCode.Forbidden);
     #endregion
 
     private async Task<GuidAndRowVersion> CreatePunchItemInRestrictedCheckListAsync()

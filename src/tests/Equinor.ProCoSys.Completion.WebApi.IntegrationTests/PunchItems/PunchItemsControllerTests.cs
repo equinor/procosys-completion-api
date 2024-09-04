@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Projects;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -22,8 +23,8 @@ public class PunchItemsControllerTests : TestBase
     public async Task TestInitialize()
     {
         _punchItemGuidUnderTest = TestFactory.Instance.SeededData[TestFactory.PlantWithAccess].PunchItemA.Guid;
-        _initialPunchItemsInProject = await PunchItemsControllerTestsHelper
-            .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
+        _initialPunchItemsInProject = await ProjectsControllerTestsHelper
+            .GetAllPunchItemsAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         TestFactory.Instance.SetupBlobStorageMock(new Uri("http://blah.blah.com"));
     }
 
@@ -64,8 +65,8 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.SortingGuid, newPunchItem.Sorting!.Guid);
         Assert.AreEqual(TestFactory.TypeGuid, newPunchItem.Type!.Guid);
 
-        var allPunchItems = await PunchItemsControllerTestsHelper
-            .GetAllPunchItemsInProjectAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
+        var allPunchItems = await ProjectsControllerTestsHelper
+            .GetAllPunchItemsAsync(UserType.Writer, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
         Assert.AreEqual(_initialPunchItemsInProject.Count+1, allPunchItems.Count);
     }
 
@@ -85,17 +86,6 @@ public class PunchItemsControllerTests : TestBase
         Assert.IsNotNull(punchItem.Priority);
         Assert.IsNotNull(punchItem.Sorting);
         Assert.IsNotNull(punchItem.Type);
-    }
-
-    [TestMethod]
-    public async Task GetAllPunchItemsInProject_AsReader_ShouldGetPunchItems()
-    {
-        // Act
-        var punchItems = await PunchItemsControllerTestsHelper
-            .GetAllPunchItemsInProjectAsync(UserType.Reader, TestFactory.PlantWithAccess, TestFactory.ProjectGuidWithAccess);
-
-        // Assert (can't assert the exact number since other tests creates items in in-memory db)
-        Assert.IsTrue(punchItems.Count > 0);
     }
 
     [TestMethod]
@@ -883,17 +873,62 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetPunchItemsByCheckListGuid_AsReader_ShouldGetPunchItems()
+    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicateWithoutAttachments()
     {
+        // Arrange
+        var fileName = Guid.NewGuid().ToString();
+        var (punchItemGuidAndRowVersion, _)
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
+
         // Act
-        var punchItems = await PunchItemsControllerTestsHelper.GetPunchItemsByCheckListGuid(
-            UserType.Reader,
+        var result = await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
             TestFactory.PlantWithAccess,
-            TestFactory.CheckListGuidNotRestricted
-            );
+            punchItemGuidAndRowVersion.Guid,
+            [TestFactory.CheckListGuidNotRestricted],
+            false);
 
         // Assert
-        Assert.IsTrue(0 < punchItems.Count);
+        Assert.AreEqual(1, result.Count);
+        var newPunchItemGuid = result.ElementAt(0).Guid;
+        var punchItem = await PunchItemsControllerTestsHelper.GetPunchItemAsync(
+            UserType.Writer, 
+            TestFactory.PlantWithAccess, 
+            newPunchItemGuid);
+        Assert.IsNotNull(punchItem);
+        Assert.IsTrue(punchItem.IsReadyToBeCleared);
+
+        var punchItemAttachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            newPunchItemGuid);
+        Assert.AreEqual(0, punchItemAttachments.Count);
+    }
+
+    [TestMethod]
+    public async Task DuplicatePunchItem_AsWriter_ShouldDuplicateWithAttachments()
+    {
+        // Arrange
+        var fileName = Guid.NewGuid().ToString();
+        var (punchItemGuidAndRowVersion, _)
+            = await UploadNewPunchItemAttachmentOnVerifiedPunchAsync(fileName);
+
+        // Act
+        var result = await PunchItemsControllerTestsHelper.DuplicatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            punchItemGuidAndRowVersion.Guid,
+            [TestFactory.CheckListGuidNotRestricted],
+            true);
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        var newPunchItemGuid = result.ElementAt(0).Guid;
+        var punchItemAttachments = await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            newPunchItemGuid);
+        Assert.AreEqual(1, punchItemAttachments.Count);
     }
 
     [TestMethod]

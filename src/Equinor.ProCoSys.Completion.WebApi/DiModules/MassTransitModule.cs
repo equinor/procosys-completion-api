@@ -26,6 +26,7 @@ public static class MassTransitModule
             x.AddConsumer<HistoryItemUpdatedEventConsumer>();
             x.AddConsumer<HistoryItemDeletedEventConsumer>();
             x.AddConsumer<AttachmentDeletedConsumer>();
+            x.AddConsumer<AttachmentCopyEventConsumer>();
 
             x.AddConsumer<ProjectEventConsumer>()
                 .Endpoint(e =>
@@ -378,7 +379,6 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                 });
-                
                 cfg.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("completion"));
                 #endregion
 

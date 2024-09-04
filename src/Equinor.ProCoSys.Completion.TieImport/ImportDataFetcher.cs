@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
-using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Tags;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -34,8 +33,8 @@ public interface IImportDataFetcher
 
 public sealed class ImportDataFetcher(
     CompletionContext completionContext,
-    ICheckListCache checkListCache,
-    ITagService tagService) : IImportDataFetcher
+    //ICheckListCache checkListCache,
+    ICheckListApiService checkListService) : IImportDataFetcher
 {
     public async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(IReadOnlyCollection<ProjectByPlantKey> keys,
         CancellationToken cancellationToken)
@@ -197,17 +196,18 @@ public sealed class ImportDataFetcher(
     private async Task<IReadOnlyCollection<TagCheckList>> CreateFetchTagsByPlantTask(string plant, string projectName,
         TagNoByProjectNameAndPlantKey[] keys, CancellationToken cancellationToken)
     {
-        var tagNos = keys.Select(x => x.TagNo).ToArray();
-        var tags = await tagService.GetTagsByTagNosAsync(plant, projectName, tagNos, cancellationToken);
+        throw new NotImplementedException();
+        //var tagNos = keys.Select(x => x.TagNo).ToArray();
+        //var tags = await tagService.GetTagsByTagNosAsync(plant, projectName, tagNos, cancellationToken);
 
-        var tasks = tags.Select(tag =>
-            checkListCache.GetCheckListsByTagIdAsync(tag.Id, plant, cancellationToken));
+        //var tasks = tags.Select(tag =>
+        //    checkListCache.GetCheckListsByTagIdAsync(tag.Id, plant, cancellationToken));
 
-        var results = await Task.WhenAll(tasks);
+        //var results = await Task.WhenAll(tasks);
 
-        return results
-            .SelectMany(x => x) // Flatten
-            .Where(x => keys.Any(y => y.FormType == x.FormularType)) //if we had more specific webApi endpoint, this is not needed
-            .ToArray();
+        //return results
+        //    .SelectMany(x => x) // Flatten
+        //    .Where(x => keys.Any(y => y.FormType == x.FormularType)) //if we had more specific webApi endpoint, this is not needed
+        //    .ToArray();
     }
 }

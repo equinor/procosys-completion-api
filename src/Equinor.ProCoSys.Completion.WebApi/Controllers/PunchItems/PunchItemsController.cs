@@ -14,6 +14,7 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItemLink;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DuplicatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
@@ -25,7 +26,6 @@ using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemLink;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.Query.Attachments;
-using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.Comments;
 using Equinor.ProCoSys.Completion.Query.Links;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
@@ -34,7 +34,6 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemComments;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemHistory;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemLinks;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Attachments;
 using Equinor.ProCoSys.Completion.WebApi.Controllers.Comments;
@@ -55,17 +54,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 /// </summary>
 [ApiController]
 [Route("PunchItems")]
-public class PunchItemsController : ControllerBase
+public class PunchItemsController(IMediator mediator, ILogger<PunchItemsController> logger) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<PunchItemsController> _logger;
-
-    public PunchItemsController(IMediator mediator, ILogger<PunchItemsController> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-
     #region PunchItems
 
     /// <summary>
@@ -86,52 +76,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemQuery(guid), cancellationToken);
-        return this.FromResult(result);
-    }
-
-    /// <summary>
-    /// Get all PunchItems in given project (no filtering available yet)
-    /// </summary>
-    /// <param name="plant">ID of plant in PCS$PLANT format</param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="projectGuid">Guid of project where to get PunchItems</param>
-    /// <returns>List of PunchItems (or empty list)</returns>
-    /// <response code="404">Project not found</response>
-    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<PunchItemDto>>> GetPunchItemsInProject(
-        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
-        [Required]
-        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant,
-        CancellationToken cancellationToken,
-        [Required] [FromQuery] Guid projectGuid)
-    {
-        var result = await _mediator.Send(new GetPunchItemsInProjectQuery(projectGuid), cancellationToken);
-        return this.FromResult(result);
-    }
-
-    /// <summary>
-    /// Get all PunchItems by CheckList (Guid)
-    /// </summary>
-    /// <param name="plant">ID of plant in PCS$PLANT format</param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="checkListGuid">Guid of checklist</param>
-    /// <returns>List of PunchItems (or empty list)</returns>
-    /// <response code="404">Project not found</response>
-    [Obsolete]
-    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
-    [HttpGet("CheckList/{checkListGuid}")]
-    public async Task<ActionResult<IEnumerable<PunchItemDetailsDto>>> GetPunchItemsByCheckListGuid(
-        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
-        [Required]
-        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
-        string plant,
-        CancellationToken cancellationToken,
-        [Required][FromRoute] Guid checkListGuid)
-    {
-        var result = await _mediator.Send(new GetPunchItemsQuery(checkListGuid), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -153,7 +98,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromBody] CreatePunchItemDto dto)
     {
-        var result = await _mediator.Send(new CreatePunchItemCommand(
+        var result = await mediator.Send(new CreatePunchItemCommand(
                 dto.Category,
                 dto.Description,
                 dto.CheckListGuid,
@@ -173,6 +118,32 @@ public class PunchItemsController : ControllerBase
                 dto.MaterialRequired,
                 dto.MaterialETAUtc,
                 dto.MaterialExternalNo),
+            cancellationToken);
+        return this.FromResult(result);
+    }
+
+    /// <summary>
+    /// Duplicate a PunchItem to given checklists
+    /// </summary>
+    /// <param name="plant">ID of plant in PCS$PLANT format</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="guid">Guid on PunchItem to duplicate</param>
+    /// <param name="dto"></param>
+    /// <returns>List of Guid and RowVersion of created PunchItems</returns>
+    /// <response code="400">Input validation error (error returned in body)</response>
+    [AuthorizeAny(Permissions.PUNCHITEM_CREATE, Permissions.APPLICATION_TESTER)]
+    [HttpPost("{guid}/Duplicate")]
+    public async Task<ActionResult<List<GuidAndRowVersion>>> DuplicatePunchItem(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant,
+        CancellationToken cancellationToken,
+        [FromRoute] Guid guid,
+        [FromBody] DuplicatePunchItemDto dto)
+    {
+        var result = await mediator.Send(
+            new DuplicatePunchItemCommand(guid, dto.CheckListGuids, dto.DuplicateAttachments),
             cancellationToken);
         return this.FromResult(result);
     }
@@ -201,7 +172,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] PatchPunchItemDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UpdatePunchItemCommand(guid, dto.PatchDocument, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -229,7 +200,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] UpdatePunchItemCategoryDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UpdatePunchItemCategoryCommand(guid, dto.Category, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -255,7 +226,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new ClearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
@@ -280,7 +251,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UnclearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
@@ -305,7 +276,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RejectPunchItemDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new RejectPunchItemCommand(guid, dto.Comment, dto.Mentions, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
@@ -330,7 +301,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new VerifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
@@ -355,7 +326,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UnverifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
@@ -378,7 +349,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
+        var result = await mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -406,7 +377,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] CreateLinkDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new CreatePunchItemLinkCommand(guid, dto.Title, dto.Url),
             cancellationToken);
         return this.FromResult(result);
@@ -430,7 +401,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemLinksQuery(guid), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemLinksQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -456,7 +427,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid linkGuid,
         [FromBody] UpdateLinkDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UpdatePunchItemLinkCommand(guid, linkGuid, dto.Title, dto.Url, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -482,7 +453,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid linkGuid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new DeletePunchItemLinkCommand(guid, linkGuid, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -512,7 +483,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromBody] CreateCommentDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new CreatePunchItemCommentCommand(guid, dto.Text, dto.Labels, dto.Mentions), cancellationToken);
         return this.FromResult(result);
     }
@@ -535,7 +506,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemCommentsQuery(guid), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemCommentsQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -566,7 +537,7 @@ public class PunchItemsController : ControllerBase
     {
         await using var stream = dto.File.OpenReadStream();
 
-        var result = await _mediator.Send(new UploadNewPunchItemAttachmentCommand(
+        var result = await mediator.Send(new UploadNewPunchItemAttachmentCommand(
             guid,
             dto.File.FileName,
             stream,
@@ -598,7 +569,7 @@ public class PunchItemsController : ControllerBase
     {
         await using var stream = dto.File.OpenReadStream();
 
-        var result = await _mediator.Send(new OverwriteExistingPunchItemAttachmentCommand(
+        var result = await mediator.Send(new OverwriteExistingPunchItemAttachmentCommand(
             guid, 
             dto.File.FileName,
             dto.RowVersion,
@@ -628,7 +599,7 @@ public class PunchItemsController : ControllerBase
     {
         var ipAddress = GetClientIpAddress();
 
-        var result = await _mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
         return this.FromResult(result);
     }
 
@@ -652,7 +623,7 @@ public class PunchItemsController : ControllerBase
             return realIpHeader;
         }
 
-        _logger.LogInformation("No headers found, using connection: {IpAddress}",
+        logger.LogInformation("No headers found, using connection: {IpAddress}",
             Request.HttpContext.Connection.RemoteIpAddress?.ToString());
         return Request.HttpContext.Connection.RemoteIpAddress?.ToString();
     }
@@ -663,7 +634,7 @@ public class PunchItemsController : ControllerBase
         
         if (string.IsNullOrEmpty(ipAddress))
         {
-            _logger.LogWarning("No IP address found");
+            logger.LogWarning("No IP address found");
             return null;
         }
         
@@ -679,7 +650,7 @@ public class PunchItemsController : ControllerBase
             ipAddress = ipAddresses[0].Trim();
         }
         
-        _logger.LogInformation("Using address: {IpAddress}", ipAddress);
+        logger.LogInformation("Using address: {IpAddress}", ipAddress);
         return ipAddress;
     }
 
@@ -703,7 +674,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid attachmentGuid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -730,7 +701,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid guid,
         [FromRoute] Guid attachmentGuid)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new GetPunchItemAttachmentDownloadUrlQuery(guid, attachmentGuid),
             cancellationToken);
 
@@ -764,7 +735,7 @@ public class PunchItemsController : ControllerBase
         [FromRoute] Guid attachmentGuid,
         [FromBody] UpdateAttachmentDto dto)
     {
-        var result = await _mediator.Send(
+        var result = await mediator.Send(
             new UpdatePunchItemAttachmentCommand(guid, attachmentGuid, dto.Description, dto.Labels, dto.RowVersion),
             cancellationToken);
         return this.FromResult(result);
@@ -792,7 +763,7 @@ public class PunchItemsController : ControllerBase
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var result = await _mediator.Send(new GetPunchItemHistoryQuery(guid), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemHistoryQuery(guid), cancellationToken);
         return this.FromResult(result);
     }
 

@@ -60,7 +60,7 @@ public class AttachmentService(
         attachmentRepository.Add(attachment);
         await UploadAsync(attachment, content, false, verifiedContentType, cancellationToken);
 
-        var integrationEvent = await PublishCreatedEventsAsync(attachment, cancellationToken);
+        var integrationEvent = await PublishCreatedEventsAsync(attachment, "uploaded", cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -122,6 +122,38 @@ public class AttachmentService(
     {
         var attachment = await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, fileName, cancellationToken);
         return attachment is not null;
+    }
+
+    public async Task<List<AttachmentCreatedIntegrationEvent>> CopyAttachments(List<Attachment> attachments, string parentType, Guid parentGuid, string project, CancellationToken cancellationToken)
+    {
+        var integrationEvents = new List<AttachmentCreatedIntegrationEvent>();
+        foreach (var att in attachments)
+        {
+            var attachment =
+                await attachmentRepository.GetAttachmentWithFileNameForParentAsync(parentGuid, att.FileName,
+                    cancellationToken);
+            if (attachment is not null)
+            {
+                throw new Exception(
+                    $"{parentType} {parentGuid} already has an attachment with filename {att.FileName}");
+            }
+
+            attachment = new Attachment(
+                project,
+                parentType,
+                parentGuid,
+                att.FileName);
+
+            attachmentRepository.Add(attachment);
+
+            var integrationEvent = await PublishCreatedEventsAsync(attachment, "duplicated", cancellationToken);
+            integrationEvents.Add(integrationEvent);
+
+            await messageProducer.SendCopyAttachmentEventAsync(new AttachmentCopyIntegrationEvent(att.Guid, att.GetFullBlobPath(),
+                attachment.Guid, attachment.GetFullBlobPath()), cancellationToken);
+        }
+
+        return integrationEvents;
     }
 
     public async Task DeleteAsync(
@@ -230,7 +262,7 @@ public class AttachmentService(
             attachment.ParentGuid);
     }
 
-    private async Task<AttachmentCreatedIntegrationEvent> PublishCreatedEventsAsync(Attachment attachment, CancellationToken cancellationToken)
+    private async Task<AttachmentCreatedIntegrationEvent> PublishCreatedEventsAsync(Attachment attachment, string eventType, CancellationToken cancellationToken)
     {
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
         await unitOfWork.SetAuditDataAsync();
@@ -243,7 +275,7 @@ public class AttachmentService(
             new Property(nameof(Attachment.FileName), attachment.FileName)
         };
         var historyEvent = new HistoryCreatedIntegrationEvent(
-            $"Attachment {attachment.FileName} uploaded",
+            $"Attachment {attachment.FileName} {eventType}",
             attachment.Guid,
             attachment.ParentGuid,
             new User(attachment.CreatedBy.Guid, attachment.CreatedBy.GetFullName()),

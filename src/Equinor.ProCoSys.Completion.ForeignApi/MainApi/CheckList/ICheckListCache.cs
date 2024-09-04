@@ -9,5 +9,5 @@ namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 public interface ICheckListCache
 {
     Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<TagCheckList>> GetCheckListsByTagIdAsync(int tagId, string plant, CancellationToken cancellationToken);
+    Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken);
 }

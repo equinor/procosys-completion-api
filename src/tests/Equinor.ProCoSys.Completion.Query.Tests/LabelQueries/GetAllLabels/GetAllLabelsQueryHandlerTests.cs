@@ -40,7 +40,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabelAsync(context);
 
         var dut = new GetAllLabelsQueryHandler(context);
 
@@ -58,7 +58,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabelAsync(context);
 
         var dut = new GetAllLabelsQueryHandler(context);
 
@@ -80,7 +80,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        await Add4UnorderedLabelsInclusiveAVoidedLabel(context);
+        await Add4UnorderedLabelsInclusiveAVoidedLabelAsync(context);
 
         var dut = new GetAllLabelsQueryHandler(context);
 

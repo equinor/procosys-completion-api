@@ -1,32 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Caches;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.Imports;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 public class CheckListCache(
     ICacheManager cacheManager,
-    IDistributedCache distributedCache,
     ICheckListApiService checkListApiService,
-    IOptionsMonitor<ApplicationOptions> applicationOptions,
-    ILogger<CheckListCache> logger)
+    IOptionsMonitor<ApplicationOptions> applicationOptions)
     : ICheckListCache
 {
-    private readonly DistributedCacheEntryOptions _options = new()
-    {
-        SlidingExpiration = TimeSpan.FromMinutes(applicationOptions.CurrentValue.CheckListCacheExpirationMinutes)
-    };
-
     public async Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken)
         => await cacheManager.GetOrCreateAsync(
             CheckListGuidCacheKey(checkListGuid),
@@ -35,37 +23,39 @@ public class CheckListCache(
             applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
             cancellationToken);
 
-    public async Task<IReadOnlyCollection<TagCheckList>> GetCheckListsByTagIdAsync(int tagId, string plant, CancellationToken cancellationToken)
+    public async Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken)
     {
-        var checkListGuidCacheKey = CheckListBygTagAndPlantCacheKey(tagId, plant);
-
-        var cachedChecklist = await distributedCache.GetStringAsync(checkListGuidCacheKey, cancellationToken);
-        if (string.IsNullOrEmpty(cachedChecklist))
+        var cacheKeys = new List<string>();
+        foreach (var checkListGuid in checkListGuids)
         {
-            var checkList = await checkListApiService.GetCheckListsByTagIdAndPlantAsync(tagId, plant, cancellationToken);
-            await distributedCache.SetStringAsync(checkListGuidCacheKey, JsonSerializer.Serialize(checkList), _options,
-                cancellationToken);
-            return checkList;
+            cacheKeys.Add(CheckListGuidCacheKey(checkListGuid));
         }
 
-        try
+        var checkListsFromCache = await cacheManager.GetManyAsync<ProCoSys4CheckList>(cacheKeys, cancellationToken);
+
+        var foundCheckListGuids = checkListsFromCache.Select(c => c.CheckListGuid);
+        var notFoundCheckListGuids = checkListGuids.Except(foundCheckListGuids).ToList();
+
+        if (notFoundCheckListGuids.Count > 0)
         {
-            var checkLists = JsonSerializer.Deserialize<TagCheckList[]>(cachedChecklist) ?? [];
-            return checkLists
-                .Select(x => x with { Plant = plant })
-                .ToArray();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to Deserialize CheckList {CacheKey}", checkListGuidCacheKey);
+            var checkListsFromProCoSys4 =
+                await checkListApiService.GetManyCheckListsAsync(notFoundCheckListGuids, cancellationToken);
+            foreach (var checkList in checkListsFromProCoSys4)
+            {
+                await cacheManager.CreateAsync(
+                    CheckListGuidCacheKey(checkList.CheckListGuid),
+                    checkList,
+                    CacheDuration.Minutes,
+                    applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
+                    cancellationToken);
+            }
+
+            checkListsFromCache.AddRange(checkListsFromProCoSys4);
         }
 
-        return [];
+        return checkListsFromCache;
     }
 
-    private static string CheckListGuidCacheKey(Guid checkListGuid)
+    public static string CheckListGuidCacheKey(Guid checkListGuid)
         => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";
-
-    private static string CheckListBygTagAndPlantCacheKey(int tagId, string plant)
-        => $"CHKLIST_tagId_{tagId}_plant_{plant}";
 }

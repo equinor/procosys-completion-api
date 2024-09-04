@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -7,6 +8,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Audit;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
+using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Person = Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate.Person;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -429,4 +432,13 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ActionBy = actionBy;
         ItemNo = itemNo;
     }
+
+    public List<IProperty> GetRequiredProperties()
+        =>
+        [
+            new Property(nameof(Category), Category.ToString()),
+            new Property(nameof(Description), Description),
+            new Property(nameof(RaisedByOrg), RaisedByOrg.ToString()),
+            new Property(nameof(ClearingByOrg), ClearingByOrg.ToString())
+        ];
 }

@@ -1,5 +1,4 @@
-using System;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+﻿using System;
 
 namespace Equinor.ProCoSys.Completion.Domain.Imports;
 

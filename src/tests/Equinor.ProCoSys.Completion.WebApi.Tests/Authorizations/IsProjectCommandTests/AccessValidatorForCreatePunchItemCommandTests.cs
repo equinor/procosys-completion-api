@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectCommandTests;
 
 [TestClass]
-public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForCommandNeedAccessTests<CreatePunchItemCommand>
+public class AccessValidatorForCreatePunchItemCommandTests : AccessValidatorForCommandNeedCheckListAccessTests<CreatePunchItemCommand>
 {
     protected override CreatePunchItemCommand GetCommandWithAccessToBothProjectAndContent()
         => new(

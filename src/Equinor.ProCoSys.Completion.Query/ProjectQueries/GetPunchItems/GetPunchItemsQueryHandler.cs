@@ -10,15 +10,15 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ServiceResult;
 
-namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemsInProject;
+namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 
-public class GetPunchItemsInProjectQueryHandler : IRequestHandler<GetPunchItemsInProjectQuery, Result<IEnumerable<PunchItemDto>>>
+public class GetPunchItemsQueryHandler : IRequestHandler<GetPunchItemsQuery, Result<IEnumerable<PunchItemDto>>>
 {
     private readonly IReadOnlyContext _context;
 
-    public GetPunchItemsInProjectQueryHandler(IReadOnlyContext context) => _context = context;
+    public GetPunchItemsQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<PunchItemDto>>> Handle(GetPunchItemsInProjectQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<PunchItemDto>>> Handle(GetPunchItemsQuery request, CancellationToken cancellationToken)
     {
         var punchItems =
             await (from punchItem in _context.QuerySet<PunchItem>()
@@ -33,7 +33,7 @@ public class GetPunchItemsInProjectQueryHandler : IRequestHandler<GetPunchItemsI
                        punchItem.Description,
                        punchItem.RowVersion.ConvertToString())
                 )
-                .TagWith($"{nameof(GetPunchItemsInProjectQueryHandler)}.{nameof(Handle)}")
+                .TagWith($"{nameof(GetPunchItemsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
 
         return new SuccessResult<IEnumerable<PunchItemDto>>(punchItems);

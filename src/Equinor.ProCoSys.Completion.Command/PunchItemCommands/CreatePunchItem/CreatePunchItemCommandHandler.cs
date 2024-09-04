@@ -64,7 +64,7 @@ public class CreatePunchItemCommandHandler<TRequest>(
             raisedByOrg,
             clearingByOrg);
 
-        var properties = GetRequiredProperties(punchItem);
+        var properties = punchItem.GetRequiredProperties();
 
         await SetActionByAsync(punchItem, request.ActionByPersonOid, properties, cancellationToken);
         SetDueTime(punchItem, request.DueTimeUtc, properties);
@@ -114,28 +114,32 @@ public class CreatePunchItemCommandHandler<TRequest>(
             throw;
         }
 
+        var guidAndRowVersion = new GuidAndRowVersion(punchItem.Guid,
+            punchItem.RowVersion.ConvertToString());
         try
         {
             await syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", punchItem.Guid);
-            return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
-                punchItem.RowVersion.ConvertToString()));
+            logger.LogError(e, 
+                "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", 
+                punchItem.Guid);
+            return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
         }
 
         try
         {
-            await checkListApiService.RecalculateCheckListStatus(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e,
+                "Error occurred while trying to Recalculate the completion status for check list with guid {CheckListGuid}", 
+                punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(punchItem.Guid,
-            punchItem.RowVersion.ConvertToString()));
+        return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(
@@ -157,15 +161,6 @@ public class CreatePunchItemCommandHandler<TRequest>(
 
         return integrationEvent;
     }
-
-    private List<IProperty> GetRequiredProperties(PunchItem punchItem)
-        =>
-        [
-            new Property(nameof(PunchItem.Category), punchItem.Category.ToString()),
-            new Property(nameof(PunchItem.Description), punchItem.Description),
-            new Property(nameof(PunchItem.RaisedByOrg), punchItem.RaisedByOrg.ToString()),
-            new Property(nameof(PunchItem.ClearingByOrg), punchItem.ClearingByOrg.ToString())
-        ];
 
     private void SetMaterialExternalNo(PunchItem punchItem, string? materialExternalNo, List<IProperty> properties)
     {
