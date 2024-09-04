@@ -7,7 +7,6 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
@@ -73,10 +72,19 @@ public sealed class ImportHandler(
 
     private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
     {
-        var plant = message.Site;
         logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid,
             message.Objects.Count);
 
+        // Only CREATE/INSERT are supported for now.
+        if (message.Objects.Count > 1)
+        {
+            return new TIMessageResult
+            {
+                Guid = message.Guid,
+                Result = MessageResults.Failed,
+                ErrorMessage = $"Punch Import only supports one object per message, was given {message.Objects.Count}" 
+            };
+        }
         // Only CREATE/INSERT are supported for now.
         if (message.Objects.Any(o => !IsCreateMethod(o)))
         {
@@ -99,7 +107,7 @@ public sealed class ImportHandler(
         //Creates a dictionary of data based on the plant of the message.
         var scopedContexts = await CreateScopedContexts(punchImportMessages);
         
-        var importMessageErrors = ValidateBasedOnFetchedData(punchImportMessages, scopedContexts, plant);
+        var importMessageErrors = ValidatePunchImportMessages(punchImportMessages);
         if (importMessageErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
         {
             return CreateTiValidationErrorMessageResult(message, importMessageErrors);
@@ -120,12 +128,12 @@ public sealed class ImportHandler(
           || o.Method?.ToUpperInvariant() == "INSERT" 
           || o.Method?.ToUpperInvariant() == "ALLOCATE";
 
-    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidateBasedOnFetchedData(List<PunchItemImportMessage> punchImportMessages,  ImportDataBundle scopedBundle, string plant)
+    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidatePunchImportMessages(List<PunchItemImportMessage> punchImportMessages)
     {
         var importMessageErrors = new List<(Guid, IEnumerable<ImportError>)>();
         punchImportMessages.ForEach(pim =>
         {
-            var commandValidator = new PunchItemImportMessageValidator(scopedBundle);
+            var commandValidator = new PunchItemImportMessageValidator();
             var validationResult = commandValidator.Validate(pim);
             if (validationResult.IsValid)
             {
@@ -159,64 +167,67 @@ public sealed class ImportHandler(
         ImportDataBundle bundle)
     {
         var referencesService = new CommandReferencesService(bundle);
-        List<ImportError> errors = [];
-        object? command;
-        switch (message.TiObject.Method)
-        {
-             //same as create
-            case "CREATE": case "ALLOCATE": case "INSERT":
-                {
-                    var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
-                    errors = importErrors.ToList();
-                    command = createCommand;
-                    break;
-                }
-            case "MODIFY": case "APPEND":
-                {
-                    var punchItem = referencesService.GetPunchItem(message);
-                    if(punchItem is null)
-                    {
-                        var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
-                        errors = importErrors.ToList();
-                        command = createCommand;
-                    }
-                    else
-                    {
-                        var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
-                        errors =  importErrors;
-                        command = updateCommand;
-                    }
-                    break; 
-                }
-            case "UPDATE":
-                {
-                    var punchItem = referencesService.GetPunchItem(message);
-                    if(punchItem is null)
-                    {
-                        errors = [message.ToImportError("PunchItem not found, can't be updated")];
-                        return new ImportResult(message.TiObject, message, errors);
-                    }
-                    var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
-                    errors = importErrors;
-                    command = updateCommand;
-                    break;
-                }
-            case "DELETE":
-                {
-                    var punchItem = referencesService.GetPunchItem(message);
-                    if(punchItem is null)
-                    {
-                        errors = [message.ToImportError("PunchItem not found, can't be deleted")];
-                        return new ImportResult(message.TiObject, message, errors);
-                    }
-                    command = new DeletePunchItemCommand(punchItem.Guid,
-                        punchItem.RowVersion.ConvertToString());
-                    break;
-                }
-            default:
-                throw new NotImplementedException(); 
-        }
-        
+        var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
+        var errors = importErrors.ToList();
+        var command = createCommand;
+        // List<ImportError> errors = [];
+        // object? command;
+        // switch (message.TiObject.Method)
+        // {
+        //      //same as create
+        //     case "CREATE": case "ALLOCATE": case "INSERT":
+        //         {
+        //             var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
+        //             errors = importErrors.ToList();
+        //             command = createCommand;
+        //             break;
+        //         }
+        //     case "MODIFY": case "APPEND":
+        //         {
+        //             var punchItem = referencesService.GetPunchItem(message);
+        //             if(punchItem is null)
+        //             {
+        //                 var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
+        //                 errors = importErrors.ToList();
+        //                 command = createCommand;
+        //             }
+        //             else
+        //             {
+        //                 var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
+        //                 errors =  importErrors;
+        //                 command = updateCommand;
+        //             }
+        //             break; 
+        //         }
+        //     case "UPDATE":
+        //         {
+        //             var punchItem = referencesService.GetPunchItem(message);
+        //             if(punchItem is null)
+        //             {
+        //                 errors = [message.ToImportError("PunchItem not found, can't be updated")];
+        //                 return new ImportResult(message.TiObject, message, errors);
+        //             }
+        //             var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
+        //             errors = importErrors;
+        //             command = updateCommand;
+        //             break;
+        //         }
+        //     case "DELETE":
+        //         {
+        //             var punchItem = referencesService.GetPunchItem(message);
+        //             if(punchItem is null)
+        //             {
+        //                 errors = [message.ToImportError("PunchItem not found, can't be deleted")];
+        //                 return new ImportResult(message.TiObject, message, errors);
+        //             }
+        //             command = new DeletePunchItemCommand(punchItem.Guid,
+        //                 punchItem.RowVersion.ConvertToString());
+        //             break;
+        //         }
+        //     default:
+        //         throw new NotImplementedException(); 
+        // }
+        //
         if (errors.Count != 0)
         {
             return new ImportResult(message.TiObject, message, errors);

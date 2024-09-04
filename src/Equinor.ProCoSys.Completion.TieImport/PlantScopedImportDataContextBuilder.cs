@@ -10,58 +10,56 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class PlantScopedImportDataContextBuilder(IImportDataFetcher importDataFetcher, IOptionsMonitor<TieImportOptions> tieOptions)
 {
-    //private Dictionary<string, PlantScopedImportDataContext> _plantScopedImportDataContexts = new();
-
     public async Task<ImportDataBundle> BuildAsync(
         IReadOnlyCollection<PunchItemImportMessage> importMessages, CancellationToken cancellationToken)
     {
-        var tagNoByPlantKeys = FetchKeysCreator.CreateTagKeys(importMessages);
         var libraryItemsByPlant = FetchKeysCreator.CreateLibraryItemKeys(importMessages);
-        var personByEmailKeys = FetchKeysCreator.CreatePersonKeys(importMessages, tieOptions.CurrentValue.ImportUserName);
         var projectByPlantKeys = FetchKeysCreator
             .CreateProjectKeys(importMessages)
             .ToList();
-        var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
+        // var personByEmailKeys = FetchKeysCreator.CreatePersonKeys(importMessages, tieOptions.CurrentValue.ImportUserName);
+        //var externalPunchItemNoKeys = FetchKeysCreator.CreateExternalPunchItemNoKeys(importMessages);
 
         var context = new ImportDataBundle(importMessages.First().TiObject.Site);
-
-
-        var tagTasks = CreateFetchTagsByPlantTasks(tagNoByPlantKeys.Distinct().ToArray(), cancellationToken);
         context.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
             libraryItemsByPlant.SelectMany(x => x).ToList(),
             cancellationToken));
-        context.AddPersons(await FetchPersonsAsync(personByEmailKeys, cancellationToken));
         context.AddProjects(await FetchProjectsAsync(projectByPlantKeys, cancellationToken));
-        context.AddCheckLists(await WhenAllFetchTagsByPlantTasksAsync(tagTasks));
-        context.AddPunchItems(await FetchExternalPunchItemNosAsync(context.CheckLists,externalPunchItemNoKeys, cancellationToken));
+        context.AddCheckLists(await FetchChecklistGuidsAsync(importMessages));
+        //context.AddPersons(await FetchPersonsAsync(personByEmailKeys, cancellationToken));
+        //context.AddPunchItems(await GetPunchItemNoByExternalNoAndChecklist(context.CheckListGuids,externalPunchItemNoKeys, cancellationToken));
 
         return context;
+    }
     
-    }
+    //TODO fix when update
+    // private async Task<PunchItem[]> GetPunchItemNoByExternalNoAndChecklist(List<Guid?> checkLists,
+    //     IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(
+    //         externalPunchItemNoKeys,
+    //         checkLists,
+    //         cancellationToken);
+    //     return punchItems;
+    // }
 
-    private async Task<PunchItem[]> FetchExternalPunchItemNosAsync(List<TagCheckList> checkLists,
-        IReadOnlyCollection<ExternalPunchItemKey> externalPunchItemNoKeys,
-        CancellationToken cancellationToken)
+    private async Task<List<Guid?>> FetchChecklistGuidsAsync(IEnumerable<PunchItemImportMessage> messages)
     {
-        var punchItems = await importDataFetcher.FetchExternalPunchItemNosAsync(
-            externalPunchItemNoKeys,
-            checkLists,
-            cancellationToken);
-        return punchItems;
+        var results = new List<Guid?>();
+        
+        foreach (var punchItemImportMessage in messages)
+        {
+            var checklistGuid = await importDataFetcher.GetCheckListGuidByCheckListMetaInfo(punchItemImportMessage, CancellationToken.None);
+            results.Add(checklistGuid);
+        }
+        return results;
     }
 
-    private async Task<IReadOnlyCollection<TagCheckList>> WhenAllFetchTagsByPlantTasksAsync(
-        IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> tagTasks)
-    {
-        var results = await Task.WhenAll(tagTasks);
-
-        return results.SelectMany(x => x).ToArray();
-    }
-
-    private IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
-        TagNoByProjectNameAndPlantKey[] keys,
-        CancellationToken cancellationToken) =>
-        importDataFetcher.CreateFetchTagsByPlantTasks(keys, cancellationToken);
+    // private IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
+    //     TagNoByProjectNameAndPlantKey[] keys,
+    //     CancellationToken cancellationToken) =>
+    //     importDataFetcher.GetCheckListGuidsByCheckListMetaInfo(keys, cancellationToken);
 
     private async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
         CancellationToken cancellationToken)

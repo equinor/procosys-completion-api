@@ -12,12 +12,12 @@ public sealed class ImportDataBundle(string plant)
     public List<LibraryItem> Library { get; } = [];
     public List<Person> Persons { get; } = [];
     public List<Project> Projects { get; } = [];
-    public List<TagCheckList> CheckLists { get; } = [];
+    public List<Guid?> CheckListGuids { get; } = [];
     public List<PunchItem> PunchItems { get; } = [];
 
     public void AddLibraryItems(IReadOnlyCollection<LibraryItem> libraryItems) => Library.AddRange(libraryItems);
     public void AddPersons(IReadOnlyCollection<Person> persons) => Persons.AddRange(persons);
     public void AddProjects(IReadOnlyCollection<Project> projects) => Projects.AddRange(projects);
-    public void AddCheckLists(IReadOnlyCollection<TagCheckList> checkLists) => CheckLists.AddRange(checkLists);
+    public void AddCheckLists(IReadOnlyCollection<Guid?> checkLists) => CheckListGuids.AddRange(checkLists);
     public void AddPunchItems(PunchItem[] punchItems) => PunchItems.AddRange(punchItems);
 }

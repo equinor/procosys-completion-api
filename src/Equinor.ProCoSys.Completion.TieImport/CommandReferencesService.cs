@@ -101,22 +101,17 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
 
     private ICommandReferences GetCheckList(PunchItemImportMessage message, ICommandReferences references)
     {
-        var checkList =
-            bundle.CheckLists.SingleOrDefault(x 
-                => x.FormularType == message.FormType 
-                   && x.TagNo == message.TagNo 
-                   && message.Responsible == x.ResponsibleCode);
-        if (checkList is null)
+        var checkListGuid = bundle.CheckListGuids.SingleOrDefault();
+        if (checkListGuid is null)
         {
             references.Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' not found")
+                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' and responsible {message.Responsible} not found")
             ];
         }
 
-        references.CheckListGuid = checkList?.ProCoSysGuid ?? Guid.Empty;
-
+        references.CheckListGuid = checkListGuid ?? Guid.Empty;
         return references;
     }
 
@@ -166,20 +161,20 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
         return references;
     }
 
-    public PunchItem? GetPunchItem(PunchItemImportMessage message)
-    {
-        if (message.PunchItemNo is { HasValue: true, Value: not null })
-        {
-            return bundle.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
-        }
-        return bundle.PunchItems
-            .SingleOrDefault(x =>
-                x.ExternalItemNo == message.ExternalPunchItemNo &&
-                x.Plant == message.TiObject.Site &&
-                x.Project.Name == message.TiObject.Project &&
-                bundle.CheckLists.Any(c => c.ResponsibleCode == message.Responsible &&
-                                            c.Plant == x.Plant &&
-                                            c.ProCoSysGuid == x.CheckListGuid)
-            );
-    }
+    // public PunchItem? GetPunchItem(PunchItemImportMessage message)
+    // {
+    //     if (message.PunchItemNo is { HasValue: true, Value: not null })
+    //     {
+    //         return bundle.PunchItems.SingleOrDefault(item => item.ItemNo == int.Parse(message.PunchItemNo.Value));
+    //     }
+    //     return bundle.PunchItems
+    //         .SingleOrDefault(x =>
+    //             x.ExternalItemNo == message.ExternalPunchItemNo &&
+    //             x.Plant == message.TiObject.Site &&
+    //             x.Project.Name == message.TiObject.Project &&
+    //             bundle.CheckListGuids.Any(c => c.ResponsibleCode == message.Responsible &&
+    //                                         c.Plant == x.Plant &&
+    //                                         c.ProCoSysGuid == x.CheckListGuid)
+    //         );
+    // }
 }

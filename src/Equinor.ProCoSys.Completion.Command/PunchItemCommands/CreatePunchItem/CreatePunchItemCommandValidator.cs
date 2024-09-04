@@ -11,6 +11,7 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 {
     public CreatePunchItemCommandValidator(
         IProjectValidator projectValidator,
+        IPunchItemValidator punchItemValidator,
         ILibraryItemValidator libraryItemValidator,
         IWorkOrderValidator workOrderValidator,
         ISWCRValidator swcrValidator,
@@ -26,6 +27,10 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
             .MustAsync(NotBeAClosedProjectAsync)
             .WithMessage(command => $"Project for given check list is closed! Guid={command.CheckListDetailsDto.ProjectGuid}")
 
+            .MustAsync(BeAnUniqueExternalItemNo)
+            .WithMessage(command => $"ExternalItemNo already exists in project! ExternalItemNo={command.ExternalItemNo}")
+            .When(command => command.ExternalItemNo is not null, ApplyConditionTo.CurrentValidator)
+            
             // validate given CheckList
             .Must(command => !command.CheckListDetailsDto.IsOwningTagVoided)
             .WithMessage(command => $"Tag owning check list is voided! Check list guid={command.CheckListGuid}")
@@ -182,6 +187,11 @@ public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItem
 
         async Task<bool> NotBeAClosedProjectAsync(CreatePunchItemCommand command, CancellationToken cancellationToken)
             => !await projectValidator.IsClosedAsync(command.CheckListDetailsDto.ProjectGuid, cancellationToken);
+            
+        //TODO UnitTests
+        async Task<bool> BeAnUniqueExternalItemNo(CreatePunchItemCommand command, CancellationToken cancellationToken)
+            => !await punchItemValidator.ExternalItemNoExistsInProjectAsync(command.ExternalItemNo!, command.CheckListDetailsDto.ProjectGuid, cancellationToken);
+      
 
         async Task<bool> BeAnExistingLibraryItemAsync(Guid guid, CancellationToken cancellationToken)
             => await libraryItemValidator.ExistsAsync(guid, cancellationToken);

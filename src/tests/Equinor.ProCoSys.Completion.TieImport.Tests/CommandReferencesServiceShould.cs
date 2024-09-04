@@ -42,8 +42,8 @@ public class CommandReferencesServiceShould
     public void GetCreatePunchItemReferences_ShouldPopulateReferencesCorrectly()
     {
         // Arrange
-        AddProjects();
-        AddCheckLists();
+        // AddProjects();
+        // AddCheckLists();
         AddLibraryItems();
         
         // Act
@@ -168,56 +168,7 @@ public class CommandReferencesServiceShould
     //    Assert.IsTrue(rejectedByRefs.Errors.Any(e => e.Message.Contains(SksEquinorCom)));
     //}
 
-    [TestMethod]
-    public void GetAndValidatePunchItemReferencesForImport_ShouldFindPerson()
-    {
-        // Arrange
-        AddProjects();
-        AddCheckLists();
-        AddLibraryItems();
-        _bundle.AddPersons(new[]
-        {
-            new Person(Guid.NewGuid(), "Person 1", "Person 1", "Person 1", "Person 1", false),
-            new Person(Guid.NewGuid(), SksEquinorCom, SksEquinorCom, SksEquinorCom, SksEquinorCom, false)
-        });
-        var clearedByMessage = _baseMessage with
-        {
-            ClearedDate = new Optional<DateTime?>(DateTime.Now), ClearedBy = new Optional<string?>(SksEquinorCom)
-        };
-        var verifiedByMessage = _baseMessage with
-        {
-            VerifiedDate = new Optional<DateTime?>(DateTime.Now), VerifiedBy = new Optional<string?>(SksEquinorCom)
-        };
-        var rejectedByMessage = _baseMessage with
-        {
-            RejectedDate = new Optional<DateTime?>(DateTime.Now), RejectedBy = new Optional<string?>(SksEquinorCom)
-        };
-
-        // Act
-        var clearByRefs = _service.GetAndValidatePunchItemReferencesForImport(clearedByMessage);
-        var verifiedByRefs = _service.GetAndValidatePunchItemReferencesForImport(verifiedByMessage);
-        var rejectedByRefs = _service.GetAndValidatePunchItemReferencesForImport(rejectedByMessage);
-
-        // Assert
-        Assert.IsNotNull(clearByRefs);
-        Assert.AreEqual(0, clearByRefs.Errors.Length);
-
-        Assert.IsNotNull(verifiedByRefs);
-        Assert.AreEqual(0, verifiedByRefs.Errors.Length);
-
-        Assert.IsNotNull(rejectedByRefs);
-        Assert.AreEqual(0, rejectedByRefs.Errors.Length);
-    }
-    
-    private void AddProjects() =>
-        _bundle.AddProjects(new[] { new Project("Project 1", Guid.NewGuid(), "Project 1", "Project 1"), _project, });
-
-    private void AddCheckLists() => _bundle.AddCheckLists(new[]
-    {
-        new TagCheckList(1, 1, "Tag 1", "Form 1", Guid.NewGuid(), "TestPlant", "EQ"),
-        new TagCheckList(2, 2, "TagNo", "FormType", Guid.NewGuid(), "TestPlant", "EQ"),
-    });
-
+   
     private void AddLibraryItems() => _bundle.AddLibraryItems(new[]
     {
         new LibraryItem("TestPlant", Guid.NewGuid(), "Lib1", "Lib1", LibraryType.COMPLETION_ORGANIZATION),

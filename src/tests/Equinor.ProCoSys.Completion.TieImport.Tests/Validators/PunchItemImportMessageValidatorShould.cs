@@ -23,7 +23,7 @@ public sealed class PunchItemImportMessageValidatorShould
 
     [TestInitialize]
     public void Setup() =>
-        _validator = new PunchItemImportMessageValidator(new ImportDataBundle("TestPlant"));
+        _validator = new PunchItemImportMessageValidator();
 
     [TestMethod]
     public void ValidateCategoryIsRequired()

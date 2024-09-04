@@ -21,20 +21,19 @@ public interface IImportDataFetcher
 
     Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(IReadOnlyCollection<LibraryItemByPlant> keys,
         CancellationToken cancellationToken);
+    
+    // Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+    //     IReadOnlyCollection<TagCheckList> checkLists,
+    //     CancellationToken cancellationToken);
 
-    IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
-        IReadOnlyCollection<TagNoByProjectNameAndPlantKey> keys,
-        CancellationToken cancellationToken);
-
-    Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
-        IReadOnlyCollection<TagCheckList> checkLists,
-        CancellationToken cancellationToken);
+    Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
+        PunchItemImportMessage message, CancellationToken cancellationToken);
 }
 
 public sealed class ImportDataFetcher(
     CompletionContext completionContext,
-    //ICheckListCache checkListCache,
-    ICheckListApiService checkListService) : IImportDataFetcher
+    ICheckListCache checkListCache
+    ) : IImportDataFetcher
 {
     public async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(IReadOnlyCollection<ProjectByPlantKey> keys,
         CancellationToken cancellationToken)
@@ -128,87 +127,56 @@ public sealed class ImportDataFetcher(
         return items;
     }
 
-    public IReadOnlyCollection<Task<IReadOnlyCollection<TagCheckList>>> CreateFetchTagsByPlantTasks(
-        IReadOnlyCollection<TagNoByProjectNameAndPlantKey> keys, CancellationToken cancellationToken)
-    {
-        var tasks = new List<Task<IReadOnlyCollection<TagCheckList>>>();
-        var byPlant = keys.GroupBy(x => x.Plant);
+    public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
+        PunchItemImportMessage message, CancellationToken cancellationToken) =>
+        await checkListCache.GetCheckListGuidByMetaInfoAsync(message.TiObject.Site, message.TagNo, message.Responsible, message.FormType, cancellationToken);
 
-        foreach (var plantKeys in byPlant)
-        {
-            var byProject = plantKeys.GroupBy(x => x.ProjectName);
-            tasks.AddRange(byProject.Select(projectKeys =>
-                CreateFetchTagsByPlantTask(plantKeys.Key, projectKeys.Key, projectKeys.ToArray(), cancellationToken)));
-        }
-
-        return tasks;
-    }
-
-    public async Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
-        IReadOnlyCollection<TagCheckList> checkLists,
-        CancellationToken cancellationToken)
-    {
-        var externalItemNos = keys.Select(y => y.ExternalPunchItemNo).ToList();
-        var plants = keys.Select(y => y.Plant).ToList();
-        var projectNames = keys.Select(y => y.ProjectName).ToList();
-
-        
-        //TODO expand to handle PunchItemNo messages also if we do Update
-        var punchItems = await completionContext.PunchItems
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Include(x => x.RaisedByOrg)
-            .Include(x => x.ClearingByOrg)
-            .Include(x => x.Type)
-            .Include(x => x.ClearedBy)
-            .Include(x => x.VerifiedBy)
-            .Include(x => x.RejectedBy)
-            .Include(x => x.Project)
-            .Where(x => !string.IsNullOrEmpty(x.ExternalItemNo)
-                        && externalItemNos.Contains(x.ExternalItemNo)
-                        && plants.Contains(x.Plant)
-                        && projectNames.Contains(x.Project.Name))
-            .ToArrayAsync(cancellationToken);
-
-        var byPlant = punchItems.GroupBy(x => x.Plant);
-
-        var punchItemsByExternalPunchItemKey = new List<PunchItem>();
-        foreach (var plantPunches in byPlant)
-        {
-            var filteredPunches = plantPunches
-                .Select(p => new
-                {
-                    Punch = p,
-                    Key = keys.First(k =>
-                        k.ExternalPunchItemNo == p.ExternalItemNo && k.Plant == p.Plant &&
-                        k.ProjectName == p.Project.Name)
-                })
-                .Where(pk => checkLists.Any(c =>
-                    c.Plant == pk.Key.Plant && c.ProCoSysGuid == pk.Punch.CheckListGuid && c.ResponsibleCode ==
-                    pk.Key.Responsible))
-                .Select(x => x.Punch);
-            punchItemsByExternalPunchItemKey.AddRange(filteredPunches);
-        }
-
-        return punchItemsByExternalPunchItemKey.ToArray();
-    }
-
-    private async Task<IReadOnlyCollection<TagCheckList>> CreateFetchTagsByPlantTask(string plant, string projectName,
-        TagNoByProjectNameAndPlantKey[] keys, CancellationToken cancellationToken)
-    {
-
-        throw new NotImplementedException();
-        //var tagNos = keys.Select(x => x.TagNo).ToArray();
-        //var tags = await tagService.GetTagsByTagNosAsync(plant, projectName, tagNos, cancellationToken);
-
-        //var tasks = tags.Select(tag =>
-        //    checkListCache.GetCheckListsByTagIdAsync(tag.Id, plant, cancellationToken));
-
-        //var results = await Task.WhenAll(tasks);
-
-        //return results
-        //    .SelectMany(x => x) // Flatten
-        //    .Where(x => keys.Any(y => y.FormType == x.FormularType)) //if we had more specific webApi endpoint, this is not needed
-        //    .ToArray();
-    }
+    // public async Task<PunchItem[]> FetchExternalPunchItemNosAsync(IReadOnlyCollection<ExternalPunchItemKey> keys,
+    //     IReadOnlyCollection<TagCheckList> checkLists,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var externalItemNos = keys.Select(y => y.ExternalPunchItemNo).ToList();
+    //     var plants = keys.Select(y => y.Plant).ToList();
+    //     var projectNames = keys.Select(y => y.ProjectName).ToList();
+    //
+    //     
+    //     //TODO expand to handle PunchItemNo messages also if we do Update
+    //     var punchItems = await completionContext.PunchItems
+    //         .IgnoreQueryFilters()
+    //         .AsNoTracking()
+    //         .Include(x => x.RaisedByOrg)
+    //         .Include(x => x.ClearingByOrg)
+    //         .Include(x => x.Type)
+    //         .Include(x => x.ClearedBy)
+    //         .Include(x => x.VerifiedBy)
+    //         .Include(x => x.RejectedBy)
+    //         .Include(x => x.Project)
+    //         .Where(x => !string.IsNullOrEmpty(x.ExternalItemNo)
+    //                     && externalItemNos.Contains(x.ExternalItemNo)
+    //                     && plants.Contains(x.Plant)
+    //                     && projectNames.Contains(x.Project.Name))
+    //         .ToArrayAsync(cancellationToken);
+    //
+    //     var byPlant = punchItems.GroupBy(x => x.Plant);
+    //
+    //     var punchItemsByExternalPunchItemKey = new List<PunchItem>();
+    //     foreach (var plantPunches in byPlant)
+    //     {
+    //         var filteredPunches = plantPunches
+    //             .Select(p => new
+    //             {
+    //                 Punch = p,
+    //                 Key = keys.First(k =>
+    //                     k.ExternalPunchItemNo == p.ExternalItemNo && k.Plant == p.Plant &&
+    //                     k.ProjectName == p.Project.Name)
+    //             })
+    //             .Where(pk => checkLists.Any(c =>
+    //                 c.Plant == pk.Key.Plant && c.ProCoSysGuid == pk.Punch.CheckListGuid && c.ResponsibleCode ==
+    //                 pk.Key.Responsible))
+    //             .Select(x => x.Punch);
+    //         punchItemsByExternalPunchItemKey.AddRange(filteredPunches);
+    //     }
+    //
+    //     return punchItemsByExternalPunchItemKey.ToArray();
+    // }
 }
