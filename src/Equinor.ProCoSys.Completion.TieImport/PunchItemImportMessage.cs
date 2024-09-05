@@ -1,17 +1,17 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
-using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed record PunchItemImportMessage(
-    TIObject TiObject,
+    Guid MessageGuid,
+    string ProjectName,
+    string Plant,
     string TagNo,
     string ExternalPunchItemNo,
     string FormType,
     string Responsible,
-    Optional<string?> PunchClass,
     Optional<string?> PunchItemNo,
     Optional<string?> Description,
     Optional<string?> RaisedByOrganization,
@@ -32,10 +32,13 @@ public sealed record PunchItemImportMessage(
 {
     public ImportError ToImportError(string message) =>
         new(
-            TiObject.Guid,
-            TiObject.Method,
-            TiObject.Project,
-            TiObject.Site,
+            MessageGuid,
+            Method,
+            ProjectName,
+            Plant,
             message
         );
-};
+
+
+    public readonly string Method = "CREATE";
+}

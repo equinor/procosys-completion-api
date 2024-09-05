@@ -15,6 +15,7 @@ using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 
@@ -28,6 +29,8 @@ public static class TieImportModule
 
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
+        services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
+        
         services.AddAdapterHosting();
         if (!builder.Environment.IsIntegrationTest())
         {
@@ -40,8 +43,6 @@ public static class TieImportModule
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
             
-        //TODO: JSOI Scoped or Singleton or Transient?
-
         var tiClientOptions = GetTiClientOptions(configOptions);
         var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
 

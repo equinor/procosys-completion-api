@@ -12,12 +12,13 @@ public static class TiObjectToPunchItemImportMessage
     public static PunchItemImportMessage ToPunchItemImportMessage(TIObject tiObject)
     {
         var message = new PunchItemImportMessage(
-            tiObject,
+            tiObject.Guid,
+            tiObject.Project,
+            tiObject.Site,
             GetStringValueOrThrow(tiObject, TagNo),
             GetStringValueOrThrow(tiObject, ExternalPunchItemNo),
             GetStringValueOrThrow(tiObject, FormType),
             GetStringValueOrThrow(tiObject, Responsible),
-            GetStringValue(tiObject, Class),
             GetStringValue(tiObject, PunchItemNo),
             GetStringValue(tiObject, Description),
             GetStringValue(tiObject, RaisedByOrganization),
@@ -35,33 +36,18 @@ public static class TiObjectToPunchItemImportMessage
             GetDateValue(tiObject, MaterialEta),
             GetStringValue(tiObject, MaterialNo)
         );
-
         return message;
     }
 
     private static string GetStringValueOrThrow(TIObject tiObject, string attributeName) =>
         tiObject.GetAttributeValueAsString(attributeName) ?? throw new Exception(
             $"We expect the '{nameof(TIObject)}' to have a '{attributeName}', but it did not");
-
-    public static ImportResult ToPunchItemImportMessage(ImportResult message)
-        => !message.Errors.Any()
-            ? message with { Message = ToPunchItemImportMessage(message.TiObject) }
-            : message;
-
-    public static IReadOnlyCollection<ImportResult> ToPunchItemImportMessages(
-        IReadOnlyCollection<ImportResult> messages) =>
-        messages.Select(m => m with { Message = ToPunchItemImportMessage(m.TiObject) }).ToArray();
-
+    
     private static Optional<string?> GetStringValue(TIObject tiObject, string attribute) =>
         tiObject.Attributes.Any(a => a.Name == attribute)
             ? new Optional<string?>(tiObject.GetAttributeValueAsString(attribute))
             : new Optional<string?>();
     
-    private static int? GetIntValue(TIObject tiObject, string attribute) =>
-        tiObject.Attributes.Any(a => a.Name == attribute)
-            ? tiObject.GetAttributeValueAsInt(attribute)
-            : null;
-
     private static Optional<DateTime?> GetDateValue(TIObject tiObject, string attribute)
     {
         var dueDate = tiObject.GetAttributeValueAsString(attribute);

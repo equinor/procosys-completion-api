@@ -13,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunc
 [TestClass]
 public class CreatePunchItemCommandValidatorTests
 {
-    private CreatePunchItemCommandValidator _dut;
+    private CreatePunchItemCommandValidator<CreatePunchItemCommand> _dut;
     private CreatePunchItemCommand _command;
     private readonly IProjectValidator _projectValidatorMock = Substitute.For<IProjectValidator>();
     private readonly ILibraryItemValidator _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
@@ -62,7 +62,7 @@ public class CreatePunchItemCommandValidatorTests
         _swcrValidatorMock.ExistsAsync(_command.SWCRGuid!.Value, default).Returns(true);
         _documentValidatorMock.ExistsAsync(_command.DocumentGuid!.Value, default).Returns(true);
 
-        _dut = new CreatePunchItemCommandValidator(
+        _dut = new CreatePunchItemCommandValidator<CreatePunchItemCommand>(
             _projectValidatorMock,
             _punchItemValidatorMock,
             _libraryItemValidatorMock,

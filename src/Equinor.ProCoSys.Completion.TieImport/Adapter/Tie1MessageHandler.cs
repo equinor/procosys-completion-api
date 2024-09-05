@@ -38,8 +38,7 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
             };
         }
 
-        var response = await importHandler.Handle(message.Message);
-        var result = response.Results.Single();
+        var result = await importHandler.Handle(message.Message);
 
         //TODO: 105593 Add custom application insights tracking 
 

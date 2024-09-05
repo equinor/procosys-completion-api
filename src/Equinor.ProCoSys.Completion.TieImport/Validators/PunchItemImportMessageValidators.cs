@@ -16,7 +16,7 @@ public sealed class PunchItemImportMessageValidator : AbstractValidator<PunchIte
 
         RuleFor(message => message.Description)
             .Must(description => description.HasValue)
-            .When(message => message.TiObject.Method == Methods.Create)
+            .When(message => message.Method == Methods.Create)
             .WithMessage("Punch Item Description is required for Create method.");
 
         RuleFor(message => message.RejectedDate)

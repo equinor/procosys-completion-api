@@ -39,6 +39,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.TieImport;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -124,7 +125,7 @@ public static class ApplicationModule
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
         services.AddScoped<IPunchItemService, PunchItemService>();
         services.AddScoped<ICacheManager, DistributedCacheManager>();
-        services.AddScoped<IImportDataFetcher, ImportDataFetcher>();
+  
         
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();

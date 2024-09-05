@@ -2,7 +2,6 @@ using Equinor.ProCoSys.Completion.TieImport.Validators;
 using FluentValidation.TestHelper;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests.Validators;
 
@@ -12,9 +11,9 @@ public sealed class PunchItemImportMessageValidatorShould
     private PunchItemImportMessageValidator _validator = null!;
 
     private readonly PunchItemImportMessage _baseMessage = new(
-        new TIObject{Guid = Guid.NewGuid(), Site = "Plant", Method = "CREATE", Project = "ProjectName"},  "TagNo", "ExternalPunchItemNo",
+         Guid.NewGuid(), "Plant",  "Projectname",  "TagNo", "ExternalPunchItemNo",
         "FormType",
-        "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), new Optional<string?>(),
+        "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), 
         Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
         new Optional<string?>(), new Optional<string?>(),
         new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(),

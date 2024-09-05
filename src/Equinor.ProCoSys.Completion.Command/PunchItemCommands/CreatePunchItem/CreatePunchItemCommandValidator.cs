@@ -7,7 +7,7 @@ using FluentValidation;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
-public class CreatePunchItemCommandValidator : AbstractValidator<CreatePunchItemCommand>
+public class CreatePunchItemCommandValidator<TCommand> : AbstractValidator<TCommand> where TCommand : CreatePunchItemCommand
 {
     public CreatePunchItemCommandValidator(
         IProjectValidator projectValidator,

@@ -10,7 +10,7 @@ public static class ImportUpdateHelper
 {
     public static JsonPatchDocument<PatchablePunchItem> CreateJsonPatchDocument(PunchItemImportMessage? message,
         PunchItem punchItem,
-        ICommandReferences references)
+        CommandReferences references)
     {
         if (message is null)
         {

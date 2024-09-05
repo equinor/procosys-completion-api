@@ -3,20 +3,11 @@ using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
-using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
-using Equinor.ProCoSys.Completion.TieImport.Models;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
-using ValidationException = FluentValidation.ValidationException;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -26,13 +17,11 @@ public sealed class ImportHandler(
     ILogger<ImportHandler> logger)
     : IImportHandler
 {
-    public async Task<TIResponseFrame> Handle(TIInterfaceMessage? message)
+    public async Task<TIMessageResult> Handle(TIInterfaceMessage message)
     {
-        var response = new TIResponseFrame();
-        if (message is null)
+        if (MessageNotImportable(message, out var responseFrame))
         {
-            logger.LogWarning("Received an empty message. Skipped");
-            return response;
+            return responseFrame;
         }
 
         logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}",
@@ -40,85 +29,102 @@ public sealed class ImportHandler(
 
         var sw = new Stopwatch();
         sw.Start();
-
-        TIMessageResult? tiMessageResult = null;
         try
         {
             var mapped = importSchemaMapper.Map(message);
-            if (mapped.Message is null)
+            if (mapped.ErrorResult is not null)
             {
-                tiMessageResult = mapped.ErrorResult;
-                return response;
+                return mapped.ErrorResult;
+                
             }
-            tiMessageResult = await ImportMessage(mapped.Message!);
+
+            if (mapped.Message?.Objects.FirstOrDefault() is null)
+            {
+                return CreateTIMessageErrorresult(message, "No objects in message");
+            }
+
+            var tiMessageResult = await ImportMessage(mapped.Message!.Objects.First());
+            tiMessageResult.Guid = message.Guid;
+            tiMessageResult.ExternalReference = message.ExternalReference;
+            return tiMessageResult;
+
         }
         catch (Exception e)
         {
-            tiMessageResult = e.ToMessageResult();
+            var errorResult = e.ToMessageResult();
+            errorResult.Guid = message.Guid;
+            errorResult.ExternalReference = message.ExternalReference;
             logger.LogError(
                 "Error when committing message. Exception: {ExceptionMessage} Stacktrace: {StackTrace} TIEMessage: {TieMessage}",
                 e.Message, e.StackTrace, message.ToString());
+            return errorResult;
         }
         finally
         {
-            AddResultOfImportOperationToResponseObject(message, tiMessageResult, response);
+            sw.Stop();
+            logger.LogInformation("Import elapsed {Elapsed}", sw.Elapsed);
         }
-
-        sw.Stop();
-        logger.LogInformation("Import elapsed {Elapsed}", sw.Elapsed);
-
-        return response;
     }
 
-    private async Task<TIMessageResult> ImportMessage(TIInterfaceMessage message)
-    {
-        logger.LogInformation("To import message GUID={MessageGuid} with {MessageCount} object(s)", message.Guid,
-            message.Objects.Count);
+    private static TIMessageResult CreateTIMessageErrorresult(TIInterfaceMessage message, string errorMessage) =>
+        new()
+        {
+            Guid = message.Guid,
+            ExternalReference = message.ExternalReference,
+            Result = MessageResults.Failed,
+            ErrorMessage = errorMessage
+        };
 
-        // Only CREATE/INSERT are supported for now.
-        if (message.Objects.Count > 1)
+    private static bool MessageNotImportable(TIInterfaceMessage message, out TIMessageResult response)
+    {
+        response = new TIMessageResult();
+        switch (message.Objects.Count)
         {
-            return new TIMessageResult
-            {
-                Guid = message.Guid,
-                Result = MessageResults.Failed,
-                ErrorMessage = $"Punch Import only supports one object per message, was given {message.Objects.Count}" 
-            };
+            // Observe: We only support one object per message.
+            case > 1:
+                response= CreateTIMessageErrorresult(message, "Only one object per message is supported"); 
+                return true;
+            case 0: 
+                response = CreateTIMessageErrorresult(message, "No objects in message");
+            return true;
         }
-        // Only CREATE/INSERT are supported for now.
-        if (message.Objects.Any(o => !IsCreateMethod(o)))
+
+        return false;
+    }
+
+    private async Task<TIMessageResult> ImportMessage(TIObject message)
+    {
+        CheckForScriptInjection(message);
+        ValidateTieObjectCommonMinimumRequirements(message);
+        if (!IsCreateMethod(message))
         {
             return new TIMessageResult
             {
-                Guid = message.Guid,
                 Result = MessageResults.Failed,
                 ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
             };
         }
         
         var validationErrors = ValidateInput(message);
-        if (validationErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
+        
+        if (validationErrors.Count != 0)
         {
-            return CreateTiValidationErrorMessageResult(message, validationErrors);
-        }
-        
-        var punchImportMessages = MapToPunchImportMessages(message).ToList();
-        
-        //Creates a dictionary of data based on the plant of the message.
-        var scopedContexts = await CreateScopedContexts(punchImportMessages);
-        
-        var importMessageErrors = ValidatePunchImportMessages(punchImportMessages);
-        if (importMessageErrors.SelectMany(ve => ve.errors).ToList().Count != 0)
-        {
-            return CreateTiValidationErrorMessageResult(message, importMessageErrors);
+            return CreateTiValidationErrorMessageResult(message.Guid, validationErrors);
         }
 
-        var resultTasks = punchImportMessages.Select(pim 
-            => HandlePunchImportMessage(pim, scopedContexts));
+        var punchImportMessage = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(message);
         
-        var results = await Task.WhenAll(resultTasks);
-        var messageResult = CreateTiMessageResult(message, results);
+        var importMessageErrors = ValidatePunchImportMessages(punchImportMessage);
+        if (importMessageErrors.Count != 0)
+        {
+            return CreateTiValidationErrorMessageResult(punchImportMessage.MessageGuid, importMessageErrors);
+        }
 
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchImportService>();
+        var importResult = await punchImportService.HandlePunchImportMessage(punchImportMessage);
+        
+        var messageResult = CreateTiMessageResult(message.Guid, importResult.Errors.ToList());
         return messageResult;
     }
     
@@ -128,205 +134,35 @@ public sealed class ImportHandler(
           || o.Method?.ToUpperInvariant() == "INSERT" 
           || o.Method?.ToUpperInvariant() == "ALLOCATE";
 
-    private static List<(Guid guid, IEnumerable<ImportError> errors)> ValidatePunchImportMessages(List<PunchItemImportMessage> punchImportMessages)
+    private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
     {
-        var importMessageErrors = new List<(Guid, IEnumerable<ImportError>)>();
-        punchImportMessages.ForEach(pim =>
-        {
             var commandValidator = new PunchItemImportMessageValidator();
-            var validationResult = commandValidator.Validate(pim);
-            if (validationResult.IsValid)
-            {
-                return;
-            }
-            var guidAndErrors =(pim.TiObject.Guid, validationResult.Errors.Select(e => pim.ToImportError(e.ErrorMessage)));
-            importMessageErrors.Add(guidAndErrors);
-
-        });
-        return importMessageErrors;
+            var validationResult = commandValidator.Validate(punchImportMessage);
+            return  validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
     }
 
-    private static List<(Guid Guid, IEnumerable<ImportError> errors)> ValidateInput(TIInterfaceMessage message)
+    private static List<ImportError> ValidateInput(TIObject message)
     {
         var validator = new PunchTiObjectValidator();
-
-        var validationErrors =
-            message.Objects
-                .Select(tiObject =>
-                {
-                    var errors = validator
-                        .Validate(tiObject)
+        var errors = validator
+                        .Validate(message)
                         .Errors
-                        .Select(error => tiObject.ToImportError(error.ErrorMessage));
-                    return (tiObject.Guid,errors);
-                }).ToList();
-        return validationErrors;
-    }
-
-    private async Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message,
-        ImportDataBundle bundle)
-    {
-        var referencesService = new CommandReferencesService(bundle);
-        var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
-        var errors = importErrors.ToList();
-        var command = createCommand;
-        // List<ImportError> errors = [];
-        // object? command;
-        // switch (message.TiObject.Method)
-        // {
-        //      //same as create
-        //     case "CREATE": case "ALLOCATE": case "INSERT":
-        //         {
-        //             var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
-        //             errors = importErrors.ToList();
-        //             command = createCommand;
-        //             break;
-        //         }
-        //     case "MODIFY": case "APPEND":
-        //         {
-        //             var punchItem = referencesService.GetPunchItem(message);
-        //             if(punchItem is null)
-        //             {
-        //                 var (createCommand, importErrors) = GetAndValidateCreateCommand(message, referencesService);
-        //                 errors = importErrors.ToList();
-        //                 command = createCommand;
-        //             }
-        //             else
-        //             {
-        //                 var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
-        //                 errors =  importErrors;
-        //                 command = updateCommand;
-        //             }
-        //             break; 
-        //         }
-        //     case "UPDATE":
-        //         {
-        //             var punchItem = referencesService.GetPunchItem(message);
-        //             if(punchItem is null)
-        //             {
-        //                 errors = [message.ToImportError("PunchItem not found, can't be updated")];
-        //                 return new ImportResult(message.TiObject, message, errors);
-        //             }
-        //             var (updateCommand, importErrors) = GetAndValidateUpdateCommand(message,punchItem, referencesService);
-        //             errors = importErrors;
-        //             command = updateCommand;
-        //             break;
-        //         }
-        //     case "DELETE":
-        //         {
-        //             var punchItem = referencesService.GetPunchItem(message);
-        //             if(punchItem is null)
-        //             {
-        //                 errors = [message.ToImportError("PunchItem not found, can't be deleted")];
-        //                 return new ImportResult(message.TiObject, message, errors);
-        //             }
-        //             command = new DeletePunchItemCommand(punchItem.Guid,
-        //                 punchItem.RowVersion.ConvertToString());
-        //             break;
-        //         }
-        //     default:
-        //         throw new NotImplementedException(); 
-        // }
-        //
-        if (errors.Count != 0)
-        {
-            return new ImportResult(message.TiObject, message, errors);
-        }
-
-        var importResult = new ImportResult(message.TiObject,message,[]);
-        try
-        { 
-            CheckForScriptInjection(message.TiObject);
-            ValidateTieObjectCommonMinimumRequirements(message.TiObject);
-            await ImportObject(command!, bundle, CancellationToken.None);
-            return importResult;
-
-        }
-        catch (ValidationException ve)
-        {
-            var validationErrors = ve.Errors
-                .Select(x => importResult.GetImportError(x.ErrorMessage)).ToArray();
-            return importResult with { Errors = [..importResult.Errors, ..validationErrors] };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex,"ImportObject failed unexpectedly");
-            return importResult with { Errors = [..importResult.Errors, importResult.GetImportError(ex.Message)] };
-        }
-    }
-
-    private static (ImportUpdatePunchItemCommand? updateCommand, List<ImportError>) GetAndValidateUpdateCommand(PunchItemImportMessage message,PunchItem punchItem,  CommandReferencesService referencesService)
-    {
-        var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
-        if(references.Errors.Length != 0)
-        {
-            return (null, references.Errors.ToList());
-        }
-        var patchDocument = ImportUpdateHelper.CreateJsonPatchDocument(message, punchItem, references);
-        var clearedBy = references.ClearedBy;
-        var verifiedBy = references.VerifiedBy;
-        var rejectedBy = references.RejectedBy;
-        var category = message.Category;
-
-        var command = new ImportUpdatePunchItemCommand(
-            message.TiObject.Guid,
-            references.ProjectGuid,
-             message.TiObject.Site,
-            punchItem.Guid,
-            patchDocument,
-            category,
-            clearedBy,
-            verifiedBy,
-            rejectedBy,
-            punchItem.RowVersion.ConvertToString());
-        return (command, []);
+                        .Select(error => message.ToImportError(error.ErrorMessage));
         
+        return errors.ToList();
     }
 
-    private static (CreatePunchItemCommand?, IEnumerable<ImportError>) GetAndValidateCreateCommand(PunchItemImportMessage message, CommandReferencesService referencesService)
+   
+    private static TIMessageResult CreateTiValidationErrorMessageResult(Guid messageGuid, List<ImportError> errors)
     {
-        var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
-        if(references.Errors.Length != 0)
-        {
-            return (null, references.Errors);
-        }
-
-        bool.TryParse(message.MaterialRequired.Value, out var materialRequired);
-        var command = new CreatePunchItemCommandForImport(
-            message.Category!.Value,
-            message.Description.Value ?? string.Empty,
-            references.CheckListGuid,
-            references.RaisedByOrgGuid,
-            references.ClearedByOrgGuid,
-            null,
-            message.DueDate.Value,
-            null,
-            null,
-            references.TypeGuid,
-            null,
-            null,
-            null,
-            null,
-            null,
-            message.ExternalPunchItemNo,
-            materialRequired,
-            message.MaterialEta.Value,
-            message.MaterialNo.Value
-        );
-        return (command,references.Errors);
-    }
-    
-    private static TIMessageResult CreateTiValidationErrorMessageResult(TIInterfaceMessage message, IEnumerable<(Guid TiObjectGuid, IEnumerable<ImportError> errors)> objectErrors)
-    {
-        var importErrors = objectErrors.SelectMany(oe => oe.errors).ToList();
         var messageResult = new TIMessageResult
         {
-            Guid = message.Guid,
+            Guid = messageGuid,
             Result = MessageResults.Failed,
-            ErrorMessage = $"Errors(1 of {importErrors.Count}): {message.ObjectName} {importErrors.FirstOrDefault()?.Message}"
+            ErrorMessage = $"Errors(1 of {errors.Count}): {errors.FirstOrDefault()?.Message}"
                
         };
-        foreach (var error in importErrors)
+        foreach (var error in errors)
         {
             messageResult.AddLogEntry(new TILogEntry
             {
@@ -340,20 +176,20 @@ public sealed class ImportHandler(
         return messageResult;
     }
 
-    private static TIMessageResult CreateTiMessageResult(TIInterfaceMessage message, ImportResult[] results)
+    private static TIMessageResult CreateTiMessageResult(Guid messageGuid, List<ImportError> resultErrors)
     {
+        
         var messageResult = new TIMessageResult
         {
-            Guid = message.Guid,
-            Result = results.All(x => !x.Errors.Any())
-                ? MessageResults.Successful
-                : MessageResults.Failed,
-            ErrorMessage = results.Any(x => x.Errors.Any())
-                ? "One or more objects failed to import"
+            Result = resultErrors.Count != 0
+                ? MessageResults.Failed
+                : MessageResults.Successful,
+            ErrorMessage = resultErrors.Count != 0
+                ? $"Errors(1 of {resultErrors.Count}): {resultErrors.FirstOrDefault()?.Message}"
                 : string.Empty
         };
 
-        foreach (var error in results.SelectMany(x => x.Errors))
+        foreach (var error in resultErrors)
         {
                 messageResult.AddLogEntry(new TILogEntry
                 {
@@ -364,57 +200,18 @@ public sealed class ImportHandler(
                     TimeStamp = DateTime.UtcNow
                 });
         }
-        
-        foreach (var successResult in results.Where(x => !x.Errors.Any()))
-        {
-            messageResult.AddLogEntry($"GUID '{successResult.TiObject.Guid}' imported successfully", "PunchItem");
-        }
 
+        if (resultErrors.Count == 0)
+        {
+            messageResult.AddLogEntry($"GUID '{messageGuid}' imported successfully", "PunchItem");
+        }
         return messageResult;
-    }
-    
-    private async Task<ImportDataBundle> CreateScopedContexts(IEnumerable<PunchItemImportMessage> punchItemImportMessages)
-    {
-        using var scope = serviceScopeFactory.CreateScope();
-
-        var importDataFetcher = scope.ServiceProvider.GetRequiredService<IImportDataFetcher>();
-        var tieOptions = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
-        
-        var contextBuilder = new PlantScopedImportDataContextBuilder(importDataFetcher, tieOptions);
-        var scopedContext = await contextBuilder
-            .BuildAsync(punchItemImportMessages.ToList(), CancellationToken.None);
-        return scopedContext;
-    }
-
-    private static IEnumerable<PunchItemImportMessage> MapToPunchImportMessages(TIInterfaceMessage message) 
-        => message.Objects.Select(TiObjectToPunchItemImportMessage.ToPunchItemImportMessage);
-    
-    private async Task ImportObject(object importResult,
-        ImportDataBundle scopedImportDataBundle, CancellationToken cancellationToken)
-    {
-        //Import module is running as a background service which is lifetime singleton.
-        //A singleton service cannot retrieve scoped services via constructor.
-        using var scope = serviceScopeFactory.CreateScope();
-        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-        var plantSetter = scope.ServiceProvider.GetRequiredService<IPlantSetter>();
-        var claimsTransformation = scope.ServiceProvider.GetService<IClaimsTransformation>();
-        var tieConfig = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TieImportOptions>>();
-        var currentUserSetter = scope.ServiceProvider.GetRequiredService<ICurrentUserSetter>();
-        
-        if (claimsTransformation is null)
-        {
-            throw new Exception("Could not get a valid ClaimsTransformation instance, value is null");
-        }
-        plantSetter.SetPlant(scopedImportDataBundle.Plant);
-        var importUser = scopedImportDataBundle.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
-        currentUserSetter.SetCurrentUserOid(importUser.Guid);
-       await mediator.Send(importResult, cancellationToken);
     }
     
     private static void CheckForScriptInjection(TIObject tieObject)
     {
         // Run through object attributes and make sure that no strings contains HTML Script tags.
-        if (tieObject?.Attributes == null)
+        if (tieObject.Attributes == null)
         {
             return;
         }
