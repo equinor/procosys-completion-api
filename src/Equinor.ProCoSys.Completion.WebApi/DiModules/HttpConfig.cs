@@ -12,8 +12,18 @@ public static class HttpConfig
     
     public static WebApplicationBuilder ConfigureHttp(this WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers().AddNewtonsoftJson();
-        
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            // Case-insensitive property names
+            options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+
+            // Serialize enums as strings
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+            // Ignore null values during serialization
+            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        });
+
         builder.Services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
         {
             options.AddPolicy(AllowAllOriginsCorsPolicy,
