@@ -40,7 +40,7 @@ public sealed class ImportHandler(
 
             if (mapped.Message?.Objects.FirstOrDefault() is null)
             {
-                return CreateTIMessageErrorresult(message, "No objects in message");
+                return CreateTIMessageErrorResult(message, "No objects in message");
             }
 
             var tiMessageResult = await ImportMessage(mapped.Message!.Objects.First());
@@ -66,7 +66,7 @@ public sealed class ImportHandler(
         }
     }
 
-    private static TIMessageResult CreateTIMessageErrorresult(TIInterfaceMessage message, string errorMessage) =>
+    private static TIMessageResult CreateTIMessageErrorResult(TIInterfaceMessage message, string errorMessage) =>
         new()
         {
             Guid = message.Guid,
@@ -82,10 +82,10 @@ public sealed class ImportHandler(
         {
             // Observe: We only support one object per message.
             case > 1:
-                response= CreateTIMessageErrorresult(message, "Only one object per message is supported"); 
+                response= CreateTIMessageErrorResult(message, "Only one object per message is supported"); 
                 return true;
             case 0: 
-                response = CreateTIMessageErrorresult(message, "No objects in message");
+                response = CreateTIMessageErrorResult(message, "No objects in message");
             return true;
         }
 
