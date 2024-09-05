@@ -22,7 +22,6 @@ public class PunchItemValidator(IReadOnlyContext context, ICurrentUserProvider c
         return punchItem.VerifiedBy is not null && punchItem.VerifiedBy.Guid == currentUserOid;
     }
 
-    //TODO UnitTests
     public async Task<bool> ExternalItemNoExistsInProjectAsync(string externalItemNo, Guid projectGuid, CancellationToken cancellationToken) =>
         await context.QuerySet<PunchItem>()
             .Include(p => p.Project)
