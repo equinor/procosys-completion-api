@@ -28,7 +28,7 @@ public interface IImportDataFetcher
 public sealed class ImportDataFetcher(
     CompletionContext completionContext,
     ICheckListCache checkListCache,
-    IOptionsMonitor<TieImportOptions> importOptions
+    IOptionsMonitor<ImportUserOptions> importOptions
     ) : IImportDataFetcher
 {
     public async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(ProjectByPlantKey key,

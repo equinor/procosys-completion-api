@@ -15,7 +15,8 @@ public sealed class ImportHandler(
 {
 
     /// <summary>
-    /// This method does some simple input validation and maps the message using CommonLib importSchemaMapper.
+    /// Does some simple input validation, maps the message using CommonLib importSchemaMapper.
+    /// Then Handles Import of the PunchItem.
     /// </summary>
     /// <param name="message"></param>
     /// <returns></returns>

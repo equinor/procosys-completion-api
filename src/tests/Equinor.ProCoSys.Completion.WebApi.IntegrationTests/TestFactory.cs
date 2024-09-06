@@ -245,7 +245,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.RestrictedWriter].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
-        dbContext.SeedPerson(Guid.NewGuid().ToString(), "Ola", "Hansen", TieImportOptions.UserName, "import_user@abc",true);
+        dbContext.SeedPerson(Guid.NewGuid().ToString(), "Ola", "Hansen", ImportUserOptions.UserName, "import_user@abc",true);
 
         dbContext.SeedLabels();
         dbContext.SeedMailTemplates();

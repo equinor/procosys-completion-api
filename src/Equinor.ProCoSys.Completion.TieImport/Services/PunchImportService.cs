@@ -14,7 +14,7 @@ public class PunchImportService(
     IMediator mediator,
     IPlantSetter plantSetter,
     ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<TieImportOptions> tieConfig,
+    IOptionsMonitor<ImportUserOptions> tieConfig,
     IImportDataFetcher importDataFetcher,
     ILogger<PunchImportService> logger) : IPunchImportService
 {
