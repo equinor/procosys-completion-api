@@ -16,7 +16,6 @@ using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 using Equinor.ProCoSys.Completion.TieImport.Services;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -30,6 +29,8 @@ public static class TieImportModule
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
+        services.AddTransient<IPunchItemImportHandler, PunchItemImportHandler>();
+        services.AddScoped<IPunchImportService, PunchImportService>();
         
         services.AddAdapterHosting();
         if (!builder.Environment.IsIntegrationTest())

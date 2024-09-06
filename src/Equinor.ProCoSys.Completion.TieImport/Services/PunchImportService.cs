@@ -46,7 +46,7 @@ public class PunchImportService(
         {
             logger.LogError(ex,"ImportObject failed unexpectedly");
             return importResult with { Errors = [..importResult.Errors, 
-                new ImportError(message.MessageGuid, message.Method, message.ProjectName,message.Plant,ex.Message)]};
+                new ImportError(message.MessageGuid, message.Method, message.ProjectName,message.Plant, ex.Message)]};
         }
     }
      

@@ -141,6 +141,7 @@ public static class CompletionContextExtension
             KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemA",
+            "ExternalItemNoA",
             raisedByOrg,
             clearingByOrg,
             priority,
@@ -162,6 +163,7 @@ public static class CompletionContextExtension
             KnownData.CheckListGuidA[plant],
             Category.PA,
             "PunchItemB",
+            "ExternalItemNoB",
             raisedByOrg,
             clearingByOrg);
 
@@ -244,8 +246,8 @@ public static class CompletionContextExtension
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
-    private static void SeedPerson(
-        CompletionContext dbContext,
+    public static void SeedPerson(
+        this CompletionContext dbContext,
         string oid,
         string firstName,
         string lastName,
@@ -284,6 +286,7 @@ public static class CompletionContextExtension
         Guid checkListGuid,
         Category category,
         string description,
+        string externalItemNo,
         LibraryItem raisedByOrg,
         LibraryItem clearingByOrg,
         LibraryItem priority = null,
@@ -291,7 +294,10 @@ public static class CompletionContextExtension
         LibraryItem type = null)
     {
         var punchItemRepository = new PunchItemRepository(dbContext);
-        var punchItem = new PunchItem(plant, project, checkListGuid, category, description, raisedByOrg, clearingByOrg);
+        var punchItem = new PunchItem(plant, project, checkListGuid, category, description, raisedByOrg, clearingByOrg)
+        {
+            ExternalItemNo = externalItemNo
+        };
         if (priority is not null)
         {
             punchItem.SetPriority(priority);

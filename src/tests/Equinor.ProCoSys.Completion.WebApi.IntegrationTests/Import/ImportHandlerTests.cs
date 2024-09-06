@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
 using Statoil.TI.InterfaceServices.Message;
 
-namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
+namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Import;
 
 [TestClass]
 public class ImportHandlerTests
@@ -15,8 +17,7 @@ public class ImportHandlerTests
     public void Setup()
     {
         var serviceProvider = TestFactory.Instance.Services;
-   
-         _dut = serviceProvider.GetRequiredService<IImportHandler>();
+        _dut = serviceProvider.GetRequiredService<IImportHandler>();
     }
     
     [TestMethod]
@@ -27,7 +28,6 @@ public class ImportHandlerTests
        
        Assert.IsNotNull(result);
        Assert.IsTrue(result.Result == MessageResults.Failed);
-       
     }
     
     [TestMethod]
@@ -44,4 +44,6 @@ public class ImportHandlerTests
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Result == MessageResults.Failed);
     }
+    
+
 }

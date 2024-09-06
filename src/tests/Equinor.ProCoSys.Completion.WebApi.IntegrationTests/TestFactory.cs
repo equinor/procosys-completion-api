@@ -12,6 +12,7 @@ using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
@@ -41,7 +42,7 @@ public class TestFactory : WebApplicationFactory<Program>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+    public readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
     private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
@@ -86,11 +87,6 @@ public class TestFactory : WebApplicationFactory<Program>
         UserName = "hans@mail.com"
     };
     
-    public IServiceProvider GetServiceProvider()
-    {
-        return Server.Services ?? throw new InvalidOperationException("Server has not been initialized yet.");
-    }
-
 public Dictionary<string, KnownTestData> SeededData { get; }
 
     #region singleton implementation
@@ -249,6 +245,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.RestrictedWriter].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
+        dbContext.SeedPerson(Guid.NewGuid().ToString(), "Ola", "Hansen", TieImportOptions.UserName, "import_user@abc",true);
 
         dbContext.SeedLabels();
         dbContext.SeedMailTemplates();

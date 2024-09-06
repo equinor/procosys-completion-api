@@ -42,5 +42,5 @@ public static class FetchKeysCreator
     }
     
     private static ProjectByPlantKey CreateProjectKey(PunchItemImportMessage message)
-        => new(message.Plant, message.Plant);
+        => new(message.ProjectName, message.Plant);
 }

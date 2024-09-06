@@ -22,7 +22,7 @@ public class QueryEventConsumer(IDocumentConsumerService documentConsumerService
     }
 }
 
-public abstract record QueryEvent(
+public record QueryEvent(
     Guid ProCoSysGuid, 
     string Plant, 
     DateTime LastUpdated,
