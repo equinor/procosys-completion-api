@@ -10,25 +10,18 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFactory) : IPunchItemImportHandler
 {
-    public async Task<TIMessageResult> ImportMessage(TIObject message)
+    public async Task<TIMessageResult> ImportMessage(TIObject tiObject)
     {
-        if (!IsCreateMethod(message))
-        {
-            return new TIMessageResult
-            {
-                Result = MessageResults.Failed,
-                ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
-            };
-        }
+  
         
-        var validationErrors = ValidateInput(message);
+        var validationErrors = ValidateInput(tiObject);
         
         if (validationErrors.Count != 0)
         {
-            return CreateTiValidationErrorMessageResult(message.Guid, validationErrors);
+            return CreateTiValidationErrorMessageResult(tiObject.Guid, validationErrors);
         }
 
-        var punchImportMessage = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(message);
+        var punchImportMessage = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(tiObject);
         
         var importMessageErrors = ValidatePunchImportMessages(punchImportMessage);
         if (importMessageErrors.Count != 0)
@@ -39,15 +32,10 @@ public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFact
         var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchImportService>();
         var importResult = await punchImportService.HandlePunchImportMessage(punchImportMessage);
         
-        var messageResult = CreateTiMessageResult(message.Guid, importResult.Errors.ToList());
+        var messageResult = CreateTiMessageResult(tiObject.Guid, importResult.Errors.ToList());
         return messageResult;
     }
     
-     private static bool IsCreateMethod(TIObject o) =>
-        o.Method?.ToUpperInvariant() == "CREATE" 
-          || o.Method?.ToUpperInvariant() == "INSERT" 
-          || o.Method?.ToUpperInvariant() == "ALLOCATE";
-
     private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
     {
             var commandValidator = new PunchItemImportMessageValidator();

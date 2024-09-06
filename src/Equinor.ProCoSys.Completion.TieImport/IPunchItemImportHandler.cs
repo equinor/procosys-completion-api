@@ -7,7 +7,7 @@ public interface IPunchItemImportHandler
     /// <summary>
     /// Imports a mapped TIObject of type PUNCHITEM to ProCoSys
     /// </summary>
-    /// <param name="message">TiObject, must have class = 'PUNCHITEM'</param>
+    /// <param name="tiObject">TiObject, must have class = 'PUNCHITEM'</param>
     /// <returns></returns>
-    Task<TIMessageResult> ImportMessage(TIObject message);
+    Task<TIMessageResult> ImportMessage(TIObject tiObject);
 }

@@ -14,13 +14,18 @@ public sealed class ImportHandler(
     : IImportHandler
 {
 
+    /// <summary>
+    /// This method does some simple input validation and maps the message using CommonLib importSchemaMapper.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     public async Task<TIMessageResult> Handle(TIInterfaceMessage message)
     {
         if (MessageNotImportable(message, out var responseFrame))
         {
             return responseFrame;
         }
-
+        
         logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}",
             message.ObjectName, message.ObjectClass, message.Site);
 
@@ -39,11 +44,21 @@ public sealed class ImportHandler(
             {
                 return CreateTIMessageErrorResult(message, "No objects in message");
             }
-
             
             var tiObject = mapped.Message!.Objects.First();
+            
+            if (!IsCreateMethod(tiObject))
+            {
+                return new TIMessageResult
+                {
+                    Result = MessageResults.Failed,
+                    ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
+                };
+            }
+            
             CheckForScriptInjection(tiObject);
             ValidateTieObjectCommonMinimumRequirements(tiObject);
+       
             var tiMessageResult = await punchItemImportHandler.ImportMessage(tiObject);
             tiMessageResult.Guid = message.Guid;
             tiMessageResult.ExternalReference = message.ExternalReference;
@@ -94,7 +109,10 @@ public sealed class ImportHandler(
     }
 
     //Should return true if method is  one of CREATE, INSERT or ALLOCATE
-   
+    private static bool IsCreateMethod(TIObject o) =>
+        o.Method?.ToUpperInvariant() == "CREATE" 
+        || o.Method?.ToUpperInvariant() == "INSERT" 
+        || o.Method?.ToUpperInvariant() == "ALLOCATE";
     
     private static void CheckForScriptInjection(TIObject tieObject)
     {
