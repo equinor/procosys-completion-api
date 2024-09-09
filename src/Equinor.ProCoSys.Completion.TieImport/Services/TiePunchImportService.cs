@@ -1,14 +1,13 @@
 ﻿using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
-using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Message;
 
-namespace Equinor.ProCoSys.Completion.TieImport;
+namespace Equinor.ProCoSys.Completion.TieImport.Services;
 
-public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFactory) : IPunchItemImportHandler
+public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFactory) : ITiePunchImportService
 {
     public async Task<TIMessageResult> ImportMessage(TIObject tiObject)
     {
@@ -27,7 +26,7 @@ public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFact
             return CreateTiValidationErrorMessageResult(punchImportMessage.MessageGuid, importMessageErrors);
         }
         await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchImportService>();
+        var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchItemImportService>();
         var importResult = await punchImportService.HandlePunchImportMessage(punchImportMessage);
         
         var messageResult = CreateTiMessageResult(tiObject.Guid, importResult.Errors.ToList());

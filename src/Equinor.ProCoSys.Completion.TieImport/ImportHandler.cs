@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class ImportHandler(
-    IPunchItemImportHandler punchItemImportHandler,
+    ITiePunchImportService tiePunchImportService,
     IImportSchemaMapper importSchemaMapper,
     ILogger<ImportHandler> logger)
     : IImportHandler
@@ -59,7 +60,7 @@ public sealed class ImportHandler(
             CheckForScriptInjection(tiObject);
             ValidateTieObjectCommonMinimumRequirements(tiObject);
        
-            var tiMessageResult = await punchItemImportHandler.ImportMessage(tiObject);
+            var tiMessageResult = await tiePunchImportService.ImportMessage(tiObject);
             tiMessageResult.Guid = message.Guid;
             tiMessageResult.ExternalReference = message.ExternalReference;
             return tiMessageResult;
