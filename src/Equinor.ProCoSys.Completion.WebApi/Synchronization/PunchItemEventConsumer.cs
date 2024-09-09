@@ -18,7 +18,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PunchItemEventConsumer(
     ILogger<PunchItemEventConsumer> logger,
-    IPlantSetter plantSetter,
     IPersonRepository personRepository,
     IPunchItemRepository punchItemRepository,
     IProjectRepository projectRepository,
@@ -34,7 +33,6 @@ public class PunchItemEventConsumer(
         var busEvent = context.Message;
         
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
         
         if (await punchItemRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {

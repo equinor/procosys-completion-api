@@ -15,7 +15,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization.Services;
 public class DocumentConsumerServiceTests
 {
     private readonly IDocumentRepository _documentRepoMock = Substitute.For<IDocumentRepository>();
-    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly DocumentConsumerService _dut;
     private readonly ConsumeContext<DocumentEvent> _contextMock = Substitute.For<ConsumeContext<DocumentEvent>>();
@@ -27,7 +26,6 @@ public class DocumentConsumerServiceTests
     public DocumentConsumerServiceTests() =>
         _dut = new DocumentConsumerService(
             Substitute.For<ILogger<DocumentConsumerService>>(), 
-            _plantSetter, 
             _documentRepoMock,
             _unitOfWorkMock);
 

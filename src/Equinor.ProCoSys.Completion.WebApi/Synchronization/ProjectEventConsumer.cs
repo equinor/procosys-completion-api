@@ -11,7 +11,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class ProjectEventConsumer(
     ILogger<ProjectEventConsumer> logger,
-    IPlantSetter plantSetter,
     IProjectRepository projectRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<ProjectEvent>
@@ -21,7 +20,6 @@ public class ProjectEventConsumer(
         var projectEvent = context.Message;
 
         ValidateMessage(projectEvent);
-        plantSetter.SetPlant(projectEvent.Plant);
 
         if (projectEvent.Behavior == "delete")
         {

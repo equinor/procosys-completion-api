@@ -11,7 +11,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class SWCREventConsumer(
     ILogger<SWCREventConsumer> logger,
-    IPlantSetter plantSetter,
     ISWCRRepository swcrRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<SWCREvent>
@@ -21,7 +20,6 @@ public class SWCREventConsumer(
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
 
         if (busEvent.Behavior is not null && busEvent.Behavior == "delete")
         {
