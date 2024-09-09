@@ -10,7 +10,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PunchItemDeleteEventConsumer(
     ILogger<PunchItemDeleteEventConsumer> logger,
-    IPlantSetter plantSetter,
+
     IPunchItemRepository punchItemRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<PunchItemDeleteEvent>
@@ -20,7 +20,7 @@ public class PunchItemDeleteEventConsumer(
         var busEvent = context.Message;
 
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
+       
         if (busEvent.Behavior == "delete")
         {
             if (await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
@@ -43,14 +43,6 @@ public class PunchItemDeleteEventConsumer(
         if (busEvent.ProCoSysGuid == Guid.Empty)
         {
             throw new Exception($"{nameof(PunchItemDeleteEvent)} is missing {nameof(PunchItemDeleteEvent.ProCoSysGuid)}");
-        }
-        if (busEvent.Behavior is not null)
-        {
-            return;
-        }
-        if (string.IsNullOrEmpty(busEvent.Plant))
-        {
-            throw new Exception($"{nameof(PunchItemDeleteEvent)} is missing {nameof(PunchItemDeleteEvent.Plant)}");
         }
     }
 

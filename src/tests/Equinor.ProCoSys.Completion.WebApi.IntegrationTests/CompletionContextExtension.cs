@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
@@ -167,9 +166,6 @@ public static class CompletionContextExtension
             raisedByOrg,
             clearingByOrg);
 
-        var linkInPunchItemA = SeedLink(dbContext, nameof(PunchItem), punchItemA.Guid, "VG", "www.vg.no");
-        knownTestData.LinkInPunchItemAGuid = linkInPunchItemA.Guid;
-
         var commentInPunchItemA = SeedComment(dbContext, nameof(PunchItem), punchItemA.Guid, "Comment");
         knownTestData.CommentInPunchItemAGuid = commentInPunchItemA.Guid;
 
@@ -313,20 +309,6 @@ public static class CompletionContextExtension
         punchItemRepository.Add(punchItem);
         dbContext.SaveChangesAsync().GetAwaiter().GetResult();
         return punchItem;
-    }
-
-    private static Link SeedLink(
-        CompletionContext dbContext, 
-        string parentType, 
-        Guid parentGuid, 
-        string title, 
-        string url)
-    {
-        var linkRepository = new LinkRepository(dbContext);
-        var link = new Link(parentType, parentGuid, title, url);
-        linkRepository.Add(link);
-        dbContext.SaveChangesAsync().GetAwaiter().GetResult();
-        return link;
     }
 
     private static Comment SeedComment(CompletionContext dbContext, string parentType, Guid parentGuid, string text)

@@ -10,7 +10,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class LibraryEventConsumer(
     ILogger<LibraryEventConsumer> logger,
-    IPlantSetter plantSetter,
     ILibraryItemRepository libraryRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<LibraryEvent>
@@ -19,9 +18,7 @@ public class LibraryEventConsumer(
     public async Task Consume(ConsumeContext<LibraryEvent> context)
     {
         var busEvent = context.Message;
-
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
 
         if (busEvent.Behavior == "delete")
         {

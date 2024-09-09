@@ -23,7 +23,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.HistoryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
@@ -104,7 +103,6 @@ public static class ApplicationModule
         services.AddScoped<ILocalPersonRepository, LocalPersonRepository>();
         services.AddScoped<IPunchItemRepository, PunchItemRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
-        services.AddScoped<ILinkRepository, LinkRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<ILibraryItemRepository, LibraryItemRepository>();
@@ -115,8 +113,6 @@ public static class ApplicationModule
         services.AddScoped<ILabelEntityRepository, LabelEntityRepository>();
         services.AddScoped<IMailTemplateRepository, MailTemplateRepository>();
         services.AddScoped<IHistoryItemRepository, HistoryItemRepository>();
-        services.AddScoped<Command.Links.ILinkService, Command.Links.LinkService>();
-        services.AddScoped<Query.Links.ILinkService, Query.Links.LinkService>();
         services.AddScoped<Command.Comments.ICommentService, Command.Comments.CommentService>();
         services.AddScoped<Query.Comments.ICommentService, Query.Comments.CommentService>();
         services.AddScoped<Query.History.IHistoryService, Query.History.HistoryService>();

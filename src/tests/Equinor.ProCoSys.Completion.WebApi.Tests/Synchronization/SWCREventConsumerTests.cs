@@ -17,7 +17,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class SWCREventConsumerTests
 {
     private readonly ISWCRRepository _swcrRepoMock = Substitute.For<ISWCRRepository>();
-    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly SWCREventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -27,7 +26,7 @@ public class SWCREventConsumerTests
     private const string Plant = "PCS$OSEBERG_C";
 
     public SWCREventConsumerTests() =>
-        _dut = new SWCREventConsumer(Substitute.For<ILogger<SWCREventConsumer>>(), _plantSetter, _swcrRepoMock,
+        _dut = new SWCREventConsumer(Substitute.For<ILogger<SWCREventConsumer>>(), _swcrRepoMock,
             _unitOfWorkMock);
 
     [TestInitialize]

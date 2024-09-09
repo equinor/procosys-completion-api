@@ -10,7 +10,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class WorkOrderEventConsumer(
     ILogger<WorkOrderEventConsumer> logger,
-    IPlantSetter plantSetter,
     IWorkOrderRepository workOrderRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<WorkOrderEvent>
@@ -18,9 +17,7 @@ public class WorkOrderEventConsumer(
     public async Task Consume(ConsumeContext<WorkOrderEvent> context)
     {
         var busEvent = context.Message;
-
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
 
         if (busEvent.Behavior == "delete")
         {

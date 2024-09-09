@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -27,8 +26,7 @@ public class DeletePunchItemCommandHandler(
     ICheckListApiService checkListApiService,
     ILogger<DeletePunchItemCommandHandler> logger,
     ICommentRepository commentsRepository,
-    IAttachmentRepository attachmentRepository,
-    ILinkRepository linkRepository)
+    IAttachmentRepository attachmentRepository)
     : IRequestHandler<DeletePunchItemCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
@@ -43,12 +41,6 @@ public class DeletePunchItemCommandHandler(
         {
             await messageProducer.PublishAsync(new AttachmentDeletedByPunchItemIntegrationEvent(attachment.Guid,attachment.GetFullBlobPath()), cancellationToken);
             attachmentRepository.Remove(attachment);
-        }
-
-        var links = await linkRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken);
-        foreach (var link in links)
-        {
-            linkRepository.Remove(link);
         }
         var punchItem = request.PunchItem;
             
