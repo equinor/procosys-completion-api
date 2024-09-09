@@ -11,7 +11,6 @@ using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.CheckLists;
 
@@ -40,7 +39,7 @@ public class CheckListsController(IMediator mediator) : ControllerBase
         [FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetPunchItemsQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     /// <summary>
@@ -62,6 +61,6 @@ public class CheckListsController(IMediator mediator) : ControllerBase
         [FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetDuplicateInfoQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 }

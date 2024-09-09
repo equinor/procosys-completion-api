@@ -6,17 +6,16 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.SWCRQueries;
 
-public class SWCRSearchQueryHandler : IRequestHandler<SWCRSearchQuery, Result<IEnumerable<SWCRDto>>>
+public class SWCRSearchQueryHandler : IRequestHandler<SWCRSearchQuery, IEnumerable<SWCRDto>>
 {
     private readonly IReadOnlyContext _context;
 
     public SWCRSearchQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<SWCRDto>>> Handle(SWCRSearchQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<SWCRDto>> Handle(SWCRSearchQuery request, CancellationToken cancellationToken)
     {
         var swcrs = await (from swcr in _context.QuerySet<SWCR>()
                 where swcr.No.ToString().Contains(request.SearchPhrase) && !swcr.IsVoided
@@ -28,6 +27,6 @@ public class SWCRSearchQueryHandler : IRequestHandler<SWCRSearchQuery, Result<IE
 
         var orderedSWCRs = swcrs.OrderBy(l => l.No);
 
-        return new SuccessResult<IEnumerable<SWCRDto>>(orderedSWCRs);
+        return orderedSWCRs;
     }
 }

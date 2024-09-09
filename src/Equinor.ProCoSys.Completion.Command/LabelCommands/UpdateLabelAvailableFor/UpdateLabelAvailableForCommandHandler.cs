@@ -7,11 +7,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailableFor;
 
-public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabelAvailableForCommand, Result<Unit>>
+public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabelAvailableForCommand, Unit>
 {
     private readonly ILabelRepository _labelRepository;
     private readonly ILabelEntityRepository _labelEntityRepository;
@@ -30,7 +29,7 @@ public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabel
         _logger = logger;
     }
 
-    public async Task<Result<Unit>> Handle(UpdateLabelAvailableForCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(UpdateLabelAvailableForCommand request, CancellationToken cancellationToken)
     {
         var existingLabel = await _labelRepository.GetByTextAsync(request.Text, cancellationToken);
 
@@ -42,7 +41,7 @@ public class UpdateLabelAvailableForCommandHandler : IRequestHandler<UpdateLabel
 
         _logger.LogInformation("Label {Label} updated regarding entity types it is available for ", request.Text);
 
-        return new SuccessResult<Unit>(Unit.Value);
+        return Unit.Value;
     }
 
     private static void RemoveLabelAvailableFor(Label label, List<EntityTypeWithLabel> availableFor)

@@ -7,11 +7,10 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnverifyPunchItem;
 
-public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnverifyPunchItemCommand, Result<string>>
+public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnverifyPunchItemCommand, string>
 {
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
@@ -30,7 +29,7 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(UnverifyPunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UnverifyPunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
@@ -60,6 +59,6 @@ public class UnverifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestH
             _logger.LogError(e, "Error occurred while trying to Sync Unverify on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 }

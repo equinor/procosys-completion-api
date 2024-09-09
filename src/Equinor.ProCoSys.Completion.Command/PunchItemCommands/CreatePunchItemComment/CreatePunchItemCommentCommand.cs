@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 
@@ -11,7 +10,7 @@ public class CreatePunchItemCommentCommand(
     string text,
     IEnumerable<string> labels,
     IEnumerable<Guid> mentions)
-    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<GuidAndRowVersion>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

@@ -1,12 +1,11 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
 public class UpdatePunchItemCategoryCommand(Guid punchItemGuid, Category category, string rowVersion)
-    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<string>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;

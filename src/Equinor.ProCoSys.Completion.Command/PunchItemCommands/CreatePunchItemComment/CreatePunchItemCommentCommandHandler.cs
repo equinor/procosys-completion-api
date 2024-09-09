@@ -2,14 +2,13 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Comments;
 using MediatR;
-using ServiceResult;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItemComment;
 
-public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchItemCommentCommand, Result<GuidAndRowVersion>>
+public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchItemCommentCommand, GuidAndRowVersion>
 {
     private readonly ICommentService _commentService;
     private readonly ILabelRepository _labelRepository;
@@ -28,7 +27,7 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<GuidAndRowVersion>> Handle(
+    public async Task<GuidAndRowVersion> Handle(
         CreatePunchItemCommentCommand request,
         CancellationToken cancellationToken)
     {
@@ -46,6 +45,6 @@ public class CreatePunchItemCommentCommandHandler : IRequestHandler<CreatePunchI
             MailTemplateCode.PunchCommented,
             cancellationToken);
 
-        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(commentDto.Guid, commentDto.RowVersion));
+        return new GuidAndRowVersion(commentDto.Guid, commentDto.RowVersion);
     }
 }

@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.MailTemplates;
 
@@ -27,6 +26,6 @@ public class MailTemplatesController : ControllerBase
     public async Task<ActionResult<IEnumerable<MailTemplateDto>>> GetMailTemplates(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAllMailTemplatesQuery(), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

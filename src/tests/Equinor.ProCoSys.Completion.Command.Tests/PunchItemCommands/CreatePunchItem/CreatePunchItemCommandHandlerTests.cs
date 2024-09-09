@@ -94,7 +94,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         var result = await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(GuidAndRowVersion));
+        Assert.IsInstanceOfType(result, typeof(GuidAndRowVersion));
     }
 
     [TestMethod]

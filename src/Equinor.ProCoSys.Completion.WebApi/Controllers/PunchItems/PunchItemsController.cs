@@ -37,8 +37,6 @@ using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
-using ServiceResult.ApiExtensions;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
@@ -71,7 +69,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetPunchItemQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -113,7 +111,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
                 dto.MaterialETAUtc,
                 dto.MaterialExternalNo),
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -139,7 +137,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var result = await mediator.Send(
             new DuplicatePunchItemCommand(guid, dto.CheckListGuids, dto.DuplicateAttachments),
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -169,7 +167,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var result = await mediator.Send(
             new UpdatePunchItemCommand(guid, dto.PatchDocument, dto.RowVersion),
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -197,7 +195,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var result = await mediator.Send(
             new UpdatePunchItemCategoryCommand(guid, dto.Category, dto.RowVersion),
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -246,7 +244,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
     {
         var result = await mediator.Send(
             new UnclearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -271,7 +269,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
     {
         var result = await mediator.Send(
             new RejectPunchItemCommand(guid, dto.Comment, dto.Mentions, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -296,7 +294,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
     {
         var result = await mediator.Send(
             new VerifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -321,7 +319,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
     {
         var result = await mediator.Send(
             new UnverifyPunchItemCommand(guid, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -372,7 +370,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
     {
         var result = await mediator.Send(
             new CreatePunchItemCommentCommand(guid, dto.Text, dto.Labels, dto.Mentions), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -394,7 +392,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetPunchItemCommentsQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     #endregion
@@ -430,7 +428,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
             stream,
             dto.File.ContentType), 
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -463,7 +461,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
             stream,
             dto.File.ContentType), 
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -487,7 +485,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var ipAddress = GetClientIpAddress();
 
         var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     private string? GetIpAddressFromHeaders()
@@ -564,7 +562,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var result = await mediator.Send(
             new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion),
             cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     /// <summary>
@@ -592,12 +590,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
             new GetPunchItemAttachmentDownloadUrlQuery(guid, attachmentGuid),
             cancellationToken);
 
-        if (result.ResultType != ResultType.Ok)
-        {
-            return this.FromResult(result);
-        }
-
-        return Ok(result.Data.ToString());
+        return Ok(result.ToString());
     }
 
     /// <summary>
@@ -625,7 +618,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         var result = await mediator.Send(
             new UpdatePunchItemAttachmentCommand(guid, attachmentGuid, dto.Description, dto.Labels, dto.RowVersion),
             cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     #endregion
@@ -651,7 +644,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetPunchItemHistoryQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     #endregion

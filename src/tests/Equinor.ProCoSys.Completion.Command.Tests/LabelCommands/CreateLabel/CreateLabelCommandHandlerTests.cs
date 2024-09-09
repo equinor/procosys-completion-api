@@ -48,8 +48,8 @@ public class CreateLabelCommandHandlerTests
         var result = await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(string));
-        Assert.AreEqual(_rowVersion, result.Data);
+        Assert.IsInstanceOfType(result, typeof(string));
+        Assert.AreEqual(_rowVersion, result);
     }
 
     [TestMethod]

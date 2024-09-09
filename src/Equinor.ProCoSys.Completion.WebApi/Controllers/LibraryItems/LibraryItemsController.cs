@@ -10,7 +10,6 @@ using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.LibraryItems;
 
@@ -34,6 +33,6 @@ public class LibraryItemsController : ControllerBase
         [FromQuery] LibraryType[] libraryTypes)
     {
         var result = await _mediator.Send(new GetPunchLibraryItemsQuery(libraryTypes), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

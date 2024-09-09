@@ -23,7 +23,6 @@ using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DuplicatePunchItem;
 
@@ -37,9 +36,9 @@ public class DuplicatePunchItemCommandHandler(
     ICheckListApiService checkListApiService,
     ILogger<DuplicatePunchItemCommandHandler> logger
     )
-    : PunchUpdateCommandBase, IRequestHandler<DuplicatePunchItemCommand, Result<List<GuidAndRowVersion>>>
+    : PunchUpdateCommandBase, IRequestHandler<DuplicatePunchItemCommand, List<GuidAndRowVersion>>
 {
-    public async Task<Result<List<GuidAndRowVersion>>> Handle(DuplicatePunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<List<GuidAndRowVersion>> Handle(DuplicatePunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
         var attachments = 
@@ -116,7 +115,7 @@ public class DuplicatePunchItemCommandHandler(
             logger.LogError(e,
                 "Error occurred while trying to Sync Duplicated punch items with guids {PunchItemGuids}",
                 string.Join(",", punchItemIntegrationEvents.Select(i => i.Guid)));
-            return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
+            return guidAndRowVersions;
         }
 
         try
@@ -128,7 +127,7 @@ public class DuplicatePunchItemCommandHandler(
             logger.LogError(e,
                 "Error occurred while trying to Recalculate the completion status for check lists with guids {CheckListGuids}",
                 checkListGuidsAsString);
-            return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
+            return guidAndRowVersions;
         }
 
         try
@@ -143,7 +142,7 @@ public class DuplicatePunchItemCommandHandler(
                 string.Join(",", attachmentIntegrationEvents.Select(i => i.Guid)));
         }
 
-        return new SuccessResult<List<GuidAndRowVersion>>(guidAndRowVersions);
+        return guidAndRowVersions;
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(

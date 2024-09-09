@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
 
-public class WorkOrderSearchQuery : IRequest<Result<IEnumerable<WorkOrderDto>>>
+public class WorkOrderSearchQuery : IRequest<IEnumerable<WorkOrderDto>>
 {
     public WorkOrderSearchQuery(string searchPhrase) => SearchPhrase = searchPhrase;
 

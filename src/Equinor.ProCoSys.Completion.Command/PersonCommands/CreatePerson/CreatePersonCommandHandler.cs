@@ -7,11 +7,10 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PersonCommands.CreatePerson;
 
-public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, Result<Unit>>
+public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, Unit>
 {
     private readonly IPersonCache _personCache;
     private readonly IPersonRepository _personRepository;
@@ -33,13 +32,13 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
         _logger = logger;
     }
 
-    public async Task<Result<Unit>> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreatePersonCommand request, CancellationToken cancellationToken)
     {
         var personExists = await _personRepository.ExistsAsync(request.Oid, cancellationToken);
 
         if (personExists)
         {
-            return new SuccessResult<Unit>(Unit.Value);
+            return Unit.Value;
         }
 
         var pcsPerson = await _personCache.GetAsync(request.Oid, cancellationToken: cancellationToken);
@@ -77,6 +76,6 @@ public class CreatePersonCommandHandler : IRequestHandler<CreatePersonCommand, R
 
         _logger.LogInformation("{Type} with oid {Oid} created", type, person.Guid);
 
-        return new SuccessResult<Unit>(Unit.Value);
+        return Unit.Value;
     }
 }

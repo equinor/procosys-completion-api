@@ -53,8 +53,8 @@ public class GetPunchItemHistoryQueryHandlerTests : TestsBase
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<HistoryDto>));
-        var history = result.Data.Single();
+        Assert.IsInstanceOfType(result, typeof(IEnumerable<HistoryDto>));
+        var history = result.Single();
         Assert.AreEqual(_historyDto.EventForParentGuid, history.EventForParentGuid);
         Assert.AreEqual(_historyDto.EventForGuid, history.EventForGuid);
         Assert.AreEqual(_historyDto.EventByFullName, history.EventByFullName);
