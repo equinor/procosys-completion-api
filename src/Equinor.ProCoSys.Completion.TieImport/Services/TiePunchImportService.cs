@@ -1,6 +1,7 @@
 ﻿using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Message;

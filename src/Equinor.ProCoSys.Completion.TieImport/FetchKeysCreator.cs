@@ -1,5 +1,6 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
