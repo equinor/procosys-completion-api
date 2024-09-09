@@ -220,9 +220,8 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await mediator.Send(
-            new ClearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        var result = await mediator.Send(new ClearPunchItemCommand(guid, dto.RowVersion), cancellationToken);
+        return result;
     }
 
     /// <summary>
@@ -343,8 +342,8 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid guid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
-        return this.FromResult(result);
+        await mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
+        return Ok();
     }
 
     #endregion
