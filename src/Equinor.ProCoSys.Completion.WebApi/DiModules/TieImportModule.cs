@@ -29,8 +29,8 @@ public static class TieImportModule
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
-        services.AddTransient<IPunchItemImportHandler, PunchItemImportHandler>();
-        services.AddScoped<IPunchImportService, PunchImportService>();
+        services.AddTransient<ITiePunchImportService, TiePunchImportService>();
+        services.AddScoped<IPunchItemImportService, PunchItemImportService>();
         
         services.AddAdapterHosting();
         if (!builder.Environment.IsIntegrationTest())

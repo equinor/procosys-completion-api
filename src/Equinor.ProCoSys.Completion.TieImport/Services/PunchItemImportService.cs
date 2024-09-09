@@ -10,13 +10,13 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Services;
 
-public class PunchImportService(
+public class PunchItemImportService(
     IMediator mediator,
     IPlantSetter plantSetter,
     ICurrentUserSetter currentUserSetter,
     IOptionsMonitor<ImportUserOptions> tieConfig,
     IImportDataFetcher importDataFetcher,
-    ILogger<PunchImportService> logger) : IPunchImportService
+    ILogger<PunchItemImportService> logger) : IPunchItemImportService
 {
 
     public async Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message)

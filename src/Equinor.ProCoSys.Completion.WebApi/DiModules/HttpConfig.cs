@@ -17,9 +17,9 @@ public static class HttpConfig
         builder.Services.AddCors(options => //TODO: #104225 "CORS - Use a list of clients, not AllowAll"
         {
             options.AddPolicy(AllowAllOriginsCorsPolicy,
-                builder =>
+                b =>
                 {
-                    builder
+                    b
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod();

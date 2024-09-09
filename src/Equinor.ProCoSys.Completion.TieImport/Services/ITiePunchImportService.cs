@@ -1,8 +1,8 @@
 ﻿using Statoil.TI.InterfaceServices.Message;
 
-namespace Equinor.ProCoSys.Completion.TieImport;
+namespace Equinor.ProCoSys.Completion.TieImport.Services;
 
-public interface IPunchItemImportHandler
+public interface ITiePunchImportService
 {
     /// <summary>
     /// Imports a mapped TIObject of type PUNCHITEM to ProCoSys

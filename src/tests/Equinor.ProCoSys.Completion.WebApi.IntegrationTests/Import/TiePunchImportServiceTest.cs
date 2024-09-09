@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -12,15 +13,15 @@ using Statoil.TI.InterfaceServices.Message;
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Import;
 
 [TestClass]
-public class PunchItemImportHandlerTest(IServiceProvider serviceProvider)
+public class TiePunchImportServiceTest(IServiceProvider serviceProvider)
 {
-    private IPunchItemImportHandler _dut;
+    private ITiePunchImportService _dut;
 
     [TestInitialize]
     public void Setup()
     {
          serviceProvider = TestFactory.Instance.Services;
-        _dut = serviceProvider.GetRequiredService<IPunchItemImportHandler>();
+        _dut = serviceProvider.GetRequiredService<ITiePunchImportService>();
     }
     
     [TestMethod]
