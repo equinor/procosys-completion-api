@@ -1,6 +1,7 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
+using Equinor.ProCoSys.Completion.TieImport.Models;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 

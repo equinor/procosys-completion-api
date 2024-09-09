@@ -2,7 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Imports;
 
-namespace Equinor.ProCoSys.Completion.TieImport;
+namespace Equinor.ProCoSys.Completion.TieImport.Models;
 
 public sealed record PunchItemImportMessage(
     Guid MessageGuid,
