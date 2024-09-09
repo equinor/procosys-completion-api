@@ -43,7 +43,6 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
         }
     }
 
-
     /// <summary>
     /// Creates schema mapper which handle instances of TIInterfaceMessage (legacy message class).
     /// </summary>

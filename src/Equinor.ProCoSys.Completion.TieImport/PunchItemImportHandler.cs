@@ -33,12 +33,12 @@ public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFact
         var messageResult = CreateTiMessageResult(tiObject.Guid, importResult.Errors.ToList());
         return messageResult;
     }
-    
+
     private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
     {
-            var commandValidator = new PunchItemImportMessageValidator();
-            var validationResult = commandValidator.Validate(punchImportMessage);
-            return  validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
+        var commandValidator = new PunchItemImportMessageValidator();
+        var validationResult = commandValidator.Validate(punchImportMessage);
+        return validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
     }
 
     private static List<ImportError> ValidateInput(TIObject message)
