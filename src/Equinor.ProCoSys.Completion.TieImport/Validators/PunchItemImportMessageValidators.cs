@@ -1,6 +1,6 @@
 ﻿using Equinor.ProCoSys.Completion.TieImport.Models;
 using FluentValidation;
-using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
+using static Equinor.ProCoSys.Completion.TieImport.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 

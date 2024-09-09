@@ -4,5 +4,10 @@ namespace Equinor.ProCoSys.Completion.TieImport.Services;
 
 public interface IPunchItemImportService
 {
-    Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message);
+    /// <summary>
+    /// Tries to import punchItem and returns list of errors if not successful. Empty list if successful.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    Task<List<ImportError>> HandlePunchImportMessage(PunchItemImportMessage message);
 }

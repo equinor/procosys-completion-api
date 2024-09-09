@@ -18,8 +18,8 @@ public sealed class ImportBundleBuilder(IImportDataFetcher importDataFetcher)
         var project = await FetchProjectsAsync(projectByPlantKey, cancellationToken);
         
         var bundle = new ImportDataBundle(importMessage.Plant, project);
-        bundle.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
-            libraryItemsByPlant.SelectMany(x => x).ToList(),
+        bundle.AddLibraryItems(await FetchLibraryItemsForPlantAsync(importMessage.Plant,
+            libraryItemsByPlant,
             cancellationToken));
         bundle.CheckListGuid = await FetchChecklistGuidsAsync(importMessage, cancellationToken);
         bundle.AddPersons(await FetchImportUserAsync(cancellationToken));
@@ -31,11 +31,11 @@ public sealed class ImportBundleBuilder(IImportDataFetcher importDataFetcher)
         CancellationToken cancellationToken)
         => await importDataFetcher.GetCheckListGuidByCheckListMetaInfo(message, cancellationToken);
 
-    private async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
+    private async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(string  plant,List<LibraryItemByPlant> keys,
         CancellationToken cancellationToken)
     {
         var libraryItems = await importDataFetcher
-            .FetchLibraryItemsForPlantAsync(keys, cancellationToken);
+            .FetchLibraryItemsForPlantAsync(plant,keys, cancellationToken);
         return libraryItems;
     }
 

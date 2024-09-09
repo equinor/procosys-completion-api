@@ -3,7 +3,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Statoil.TI.InterfaceServices.Message;
-using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
+using static System.String;
+using static Equinor.ProCoSys.Completion.TieImport.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
@@ -56,7 +57,7 @@ public static class TiObjectToPunchItemImportMessage
             return new Optional<DateTime?>();
         }
 
-        if (string.IsNullOrEmpty(dueDate))
+        if (IsNullOrEmpty(dueDate))
         {
             return new Optional<DateTime?>();
         }
@@ -69,12 +70,13 @@ public static class TiObjectToPunchItemImportMessage
     private static Category? GetCategoryFromStatus(TIObject tiObject)
     {
         var status = tiObject.GetAttributeValueAsString(Status);
-        if (string.IsNullOrEmpty(status))
+        if (IsNullOrEmpty(status))
         {
             return null;
         }
 
-        if (status != Category.PB.ToString() && status != Category.PA.ToString())
+        if (!string.Equals(status,Category.PB.ToString(), StringComparison.InvariantCultureIgnoreCase) 
+            && !string.Equals(status ,Category.PA.ToString(), StringComparison.InvariantCultureIgnoreCase))
         {
             return null;
         }

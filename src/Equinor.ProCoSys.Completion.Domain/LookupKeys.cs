@@ -2,6 +2,6 @@
 
 namespace Equinor.ProCoSys.Completion.Domain;
 
-public readonly record struct LibraryItemByPlant(string Code, LibraryType Type, string Plant);
+public readonly record struct LibraryItemByPlant(string Code, LibraryType Type);
 
 public readonly record struct ProjectByPlantKey(string Project, string Plant);

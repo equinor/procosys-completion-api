@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Equinor.ProCoSys.Completion.Domain.Imports;
+﻿namespace Equinor.ProCoSys.Completion.TieImport.Models;
 
 public sealed record CommandReferences 
 {

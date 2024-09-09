@@ -1,7 +1,5 @@
-﻿using Equinor.ProCoSys.Completion.Domain.Imports;
-
-namespace Equinor.ProCoSys.Completion.TieImport.Models;
-
-public readonly record struct ImportResult(
-    Guid MessageGuid,   
-    IEnumerable<ImportError> Errors);
+﻿// namespace Equinor.ProCoSys.Completion.TieImport.Models;
+//
+// public readonly record struct ImportResult(
+//     Guid MessageGuid,   
+//     IEnumerable<ImportError> Errors);

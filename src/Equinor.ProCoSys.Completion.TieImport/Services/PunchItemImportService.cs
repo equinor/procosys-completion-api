@@ -1,7 +1,6 @@
 ﻿using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using FluentValidation;
 using MediatR;
@@ -19,34 +18,33 @@ public class PunchItemImportService(
     ILogger<PunchItemImportService> logger) : IPunchItemImportService
 {
 
-    public async Task<ImportResult> HandlePunchImportMessage(PunchItemImportMessage message)
+    public async Task<List<ImportError>> HandlePunchImportMessage(PunchItemImportMessage message)
     {
         var importBundle = await CreateImportDataBundleContexts(message);
         var referencesService = new CommandReferencesService(importBundle);
         var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
         if(references.Errors.Length != 0)
         {
-            return new ImportResult(message.MessageGuid, references.Errors);
+            return references.Errors.ToList();
         }
         var createCommand = GetAndValidateCreateCommand(message, references);
-        var importResult = new ImportResult(message.MessageGuid,[]);
+        
         try
         { 
             await PrepareAndSendCommand(createCommand, importBundle, CancellationToken.None);
-            return importResult;
+            return [];
 
         }
         catch (ValidationException ve)
         {
             var validationErrors = ve.Errors
                 .Select(x => new ImportError(message.MessageGuid, message.Method, message.ProjectName,message.Plant,x.ErrorMessage)).ToArray();
-            return importResult with { Errors = [..importResult.Errors, ..validationErrors] };
+            return validationErrors.ToList();
         }
         catch (Exception ex)
         {
             logger.LogError(ex,"ImportObject failed unexpectedly");
-            return importResult with { Errors = [..importResult.Errors, 
-                new ImportError(message.MessageGuid, message.Method, message.ProjectName,message.Plant, ex.Message)]};
+            return [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant, ex.Message)];
         }
     }
      

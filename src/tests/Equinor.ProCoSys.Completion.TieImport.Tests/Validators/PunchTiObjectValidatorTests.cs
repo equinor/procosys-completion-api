@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.Imports;
-using Equinor.ProCoSys.Completion.TieImport.Validators;
+﻿using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests.Validators;

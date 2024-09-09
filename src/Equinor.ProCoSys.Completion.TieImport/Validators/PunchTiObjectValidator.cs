@@ -1,7 +1,7 @@
 ﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using FluentValidation;
 using Statoil.TI.InterfaceServices.Message;
-using static Equinor.ProCoSys.Completion.Domain.Imports.PunchObjectAttributes;
+using static Equinor.ProCoSys.Completion.TieImport.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 

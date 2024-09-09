@@ -1,4 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.Imports;
+﻿using Equinor.ProCoSys.Completion.TieImport.Models;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Extensions;

@@ -1,4 +1,4 @@
-namespace Equinor.ProCoSys.Completion.Domain.Imports;
+namespace Equinor.ProCoSys.Completion.TieImport;
 
 public static class PunchObjectAttributes
 {

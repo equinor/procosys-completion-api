@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.Domain.Imports;
-using Equinor.ProCoSys.Completion.TieImport.Extensions;
+﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
@@ -28,9 +27,14 @@ public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFacto
         }
         await using var scope = serviceScopeFactory.CreateAsyncScope();
         var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchItemImportService>();
-        var importResult = await punchImportService.HandlePunchImportMessage(punchImportMessage);
+        var importErrors = await punchImportService.HandlePunchImportMessage(punchImportMessage);
         
-        var messageResult = CreateTiMessageResult(tiObject.Guid, importResult.Errors.ToList());
+        if(importErrors.Count != 0)
+        {
+            return CreateTiValidationErrorMessageResult(tiObject.Guid, importErrors);
+        }
+        
+        var messageResult = CreateTiMessageSuccessResult(tiObject.Guid);
         return messageResult;
     }
 
@@ -75,34 +79,14 @@ public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFacto
         return messageResult;
     }
 
-    private static TIMessageResult CreateTiMessageResult(Guid messageGuid, List<ImportError> resultErrors)
+    private static TIMessageResult CreateTiMessageSuccessResult(Guid messageGuid)
     {
         var messageResult = new TIMessageResult
         {
-            Result = resultErrors.Count != 0
-                ? MessageResults.Failed
-                : MessageResults.Successful,
-            ErrorMessage = resultErrors.Count != 0
-                ? $"Errors(1 of {resultErrors.Count}): {resultErrors.FirstOrDefault()?.Message}"
-                : string.Empty
+            Result =  MessageResults.Successful,
+            Guid = messageGuid
         };
-
-        foreach (var error in resultErrors)
-        {
-                messageResult.AddLogEntry(new TILogEntry
-                {
-                    LogDescription = error.ToString(),
-                    Guid = Guid.NewGuid(),
-                    LogScope = "General",
-                    LogType = "Error",
-                    TimeStamp = DateTime.UtcNow
-                });
-        }
-
-        if (resultErrors.Count == 0)
-        {
-            messageResult.AddLogEntry($"GUID '{messageGuid}' imported successfully", "PunchItem");
-        }
+        messageResult.AddLogEntry($"GUID '{messageGuid}' imported successfully", "PunchItem");
         return messageResult;
     }
 }

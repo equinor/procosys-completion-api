@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Models;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -19,7 +18,8 @@ public interface IImportDataFetcher
     Task<IReadOnlyCollection<Person>> FetchImportUserPersonsAsync(
         CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(IReadOnlyCollection<LibraryItemByPlant> keys,
+    Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(string plant,
+        IReadOnlyCollection<LibraryItemByPlant> keys,
         CancellationToken cancellationToken);
     
     Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
@@ -57,41 +57,18 @@ public sealed class ImportDataFetcher(
     }
 
     public async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(
+        string plant,
         IReadOnlyCollection<LibraryItemByPlant> keys, CancellationToken cancellationToken)
     {
-        keys = keys
-            .Distinct()
-            .ToList();
         if (keys.Count == 0)
         {
             return [];
         }
+        return await completionContext.Library
+            .Where(l => l.Plant == plant 
+                        && keys.Any(k => k.Code == l.Code && k.Type == l.Type))
+            .ToListAsync(cancellationToken);
 
-        var query = $"""
-                     SELECT Guid, Id, Code, Description, Type, Plant, IsVoided, PeriodEnd, PeriodStart, ProCoSys4LastUpdated, RowVersion, SyncTimestamp
-                     FROM Library l
-                     WHERE EXISTS (
-                           SELECT 1
-                           FROM (VALUES {string.Join(",", keys.Select((_, i) => $"(@Code{i}, @Type{i}, @Plant{i})"))}
-                                 ) AS t(Code, Type, Plant)
-                           WHERE l.Code = t.Code AND l.Type = t.Type AND l.Plant = t.Plant
-                       )
-                     """;
-
-        var parameters = new List<SqlParameter>();
-
-        parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Code{i}", k.Code)));
-        parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Type{i}", k.Type.ToString())));
-        parameters.AddRange(keys.Select((k, i) => new SqlParameter($"@Plant{i}", k.Plant)));
-
-        var items = await completionContext.Library
-            // ReSharper disable once CoVariantArrayConversion
-            .FromSqlRaw(query, parameters.ToArray())
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
-
-        return items;
     }
 
     public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(

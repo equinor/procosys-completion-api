@@ -6,22 +6,20 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public static class FetchKeysCreator
 {
-    public static ILookup<string, LibraryItemByPlant> CreateLibraryItemKeys(
+    public static List<LibraryItemByPlant> CreateLibraryItemKeys(
         PunchItemImportMessage message)
     {
         var libraryItemKeys =
-                new List<LibraryItemByPlant?>
+            new List<LibraryItemByPlant?>
                 {
-                    CreateLibraryItemKey(message.PunchListType, message.Plant, LibraryType.PUNCHLIST_TYPE),
-                    CreateLibraryItemKey(message.ClearedByOrganization, message.Plant,
-                        LibraryType.COMPLETION_ORGANIZATION),
-                    CreateLibraryItemKey(message.RaisedByOrganization, message.Plant,
-                        LibraryType.COMPLETION_ORGANIZATION)
+                    CreateLibraryItemKey(message.PunchListType, LibraryType.PUNCHLIST_TYPE),
+                    CreateLibraryItemKey(message.ClearedByOrganization, LibraryType.COMPLETION_ORGANIZATION),
+                    CreateLibraryItemKey(message.RaisedByOrganization, LibraryType.COMPLETION_ORGANIZATION)
                 }
-                .Where(x => x is not null).Select(x => x!.Value)
-                .Distinct()
-                .ToLookup(k => k.Plant);
-
+                .Where(x => x is not null)
+                .Select(x => x!.Value)
+                .Distinct().ToList();
+        
         return libraryItemKeys;
     }
 
@@ -30,14 +28,14 @@ public static class FetchKeysCreator
         => CreateProjectKey(importMessage);
     
 
-    private static LibraryItemByPlant? CreateLibraryItemKey(Optional<string?> libraryCode, string plant,
+    private static LibraryItemByPlant? CreateLibraryItemKey(Optional<string?> libraryCode,
         LibraryType type)
     {
         if (libraryCode is not { HasValue: true, Value: not null })
         {
             return null;
         }
-        var key = new LibraryItemByPlant(libraryCode.Value, type, plant);
+        var key = new LibraryItemByPlant(libraryCode.Value, type);
         return key;
     }
     

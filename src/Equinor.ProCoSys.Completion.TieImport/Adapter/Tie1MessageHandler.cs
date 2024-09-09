@@ -30,11 +30,11 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
         logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid,
             message.Message.Site);
 
-        if (message.Message.ObjectType != "PUNCHITEM")
+        if (!message.Message.ObjectType.Equals("PUNCHITEM", StringComparison.InvariantCultureIgnoreCase))
         {
             return new MessageHandleResult<Tie1Receipt>
             {
-                Receipt = Tie1Receipt.Create(message.Message, ReceiptStatus.Filtered, "Invalid object type.")
+                Receipt = Tie1Receipt.Create(message.Message, ReceiptStatus.Filtered, "Not supported object type")
             };
         }
 

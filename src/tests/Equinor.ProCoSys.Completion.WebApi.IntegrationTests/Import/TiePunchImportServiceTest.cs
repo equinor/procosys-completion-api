@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Services;
