@@ -153,7 +153,7 @@ public class PunchItemAttachmentEventConsumerTests
 
         //Assert
         Assert.IsNull(_attachmentAddedToRepository);
-        Assert.IsTrue(_punchItem.Description.Contains($"Link imported from old ProCoSys punch item: {bEvent.Uri}"));
+        Assert.IsTrue(_punchItem.Description.Contains($"\\\nLink imported from old ProCoSys punch item: {bEvent.Uri}"));
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
@@ -172,7 +172,7 @@ public class PunchItemAttachmentEventConsumerTests
 
         //Assert
         Assert.IsNull(_attachmentAddedToRepository);
-        var value = $"Link imported from old ProCoSys punch item: {bEvent.Uri}";
+        var value = $"\\\nLink imported from old ProCoSys punch item: {bEvent.Uri}";
         var parts = _punchItem.Description.Split(value);
         Assert.IsTrue(parts.Length == 2);
     }
