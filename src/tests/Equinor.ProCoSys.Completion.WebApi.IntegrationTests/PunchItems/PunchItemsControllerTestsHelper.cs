@@ -33,26 +33,6 @@ public static class PunchItemsControllerTestsHelper
         return JsonSerializer.Deserialize<PunchItemDetailsDto>(content, TestsHelper.JsonSerializerOptions);
     }
 
-    public static async Task<List<LinkDto>> GetPunchItemLinksAsync(
-        UserType userType,
-        string plant,
-        Guid guid,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).GetAsync($"{Route}/{guid}/Links");
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (expectedStatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<LinkDto>>(content, TestsHelper.JsonSerializerOptions);
-    }
-
     public static async Task<GuidAndRowVersion> CreatePunchItemAsync(
         UserType userType,
         string plant,
@@ -130,35 +110,6 @@ public static class PunchItemsControllerTestsHelper
 
         var jsonString = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<GuidAndRowVersion>>(jsonString, TestsHelper.JsonSerializerOptions);
-    }
-
-    public static async Task<GuidAndRowVersion> CreatePunchItemLinkAsync(
-        UserType userType,
-        string plant,
-        Guid guid,
-        string title,
-        string url,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var bodyPayload = new
-        {
-            title,
-            url
-        };
-
-        var serializePayload = JsonSerializer.Serialize(bodyPayload);
-        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/{guid}/Links", content);
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        var jsonString = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GuidAndRowVersion>(jsonString, TestsHelper.JsonSerializerOptions);
     }
 
     public static async Task<GuidAndRowVersion> CreatePunchItemCommentAsync(
@@ -478,38 +429,6 @@ public static class PunchItemsControllerTestsHelper
             expectedStatusCode,
             expectedMessageOnBadRequest);
 
-    public static async Task<string> UpdatePunchItemLinkAsync(
-        UserType userType,
-        string plant,
-        Guid guid,
-        Guid linkGuid,
-        string title,
-        string url,
-        string rowVersion,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var bodyPayload = new
-        {
-            title,
-            url,
-            rowVersion
-        };
-
-        var serializePayload = JsonSerializer.Serialize(bodyPayload);
-        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PutAsync($"{Route}/{guid}/Links/{linkGuid}", content);
-
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            return null;
-        }
-
-        return await response.Content.ReadAsStringAsync();
-    }
-
     public static async Task DeletePunchItemAsync(
         UserType userType,
         string plant,
@@ -524,29 +443,6 @@ public static class PunchItemsControllerTestsHelper
         };
         var serializePayload = JsonSerializer.Serialize(bodyPayload);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}")
-        {
-            Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
-        };
-
-        var response = await TestFactory.Instance.GetHttpClient(userType, plant).SendAsync(request);
-        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
-    }
-
-    public static async Task DeletePunchItemLinkAsync(
-        UserType userType,
-        string plant,
-        Guid guid,
-        Guid linkGuid,
-        string rowVersion,
-        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
-        string expectedMessageOnBadRequest = null)
-    {
-        var bodyPayload = new
-        {
-            rowVersion
-        };
-        var serializePayload = JsonSerializer.Serialize(bodyPayload);
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/{guid}/Links/{linkGuid}")
         {
             Content = new StringContent(serializePayload, Encoding.UTF8, "application/json")
         };
