@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
@@ -26,5 +25,7 @@ public class CreatePunchItemCommandForImport(
     DateTime? materialETAUtc,
     string? materialExternalNo)
     : CreatePunchItemCommand(category, description, checkListGuid, raisedByOrgGuid, clearingByOrgGuid,
-        actionByPersonOid, dueTimeUtc, priorityGuid, sortingGuid, typeGuid, estimate, originalWorkOrderGuid,
-        workOrderGuid, swcrGuid, documentGuid, externalItemNo, materialRequired, materialETAUtc, materialExternalNo) , IImportCommand;
+            actionByPersonOid, dueTimeUtc, priorityGuid, sortingGuid, typeGuid, estimate, originalWorkOrderGuid,
+            workOrderGuid, swcrGuid, documentGuid, externalItemNo, materialRequired, materialETAUtc,
+            materialExternalNo),
+        IImportCommand;

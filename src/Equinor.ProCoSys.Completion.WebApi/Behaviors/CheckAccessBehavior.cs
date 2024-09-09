@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -20,8 +20,8 @@ public class CheckAccessBehavior<TRequest, TResponse>(
         var typeName = request.GetGenericTypeName();
 
         logger.LogInformation("----- Checking access for {TypeName}", typeName);
-        
-        if(request is IImportCommand)
+
+        if (request is IImportCommand)
         {
             //Skip auth if import command
             return await next();

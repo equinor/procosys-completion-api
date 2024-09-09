@@ -1,3 +1,3 @@
-namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
+﻿namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 
 public interface IImportCommand;
