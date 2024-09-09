@@ -1,4 +1,5 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
@@ -23,7 +24,7 @@ public class CommandReferencesServiceTests
     [TestInitialize]
     public void Setup()
     {
-        _bundle = new ImportDataBundle("TestPlant");
+        _bundle = new ImportDataBundle("TestPlant", new Project("TestPlant", Guid.NewGuid(), "ProjectName","stuff"));
         _dut = new CommandReferencesService(_bundle);
     }
     

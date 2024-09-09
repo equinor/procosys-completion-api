@@ -13,26 +13,28 @@ public sealed class ImportBundleBuilder(IImportDataFetcher importDataFetcher)
         var libraryItemsByPlant = FetchKeysCreator.CreateLibraryItemKeys(importMessage);
         var projectByPlantKey = FetchKeysCreator
             .CreateProjectKeys(importMessage);
-        var context = new ImportDataBundle(importMessage.Plant);
-        context.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
+        
+        var project = await FetchProjectsAsync(projectByPlantKey, cancellationToken);
+        
+        var bundle = new ImportDataBundle(importMessage.Plant, project);
+        bundle.AddLibraryItems(await FetchLibraryItemsForPlantAsync(
             libraryItemsByPlant.SelectMany(x => x).ToList(),
             cancellationToken));
-        context.AddProjects(await FetchProjectsAsync(projectByPlantKey, cancellationToken));
-        context.CheckListGuid = await FetchChecklistGuidsAsync(importMessage);
-        context.AddPersons(await FetchImportUserAsync( cancellationToken));
+        bundle.CheckListGuid = await FetchChecklistGuidsAsync(importMessage, cancellationToken);
+        bundle.AddPersons(await FetchImportUserAsync(cancellationToken));
 
-        return context;
+        return bundle;
     }
 
-    private async Task<Guid?> FetchChecklistGuidsAsync(PunchItemImportMessage message)
-        => await importDataFetcher.GetCheckListGuidByCheckListMetaInfo(message, CancellationToken.None);
+    private async Task<Guid?> FetchChecklistGuidsAsync(PunchItemImportMessage message,
+        CancellationToken cancellationToken)
+        => await importDataFetcher.GetCheckListGuidByCheckListMetaInfo(message, cancellationToken);
 
     private async Task<IReadOnlyCollection<LibraryItem>> FetchLibraryItemsForPlantAsync(List<LibraryItemByPlant> keys,
         CancellationToken cancellationToken)
     {
         var libraryItems = await importDataFetcher
             .FetchLibraryItemsForPlantAsync(keys, cancellationToken);
-
         return libraryItems;
     }
 
@@ -42,10 +44,10 @@ public sealed class ImportBundleBuilder(IImportDataFetcher importDataFetcher)
         return persons;
     }
 
-    private async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(ProjectByPlantKey key,
+    private async Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
         CancellationToken cancellationToken)
     {
-        var projects = await importDataFetcher.FetchProjectsAsync(key, cancellationToken);
-        return projects;
+        var project = await importDataFetcher.FetchProjectsAsync(key, cancellationToken);
+        return project;
     }
 }

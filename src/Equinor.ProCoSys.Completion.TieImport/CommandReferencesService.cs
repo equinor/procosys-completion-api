@@ -8,7 +8,7 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
     public CommandReferences GetAndValidatePunchItemReferencesForImport(PunchItemImportMessage message)
     {
         var references = new CommandReferences();
-        references = ValidateAndSetProject(message, references);
+        references = references with { ProjectGuid = bundle.Project.Guid };
         references = ValidateAndSetCheckList(message, references);
         references = ValidateAndSetRaisedByOrg(message, references);
         references = ValidateAndSetClearedByOrg(message, references);
@@ -16,17 +16,6 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
         return references;
     }
     
-    private CommandReferences ValidateAndSetProject(PunchItemImportMessage message, CommandReferences references)
-    {
-        var project = bundle.Projects.SingleOrDefault(x => x.Name == message.ProjectName);
-        if (project is null)
-        {
-           return references with {Errors = 
-                [..references.Errors, message.ToImportError($"Project '{message.ProjectName}' not found")]};
-        }
-        return references with { ProjectGuid = project.Guid };
-    }
-
     private CommandReferences ValidateAndSetCheckList(PunchItemImportMessage message, CommandReferences references)
     {
         if (bundle.CheckListGuid is null)
@@ -74,6 +63,6 @@ public sealed class CommandReferencesService(ImportDataBundle bundle)
     {
         var type = bundle.Library.SingleOrDefault(x =>
             x.Code == message.PunchListType.Value && x.Type == PUNCHLIST_TYPE);
-        return references with{ TypeGuid = type?.Guid};
+        return references with { TypeGuid = type?.Guid};
     }
 }

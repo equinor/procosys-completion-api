@@ -12,7 +12,7 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public interface IImportDataFetcher
 {
-    Task<IReadOnlyCollection<Project>> FetchProjectsAsync(ProjectByPlantKey key,
+    Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
         CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<Person>> FetchImportUserPersonsAsync(
@@ -31,14 +31,13 @@ public sealed class ImportDataFetcher(
     IOptionsMonitor<ImportUserOptions> importOptions
     ) : IImportDataFetcher
 {
-    public async Task<IReadOnlyCollection<Project>> FetchProjectsAsync(ProjectByPlantKey key,
+    public async Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
         CancellationToken cancellationToken)
     {
         var items = await completionContext.Projects
-            .Where(p => p.Name == key.Project && p.Plant == key.Plant)
             .IgnoreQueryFilters()
             .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+            .SingleAsync(p => p.Name == key.Project && p.Plant == key.Plant,cancellationToken);
 
         return items;
     }

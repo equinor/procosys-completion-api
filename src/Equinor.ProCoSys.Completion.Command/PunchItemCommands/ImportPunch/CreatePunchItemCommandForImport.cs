@@ -1,8 +1,9 @@
 using System;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
-namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
+namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 
 public class CreatePunchItemCommandForImport(
     Category category,
