@@ -94,7 +94,7 @@ public class PunchItemAttachmentEventConsumer(
     {
         var punchItem = await punchItemRepository.GetAsync(busEvent.PunchItemGuid, context.CancellationToken);
 
-        punchItem.Description += $"\\nLink imported from old ProCoSys punch item: [{busEvent.Uri}]({busEvent.Uri})";
+        punchItem.Description += $"\\nLink imported from old ProCoSys punch item: {busEvent.Uri}";
     }
 
     private bool EventIsAttachment(PunchItemAttachmentEvent busEvent)
