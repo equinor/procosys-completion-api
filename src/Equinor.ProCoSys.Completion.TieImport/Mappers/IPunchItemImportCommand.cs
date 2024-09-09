@@ -1,6 +1,3 @@
-namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
+﻿namespace Equinor.ProCoSys.Completion.TieImport.Mappers;
 
-public interface IPunchItemImportCommand
-{
-    
-}
+public interface IPunchItemImportCommand;

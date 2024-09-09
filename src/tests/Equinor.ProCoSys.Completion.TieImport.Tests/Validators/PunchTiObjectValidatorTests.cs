@@ -1,16 +1,16 @@
-using Equinor.ProCoSys.Completion.Domain.Imports;
+﻿using Equinor.ProCoSys.Completion.Domain.Imports;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests.Validators;
 
 [TestClass]
-public sealed class PunchTiObjectValidatorShould
+public sealed class PunchTiObjectValidatorTests
 {
-    private PunchTiObjectValidator _validator = null!;
+    private PunchTiObjectValidator _dut = null!;
 
     [TestInitialize]
-    public void Setup() => _validator = new PunchTiObjectValidator();
+    public void Setup() => _dut = new PunchTiObjectValidator();
 
     [TestMethod]
     public void Validate_ShouldFail_WhenProjectIsNullOrEmpty()
@@ -20,7 +20,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.Project = null;
 
         // Act
-        var result = _validator.Validate(tiObject);
+        var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -35,7 +35,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.AddAttribute(PunchObjectAttributes.TagNo, null);
 
         // Act
-        var result = _validator.Validate(tiObject);
+        var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -50,7 +50,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.AddAttribute(PunchObjectAttributes.ExternalPunchItemNo, null);
 
         // Act
-        var result = _validator.Validate(tiObject);
+        var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -65,7 +65,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.AddAttribute(PunchObjectAttributes.FormType, null);
 
         // Act
-        var result = _validator.Validate(tiObject);
+        var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsFalse(result.IsValid);
@@ -83,7 +83,7 @@ public sealed class PunchTiObjectValidatorShould
         tiObject.AddAttribute(PunchObjectAttributes.Responsible, "EQ");
 
         // Act
-        var result = _validator.Validate(tiObject);
+        var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsTrue(result.IsValid);

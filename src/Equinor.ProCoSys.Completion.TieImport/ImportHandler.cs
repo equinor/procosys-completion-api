@@ -4,7 +4,6 @@ using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
 
-
 namespace Equinor.ProCoSys.Completion.TieImport;
 
 public sealed class ImportHandler(
@@ -149,19 +148,6 @@ public sealed class ImportHandler(
         {
             var message = $"Missing required attribute(s): {string.Join(",", attMissing)}";
           throw new Exception(message);
-        }
-    }
-    
-    private static void AddResultOfImportOperationToResponseObject(TIInterfaceMessage message,
-        TIMessageResult? tiMessageResult,
-        TIResponseFrame response)
-    {
-        if (tiMessageResult is not null)
-        {
-            // Observe: The ExternalReference is copied over to the result; this is where we keep/pass back the ReceiptID.
-            tiMessageResult.Guid = message.Guid;
-            tiMessageResult.ExternalReference = message.ExternalReference;
-            response.Results.Add(tiMessageResult);
         }
     }
 }

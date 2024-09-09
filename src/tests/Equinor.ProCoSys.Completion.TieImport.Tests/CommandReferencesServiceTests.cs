@@ -1,19 +1,13 @@
 ﻿using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 
 [TestClass]
-public class CommandReferencesServiceShould
+public class CommandReferencesServiceTests
 {
-    private CommandReferencesService _service = null!;
+    private CommandReferencesService _dut = null!;
     private ImportDataBundle _bundle = null!;
-    private readonly Project _project = new("TestPlant", Guid.NewGuid(), "ProjectName", "ProjectName");
-
-    private readonly LibraryItem _raisedByOrg =
-        new("TestPlant", Guid.NewGuid(), "EQ", "EQ", LibraryType.COMPLETION_ORGANIZATION);
 
     private readonly PunchItemImportMessage _baseMessage = new(
         Guid.NewGuid(), "TestPlant",  "ProjectName", "TagNo", "ExternalPunchItemNo", "FormType",
@@ -25,14 +19,12 @@ public class CommandReferencesServiceShould
         new Optional<string?>(),
         new Optional<DateTime?>(), new Optional<string?>()
     );
-
-    private const string SksEquinorCom = "SKS@equinor.com";
     
     [TestInitialize]
     public void Setup()
     {
         _bundle = new ImportDataBundle("TestPlant");
-        _service = new CommandReferencesService(_bundle);
+        _dut = new CommandReferencesService(_bundle);
     }
     
     [TestMethod]
@@ -47,7 +39,7 @@ public class CommandReferencesServiceShould
         };
 
         // Act
-        var references = _service.GetAndValidatePunchItemReferencesForImport(message);
+        var references = _dut.GetAndValidatePunchItemReferencesForImport(message);
 
         // Assert
         Assert.IsNotNull(references);

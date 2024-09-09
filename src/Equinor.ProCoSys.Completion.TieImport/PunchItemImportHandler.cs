@@ -12,8 +12,6 @@ public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFact
 {
     public async Task<TIMessageResult> ImportMessage(TIObject tiObject)
     {
-  
-        
         var validationErrors = ValidateInput(tiObject);
         
         if (validationErrors.Count != 0)
@@ -79,7 +77,6 @@ public sealed class PunchItemImportHandler(IServiceScopeFactory serviceScopeFact
 
     private static TIMessageResult CreateTiMessageResult(Guid messageGuid, List<ImportError> resultErrors)
     {
-        
         var messageResult = new TIMessageResult
         {
             Result = resultErrors.Count != 0

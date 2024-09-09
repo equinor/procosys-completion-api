@@ -2,7 +2,6 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
