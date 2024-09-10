@@ -22,7 +22,7 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public const int ItemNoStartsAtt = 5000000;
     public const string PunchItemItemNoSequence = "SEQ_PUNCHITEM_ITEMNO";
     public const int DescriptionLengthMin = 1;
-    public const int DescriptionLengthMax = 2500;
+    public const int DescriptionLengthMax = 3500;
     public const int ExternalItemNoLengthMax = 100;
     public const int MaterialExternalNoLengthMax = 100;
 
