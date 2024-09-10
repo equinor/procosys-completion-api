@@ -13,7 +13,7 @@ using Statoil.TI.InterfaceServices.Message;
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Import;
 
 [TestClass]
-public class TiePunchImportServiceTest
+public class TiePunchImportServiceTest : TestBase
 {
     private ITiePunchImportService _dut;
     private IServiceProvider _serviceProvider;
