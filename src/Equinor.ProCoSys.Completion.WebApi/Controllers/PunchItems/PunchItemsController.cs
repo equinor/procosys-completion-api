@@ -559,10 +559,8 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         [FromRoute] Guid attachmentGuid,
         [FromBody] RowVersionDto dto)
     {
-        var result = await mediator.Send(
-            new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion),
-            cancellationToken);
-        return Ok(result);
+        await mediator.Send(new DeletePunchItemAttachmentCommand(guid, attachmentGuid, dto.RowVersion), cancellationToken);
+        return Ok();
     }
 
     /// <summary>
@@ -590,7 +588,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
             new GetPunchItemAttachmentDownloadUrlQuery(guid, attachmentGuid),
             cancellationToken);
 
-        return Ok(result.ToString());
+        return Ok(result);
     }
 
     /// <summary>

@@ -37,8 +37,8 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsInstanceOfType(result, typeof(Uri));
-        Assert.AreEqual(_uri, result);
+        Assert.IsInstanceOfType(result, typeof(string));
+        Assert.AreEqual(_uri.ToString(), result);
     }
 
     [TestMethod]

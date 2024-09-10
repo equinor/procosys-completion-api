@@ -7,13 +7,13 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 
-public class GetPunchItemAttachmentDownloadUrlQueryHandler : IRequestHandler<GetPunchItemAttachmentDownloadUrlQuery, Uri>
+public class GetPunchItemAttachmentDownloadUrlQueryHandler : IRequestHandler<GetPunchItemAttachmentDownloadUrlQuery, string>
 {
     private readonly IAttachmentService _attachmentService;
 
     public GetPunchItemAttachmentDownloadUrlQueryHandler(IAttachmentService attachmentService) => _attachmentService = attachmentService;
 
-    public async Task<Uri> Handle(GetPunchItemAttachmentDownloadUrlQuery request, CancellationToken cancellationToken)
+    public async Task<string> Handle(GetPunchItemAttachmentDownloadUrlQuery request, CancellationToken cancellationToken)
     {
         var uri = await _attachmentService.GetDownloadUriAsync(request.AttachmentGuid, cancellationToken);
         if (uri is null)
@@ -21,6 +21,6 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandler : IRequestHandler<Get
             throw new EntityNotFoundException($"Attachment with Guid {request.AttachmentGuid} not found");
         }
 
-        return uri;
+        return uri.ToString();
     }
 }

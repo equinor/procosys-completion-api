@@ -46,9 +46,8 @@ public class LabelsController : ControllerBase
         CancellationToken cancellationToken,
         [FromBody] UpdateLabelAvailableForDto dto)
     {
-        var result = await _mediator.Send(
-            new UpdateLabelAvailableForCommand(dto.Text, dto.AvailableForLabels), cancellationToken);
-        return Ok(result);
+        await _mediator.Send(new UpdateLabelAvailableForCommand(dto.Text, dto.AvailableForLabels), cancellationToken);
+        return Ok();
     }
 
     /// <summary>

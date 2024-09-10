@@ -6,7 +6,7 @@ using MediatR;
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 
 public class GetPunchItemAttachmentDownloadUrlQuery(Guid punchItemGuid, Guid attachmentGuid)
-    : INeedProjectAccess, IRequest<Uri>, IIsPunchItemRelatedQuery
+    : INeedProjectAccess, IRequest<string>, IIsPunchItemRelatedQuery
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;
