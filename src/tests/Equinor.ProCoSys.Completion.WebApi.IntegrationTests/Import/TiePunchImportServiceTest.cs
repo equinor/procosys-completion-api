@@ -12,15 +12,16 @@ using Statoil.TI.InterfaceServices.Message;
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Import;
 
 [TestClass]
-public class TiePunchImportServiceTest(IServiceProvider serviceProvider)
+public class TiePunchImportServiceTest
 {
     private ITiePunchImportService _dut;
-
+    private IServiceProvider _serviceProvider;
+    
     [TestInitialize]
     public void Setup()
     {
-         serviceProvider = TestFactory.Instance.Services;
-        _dut = serviceProvider.GetRequiredService<ITiePunchImportService>();
+         _serviceProvider = TestFactory.Instance.Services;
+        _dut = _serviceProvider.GetRequiredService<ITiePunchImportService>();
     }
     
     [TestMethod]
@@ -90,7 +91,7 @@ public class TiePunchImportServiceTest(IServiceProvider serviceProvider)
         tiObject.Attributes.Add(new TIAttribute { Name = PunchObjectAttributes.RaisedByOrganization, Value = "COM" });
         tiObject.Attributes.Add(new TIAttribute { Name = PunchObjectAttributes.ClearedByOrganization, Value = "ENG" });
         
-        var context = serviceProvider.GetRequiredService<CompletionContext>();
+        var context = _serviceProvider.GetRequiredService<CompletionContext>();
         Assert.IsTrue(context.PunchItems.Count(p => p.ExternalItemNo == NotUsedExternalItemNo)==0);
         //Act
         var result = await _dut.ImportMessage(tiObject);

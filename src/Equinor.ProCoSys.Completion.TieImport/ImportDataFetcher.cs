@@ -63,12 +63,16 @@ public sealed class ImportDataFetcher(
         if (keys.Count == 0)
         {
             return [];
-        }
+        } 
+        
+        //I don't particularly like this, but I'm unable to find a better alternative.
+        //Alternative approach would be to filter in memory, but I'm uncertain how well that would scale.
+        var keyStrings = keys.Select(key => string.Join(",",key.Code , key.Type)).ToList(); 
         return await completionContext.Library
-            .Where(l => l.Plant == plant 
-                        && keys.Any(k => k.Code == l.Code && k.Type == l.Type))
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(l => l.Plant == plant && keyStrings.Any(k => k == l.Code+","+ l.Type))
             .ToListAsync(cancellationToken);
-
     }
 
     public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(

@@ -30,6 +30,7 @@ public static class TelemetryConfig
         if (!devOnLocalhost)
         {
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
+          
         }
         
         return builder;
