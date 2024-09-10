@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -92,7 +93,7 @@ public class TiePunchImportServiceTest
         tiObject.Attributes.Add(new TIAttribute { Name = PunchObjectAttributes.ClearedByOrganization, Value = "ENG" });
         
         var context = _serviceProvider.GetRequiredService<CompletionContext>();
-        Assert.IsTrue(context.PunchItems.Count(p => p.ExternalItemNo == NotUsedExternalItemNo)==0);
+        Assert.IsTrue(context.PunchItems.IgnoreQueryFilters().Count(p => p.ExternalItemNo == NotUsedExternalItemNo)==0);
         //Act
         var result = await _dut.ImportMessage(tiObject);
        
@@ -101,7 +102,7 @@ public class TiePunchImportServiceTest
         Assert.IsTrue(result.Result == MessageResults.Successful);
         
         
-        Assert.IsTrue(context.PunchItems.Count(p => p.ExternalItemNo == NotUsedExternalItemNo)==1);
+        Assert.IsTrue(context.PunchItems.IgnoreQueryFilters().Count(p => p.ExternalItemNo == NotUsedExternalItemNo)==1);
     }
 
     
