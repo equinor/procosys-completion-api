@@ -153,7 +153,27 @@ public class PunchItemAttachmentEventConsumerTests
 
         //Assert
         Assert.IsNull(_attachmentAddedToRepository);
-        Assert.IsTrue(_punchItem.Description.Contains($"Link imported from old ProCoSys punch item: {bEvent.Uri}"));
+        Assert.IsTrue(_punchItem.Description.Contains($"\n\nLink imported from old ProCoSys punch item: {bEvent.Uri}"));
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldAddLinkOnceToPunchDescription()
+    {
+        //Arrange
+        var bEvent =
+            new PunchItemAttachmentEvent("Pl", "Pr", Guid.NewGuid(), Guid.NewGuid(), null, "linkUri", null!, null, _createdByGuid, DateTime.UtcNow, _lastUpdated, _lastUpdatedByUser, null);
+        _punchItemRepositoryMock.GetAsync(bEvent.PunchItemGuid, Arg.Any<CancellationToken>()).Returns(_punchItem);
+        _contextMock.Message.Returns(bEvent);
+        await _dut.Consume(_contextMock);
+
+        //Act
+        await _dut.Consume(_contextMock);
+
+        //Assert
+        Assert.IsNull(_attachmentAddedToRepository);
+        var value = $"\n\nLink imported from old ProCoSys punch item: {bEvent.Uri}";
+        var parts = _punchItem.Description.Split(value);
+        Assert.IsTrue(parts.Length == 2);
     }
 }
