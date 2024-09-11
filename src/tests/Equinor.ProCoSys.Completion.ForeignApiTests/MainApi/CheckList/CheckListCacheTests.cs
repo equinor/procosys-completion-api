@@ -27,6 +27,10 @@ public class CheckListCacheTests
     private ICheckListApiService _checkListApiServiceMock;
     private ICacheManager _cacheManagerMock;
     private IOptionsMonitor<ApplicationOptions> _applicationOptionsMock;
+    private readonly string _plant = "P";
+    private readonly string _tagNo = "T";
+    private readonly string _respCode = "RC";
+    private readonly string _formType = "FT";
 
     [TestInitialize]
     public void Setup()
@@ -57,6 +61,8 @@ public class CheckListCacheTests
             false, 
             Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid1, Arg.Any<CancellationToken>()).Returns(_checkList1);
+        _checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>())
+            .Returns(_checkListGuid1);
         _cacheManagerMock = Substitute.For<ICacheManager>();
 
         var options = new OptionsWrapper<MemoryDistributedCacheOptions>(
@@ -91,8 +97,34 @@ public class CheckListCacheTests
 
         // Assert
         AssertCheckList(_checkList1, result);
-        // since GetCheckListAsync has been called twice, but TryGetCheckListByOidAsync has been called once, the second Get uses cache
+        // since GetCheckListAsync has been called twice, but GetCheckListAsync has been called once, the second Get uses cache
         await _checkListApiServiceMock.Received(1).GetCheckListAsync(_checkListGuid1, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task GetCheckListGuidByMetaInfo_ShouldReturnCheckListFromCheckListApiServiceFirstTime()
+    {
+        // Act
+        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+
+        // Assert
+        Assert.AreEqual(_checkListGuid1, result);
+        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task GetCheckListGuidByMetaInfo_ShouldReturnCheckListsFromCacheSecondTime()
+    {
+        // Arrange
+        await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+
+        // Act
+        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+
+        // Assert
+        Assert.AreEqual(_checkListGuid1, result);
+        // since GetCheckListGuidByMetaInfoAsync has been called twice, but GetCheckListGuidByMetaInfoAsync has been called once, the second Get uses cache
+        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]

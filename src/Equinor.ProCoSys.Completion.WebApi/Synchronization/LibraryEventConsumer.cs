@@ -106,7 +106,11 @@ public class LibraryEventConsumer(
             libraryEvent.Code,
             libraryEvent.Description!,
             Enum.Parse<LibraryType>(libraryEvent.Type,true)
-            ) { IsVoided = libraryEvent.IsVoided, ProCoSys4LastUpdated = libraryEvent.LastUpdated };
+            )
+        {
+            IsVoided = libraryEvent.IsVoided, 
+            ProCoSys4LastUpdated = libraryEvent.LastUpdated
+        };
         return library;
     }
   

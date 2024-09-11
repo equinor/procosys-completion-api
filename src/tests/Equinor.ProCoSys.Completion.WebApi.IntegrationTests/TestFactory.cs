@@ -12,6 +12,7 @@ using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
@@ -21,6 +22,7 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +32,7 @@ using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
-public sealed class TestFactory : WebApplicationFactory<Program>
+public class TestFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
     private readonly string _configPath;
@@ -40,7 +42,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
-    private readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
+    public readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
     private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
@@ -84,7 +86,7 @@ public sealed class TestFactory : WebApplicationFactory<Program>
         LastName = "Olsen",
         UserName = "hans@mail.com"
     };
-
+    
 public Dictionary<string, KnownTestData> SeededData { get; }
 
     #region singleton implementation
@@ -105,8 +107,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     }
                 }
             }
-
-            
             return s_instance;
         }
     }
@@ -120,7 +120,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         _configPath = Path.Combine(projectDir, "appsettings.json");
 
         SetupTestUsers();
-       
     }
 
     #endregion
@@ -162,6 +161,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment(EnvironmentExtensions.IntegrationTestEnvironmentName);
+        builder.ConfigureAppConfiguration((_, conf) => conf.AddJsonFile(_configPath));
         builder.ConfigureTestServices(services =>
         {
             services.AddAuthentication()
@@ -231,7 +232,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         var dbContext = scopeServiceProvider.GetRequiredService<CompletionContext>();
 
         dbContext.Database.EnsureDeleted();
-
+        
         dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
         dbContext.CreateNewDatabaseWithCorrectSchema();
@@ -244,6 +245,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         dbContext.SeedPersonData(_testUsers[UserType.Writer].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.RestrictedWriter].Profile);
         dbContext.SeedPersonData(_testUsers[UserType.Reader].Profile);
+        dbContext.SeedPerson(Guid.NewGuid().ToString(), "Ola", "Hansen", ImportUserOptions.UserName, "import_user@abc",true);
 
         dbContext.SeedLabels();
         dbContext.SeedMailTemplates();
@@ -326,25 +328,17 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         SetupReaderUser(accessablePlants, accessableProjects);
     
         SetupNoPermissionUser();
-            
-        var webHostBuilder = WithWebHostBuilder(builder =>
-        {
-            // Important to set Test environment so Program.cs don't try to get 
-            // config from Azure
-            builder.UseEnvironment(EnvironmentExtensions.IntegrationTestEnvironmentName);
-            builder.ConfigureAppConfiguration((_, conf) => conf.AddJsonFile(_configPath));
-        });
-
+        
         SetupProCoSysServiceMocks();
 
-        CreateAuthenticatedHttpClients(webHostBuilder);
+        CreateAuthenticatedHttpClients();
     }
 
-    private void CreateAuthenticatedHttpClients(WebApplicationFactory<Program> webHostBuilder)
+    private void CreateAuthenticatedHttpClients()
     {
         foreach (var testUser in _testUsers.Values)
         {
-            testUser.HttpClient = webHostBuilder.CreateClient();
+            testUser.HttpClient = CreateClient();
 
             if (testUser.Profile is not null)
             {

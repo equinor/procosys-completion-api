@@ -9,4 +9,5 @@ public interface IPunchItemValidator
 {
     Task<bool> ExistsAsync(Guid punchItemGuid, CancellationToken cancellationToken);
     bool CurrentUserIsVerifier(PunchItem punchItem);
+    Task<bool> ExternalItemNoExistsInProjectAsync(string externalItemNo, Guid projectGuid, CancellationToken cancellationToken);
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,7 +24,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Command",
-                typeof(INeedProjectAccess));
+                typeof(INeedProjectAccess), typeof(IImportCommand));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
@@ -38,7 +39,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Query",
-                typeof(INeedProjectAccess));
+                typeof(INeedProjectAccess), typeof(IImportCommand));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),
@@ -53,7 +54,7 @@ public class AccessValidatorTestCoverageTests
         var classes =
             TestHelper.GetClassesInheritsBaseClass(
                 "Equinor.ProCoSys.Completion.Command",
-                typeof(ICanHaveRestrictionsViaCheckList));
+                typeof(ICanHaveRestrictionsViaCheckList), typeof(IImportCommand));
         var testClassList
             = TestHelper.GetTestsWhichInheritsBaseClass(
                 Assembly.GetExecutingAssembly(),

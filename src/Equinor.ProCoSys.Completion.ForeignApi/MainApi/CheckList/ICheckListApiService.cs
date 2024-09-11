@@ -9,6 +9,13 @@ public interface ICheckListApiService
 {
     // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
     Task<ProCoSys4CheckList?> GetCheckListAsync(Guid checkListGuid, CancellationToken cancellationToken);
+    // Endpoints for getting a checklist guid by meta info MUST have plant due to VPD in PCS4 Database
+    Task<Guid?> GetCheckListGuidByMetaInfoAsync(
+        string plant, 
+        string tagNo, 
+        string responsibleCode,
+        string formularType,
+        CancellationToken cancellationToken);
     // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
     Task<ProCoSys4CheckListSearchResult> SearchCheckListsAsync(
         Guid projectGuid,

@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using Equinor.ProCoSys.Completion.Test.Common.ExtensionMethods;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -23,8 +24,8 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     private PunchItem _punchItemAddedToRepository;
     private readonly int _punchItemId = 17;
 
-    private CreatePunchItemCommandHandler _dut;
-    private CreatePunchItemCommand _command;
+    private CreatePunchItemCommandHandler<CreatePunchItemCommand> _dut;
+    private CreatePunchItemCommand _command;    
 
     [TestInitialize]
     public void Setup()
@@ -71,7 +72,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
                 new CheckListDetailsDto(_existingCheckListGuid, "R", false, _existingProject[TestPlantA].Guid)
         };
 
-        _dut = new CreatePunchItemCommandHandler(
+        _dut = new CreatePunchItemCommandHandler<CreatePunchItemCommand>(
             _plantProviderMock,
             punchItemRepositoryMock,
             _libraryItemRepositoryMock,
@@ -84,7 +85,7 @@ public class CreatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             _unitOfWorkMock,
             _messageProducerMock,
             _checkListApiServiceMock,
-            Substitute.For<ILogger<CreatePunchItemCommandHandler>>());
+            Substitute.For<ILogger<CreatePunchItemCommand>>());
     }
 
     [TestMethod]

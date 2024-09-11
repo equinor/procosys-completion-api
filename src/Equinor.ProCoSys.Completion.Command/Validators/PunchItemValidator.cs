@@ -21,4 +21,10 @@ public class PunchItemValidator(IReadOnlyContext context, ICurrentUserProvider c
         var currentUserOid = currentUserProvider.GetCurrentUserOid();
         return punchItem.VerifiedBy is not null && punchItem.VerifiedBy.Guid == currentUserOid;
     }
+
+    public async Task<bool> ExternalItemNoExistsInProjectAsync(string externalItemNo, Guid projectGuid, CancellationToken cancellationToken) =>
+        await context.QuerySet<PunchItem>()
+            .Include(p => p.Project)
+            .TagWith($"{nameof(PunchItemValidator)}.{nameof(ExternalItemNoExistsInProjectAsync)}")
+            .AnyAsync(p => p.Project.Guid == projectGuid && p.ExternalItemNo == externalItemNo, cancellationToken);
 }

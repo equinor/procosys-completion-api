@@ -23,6 +23,19 @@ public class CheckListCache(
             applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
             cancellationToken);
 
+    public async Task<Guid?> GetCheckListGuidByMetaInfoAsync(
+        string plant, 
+        string tagNo, 
+        string responsibleCode, 
+        string formularType,
+        CancellationToken cancellationToken)
+        => await cacheManager.GetOrCreateAsync(
+            CheckListGuidCacheKey(plant, tagNo, responsibleCode, formularType),
+            token => checkListApiService.GetCheckListGuidByMetaInfoAsync(plant, tagNo, responsibleCode, formularType, token),
+            CacheDuration.Minutes,
+            applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
+            cancellationToken);
+
     public async Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken)
     {
         var cacheKeys = new List<string>();
@@ -55,6 +68,9 @@ public class CheckListCache(
 
         return checkListsFromCache;
     }
+
+    public static string CheckListGuidCacheKey(string plant, string tagNo, string responsibleCode, string formularType)
+        => $"CHKLIST_{plant}_{tagNo}_{responsibleCode}_{formularType}";
 
     public static string CheckListGuidCacheKey(Guid checkListGuid)
         => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";

@@ -35,6 +35,26 @@ public class MainApiCheckListService(
         return await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
     }
 
+    public async Task<Guid?> GetCheckListGuidByMetaInfoAsync(
+        string plant, 
+        string tagNo, 
+        string responsibleCode,
+        string formularType,
+        CancellationToken cancellationToken)
+    {
+        var url = $"{_baseAddress}CheckList/ForProCoSys5/ByMetaInfo" +
+                  $"?plantId={plant}" +
+                  $"&tagNo={tagNo}" +
+                  $"&responsibleCode={responsibleCode}" +
+                  $"&formularType={formularType}" +
+                  $"&api-version={_apiVersion}";
+
+        // Execute as application. The get checklist endpoint in Main Api requires
+        // a special role "Checklist.RecalcStatus", which the Azure application registration has
+        var result = await mainApiClientForApplication.TryQueryAndDeserializeAsync<ProCoSys4CheckList?>(url, cancellationToken);
+        return result?.CheckListGuid;
+    }
+
     public async Task RecalculateCheckListStatusAsync(string plant, Guid checkListGuid, CancellationToken cancellationToken)
     {
         if (!_recalculateStatusInPcs4)

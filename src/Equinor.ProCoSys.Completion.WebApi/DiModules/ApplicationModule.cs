@@ -37,6 +37,8 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
+using Equinor.ProCoSys.Completion.TieImport;
+using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -61,6 +63,7 @@ public static class ApplicationModule
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
         services.Configure<GraphOptions>(configuration.GetSection("Graph"));
+        services.Configure<ImportUserOptions>(configuration.GetSection("TieImport"));
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -117,7 +120,9 @@ public static class ApplicationModule
         services.AddScoped<Query.Attachments.IAttachmentService, Query.Attachments.AttachmentService>();
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
         services.AddScoped<IPunchItemService, PunchItemService>();
-
+        services.AddScoped<ICacheManager, DistributedCacheManager>();
+  
+        
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
         services.AddScoped<ILibraryItemValidator, LibraryItemValidator>();

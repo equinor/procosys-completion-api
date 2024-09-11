@@ -23,68 +23,39 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
-public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemCommand, GuidAndRowVersion>
+public class CreatePunchItemCommandHandler<TRequest>(
+    IPlantProvider plantProvider,
+    IPunchItemRepository punchItemRepository,
+    ILibraryItemRepository libraryItemRepository,
+    IProjectRepository projectRepository,
+    IPersonRepository personRepository,
+    IWorkOrderRepository woRepository,
+    ISWCRRepository swcrRepository,
+    IDocumentRepository documentRepository,
+    ISyncToPCS4Service syncToPCS4Service,
+    IUnitOfWork unitOfWork,
+    IMessageProducer messageProducer,
+    ICheckListApiService checkListApiService,
+    ILogger<TRequest> logger)
+    : IRequestHandler<TRequest, GuidAndRowVersion>
+    where TRequest : CreatePunchItemCommand
 {
-    private readonly IPlantProvider _plantProvider;
-    private readonly IPunchItemRepository _punchItemRepository;
-    private readonly ILibraryItemRepository _libraryItemRepository;
-    private readonly IProjectRepository _projectRepository;
-    private readonly IPersonRepository _personRepository;
-    private readonly IWorkOrderRepository _woRepository;
-    private readonly ISWCRRepository _swcrRepository;
-    private readonly IDocumentRepository _documentRepository;
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMessageProducer _messageProducer;
-    private readonly ICheckListApiService _checkListApiService;
-    private readonly ILogger<CreatePunchItemCommandHandler> _logger;
-
-    public CreatePunchItemCommandHandler(
-        IPlantProvider plantProvider,
-        IPunchItemRepository punchItemRepository,
-        ILibraryItemRepository libraryItemRepository,
-        IProjectRepository projectRepository,
-        IPersonRepository personRepository,
-        IWorkOrderRepository woRepository,
-        ISWCRRepository swcrRepository,
-        IDocumentRepository documentRepository,
-        ISyncToPCS4Service syncToPCS4Service,
-        IUnitOfWork unitOfWork,
-        IMessageProducer messageProducer,
-        ICheckListApiService checkListApiService,
-        ILogger<CreatePunchItemCommandHandler> logger)
-    {
-        _plantProvider = plantProvider;
-        _punchItemRepository = punchItemRepository;
-        _libraryItemRepository = libraryItemRepository;
-        _projectRepository = projectRepository;
-        _personRepository = personRepository;
-        _woRepository = woRepository;
-        _swcrRepository = swcrRepository;
-        _documentRepository = documentRepository;
-        _syncToPCS4Service = syncToPCS4Service;
-        _unitOfWork = unitOfWork;
-        _messageProducer = messageProducer;
-        _checkListApiService = checkListApiService;
-        _logger = logger;
-    }
-
-    public async Task<GuidAndRowVersion> Handle(CreatePunchItemCommand request,
+    public async Task<GuidAndRowVersion> Handle(TRequest request,
         CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetAsync(request.CheckListDetailsDto.ProjectGuid, cancellationToken);
+        var project = await projectRepository.GetAsync(request.CheckListDetailsDto.ProjectGuid, cancellationToken);
 
-        var raisedByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+        var raisedByOrg = await libraryItemRepository.GetByGuidAndTypeAsync(
             request.RaisedByOrgGuid,
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
-        var clearingByOrg = await _libraryItemRepository.GetByGuidAndTypeAsync(
+        var clearingByOrg = await libraryItemRepository.GetByGuidAndTypeAsync(
             request.ClearingByOrgGuid,
             LibraryType.COMPLETION_ORGANIZATION,
             cancellationToken);
 
         var punchItem = new PunchItem(
-            _plantProvider.Plant,
+            plantProvider.Plant,
             project,
             request.CheckListGuid,
             request.Category,
@@ -113,32 +84,32 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         SetMaterialExternalNo(punchItem, request.MaterialExternalNo, properties);
 
         PunchItemCreatedIntegrationEvent integrationEvent;
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            _punchItemRepository.Add(punchItem);
+            punchItemRepository.Add(punchItem);
 
             // must save twice when creating. Must save before publishing events both to set with internal database ID
             // since ItemNo depend on it. Must save after publishing events because we use outbox pattern
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Add property for ItemNo first in list, since it is an "important" property
             properties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
             integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(punchItem, properties, cancellationToken);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo,
+            logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} created", punchItem.ItemNo,
                 punchItem.Guid);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred on insertion of PunchListItem");
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            logger.LogError(e, "Error occurred on insertion of PunchListItem");
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
 
@@ -146,11 +117,11 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             punchItem.RowVersion.ConvertToString());
         try
         {
-            await _syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncNewPunchListItemAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, 
+            logger.LogError(e, 
                 "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", 
                 punchItem.Guid);
             return guidAndRowVersion;
@@ -158,11 +129,11 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e,
+            logger.LogError(e,
                 "Error occurred while trying to Recalculate the completion status for check list with guid {CheckListGuid}", 
                 punchItem.CheckListGuid);
         }
@@ -176,7 +147,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         CancellationToken cancellationToken)
     {
         var integrationEvent = new PunchItemCreatedIntegrationEvent(punchItem);
-        await _messageProducer.PublishAsync(integrationEvent, cancellationToken);
+        await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryCreatedIntegrationEvent(
             $"Punch item {punchItem.Category} {punchItem.ItemNo} created",
@@ -185,7 +156,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
             punchItem.CreatedAtUtc,
             properties);
-        await _messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
+        await messageProducer.SendHistoryAsync(historyEvent, cancellationToken);
 
         return integrationEvent;
     }
@@ -270,7 +241,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var doc = await _documentRepository.GetAsync(documentGuid.Value, cancellationToken);
+        var doc = await documentRepository.GetAsync(documentGuid.Value, cancellationToken);
         punchItem.SetDocument(doc);
         properties.Add(new Property(nameof(PunchItem.Document), punchItem.Document!.No));
     }
@@ -286,7 +257,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var swcr = await _swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
+        var swcr = await swcrRepository.GetAsync(swcrGuid.Value, cancellationToken);
         punchItem.SetSWCR(swcr);
         properties.Add(new Property(nameof(PunchItem.SWCR), punchItem.SWCR!.No, ValueDisplayType.IntAsText));
     }
@@ -302,7 +273,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var wo = await _woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
+        var wo = await woRepository.GetAsync(originalWorkOrderGuid.Value, cancellationToken);
         punchItem.SetOriginalWorkOrder(wo);
         properties.Add(new Property(nameof(PunchItem.OriginalWorkOrder), punchItem.OriginalWorkOrder!.No));
     }
@@ -318,7 +289,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var wo = await _woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
+        var wo = await woRepository.GetAsync(workOrderGuid.Value, cancellationToken);
         punchItem.SetWorkOrder(wo);
         properties.Add(new Property(nameof(PunchItem.WorkOrder), punchItem.WorkOrder!.No));
     }
@@ -334,7 +305,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
             return;
         }
 
-        var person = await _personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
+        var person = await personRepository.GetOrCreateAsync(actionByPersonOid.Value, cancellationToken);
         punchItem.SetActionBy(person);
         properties.Add(new Property(
             nameof(PunchItem.ActionBy),
@@ -355,7 +326,7 @@ public class CreatePunchItemCommandHandler : IRequestHandler<CreatePunchItemComm
         }
 
         var libraryItem =
-            await _libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
+            await libraryItemRepository.GetByGuidAndTypeAsync(libraryGuid.Value, libraryType, cancellationToken);
 
         switch (libraryType)
         {

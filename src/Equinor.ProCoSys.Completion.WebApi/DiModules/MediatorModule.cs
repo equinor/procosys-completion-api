@@ -1,7 +1,10 @@
 ﻿using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.Behaviors;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +19,12 @@ public static class MediatorModule
             typeof(ICommandMarker).GetTypeInfo().Assembly,
             typeof(IQueryMarker).GetTypeInfo().Assembly
         ));
+        
+        // https://github.com/FluentValidation/FluentValidation/issues/1001
+        services.AddTransient<IValidator<CreatePunchItemCommand>, CreatePunchItemCommandValidator<CreatePunchItemCommand>>();
+        services.AddTransient<IValidator<CreatePunchItemCommandForImport>, CreatePunchItemCommandValidator<CreatePunchItemCommandForImport>>();
+        services.AddTransient<IRequestHandler<CreatePunchItemCommand, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
+        services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
 
         // ordering is important
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

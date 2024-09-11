@@ -13,13 +13,14 @@ namespace Equinor.ProCoSys.Completion.Command.Tests.PunchItemCommands.CreatePunc
 [TestClass]
 public class CreatePunchItemCommandValidatorTests
 {
-    private CreatePunchItemCommandValidator _dut;
+    private CreatePunchItemCommandValidator<CreatePunchItemCommand> _dut;
     private CreatePunchItemCommand _command;
-    private IProjectValidator _projectValidatorMock;
-    private ILibraryItemValidator _libraryItemValidatorMock;
-    private IWorkOrderValidator _workOrderValidatorMock;
-    private ISWCRValidator _swcrValidatorMock;
-    private IDocumentValidator _documentValidatorMock;
+    private readonly IProjectValidator _projectValidatorMock = Substitute.For<IProjectValidator>();
+    private readonly ILibraryItemValidator _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
+    private readonly IWorkOrderValidator _workOrderValidatorMock = Substitute.For<IWorkOrderValidator>();
+    private readonly ISWCRValidator _swcrValidatorMock = Substitute.For<ISWCRValidator>();
+    private readonly IDocumentValidator _documentValidatorMock = Substitute.For<IDocumentValidator>();
+    private readonly IPunchItemValidator _punchItemValidatorMock = Substitute.For<IPunchItemValidator>();
 
     [TestInitialize]
     public void Setup_OkState()
@@ -41,17 +42,14 @@ public class CreatePunchItemCommandValidatorTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            null,
+            "ExtNo",
             false,
             null,
             null)
         {
             CheckListDetailsDto = new CheckListDetailsDto(checkListGuid, "R", false, Guid.NewGuid())
         };
-        _projectValidatorMock = Substitute.For<IProjectValidator>();
         _projectValidatorMock.ExistsAsync(_command.CheckListDetailsDto.ProjectGuid, default).Returns(true);
-
-        _libraryItemValidatorMock = Substitute.For<ILibraryItemValidator>();
 
         SetupOkLibraryItem(_command.RaisedByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
         SetupOkLibraryItem(_command.ClearingByOrgGuid, LibraryType.COMPLETION_ORGANIZATION);
@@ -59,16 +57,14 @@ public class CreatePunchItemCommandValidatorTests
         SetupOkLibraryItem(_command.SortingGuid!.Value, LibraryType.PUNCHLIST_SORTING);
         SetupOkLibraryItem(_command.TypeGuid!.Value, LibraryType.PUNCHLIST_TYPE);
 
-        _workOrderValidatorMock = Substitute.For<IWorkOrderValidator>();
         _workOrderValidatorMock.ExistsAsync(_command.OriginalWorkOrderGuid!.Value, default).Returns(true);
         _workOrderValidatorMock.ExistsAsync(_command.WorkOrderGuid!.Value, default).Returns(true);
-        _swcrValidatorMock = Substitute.For<ISWCRValidator>();
         _swcrValidatorMock.ExistsAsync(_command.SWCRGuid!.Value, default).Returns(true);
-        _documentValidatorMock = Substitute.For<IDocumentValidator>();
         _documentValidatorMock.ExistsAsync(_command.DocumentGuid!.Value, default).Returns(true);
 
-        _dut = new CreatePunchItemCommandValidator(
+        _dut = new CreatePunchItemCommandValidator<CreatePunchItemCommand>(
             _projectValidatorMock,
+            _punchItemValidatorMock,
             _libraryItemValidatorMock,
             _workOrderValidatorMock,
             _swcrValidatorMock,
@@ -119,6 +115,23 @@ public class CreatePunchItemCommandValidatorTests
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
         Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("Project for given check list is closed!"));
+    }
+
+    [TestMethod]
+    public async Task Validate_ShouldFail_When_ExternalItemNoExists()
+    {
+        // Arrange
+        _punchItemValidatorMock.ExternalItemNoExistsInProjectAsync(
+            _command.ExternalItemNo!, 
+            _command.CheckListDetailsDto.ProjectGuid, default).Returns(true);
+
+        // Act
+        var result = await _dut.ValidateAsync(_command);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.IsTrue(result.Errors[0].ErrorMessage.StartsWith("ExternalItemNo already exists in project!"));
     }
 
     [TestMethod]

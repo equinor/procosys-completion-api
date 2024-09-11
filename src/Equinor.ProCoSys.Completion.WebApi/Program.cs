@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using System.Diagnostics;
+using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
@@ -37,7 +38,7 @@ builder.Services.AddSingleton(credential);
 builder.ConfigureAzureAppConfig(credential);
 builder.Services.AddHealthChecks();
 
-// Dont use Redis for integration test. Use the memory implementation
+// Don't use Redis for integration test. Use the memory implementation
 if (!builder.Environment.IsIntegrationTest())
 {
     builder.Services.AddStackExchangeRedisCache(options =>
@@ -73,6 +74,10 @@ builder.ConfigureTelemetry(credential, devOnLocalhost);
 
 builder.Services.AddMediatrModules();
 builder.Services.AddApplicationModules(builder.Configuration);
+
+
+builder.Services.AddTieImportModule(builder);
+
 
 var app = builder.Build();
 
