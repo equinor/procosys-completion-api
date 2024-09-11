@@ -597,9 +597,9 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        var ipAddress = GetClientIpAddress();
+        //var ipAddress = GetClientIpAddress();
 
-        var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, ipAddress, null), cancellationToken);
+        var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, null, null), cancellationToken);
         return this.FromResult(result);
     }
 
