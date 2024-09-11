@@ -5,7 +5,6 @@ using Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.LabelQueries.GetAllLabels;
 
@@ -31,8 +30,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -49,8 +47,7 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(4, result.Data.Count());
+        Assert.AreEqual(4, result.Count());
     }
 
     [TestMethod]
@@ -67,12 +64,11 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        Assert.AreEqual(LabelTextA, result.Data.ElementAt(0).Text);
-        Assert.AreEqual(LabelTextB, result.Data.ElementAt(1).Text);
-        Assert.AreEqual(LabelTextC, result.Data.ElementAt(2).Text);
-        Assert.AreEqual(LabelTextVoided, result.Data.ElementAt(3).Text);
+        Assert.AreEqual(LabelTextA, result.ElementAt(0).Text);
+        Assert.AreEqual(LabelTextB, result.ElementAt(1).Text);
+        Assert.AreEqual(LabelTextC, result.ElementAt(2).Text);
+        Assert.AreEqual(LabelTextVoided, result.ElementAt(3).Text);
     }
 
     [TestMethod]
@@ -89,13 +85,12 @@ public class GetAllLabelsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        var voidedLabel = result.Data.SingleOrDefault(dto => dto.IsVoided);
+        var voidedLabel = result.SingleOrDefault(dto => dto.IsVoided);
         Assert.IsNotNull(voidedLabel);
         Assert.AreEqual(LabelTextVoided, voidedLabel.Text);
 
-        var nonVoidedLabels = result.Data.Where(dto => !dto.IsVoided).ToList();
+        var nonVoidedLabels = result.Where(dto => !dto.IsVoided).ToList();
         Assert.AreEqual(3, nonVoidedLabels.Count);
         Assert.AreEqual(LabelTextA, nonVoidedLabels.ElementAt(0).Text);
         Assert.AreEqual(LabelTextB, nonVoidedLabels.ElementAt(1).Text);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -17,7 +16,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class WorkOrderEventConsumerTests
 {
     private readonly IWorkOrderRepository _workOrderRepoMock = Substitute.For<IWorkOrderRepository>();
-    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly WorkOrderEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -27,7 +25,7 @@ public class WorkOrderEventConsumerTests
     private const string Plant = "PCS$OSEBERG_C";
 
     public WorkOrderEventConsumerTests() =>
-        _dut = new WorkOrderEventConsumer(Substitute.For<ILogger<WorkOrderEventConsumer>>(), _plantSetter, _workOrderRepoMock,
+        _dut = new WorkOrderEventConsumer(Substitute.For<ILogger<WorkOrderEventConsumer>>(), _workOrderRepoMock,
             _unitOfWorkMock);
 
     [TestInitialize]

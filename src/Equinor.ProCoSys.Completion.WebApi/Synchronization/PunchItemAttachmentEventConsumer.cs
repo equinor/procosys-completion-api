@@ -1,21 +1,20 @@
-﻿using Equinor.ProCoSys.Completion.Domain;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
-using System.Threading;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
 public class PunchItemAttachmentEventConsumer(
     ILogger<PunchItemAttachmentEventConsumer> logger,
     IPersonRepository personRepository,
+    IPunchItemRepository punchItemRepository,
     IAttachmentRepository attachmentRepository,
-    ILinkRepository linkRepository,
     IUnitOfWork unitOfWork)
     : IConsumer<PunchItemAttachmentEvent>
 {
@@ -26,8 +25,7 @@ public class PunchItemAttachmentEventConsumer(
 
         if (busEvent.Behavior == "delete")
         {
-            if (!await attachmentRepository.RemoveByGuidAsync(busEvent.AttachmentGuid, context.CancellationToken)
-                && !await linkRepository.RemoveByGuidAsync(busEvent.AttachmentGuid, context.CancellationToken))
+            if (!await attachmentRepository.RemoveByGuidAsync(busEvent.AttachmentGuid, context.CancellationToken))
             {
                 logger.LogWarning("Attachment with Guid {Guid} was not found and could not be deleted",
                     busEvent.AttachmentGuid);
@@ -44,10 +42,7 @@ public class PunchItemAttachmentEventConsumer(
         else
         {
             ValidateAttachmentMessageAsCompletionLink(busEvent);
-            if (!await HandleLinkEvent(context, busEvent))
-            {
-                return;
-            }
+            await HandleLinkEventAsync(context, busEvent);
         }
 
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
@@ -95,43 +90,15 @@ public class PunchItemAttachmentEventConsumer(
         return true;
     }
 
-    private async Task<bool> HandleLinkEvent(ConsumeContext<PunchItemAttachmentEvent> context, PunchItemAttachmentEvent busEvent)
+    private async Task HandleLinkEventAsync(ConsumeContext<PunchItemAttachmentEvent> context, PunchItemAttachmentEvent busEvent)
     {
-        if (await linkRepository.ExistsAsync(busEvent.AttachmentGuid, context.CancellationToken))
+        var punchItem = await punchItemRepository.GetAsync(busEvent.PunchItemGuid, context.CancellationToken);
+
+        var urlDescription = $"\n\nLink imported from old ProCoSys punch item: {busEvent.Uri}";
+        if (!punchItem.Description.Contains(urlDescription))
         {
-            var attachment = await linkRepository.GetAsync(busEvent.AttachmentGuid, context.CancellationToken);
-
-            if (attachment.ProCoSys4LastUpdated == busEvent.LastUpdated)
-            {
-                logger.LogInformation("{EventName} Message Ignored because LastUpdated is the same as in db\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                      "EventLastUpdated: {LastUpdated} \n" +
-                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
-                    nameof(PunchItemAttachmentEvent), context.MessageId, busEvent.AttachmentGuid, busEvent.LastUpdated,
-                    attachment.SyncTimestamp);
-                return false;
-            }
-
-            if (attachment.ProCoSys4LastUpdated > busEvent.LastUpdated)
-            {
-                logger.LogWarning("{EventName} Message Ignored because a newer LastUpdated already exits in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                  "EventLastUpdated: {EventLastUpdated} \n" +
-                                  "LastUpdatedFromDb: {LastUpdated}",
-                    nameof(PunchItemAttachmentEvent), context.MessageId, busEvent.AttachmentGuid, busEvent.LastUpdated,
-                    attachment.ProCoSys4LastUpdated);
-                return false;
-            }
-
-            MapFromEventToLink(busEvent, attachment);
+            punchItem.Description += urlDescription;
         }
-        else
-        {
-            var attachment = await CreateLinkEntityAsync(busEvent, context.CancellationToken);
-            linkRepository.Add(attachment);
-        }
-
-        return true;
     }
 
     private bool EventIsAttachment(PunchItemAttachmentEvent busEvent)
@@ -167,10 +134,6 @@ public class PunchItemAttachmentEventConsumer(
 
     private void ValidateAttachmentMessageAsCompletionLink(PunchItemAttachmentEvent busEvent)
     {
-        if (string.IsNullOrEmpty(busEvent.Title))
-        {
-            throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.Title)}");
-        }
         if (string.IsNullOrEmpty(busEvent.Uri))
         {
             throw new Exception($"{nameof(PunchItemAttachmentEvent)} is missing {nameof(PunchItemAttachmentEvent.Uri)}");
@@ -208,31 +171,6 @@ public class PunchItemAttachmentEventConsumer(
         attachment.SetSyncProperties(person, busEvent.CreatedAt, busEvent.LastUpdated);
 
         return attachment;
-    }
-
-    private void MapFromEventToLink(PunchItemAttachmentEvent busEvent, Link link)
-    {
-        link.ProCoSys4LastUpdated = busEvent.LastUpdated;
-        link.ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser;
-        link.SyncTimestamp = DateTime.UtcNow;
-        link.Title = busEvent.Title;
-        link.Url = busEvent.Uri!;
-        link.SetSyncProperties(busEvent.LastUpdated);
-    }
-
-    private async Task<Link> CreateLinkEntityAsync(PunchItemAttachmentEvent busEvent, CancellationToken cancellationToken)
-    {
-        var link = new Link(nameof(PunchItem), busEvent.PunchItemGuid, busEvent.Title, busEvent.Uri!, busEvent.AttachmentGuid)
-        {
-            ProCoSys4LastUpdated = busEvent.LastUpdated,
-            ProCoSys4LastUpdatedByUser = busEvent.LastUpdatedByUser,
-            SyncTimestamp = DateTime.UtcNow
-        };
-
-        var person = await personRepository.GetAsync(busEvent.CreatedByGuid, cancellationToken);
-        link.SetSyncProperties(person, busEvent.CreatedAt, busEvent.LastUpdated);
-
-        return link;
     }
 }
 

@@ -1,11 +1,10 @@
 ﻿using System;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.CheckListQueries.GetDuplicateInfo;
 
 public class GetDuplicateInfoQuery(Guid checkListGuid)
-    : IIsCheckListQuery, IRequest<Result<DuplicateInfoDto>>
+    : IIsCheckListQuery, IRequest<DuplicateInfoDto>
 {
     public Guid CheckListGuid { get; } = checkListGuid;
     public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;

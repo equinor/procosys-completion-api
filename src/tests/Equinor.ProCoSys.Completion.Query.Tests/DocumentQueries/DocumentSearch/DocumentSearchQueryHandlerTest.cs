@@ -2,7 +2,6 @@
 using Equinor.ProCoSys.Completion.Infrastructure;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -32,8 +31,7 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -50,8 +48,7 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
+        Assert.AreEqual(1, result.Count());
     }
     
     [TestMethod]
@@ -72,10 +69,8 @@ public class DocumentSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        
-        Assert.AreEqual(1, result.Data.Count());
-        Assert.IsTrue(result.Data.First().No == DocumentNo);
+        Assert.AreEqual(1, result.Count());
+        Assert.IsTrue(result.First().No == DocumentNo);
     }
 }
 

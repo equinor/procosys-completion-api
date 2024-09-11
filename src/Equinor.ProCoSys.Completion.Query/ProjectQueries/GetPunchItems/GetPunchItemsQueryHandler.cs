@@ -8,17 +8,16 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 
-public class GetPunchItemsQueryHandler : IRequestHandler<GetPunchItemsQuery, Result<IEnumerable<PunchItemDto>>>
+public class GetPunchItemsQueryHandler : IRequestHandler<GetPunchItemsQuery, IEnumerable<PunchItemDto>>
 {
     private readonly IReadOnlyContext _context;
 
     public GetPunchItemsQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<PunchItemDto>>> Handle(GetPunchItemsQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<PunchItemDto>> Handle(GetPunchItemsQuery request, CancellationToken cancellationToken)
     {
         var punchItems =
             await (from punchItem in _context.QuerySet<PunchItem>()
@@ -36,6 +35,6 @@ public class GetPunchItemsQueryHandler : IRequestHandler<GetPunchItemsQuery, Res
                 .TagWith($"{nameof(GetPunchItemsQueryHandler)}.{nameof(Handle)}")
                 .ToListAsync(cancellationToken);
 
-        return new SuccessResult<IEnumerable<PunchItemDto>>(punchItems);
+        return punchItems;
     }
 }

@@ -10,14 +10,12 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 
 public class DocumentConsumerService(
     ILogger<DocumentConsumerService> logger,
-    IPlantSetter plantSetter,
     IDocumentRepository documentRepository,
     IUnitOfWork unitOfWork) : IDocumentConsumerService 
 { 
     public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent)
     {
         ValidateMessage(busEvent);
-        plantSetter.SetPlant(busEvent.Plant);
 
         if (busEvent.Behavior == "delete")
         {

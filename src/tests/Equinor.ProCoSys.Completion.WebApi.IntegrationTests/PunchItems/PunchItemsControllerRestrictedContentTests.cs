@@ -84,64 +84,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
     }
     #endregion
 
-    #region CreatePunchItemLink
-    [TestMethod]
-    public async Task CreatePunchItemLink_AsRestrictedWriter_ShouldReturnForbidden()
-    {
-        // Arrange
-        var guidAndRowVersion = await CreatePunchItemInRestrictedCheckListAsync();
-
-        // Act
-        await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
-            UserType.RestrictedWriter,
-            _plantWithAccess,
-            guidAndRowVersion.Guid,
-            "T",
-            "U",
-            HttpStatusCode.Forbidden);
-    }
-
-    #endregion
-
-    #region UpdatePunchItemLink
-    [TestMethod]
-    public async Task UpdatePunchItemLink_AsRestrictedWriter_ShouldReturnForbidden()
-    {
-        // Arrange
-        var (punchItemGuidAndRowVersion, linkGuidAndRowVersion) = await CreatePunchItemLinkInRestrictedCheckListAsync();
-
-        // Act
-        await PunchItemsControllerTestsHelper.UpdatePunchItemLinkAsync(
-            UserType.RestrictedWriter,
-            _plantWithAccess,
-            punchItemGuidAndRowVersion.Guid,
-            linkGuidAndRowVersion.Guid,
-            "T",
-            "U",
-            punchItemGuidAndRowVersion.RowVersion,
-            HttpStatusCode.Forbidden);
-    }
-
-    #endregion
-
-    #region DeletePunchItemLink
-    [TestMethod]
-    public async Task DeletePunchItemLink_AsRestrictedWriter_ShouldReturnForbidden()
-    {
-        // Arrange
-        var (punchItemGuidAndRowVersion, linkGuidAndRowVersion) = await CreatePunchItemLinkInRestrictedCheckListAsync();
-
-        // Act
-        await PunchItemsControllerTestsHelper.DeletePunchItemLinkAsync(
-            UserType.RestrictedWriter,
-            _plantWithAccess,
-            punchItemGuidAndRowVersion.Guid,
-            linkGuidAndRowVersion.Guid,
-            linkGuidAndRowVersion.RowVersion,
-            HttpStatusCode.Forbidden);
-    }
-    #endregion
-
     #region CreatePunchItemComment
     [TestMethod]
     public async Task CreatePunchItemComment_AsRestrictedWriter_ShouldReturnForbidden()
@@ -371,22 +313,6 @@ public class PunchItemsControllerRestrictedContentTests : TestBase
             TestFactory.SortingGuid,
             TestFactory.TypeGuid);
         return guidAndRowVersion;
-    }
-
-    private async Task<(
-        GuidAndRowVersion punchItemGuidAndRowVersion,
-        GuidAndRowVersion linkGuidAndRowVersion)> CreatePunchItemLinkInRestrictedCheckListAsync()
-    {
-        var punchItemGuidAndRowVersion = await CreatePunchItemInRestrictedCheckListAsync();
-
-        var linkGuidAndRowVersion = await PunchItemsControllerTestsHelper.CreatePunchItemLinkAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess,
-            punchItemGuidAndRowVersion.Guid,
-            "T",
-            "U");
-
-        return (punchItemGuidAndRowVersion, linkGuidAndRowVersion);
     }
 
     private async Task<(GuidAndRowVersion punchItemGuidAndRowVersion, GuidAndRowVersion linkGuidAndRowVersion)>

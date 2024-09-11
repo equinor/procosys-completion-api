@@ -3,7 +3,6 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Query.WorkOrderQueries;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -32,8 +31,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -50,8 +48,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
+        Assert.AreEqual(1, result.Count());
     }
     
     [TestMethod]
@@ -73,8 +70,7 @@ public class WorkOrderSearchQueryHandlerTest : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 }
 

@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Query.DocumentQueries;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Documents;
 
@@ -32,6 +31,6 @@ public class DocumentsController : ControllerBase
         [FromQuery] string searchPhrase)
     {
         var result = await _mediator.Send(new DocumentSearchQuery(searchPhrase), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

@@ -11,11 +11,10 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
-public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCategoryCommand, Result<string>>
+public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCategoryCommand, string>
 {
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
@@ -37,7 +36,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
@@ -69,7 +68,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
         catch (Exception e)
         {
             _logger.LogError(e, "Error occurred while trying to Sync Update Category on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+            return punchItem.RowVersion.ConvertToString();
         }
 
         try
@@ -81,7 +80,7 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
             _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 
     private IChangedProperty UpdateCategory(PunchItem punchItem, Category category)

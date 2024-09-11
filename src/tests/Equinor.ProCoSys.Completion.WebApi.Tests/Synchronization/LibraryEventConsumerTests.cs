@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -17,7 +16,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Synchronization;
 public class LibraryEventConsumerTests
 {
     private readonly ILibraryItemRepository _libraryItemRepoMock = Substitute.For<ILibraryItemRepository>();
-    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly LibraryEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -31,7 +29,6 @@ public class LibraryEventConsumerTests
     public LibraryEventConsumerTests() =>
         _dut = new LibraryEventConsumer(
             Substitute.For<ILogger<LibraryEventConsumer>>(),
-            _plantSetter,
             _libraryItemRepoMock, 
             _unitOfWorkMock);
 

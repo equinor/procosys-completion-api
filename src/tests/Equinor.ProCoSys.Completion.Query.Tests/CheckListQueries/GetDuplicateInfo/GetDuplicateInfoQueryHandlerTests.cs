@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetDuplicateInfo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.CheckListQueries.GetDuplicateInfo;
 
@@ -51,15 +50,13 @@ public class GetDuplicateInfoQueryHandlerTests
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-
-        Assert.AreEqual(_query.CheckListDetailsDto, result.Data.CheckList);
-        Assert.IsNotNull(result.Data.FormularTypes);
-        Assert.IsNotNull(result.Data.Responsibles);
-        Assert.IsNotNull(result.Data.TagFunctions);
-        Assert.AreEqual(0, result.Data.FormularTypes.Count());
-        Assert.AreEqual(0, result.Data.Responsibles.Count());
-        Assert.AreEqual(0, result.Data.TagFunctions.Count());
+        Assert.AreEqual(_query.CheckListDetailsDto, result.CheckList);
+        Assert.IsNotNull(result.FormularTypes);
+        Assert.IsNotNull(result.Responsibles);
+        Assert.IsNotNull(result.TagFunctions);
+        Assert.AreEqual(0, result.FormularTypes.Count());
+        Assert.AreEqual(0, result.Responsibles.Count());
+        Assert.AreEqual(0, result.TagFunctions.Count());
     }
 
     [TestMethod]
@@ -84,21 +81,19 @@ public class GetDuplicateInfoQueryHandlerTests
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.AreEqual(_query.CheckListDetailsDto, result.CheckList);
+        Assert.IsNotNull(result.FormularTypes);
+        Assert.IsNotNull(result.Responsibles);
+        Assert.IsNotNull(result.TagFunctions);
+        Assert.AreEqual(2, result.FormularTypes.Count());
+        Assert.AreEqual(2, result.Responsibles.Count());
+        Assert.AreEqual(2, result.TagFunctions.Count());
 
-        Assert.AreEqual(_query.CheckListDetailsDto, result.Data.CheckList);
-        Assert.IsNotNull(result.Data.FormularTypes);
-        Assert.IsNotNull(result.Data.Responsibles);
-        Assert.IsNotNull(result.Data.TagFunctions);
-        Assert.AreEqual(2, result.Data.FormularTypes.Count());
-        Assert.AreEqual(2, result.Data.Responsibles.Count());
-        Assert.AreEqual(2, result.Data.TagFunctions.Count());
+        AssertResponsible(responsible1, result.Responsibles.ElementAt(0));
+        AssertResponsible(responsible2, result.Responsibles.ElementAt(1));
 
-        AssertResponsible(responsible1, result.Data.Responsibles.ElementAt(0));
-        AssertResponsible(responsible2, result.Data.Responsibles.ElementAt(1));
-
-        AssertTagFunction(tagFunction1, result.Data.TagFunctions.ElementAt(0));
-        AssertTagFunction(tagFunction2, result.Data.TagFunctions.ElementAt(1));
+        AssertTagFunction(tagFunction1, result.TagFunctions.ElementAt(0));
+        AssertTagFunction(tagFunction2, result.TagFunctions.ElementAt(1));
     }
 
     private void AssertResponsible(ProCoSys4Responsible expected, ResponsibleDto actual)

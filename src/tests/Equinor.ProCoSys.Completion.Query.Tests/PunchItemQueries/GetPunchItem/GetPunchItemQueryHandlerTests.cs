@@ -4,7 +4,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItem;
 
@@ -27,12 +26,10 @@ public class GetPunchItemQueryHandlerTests
     public async Task Handle_ShouldReturnCorrectPunchItem()
     {
         // Act
-        var result = await _dut.Handle(_query, default);
-        var punchItemDetails = result.Data;
+        var punchItemDetails = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.IsNotNull(punchItemDetails);
         Assert.AreEqual(_query.PunchItemDetailsDto, punchItemDetails);
     }
 

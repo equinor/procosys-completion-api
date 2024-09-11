@@ -6,14 +6,13 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 
 public class GetPunchLibraryItemsQueryHandler(IReadOnlyContext context)
-    : IRequestHandler<GetPunchLibraryItemsQuery, Result<IEnumerable<LibraryItemDto>>>
+    : IRequestHandler<GetPunchLibraryItemsQuery, IEnumerable<LibraryItemDto>>
 {
-    public async Task<Result<IEnumerable<LibraryItemDto>>> Handle(GetPunchLibraryItemsQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<LibraryItemDto>> Handle(GetPunchLibraryItemsQuery request, CancellationToken cancellationToken)
     {
         var libraryItems =
             await (from libraryItem in context.QuerySet<LibraryItem>()
@@ -34,6 +33,6 @@ public class GetPunchLibraryItemsQueryHandler(IReadOnlyContext context)
 
         var orderedLibraryItems = libraryItems.OrderBy(l => l.Code);
 
-        return new SuccessResult<IEnumerable<LibraryItemDto>>(orderedLibraryItems);
+        return orderedLibraryItems;
     }
 }

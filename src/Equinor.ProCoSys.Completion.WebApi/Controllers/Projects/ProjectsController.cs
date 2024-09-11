@@ -10,7 +10,6 @@ using Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Projects;
 
@@ -57,7 +56,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
             formularType,
             currentPage,
             itemsPerPage), cancellationToken);
-        return this.FromResult(result);
+        return result;
     }
 
     /// <summary>
@@ -79,6 +78,6 @@ public class ProjectsController(IMediator mediator) : ControllerBase
         [Required][FromRoute] Guid guid)
     {
         var result = await mediator.Send(new GetPunchItemsQuery(guid), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

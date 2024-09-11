@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.CheckListQueries.GetPunchItems;
 
@@ -40,8 +39,7 @@ public class GetPunchItemsQueryHandlerTests
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        var data = result.Data?.ToList();
+        var data = result?.ToList();
         Assert.IsInstanceOfType(data, typeof(List<PunchItemDetailsDto>));
         Assert.IsTrue(0 < data.Count);
         CollectionAssert.Contains(data, _punchItemDetails);

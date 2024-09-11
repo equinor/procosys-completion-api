@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
@@ -30,7 +29,6 @@ public class PunchItemEventConsumerTests
     private readonly ISWCRRepository _swcrRepoMock = Substitute.For<ISWCRRepository>();
     private readonly IWorkOrderRepository _workOrderRepoMock = Substitute.For<IWorkOrderRepository>();
 
-    private readonly IPlantSetter _plantSetter = Substitute.For<IPlantSetter>();
     private readonly IUnitOfWork _unitOfWorkMock = Substitute.For<IUnitOfWork>();
     private readonly PunchItemEventConsumer _dut;
     private readonly IOptionsMonitor<ApplicationOptions> _applicationOptionsMock = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
@@ -62,7 +60,6 @@ public class PunchItemEventConsumerTests
     public PunchItemEventConsumerTests() =>
         _dut = new PunchItemEventConsumer(
             Substitute.For<ILogger<PunchItemEventConsumer>>(),
-            _plantSetter,
             _personRepoMock,
             _punchItemRepoMock,
             _projectRepoMock,

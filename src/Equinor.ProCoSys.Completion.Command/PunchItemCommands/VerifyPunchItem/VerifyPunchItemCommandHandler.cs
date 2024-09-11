@@ -8,11 +8,10 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 
-public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<VerifyPunchItemCommand, Result<string>>
+public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<VerifyPunchItemCommand, string>
 {
     private readonly IPersonRepository _personRepository;
     private readonly ISyncToPCS4Service _syncToPCS4Service;
@@ -34,7 +33,7 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
@@ -65,6 +64,6 @@ public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHan
             _logger.LogError(e, "Error occurred while trying to Sync Verify on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 }

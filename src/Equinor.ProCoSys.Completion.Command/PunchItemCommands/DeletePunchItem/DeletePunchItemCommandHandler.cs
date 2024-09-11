@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.CommentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.LinkAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
@@ -14,7 +13,6 @@ using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvent
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 using User = Equinor.ProCoSys.Completion.MessageContracts.User;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
@@ -27,11 +25,10 @@ public class DeletePunchItemCommandHandler(
     ICheckListApiService checkListApiService,
     ILogger<DeletePunchItemCommandHandler> logger,
     ICommentRepository commentsRepository,
-    IAttachmentRepository attachmentRepository,
-    ILinkRepository linkRepository)
-    : IRequestHandler<DeletePunchItemCommand, Result<Unit>>
+    IAttachmentRepository attachmentRepository)
+    : IRequestHandler<DeletePunchItemCommand, Unit>
 {
-    public async Task<Result<Unit>> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(DeletePunchItemCommand request, CancellationToken cancellationToken)
     {
         var comments = await commentsRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken);
         foreach (var comment in comments)
@@ -43,12 +40,6 @@ public class DeletePunchItemCommandHandler(
         {
             await messageProducer.PublishAsync(new AttachmentDeletedByPunchItemIntegrationEvent(attachment.Guid,attachment.GetFullBlobPath()), cancellationToken);
             attachmentRepository.Remove(attachment);
-        }
-
-        var links = await linkRepository.GetAllByParentGuidAsync(request.PunchItemGuid, cancellationToken);
-        foreach (var link in links)
-        {
-            linkRepository.Remove(link);
         }
         var punchItem = request.PunchItem;
             
@@ -74,7 +65,7 @@ public class DeletePunchItemCommandHandler(
         catch (Exception e)
         {
             logger.LogError(e, "Error occurred while trying to Sync Delete on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
-            return new SuccessResult<Unit>(Unit.Value);
+            return Unit.Value;
         }
 
         try
@@ -85,8 +76,8 @@ public class DeletePunchItemCommandHandler(
         {
             logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
-
-        return new SuccessResult<Unit>(Unit.Value);
+            
+        return Unit.Value;
     }
 
     private async Task<PunchItemDeletedIntegrationEvent> PublishPunchItemDeletedIntegrationEventsAsync(PunchItem punchItem, CancellationToken cancellationToken)

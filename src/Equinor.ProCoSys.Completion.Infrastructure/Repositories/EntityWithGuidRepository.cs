@@ -22,7 +22,9 @@ public abstract class EntityWithGuidRepository<TEntity>(
     
     public async Task<bool> RemoveByGuidAsync(Guid guid, CancellationToken cancellationToken)
     {
-        var entity = await Set.SingleOrDefaultAsync(e => e.Guid == guid, cancellationToken);
+        var entity = await Set
+            .IgnoreQueryFilters()
+            .SingleOrDefaultAsync(e => e.Guid == guid, cancellationToken);
         if (entity is null)
         {
             return false;
@@ -36,6 +38,7 @@ public abstract class EntityWithGuidRepository<TEntity>(
         Guid guid,
         CancellationToken cancellationToken)
         => await DefaultQueryable
+               .IgnoreQueryFilters()
                .TagWith($"{typeof(TEntity).Name}Repository.{nameof(GetAsync)}")
                .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken)
            ?? throw new EntityNotFoundException<TEntity>(guid);
@@ -44,11 +47,13 @@ public abstract class EntityWithGuidRepository<TEntity>(
         Guid guid,
         CancellationToken cancellationToken)
         => await DefaultQueryable
+            .IgnoreQueryFilters()
             .TagWith($"{typeof(TEntity).Name}Repository.{nameof(GetOrNullAsync)}")
             .SingleOrDefaultAsync(x => x.Guid == guid, cancellationToken);
 
     public virtual async Task<bool> ExistsAsync(Guid guid, CancellationToken cancellationToken)
         => await Set
+            .IgnoreQueryFilters()
             .TagWith($"{typeof(TEntity).Name}Repository.{nameof(ExistsAsync)}")
             .AnyAsync(e => e.Guid == guid, cancellationToken);
 }

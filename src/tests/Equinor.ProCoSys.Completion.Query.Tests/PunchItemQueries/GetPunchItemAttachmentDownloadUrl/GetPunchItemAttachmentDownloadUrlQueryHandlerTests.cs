@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachmentD
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.PunchItemQueries.GetPunchItemAttachmentDownloadUrl;
 
@@ -38,9 +37,8 @@ public class GetPunchItemAttachmentDownloadUrlQueryHandlerTests : TestsBase
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(Uri));
-        Assert.AreEqual(_uri, result.Data);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
+        Assert.IsInstanceOfType(result, typeof(string));
+        Assert.AreEqual(_uri.ToString(), result);
     }
 
     [TestMethod]

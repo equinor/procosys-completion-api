@@ -27,7 +27,6 @@ public class PunchItemDeleteEventConsumerTests
     public PunchItemDeleteEventConsumerTests() =>
         _dut = new PunchItemDeleteEventConsumer(
             Substitute.For<ILogger<PunchItemDeleteEventConsumer>>(),
-            _plantSetter,
             _punchItemRepoMock,
             _unitOfWorkMock
             );

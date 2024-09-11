@@ -3,18 +3,17 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
-public class OverwriteExistingPunchItemAttachmentCommandHandler : IRequestHandler<OverwriteExistingPunchItemAttachmentCommand, Result<string>>
+public class OverwriteExistingPunchItemAttachmentCommandHandler : IRequestHandler<OverwriteExistingPunchItemAttachmentCommand, string>
 {
     private readonly IAttachmentService _attachmentService;
 
     public OverwriteExistingPunchItemAttachmentCommandHandler(IAttachmentService attachmentService)
         => _attachmentService = attachmentService;
 
-    public async Task<Result<string>> Handle(OverwriteExistingPunchItemAttachmentCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(OverwriteExistingPunchItemAttachmentCommand request, CancellationToken cancellationToken)
     {
         var newRowVersion = await _attachmentService.UploadOverwriteAsync(
             nameof(PunchItem),
@@ -25,6 +24,6 @@ public class OverwriteExistingPunchItemAttachmentCommandHandler : IRequestHandle
             request.RowVersion,
             cancellationToken);
 
-        return new SuccessResult<string>(newRowVersion);
+        return newRowVersion;
     }
 }

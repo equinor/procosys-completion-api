@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class AttachmentCopyEventConsumer (
     ILogger<AttachmentCopyEventConsumer> logger,
     IAzureBlobService azureBlobService, 
