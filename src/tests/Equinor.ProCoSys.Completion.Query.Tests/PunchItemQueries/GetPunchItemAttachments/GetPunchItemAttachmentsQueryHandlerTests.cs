@@ -54,8 +54,8 @@ public class GetPunchItemAttachmentsQueryHandlerTests : TestsBase
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<AttachmentDto>));
-        var attachment = result.Data.Single();
+        Assert.IsInstanceOfType(result, typeof(IEnumerable<AttachmentDto>));
+        var attachment = result.Single();
         Assert.AreEqual(_attachmentDto.ParentGuid, attachment.ParentGuid);
         Assert.AreEqual(_attachmentDto.Guid, attachment.Guid);
         Assert.AreEqual(_attachmentDto.FileName, attachment.FileName);

@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.MailTemplateQueries.GetAllMailTemplates;
 
@@ -32,8 +31,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -49,7 +47,7 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
         var result = await dut.Handle(_query, default);
 
         // Assert
-        Assert.AreEqual(4, result.Data.Count());
+        Assert.AreEqual(4, result.Count());
     }
 
     [TestMethod]
@@ -66,12 +64,11 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        Assert.AreEqual(MailTemplateCodeA, result.Data.ElementAt(0).Code);
-        Assert.AreEqual(MailTemplateCodeB, result.Data.ElementAt(1).Code);
-        Assert.AreEqual(MailTemplateCodeC, result.Data.ElementAt(2).Code);
-        Assert.AreEqual(MailTemplateCodeVoided, result.Data.ElementAt(3).Code);
+        Assert.AreEqual(MailTemplateCodeA, result.ElementAt(0).Code);
+        Assert.AreEqual(MailTemplateCodeB, result.ElementAt(1).Code);
+        Assert.AreEqual(MailTemplateCodeC, result.ElementAt(2).Code);
+        Assert.AreEqual(MailTemplateCodeVoided, result.ElementAt(3).Code);
     }
 
     [TestMethod]
@@ -87,11 +84,11 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
         var result = await dut.Handle(_query, default);
 
         // Assert
-        var voidedMailTemplate = result.Data.SingleOrDefault(dto => dto.IsVoided);
+        var voidedMailTemplate = result.SingleOrDefault(dto => dto.IsVoided);
         Assert.IsNotNull(voidedMailTemplate);
         Assert.AreEqual(MailTemplateCodeVoided, voidedMailTemplate.Code);
 
-        var nonVoidedMailTemplates = result.Data.Where(dto => !dto.IsVoided).ToList();
+        var nonVoidedMailTemplates = result.Where(dto => !dto.IsVoided).ToList();
         Assert.AreEqual(3, nonVoidedMailTemplates.Count);
     }
 
@@ -109,22 +106,22 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
         var result = await dut.Handle(_query, default);
 
         // Assert
-        var voidedMailTemplates = result.Data.Where(dto => dto.IsVoided).ToList();
+        var voidedMailTemplates = result.Where(dto => dto.IsVoided).ToList();
         Assert.AreEqual(2, voidedMailTemplates.Count);
 
-        var nonVoidedMailTemplates = result.Data.Where(dto => !dto.IsVoided).ToList();
+        var nonVoidedMailTemplates = result.Where(dto => !dto.IsVoided).ToList();
         Assert.AreEqual(6, nonVoidedMailTemplates.Count);
 
-        var globalMailTemplates = result.Data.Where(dto => dto.IsGlobal).ToList();
+        var globalMailTemplates = result.Where(dto => dto.IsGlobal).ToList();
         Assert.AreEqual(4, globalMailTemplates.Count);
 
-        var plantSpecificMailTemplates = result.Data.Where(dto => !dto.IsGlobal).ToList();
+        var plantSpecificMailTemplates = result.Where(dto => !dto.IsGlobal).ToList();
         Assert.AreEqual(4, plantSpecificMailTemplates.Count);
 
-        Assert2MailTemplatesWithSameCode(result.Data.ToList(), MailTemplateCodeA);
-        Assert2MailTemplatesWithSameCode(result.Data.ToList(), MailTemplateCodeB);
-        Assert2MailTemplatesWithSameCode(result.Data.ToList(), MailTemplateCodeC);
-        Assert2MailTemplatesWithSameCode(result.Data.ToList(), MailTemplateCodeVoided);
+        Assert2MailTemplatesWithSameCode(result.ToList(), MailTemplateCodeA);
+        Assert2MailTemplatesWithSameCode(result.ToList(), MailTemplateCodeB);
+        Assert2MailTemplatesWithSameCode(result.ToList(), MailTemplateCodeC);
+        Assert2MailTemplatesWithSameCode(result.ToList(), MailTemplateCodeVoided);
     }
 
     [TestMethod]
@@ -141,15 +138,15 @@ public class GetAllMailTemplatesQueryHandlerTests : ReadOnlyTestsBase
         var result = await dut.Handle(_query, default);
 
         // Assert
-        AssertCodeAndIsGlobal(MailTemplateCodeA, true, result.Data.ElementAt(0));
-        AssertCodeAndIsGlobal(MailTemplateCodeB, true, result.Data.ElementAt(1));
-        AssertCodeAndIsGlobal(MailTemplateCodeC, true, result.Data.ElementAt(2));
-        AssertCodeAndIsGlobal(MailTemplateCodeVoided, true, result.Data.ElementAt(3));
+        AssertCodeAndIsGlobal(MailTemplateCodeA, true, result.ElementAt(0));
+        AssertCodeAndIsGlobal(MailTemplateCodeB, true, result.ElementAt(1));
+        AssertCodeAndIsGlobal(MailTemplateCodeC, true, result.ElementAt(2));
+        AssertCodeAndIsGlobal(MailTemplateCodeVoided, true, result.ElementAt(3));
 
-        AssertCodeAndIsGlobal(MailTemplateCodeA, false, result.Data.ElementAt(0+4));
-        AssertCodeAndIsGlobal(MailTemplateCodeB, false, result.Data.ElementAt(1+4));
-        AssertCodeAndIsGlobal(MailTemplateCodeC, false, result.Data.ElementAt(2+4));
-        AssertCodeAndIsGlobal(MailTemplateCodeVoided, false, result.Data.ElementAt(3+4));
+        AssertCodeAndIsGlobal(MailTemplateCodeA, false, result.ElementAt(0+4));
+        AssertCodeAndIsGlobal(MailTemplateCodeB, false, result.ElementAt(1+4));
+        AssertCodeAndIsGlobal(MailTemplateCodeC, false, result.ElementAt(2+4));
+        AssertCodeAndIsGlobal(MailTemplateCodeVoided, false, result.ElementAt(3+4));
     }
 
     private void AssertCodeAndIsGlobal(string code, bool isGlobal, MailTemplateDto dto)

@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailableFor;
 using Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.Labels;
 
@@ -33,7 +32,7 @@ public class LabelsController : ControllerBase
         [FromBody] CreateLabelDto dto)
     {
         var result = await _mediator.Send(new CreateLabelCommand(dto.Text), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     /// <summary>
@@ -47,9 +46,8 @@ public class LabelsController : ControllerBase
         CancellationToken cancellationToken,
         [FromBody] UpdateLabelAvailableForDto dto)
     {
-        var result = await _mediator.Send(
-            new UpdateLabelAvailableForCommand(dto.Text, dto.AvailableForLabels), cancellationToken);
-        return this.FromResult(result);
+        await _mediator.Send(new UpdateLabelAvailableForCommand(dto.Text, dto.AvailableForLabels), cancellationToken);
+        return Ok();
     }
 
     /// <summary>
@@ -61,6 +59,6 @@ public class LabelsController : ControllerBase
     public async Task<ActionResult<IEnumerable<LabelDto>>> GetLabels(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAllLabelsQuery(), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

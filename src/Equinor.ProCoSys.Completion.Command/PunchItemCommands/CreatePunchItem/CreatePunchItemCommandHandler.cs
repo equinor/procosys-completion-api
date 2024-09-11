@@ -20,7 +20,6 @@ using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
@@ -38,10 +37,10 @@ public class CreatePunchItemCommandHandler<TRequest>(
     IMessageProducer messageProducer,
     ICheckListApiService checkListApiService,
     ILogger<TRequest> logger)
-    : IRequestHandler<TRequest, Result<GuidAndRowVersion>>
+    : IRequestHandler<TRequest, GuidAndRowVersion>
     where TRequest : CreatePunchItemCommand
 {
-    public async Task<Result<GuidAndRowVersion>> Handle(TRequest request,
+    public async Task<GuidAndRowVersion> Handle(TRequest request,
         CancellationToken cancellationToken)
     {
         var project = await projectRepository.GetAsync(request.CheckListDetailsDto.ProjectGuid, cancellationToken);
@@ -125,7 +124,7 @@ public class CreatePunchItemCommandHandler<TRequest>(
             logger.LogError(e, 
                 "Error occurred while trying to Sync Create on PunchItemList with guid {PunchItemGuid}", 
                 punchItem.Guid);
-            return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
+            return guidAndRowVersion;
         }
 
         try
@@ -139,7 +138,7 @@ public class CreatePunchItemCommandHandler<TRequest>(
                 punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<GuidAndRowVersion>(guidAndRowVersion);
+        return guidAndRowVersion;
     }
 
     private async Task<PunchItemCreatedIntegrationEvent> PublishPunchItemCreatedIntegrationEventsAsync(

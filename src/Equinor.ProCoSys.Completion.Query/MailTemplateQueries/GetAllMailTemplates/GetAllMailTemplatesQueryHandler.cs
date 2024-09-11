@@ -6,17 +6,16 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
 
-public class GetAllMailTemplatesQueryHandler : IRequestHandler<GetAllMailTemplatesQuery, Result<IEnumerable<MailTemplateDto>>>
+public class GetAllMailTemplatesQueryHandler : IRequestHandler<GetAllMailTemplatesQuery, IEnumerable<MailTemplateDto>>
 {
     private readonly IReadOnlyContext _context;
 
     public GetAllMailTemplatesQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<MailTemplateDto>>> Handle(GetAllMailTemplatesQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<MailTemplateDto>> Handle(GetAllMailTemplatesQuery request, CancellationToken cancellationToken)
     {
         var orderedMailTemplates =
             await (from l in _context.QuerySet<MailTemplate>()
@@ -28,6 +27,6 @@ public class GetAllMailTemplatesQueryHandler : IRequestHandler<GetAllMailTemplat
         var orderedMailTemplateDtos = orderedMailTemplates
             .Select(mt => new MailTemplateDto(mt.Code, mt.Subject, mt.Body, mt.IsVoided, mt.Plant, mt.IsGlobal()));
 
-        return new SuccessResult<IEnumerable<MailTemplateDto>>(orderedMailTemplateDtos);
+        return orderedMailTemplateDtos;
     }
 }

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using MediatR;
 using Equinor.ProCoSys.Completion.Query.SWCRQueries;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.SWCR;
 
@@ -32,6 +31,6 @@ public class SwcrController : ControllerBase
         [FromQuery] string searchPhrase)
     {
         var result = await _mediator.Send(new SWCRSearchQuery(searchPhrase), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntityTyp
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.LabelEntityQueries.GetLabelsForEntityType;
 
@@ -55,8 +54,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -73,8 +71,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(3, result.Data.Count());
+        Assert.AreEqual(3, result.Count());
     }
 
     [TestMethod]
@@ -91,11 +88,9 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-
-        Assert.AreEqual(LabelTextA, result.Data.ElementAt(0));
-        Assert.AreEqual(LabelTextB, result.Data.ElementAt(1));
-        Assert.AreEqual(LabelTextC, result.Data.ElementAt(2));
+        Assert.AreEqual(LabelTextA, result.ElementAt(0));
+        Assert.AreEqual(LabelTextB, result.ElementAt(1));
+        Assert.AreEqual(LabelTextC, result.ElementAt(2));
     }
 
     [TestMethod]
@@ -112,8 +107,7 @@ public class GetLabelsForEntityTypeQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        Assert.IsFalse(result.Data.Any(t => t == LabelTextVoided));
+        Assert.IsFalse(result.Any(t => t == LabelTextVoided));
     }
 }

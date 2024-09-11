@@ -7,7 +7,6 @@ using Equinor.ProCoSys.Completion.WebApi.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -21,12 +20,11 @@ public static class MediatorModule
             typeof(IQueryMarker).GetTypeInfo().Assembly
         ));
         
-        //https://github.com/FluentValidation/FluentValidation/issues/1001
+        // https://github.com/FluentValidation/FluentValidation/issues/1001
         services.AddTransient<IValidator<CreatePunchItemCommand>, CreatePunchItemCommandValidator<CreatePunchItemCommand>>();
         services.AddTransient<IValidator<CreatePunchItemCommandForImport>, CreatePunchItemCommandValidator<CreatePunchItemCommandForImport>>();
-        services.AddTransient<IRequestHandler<CreatePunchItemCommand, Result<GuidAndRowVersion>>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
-        services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, Result<GuidAndRowVersion>>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
-
+        services.AddTransient<IRequestHandler<CreatePunchItemCommand, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
+        services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
 
         // ordering is important
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

@@ -53,8 +53,8 @@ public class GetPunchItemCommentsQueryHandlerTests : TestsBase
         var result = await _dut.Handle(_query, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(IEnumerable<CommentDto>));
-        var comment = result.Data.Single();
+        Assert.IsInstanceOfType(result, typeof(IEnumerable<CommentDto>));
+        var comment = result.Single();
         Assert.AreEqual(_commentDto.ParentGuid, comment.ParentGuid);
         Assert.AreEqual(_commentDto.Guid, comment.Guid);
         Assert.AreEqual(_commentDto.Text, comment.Text);

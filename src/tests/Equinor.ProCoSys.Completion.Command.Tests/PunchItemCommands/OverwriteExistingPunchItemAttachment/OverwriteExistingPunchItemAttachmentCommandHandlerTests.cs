@@ -47,7 +47,7 @@ public class OverwriteExistingPunchItemAttachmentCommandHandlerTests : PunchItem
         var result = await _dut.Handle(_command, default);
 
         // Assert
-        Assert.AreEqual(_newRowVersion, result.Data);
+        Assert.AreEqual(_newRowVersion, result);
     }
 
     [TestMethod]

@@ -8,11 +8,10 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 
-public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnclearPunchItemCommand, Result<string>>
+public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnclearPunchItemCommand, string>
 {
     private readonly ISyncToPCS4Service _syncToPCS4Service;
     private readonly IUnitOfWork _unitOfWork;
@@ -34,7 +33,7 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(UnclearPunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UnclearPunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
@@ -62,7 +61,7 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
         catch (Exception e)
         {
             _logger.LogError(e, "Error occurred while trying to Sync Unclear on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+            return punchItem.RowVersion.ConvertToString();
         }
 
         try
@@ -74,6 +73,6 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
             _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 }

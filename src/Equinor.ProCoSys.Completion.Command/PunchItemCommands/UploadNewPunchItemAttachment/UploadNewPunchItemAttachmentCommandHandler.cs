@@ -3,14 +3,13 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 
 public class UploadNewPunchItemAttachmentCommandHandler(IAttachmentService attachmentService)
-    : IRequestHandler<UploadNewPunchItemAttachmentCommand, Result<GuidAndRowVersion>>
+    : IRequestHandler<UploadNewPunchItemAttachmentCommand, GuidAndRowVersion>
 {
-    public async Task<Result<GuidAndRowVersion>> Handle(UploadNewPunchItemAttachmentCommand request, CancellationToken cancellationToken)
+    public async Task<GuidAndRowVersion> Handle(UploadNewPunchItemAttachmentCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
         var attachmentDto = await attachmentService.UploadNewAsync(
@@ -22,6 +21,6 @@ public class UploadNewPunchItemAttachmentCommandHandler(IAttachmentService attac
             request.ContentType,
             cancellationToken);
 
-        return new SuccessResult<GuidAndRowVersion>(new GuidAndRowVersion(attachmentDto.Guid, attachmentDto.RowVersion));
+        return new GuidAndRowVersion(attachmentDto.Guid, attachmentDto.RowVersion);
     }
 }

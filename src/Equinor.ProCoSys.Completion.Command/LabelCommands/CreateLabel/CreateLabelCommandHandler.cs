@@ -5,11 +5,10 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.LabelCommands.CreateLabel;
 
-public class CreateLabelCommandHandler : IRequestHandler<CreateLabelCommand, Result<string>>
+public class CreateLabelCommandHandler : IRequestHandler<CreateLabelCommand, string>
 {
     private readonly ILabelRepository _labelRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +21,7 @@ public class CreateLabelCommandHandler : IRequestHandler<CreateLabelCommand, Res
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(CreateLabelCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(CreateLabelCommand request, CancellationToken cancellationToken)
     {
         var label = new Label(request.Text);
         _labelRepository.Add(label);
@@ -31,6 +30,6 @@ public class CreateLabelCommandHandler : IRequestHandler<CreateLabelCommand, Res
 
         _logger.LogInformation("Label {Label} created", request.Text);
 
-        return new SuccessResult<string>(label.RowVersion.ConvertToString());
+        return label.RowVersion.ConvertToString();
     }
 }

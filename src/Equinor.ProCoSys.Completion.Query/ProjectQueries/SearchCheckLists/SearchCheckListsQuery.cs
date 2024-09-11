@@ -1,7 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 
@@ -13,7 +12,7 @@ public class SearchCheckListsQuery(
     string? formularType,
     int? currentPage,
     int? itemsPerPage)
-    : INeedProjectAccess, IRequest<Result<SearchResultDto>>
+    : INeedProjectAccess, IRequest<SearchResultDto>
 {
     public Guid ProjectGuid { get; } = projectGuid;
     public string? TagNoContains { get; } = tagNoContains;

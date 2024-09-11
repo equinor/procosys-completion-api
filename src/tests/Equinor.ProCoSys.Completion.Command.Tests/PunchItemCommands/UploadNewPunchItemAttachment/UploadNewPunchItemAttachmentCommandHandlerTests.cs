@@ -46,9 +46,9 @@ public class UploadNewPunchItemAttachmentCommandHandlerTests : PunchItemCommandT
         var result = await _dut.Handle(_command, default);
 
         // Assert
-        Assert.IsInstanceOfType(result.Data, typeof(GuidAndRowVersion));
-        Assert.AreEqual(_rowVersion, result.Data.RowVersion);
-        Assert.AreEqual(_guid, result.Data.Guid);
+        Assert.IsInstanceOfType(result, typeof(GuidAndRowVersion));
+        Assert.AreEqual(_rowVersion, result.RowVersion);
+        Assert.AreEqual(_guid, result.Guid);
     }
 
     [TestMethod]

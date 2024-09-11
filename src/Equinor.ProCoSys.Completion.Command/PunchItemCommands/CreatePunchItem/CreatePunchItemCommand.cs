@@ -1,7 +1,6 @@
 ﻿using System;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 
@@ -25,7 +24,7 @@ public class CreatePunchItemCommand(
     bool materialRequired,
     DateTime? materialETAUtc,
     string? materialExternalNo)
-    : ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>
+    : ICanHaveRestrictionsViaCheckList, IRequest<GuidAndRowVersion>
 {
     public Category Category { get; } = category;
     public string Description { get; } = description;

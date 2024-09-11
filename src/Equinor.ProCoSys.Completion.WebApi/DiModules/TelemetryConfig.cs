@@ -29,6 +29,7 @@ public static class TelemetryConfig
 
         if (!devOnLocalhost)
         {
+            // by default, UseAzureMonitor look for config key "AzureMonitor:ConnectionString"
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
           
         }

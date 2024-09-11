@@ -1,10 +1,9 @@
 ﻿using System;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PersonCommands.CreatePerson;
 
-public class CreatePersonCommand : IRequest<Result<Unit>>
+public class CreatePersonCommand : IRequest<Unit>
 {
     public CreatePersonCommand(Guid oid) => Oid = oid;
 

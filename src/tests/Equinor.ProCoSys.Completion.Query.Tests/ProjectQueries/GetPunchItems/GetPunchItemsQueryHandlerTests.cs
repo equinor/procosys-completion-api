@@ -9,7 +9,6 @@ using Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.ProjectQueries.GetPunchItems;
 
@@ -53,8 +52,7 @@ public class GetPunchItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -71,10 +69,9 @@ public class GetPunchItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
+        Assert.AreEqual(1, result.Count());
 
-        AssertPunchItem(result.Data.Single(), _punchItemInProjectA);
+        AssertPunchItem(result.Single(), _punchItemInProjectA);
     }
 
     private void AssertPunchItem(PunchItemDto punchItemDto, PunchItem punchItem)

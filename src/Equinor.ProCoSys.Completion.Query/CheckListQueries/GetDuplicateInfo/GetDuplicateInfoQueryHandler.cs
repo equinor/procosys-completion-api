@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.CheckListQueries.GetDuplicateInfo;
 
@@ -15,9 +14,9 @@ public class GetDuplicateInfoQueryHandler(
     IFormularTypeApiService formularTypeService,
     IResponsibleApiService responsibleService,
     ITagFunctionApiService tagFunctionService)
-    : IRequestHandler<GetDuplicateInfoQuery, Result<DuplicateInfoDto>>
+    : IRequestHandler<GetDuplicateInfoQuery, DuplicateInfoDto>
 {
-    public async Task<Result<DuplicateInfoDto>> Handle(GetDuplicateInfoQuery request, CancellationToken cancellationToken)
+    public async Task<DuplicateInfoDto> Handle(GetDuplicateInfoQuery request, CancellationToken cancellationToken)
     {
         var checkList = request.CheckListDetailsDto;
 
@@ -36,6 +35,6 @@ public class GetDuplicateInfoQueryHandler(
         var tagFunctionDtos = tagFunctions.Select(tf => new TagFunctionDto(tf.ToString(), tf.Description));
         
         DuplicateInfoDto result = new(checkList, formularTypeDtos, responsibleDtos, tagFunctionDtos);
-        return new SuccessResult<DuplicateInfoDto>(result);
+        return result;
     }
 }

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DuplicatePunchItem;
 
 public class DuplicatePunchItemCommand(Guid punchItemGuid, List<Guid> checkListGuids, bool duplicateAttachments) 
-    : ICanHaveRestrictionsViaManyCheckLists, IRequest<Result<List<GuidAndRowVersion>>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaManyCheckLists, IRequest<List<GuidAndRowVersion>>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public List<Guid> CheckListGuids { get; } = checkListGuids;

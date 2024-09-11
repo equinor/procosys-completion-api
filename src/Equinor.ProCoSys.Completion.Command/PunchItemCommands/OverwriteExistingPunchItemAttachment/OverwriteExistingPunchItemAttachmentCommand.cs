@@ -2,7 +2,6 @@
 using System.IO;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.OverwriteExistingPunchItemAttachment;
 
@@ -12,7 +11,7 @@ public class OverwriteExistingPunchItemAttachmentCommand(
     string rowVersion,
     Stream content,
     string contentType)
-    : UploadAttachmentCommand(content), ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : UploadAttachmentCommand(content), ICanHaveRestrictionsViaCheckList, IRequest<string>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

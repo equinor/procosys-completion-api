@@ -21,12 +21,11 @@ using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
 public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase,
-    IRequestHandler<UpdatePunchItemCommand, Result<string>>
+    IRequestHandler<UpdatePunchItemCommand, string>
 {
     private readonly ILibraryItemRepository _libraryItemRepository;
     private readonly IPersonRepository _personRepository;
@@ -60,7 +59,7 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase,
         _logger = logger;
     }
 
-    public async Task<Result<string>> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UpdatePunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
@@ -95,12 +94,11 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase,
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Update on PunchItemList with guid {PunchItemGuid}",
-                request.PunchItemGuid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+            _logger.LogError(e, "Error occurred while trying to Sync Update on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            return punchItem.RowVersion.ConvertToString();
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 
     private async Task<List<IChangedProperty>> PatchAsync(
