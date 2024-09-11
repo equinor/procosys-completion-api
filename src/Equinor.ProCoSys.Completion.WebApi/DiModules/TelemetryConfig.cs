@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
-using OpenTelemetry;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -18,76 +17,55 @@ public static class TelemetryConfig
     {
         if (!devOnLocalhost)
         {
-            var serviceProvider = builder.Services.BuildServiceProvider();
-            builder.Services.ConfigureOpenTelemetryTracerProvider((sp, tracerProviderBuilder) 
-                => tracerProviderBuilder.AddProcessor(new ActivityEnrichingProcessor(serviceProvider.GetRequiredService<IHttpContextAccessor>())));
+            builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder => tracerProviderBuilder
+                .AddAspNetCoreInstrumentation(o =>
+                {
+                    o.EnrichWithHttpRequest = (activity, httpRequest) =>
+                    {
+                        SetAuthTags(httpRequest, activity);
+                        SetPlantTag(httpRequest, activity);
+                    };
+                }));
+            // by default, UseAzureMonitor look for config key "AzureMonitor:ConnectionString"
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
         }
-        
+
         return builder;
     }
 
-    public class ActivityEnrichingProcessor : BaseProcessor<Activity>
+    public static void SetPlantTag(HttpRequest request, Activity activity)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        var plantHeader = request.Headers
+            .SingleOrDefault(header => header.Key == "x-plant").Value;
 
-        public ActivityEnrichingProcessor(IHttpContextAccessor httpContextAccessor) =>
-            _httpContextAccessor = httpContextAccessor;
-
-        // The OnStart method is called when an activity is started. This is the ideal place to filter activities.
-        public override void OnStart(Activity activity)
+        if (!string.IsNullOrEmpty(plantHeader))
         {
-            // prevents all exporters from exporting internal activities
-            if (activity.Kind == ActivityKind.Internal)
-            {
-                activity.IsAllDataRequested = false;
-            }
+            activity.SetTag("plant", plantHeader.ToString().Substring(4));
         }
+    }
 
-        public override void OnEnd(Activity activity)
+    public static void SetAuthTags(HttpRequest request, Activity activity)
+    {
+        if (request.Headers.TryGetValue("Authorization", out var authHeader)
+            && !string.IsNullOrEmpty(authHeader)
+            && authHeader.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            if (activity.Kind != ActivityKind.Server)
+            var token = authHeader.ToString().Substring("Bearer ".Length).Trim();
+            try
             {
-                return;
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var audience = jwtToken.Audiences.FirstOrDefault();
+                var appId = jwtToken.Claims.FirstOrDefault(x => x.Type == "appid")?.Value ?? "N/A";
+                var oid = jwtToken.Claims.FirstOrDefault(x => x.Type == "oid")?.Value ?? "N/A";
+
+                activity.SetTag("AppId", appId);
+                activity.SetTag("enduser.id", oid);
             }
-
-            if (null != _httpContextAccessor.HttpContext)
+            catch (Exception e)
             {
-                var authHeader = _httpContextAccessor.HttpContext.Request.Headers.Authorization.ToString();
-
-                if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                {
-                    var token = authHeader.Substring("Bearer ".Length).Trim();
-
-                    try
-                    {
-                        var handler = new JwtSecurityTokenHandler();
-                        var jwtToken = handler.ReadJwtToken(token);
-                        var audience = jwtToken.Audiences.FirstOrDefault();
-                        var appId = jwtToken.Claims.FirstOrDefault(x => x.Type == "appid")?.Value ?? "N/A";
-                        var oid = jwtToken.Claims.FirstOrDefault(x => x.Type == "oid")?.Value ?? "N/A";
-
-                        if (!string.IsNullOrEmpty(audience))
-                        {
-                            //activity.SetTag("Audience", audience);
-                            activity.SetTag("AppId", appId);
-                            activity.SetTag("enduser.id", oid);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        activity.SetStatus(ActivityStatusCode.Error);
-                        activity.RecordException(e);
-                    }
-                }
-
-                foreach (var header in _httpContextAccessor.HttpContext.Request.Headers)
-                {
-                    if (header.Key == "x-plant")
-                    {
-                        activity.SetTag("plant", header.Value.ToString().Substring(4));
-                    } 
-                }
+                activity.SetStatus(ActivityStatusCode.Error);
+                activity.RecordException(e);
             }
         }
     }
