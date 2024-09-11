@@ -26,7 +26,6 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
 
     private async Task<MessageHandleResult<Tie1Receipt>> HandleMessage(Tie1Message message)
     {
-        //TODO: 105593 Add custom application insights tracking 
         logger.LogInformation("Got message with GUID={MessageGuid} ({MessageSite})", message.Message.Guid,
             message.Message.Site);
 
@@ -39,9 +38,7 @@ public sealed class Tie1MessageHandler(ILogger<Tie1MessageHandler> logger, IImpo
         }
 
         var result = await importHandler.Handle(message.Message);
-
-        //TODO: 105593 Add custom application insights tracking 
-
+        
         var tie1Receipt = Tie1Receipt.Create(message.Message, GetReceiptStatus(result), GetReceiptComment(result));
         tie1Receipt.Logs = GetReceiptLogs(result, message.Message.Site);
         return new MessageHandleResult<Tie1Receipt>

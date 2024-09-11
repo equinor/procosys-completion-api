@@ -18,16 +18,16 @@ public class PunchItemImportService(
     ILogger<PunchItemImportService> logger) : IPunchItemImportService
 {
 
-    public async Task<List<ImportError>> HandlePunchImportMessage(PunchItemImportMessage message)
+    public async Task<List<ImportError>> HandlePunchImportMessageAsync(PunchItemImportMessage message)
     {
-        var importBundle = await CreateImportDataBundleContexts(message);
+        var importBundle = await CreateImportDataBundleAsync(message);
         var referencesService = new CommandReferencesService(importBundle);
         var references = referencesService.GetAndValidatePunchItemReferencesForImport(message);
         if(references.Errors.Length != 0)
         {
             return references.Errors.ToList();
         }
-        var createCommand = GetAndValidateCreateCommand(message, references);
+        var createCommand = CreateCommand(message, references);
         
         try
         { 
@@ -58,7 +58,7 @@ public class PunchItemImportService(
         await mediator.Send(importResult, cancellationToken);
     }
     
-    private async Task<ImportDataBundle> CreateImportDataBundleContexts(PunchItemImportMessage punchItemImportMessage)
+    private async Task<ImportDataBundle> CreateImportDataBundleAsync(PunchItemImportMessage punchItemImportMessage)
     {
         var contextBuilder = new ImportBundleBuilder(importDataFetcher);
         var scopedContext = await contextBuilder
@@ -66,12 +66,12 @@ public class PunchItemImportService(
         return scopedContext;
     }
     
-    private static CreatePunchItemCommandForImport GetAndValidateCreateCommand(PunchItemImportMessage message, CommandReferences references)
+    private static CreatePunchItemCommandForImport CreateCommand(PunchItemImportMessage message, CommandReferences references)
     {
         bool.TryParse(message.MaterialRequired.Value, out var materialRequired);
         var command = new CreatePunchItemCommandForImport(
             message.Category!.Value,
-            message.Description.Value ?? string.Empty,
+            message.Description.Value!,
             references.CheckListGuid,
             references.RaisedByOrgGuid,
             references.ClearedByOrgGuid,

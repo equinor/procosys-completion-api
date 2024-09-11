@@ -9,5 +9,5 @@ public interface IPunchItemImportService
     /// </summary>
     /// <param name="message"></param>
     /// <returns></returns>
-    Task<List<ImportError>> HandlePunchImportMessage(PunchItemImportMessage message);
+    Task<List<ImportError>> HandlePunchImportMessageAsync(PunchItemImportMessage message);
 }

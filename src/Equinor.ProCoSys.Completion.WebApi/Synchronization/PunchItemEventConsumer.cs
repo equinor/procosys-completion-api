@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.PcsServiceBus.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;

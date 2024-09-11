@@ -20,14 +20,9 @@ public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFacto
 
         var punchImportMessage = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(tiObject);
         
-        var importMessageErrors = ValidatePunchImportMessages(punchImportMessage);
-        if (importMessageErrors.Count != 0)
-        {
-            return CreateTiValidationErrorMessageResult(punchImportMessage.MessageGuid, importMessageErrors);
-        }
         await using var scope = serviceScopeFactory.CreateAsyncScope();
         var punchImportService = scope.ServiceProvider.GetRequiredService<IPunchItemImportService>();
-        var importErrors = await punchImportService.HandlePunchImportMessage(punchImportMessage);
+        var importErrors = await punchImportService.HandlePunchImportMessageAsync(punchImportMessage);
         
         if(importErrors.Count != 0)
         {
@@ -38,12 +33,16 @@ public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFacto
         return messageResult;
     }
 
-    private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
-    {
-        var commandValidator = new PunchItemImportMessageValidator();
-        var validationResult = commandValidator.Validate(punchImportMessage);
-        return validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
-    }
+    /// <summary>
+    /// Only used for Update
+    /// Implemented because we didn't use the punchUpdateValidator
+    /// If implementing update, please think differently
+    // private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
+    // {
+    //     var commandValidator = new PunchItemImportMessageValidator();
+    //     var validationResult = commandValidator.Validate(punchImportMessage);
+    //     return validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
+    // }
 
     private static List<ImportError> ValidateInput(TIObject message)
     {

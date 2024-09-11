@@ -22,23 +22,21 @@ public sealed class ImportHandler(
     /// <returns></returns>
     public async Task<TIMessageResult> Handle(TIInterfaceMessage message)
     {
-        if (MessageNotImportable(message, out var responseFrame))
+        if (HasMoreThanOneObject(message, out var errorResponse))
         {
-            return responseFrame;
+            return errorResponse;
         }
         
-        logger.LogInformation("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}",
+        logger.LogDebug("To import a message with name {ObjectName}, Class {ObjectClass}, Site {Site}",
             message.ObjectName, message.ObjectClass, message.Site);
 
-        var sw = new Stopwatch();
-        sw.Start();
+        var sw = Stopwatch.StartNew();
         try
         {
             var mapped = importSchemaMapper.Map(message);
             if (mapped.ErrorResult is not null)
             {
                 return mapped.ErrorResult;
-                
             }
 
             if (mapped.Message?.Objects.FirstOrDefault() is null)
@@ -78,7 +76,6 @@ public sealed class ImportHandler(
         }
         finally
         {
-            sw.Stop();
             logger.LogInformation("Import elapsed {Elapsed}", sw.Elapsed);
         }
     }
@@ -92,7 +89,7 @@ public sealed class ImportHandler(
             ErrorMessage = errorMessage
         };
 
-    private static bool MessageNotImportable(TIInterfaceMessage message, out TIMessageResult response)
+    private static bool HasMoreThanOneObject(TIInterfaceMessage message, out TIMessageResult response)
     {
         response = new TIMessageResult();
         switch (message.Objects.Count)
