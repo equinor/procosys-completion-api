@@ -3,7 +3,6 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Query.SWCRQueries;
 using System;
@@ -32,8 +31,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -50,8 +48,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
+        Assert.AreEqual(1, result.Count());
     }
     
     
@@ -73,8 +70,7 @@ public class SWCRSearchQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
-        Assert.IsTrue(result.Data.First().No == SWCRNo);
+        Assert.AreEqual(1, result.Count());
+        Assert.IsTrue(result.First().No == SWCRNo);
     }
 }

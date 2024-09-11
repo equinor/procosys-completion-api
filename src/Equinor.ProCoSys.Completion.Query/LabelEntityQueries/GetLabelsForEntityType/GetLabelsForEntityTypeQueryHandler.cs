@@ -6,17 +6,16 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntityType;
 
-public class GetLabelsForEntityTypeQueryHandler : IRequestHandler<GetLabelsForEntityTypeQuery, Result<IEnumerable<string>>>
+public class GetLabelsForEntityTypeQueryHandler : IRequestHandler<GetLabelsForEntityTypeQuery, IEnumerable<string>>
 {
     private readonly IReadOnlyContext _context;
 
     public GetLabelsForEntityTypeQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<string>>> Handle(GetLabelsForEntityTypeQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<string>> Handle(GetLabelsForEntityTypeQuery request, CancellationToken cancellationToken)
     {
         var labelEntityWithNonVoidedLabels =
             await (from lh in _context.QuerySet<LabelEntity>()
@@ -28,11 +27,11 @@ public class GetLabelsForEntityTypeQueryHandler : IRequestHandler<GetLabelsForEn
 
         if (labelEntityWithNonVoidedLabels is null)
         {
-            return new SuccessResult<IEnumerable<string>>(new List<string>());
+            return new List<string>();
         }
 
         var orderedNonVoidedLabels = labelEntityWithNonVoidedLabels.Labels.Select(l => l.Text).Order();
 
-        return new SuccessResult<IEnumerable<string>>(orderedNonVoidedLabels);
+        return orderedNonVoidedLabels;
     }
 }

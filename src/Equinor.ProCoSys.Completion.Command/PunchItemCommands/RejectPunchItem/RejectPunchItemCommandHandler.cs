@@ -20,7 +20,6 @@ using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 
@@ -36,12 +35,12 @@ public class RejectPunchItemCommandHandler(
     ICheckListApiService checkListApiService,
     ILogger<RejectPunchItemCommandHandler> logger,
     IOptionsMonitor<ApplicationOptions> options)
-    : PunchUpdateCommandBase, IRequestHandler<RejectPunchItemCommand, Result<string>>
+    : PunchUpdateCommandBase, IRequestHandler<RejectPunchItemCommand, string>
 {
     public const string RejectReasonPropertyName = "Reject reason";
 
 
-    public async Task<Result<string>> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(RejectPunchItemCommand request, CancellationToken cancellationToken)
     {
         var rejectLabel = await labelRepository.GetByTextAsync(options.CurrentValue.RejectLabel, cancellationToken);
         var punchItem = request.PunchItem;
@@ -81,7 +80,7 @@ public class RejectPunchItemCommandHandler(
         {
             logger.LogError(e, "Error occurred while trying to Sync Reject on PunchItemList with guid {PunchItemGuid}",
                 request.PunchItemGuid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+            return punchItem.RowVersion.ConvertToString();
         }
 
         try
@@ -93,7 +92,7 @@ public class RejectPunchItemCommandHandler(
             logger.LogError(e,
                 "Error occurred while trying to Sync Reject comment on PunchItemList with guid {PunchItemGuid}",
                 request.PunchItemGuid);
-            return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+            return punchItem.RowVersion.ConvertToString();
         }
 
         try
@@ -108,7 +107,7 @@ public class RejectPunchItemCommandHandler(
                 punchItem.CheckListGuid);
         }
 
-        return new SuccessResult<string>(punchItem.RowVersion.ConvertToString());
+        return punchItem.RowVersion.ConvertToString();
     }
 
     private async Task<CommentCreatedIntegrationEvent> PublishCommentCreatedIntegrationEventsAsync(

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelEntityAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.LabelCommands.UpdateLabelAvailableFor;
 
-public class UpdateLabelAvailableForCommand : IRequest<Result<Unit>>
+public class UpdateLabelAvailableForCommand : IRequest<Unit>
 {
     public UpdateLabelAvailableForCommand(string text, List<EntityTypeWithLabel> availableFor)
     {

@@ -79,7 +79,7 @@ public class VerifyPunchItemCommandHandlerTests : PunchItemCommandTestsBase
         // Assert
         // In real life EF Core will create a new RowVersion when save.
         // Since UnitOfWorkMock is a Mock this will not happen here, so we assert that RowVersion is set from command
-        Assert.AreEqual(_command.RowVersion, result.Data);
+        Assert.AreEqual(_command.RowVersion, result);
         Assert.AreEqual(_command.RowVersion, _existingPunchItem[TestPlantA].RowVersion.ConvertToString());
     }
 

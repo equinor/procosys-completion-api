@@ -2,7 +2,6 @@
 using System.IO;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UploadNewPunchItemAttachment;
 
@@ -11,7 +10,7 @@ public class UploadNewPunchItemAttachmentCommand(
     string fileName,
     Stream content,
     string contentType)
-    : UploadAttachmentCommand(content), ICanHaveRestrictionsViaCheckList, IRequest<Result<GuidAndRowVersion>>, IIsPunchItemCommand
+    : UploadAttachmentCommand(content), ICanHaveRestrictionsViaCheckList, IRequest<GuidAndRowVersion>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

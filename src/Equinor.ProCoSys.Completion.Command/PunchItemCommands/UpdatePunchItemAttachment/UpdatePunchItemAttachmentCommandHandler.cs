@@ -3,11 +3,10 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.Attachments;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemAttachment;
 
-public class UpdatePunchItemAttachmentCommandHandler : IRequestHandler<UpdatePunchItemAttachmentCommand, Result<string>>
+public class UpdatePunchItemAttachmentCommandHandler : IRequestHandler<UpdatePunchItemAttachmentCommand, string>
 {
     private readonly IAttachmentService _attachmentService;
     private readonly ILabelRepository _labelRepository;
@@ -18,7 +17,7 @@ public class UpdatePunchItemAttachmentCommandHandler : IRequestHandler<UpdatePun
         _labelRepository = labelRepository;
     }
 
-    public async Task<Result<string>> Handle(UpdatePunchItemAttachmentCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UpdatePunchItemAttachmentCommand request, CancellationToken cancellationToken)
     {
         var labels = await _labelRepository.GetManyAsync(request.Labels, cancellationToken);
 
@@ -29,6 +28,6 @@ public class UpdatePunchItemAttachmentCommandHandler : IRequestHandler<UpdatePun
             request.RowVersion,
             cancellationToken);
 
-        return new SuccessResult<string>(newRowVersion);
+        return newRowVersion;
     }
 }

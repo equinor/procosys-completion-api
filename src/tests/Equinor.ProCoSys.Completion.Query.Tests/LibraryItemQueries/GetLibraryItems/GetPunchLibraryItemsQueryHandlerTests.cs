@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Test.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceResult;
 using Equinor.ProCoSys.Completion.Query.LibraryItemQueries.GetLibraryItems;
 using NSubstitute;
 
@@ -41,8 +40,7 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(0, result.Data.Count());
+        Assert.AreEqual(0, result.Count());
     }
 
     [TestMethod]
@@ -60,8 +58,7 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(3, result.Data.Count());
+        Assert.AreEqual(3, result.Count());
     }
 
     [TestMethod]
@@ -79,8 +76,7 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(4, result.Data.Count());
+        Assert.AreEqual(4, result.Count());
     }
 
     [TestMethod]
@@ -98,11 +94,10 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
 
-        AssertLibraryItem(result.Data.ElementAt(0), _punchListSortingLibraryItemA);
-        AssertLibraryItem(result.Data.ElementAt(1), _punchListSortingLibraryItemB);
-        AssertLibraryItem(result.Data.ElementAt(2), _punchListSortingLibraryItemC);
+        AssertLibraryItem(result.ElementAt(0), _punchListSortingLibraryItemA);
+        AssertLibraryItem(result.ElementAt(1), _punchListSortingLibraryItemB);
+        AssertLibraryItem(result.ElementAt(2), _punchListSortingLibraryItemC);
     }
 
     [TestMethod]
@@ -120,9 +115,8 @@ public class GetPunchLibraryItemsQueryHandlerTests : ReadOnlyTestsBase
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(ResultType.Ok, result.ResultType);
-        Assert.AreEqual(1, result.Data.Count());
-        AssertLibraryItem(result.Data.ElementAt(0), _punchListPriorityLibraryItem);
+        Assert.AreEqual(1, result.Count());
+        AssertLibraryItem(result.ElementAt(0), _punchListPriorityLibraryItem);
     }
 
     private void AddCommPriorityLibraryItemsInclusiveClassifiedAsPunchPriority(CompletionContext context)

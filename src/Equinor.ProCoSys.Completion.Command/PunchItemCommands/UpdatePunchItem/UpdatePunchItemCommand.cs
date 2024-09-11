@@ -2,7 +2,6 @@
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
@@ -10,7 +9,7 @@ public class UpdatePunchItemCommand(
     Guid punchItemGuid,
     JsonPatchDocument<PatchablePunchItem> patchDocument,
     string rowVersion)
-    : ICanHaveRestrictionsViaCheckList, IRequest<Result<string>>, IIsPunchItemCommand
+    : ICanHaveRestrictionsViaCheckList, IRequest<string>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

@@ -6,17 +6,16 @@ using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.LabelQueries.GetAllLabels;
 
-public class GetAllLabelsQueryHandler : IRequestHandler<GetAllLabelsQuery, Result<IEnumerable<LabelDto>>>
+public class GetAllLabelsQueryHandler : IRequestHandler<GetAllLabelsQuery, IEnumerable<LabelDto>>
 {
     private readonly IReadOnlyContext _context;
 
     public GetAllLabelsQueryHandler(IReadOnlyContext context) => _context = context;
 
-    public async Task<Result<IEnumerable<LabelDto>>> Handle(GetAllLabelsQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<LabelDto>> Handle(GetAllLabelsQuery request, CancellationToken cancellationToken)
     {
         var orderedLabels =
             await (from l in _context.QuerySet<Label>()
@@ -29,6 +28,6 @@ public class GetAllLabelsQueryHandler : IRequestHandler<GetAllLabelsQuery, Resul
         var orderedLabelDtos = orderedLabels
             .Select(l => new LabelDto(l.Text, l.IsVoided, l.AvailableFor.Select(h => h.EntityType.ToString()).Order().ToList()));
 
-        return new SuccessResult<IEnumerable<LabelDto>>(orderedLabelDtos);
+        return orderedLabelDtos;
     }
 }

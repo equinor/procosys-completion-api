@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.Query.LabelEntityQueries.GetLabelsForEntityTyp
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceResult.ApiExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.LabelEntities;
 
@@ -31,6 +30,6 @@ public class LabelEntitiesController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetLabelsForEntityTypeQuery(entityType), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 }

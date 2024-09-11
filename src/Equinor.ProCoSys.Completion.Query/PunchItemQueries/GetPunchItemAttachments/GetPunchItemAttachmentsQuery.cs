@@ -4,12 +4,11 @@ using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Query.Attachments;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItemAttachments;
 
 public class GetPunchItemAttachmentsQuery(Guid punchItemGuid, string? fromIpAddress, string? toIpAddress)
-    : INeedProjectAccess, IRequest<Result<IEnumerable<AttachmentDto>>>, IIsPunchItemRelatedQuery
+    : INeedProjectAccess, IRequest<IEnumerable<AttachmentDto>>, IIsPunchItemRelatedQuery
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public ProjectDetailsDto ProjectDetailsDto { get; set; } = null!;

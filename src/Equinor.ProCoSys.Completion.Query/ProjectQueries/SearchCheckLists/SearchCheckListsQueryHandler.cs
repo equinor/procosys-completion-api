@@ -3,14 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using MediatR;
-using ServiceResult;
 
 namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 
 public class SearchCheckListsQueryHandler(ICheckListApiService checkListService)
-    : IRequestHandler<SearchCheckListsQuery, Result<SearchResultDto>>
+    : IRequestHandler<SearchCheckListsQuery, SearchResultDto>
 {
-    public async Task<Result<SearchResultDto>> Handle(
+    public async Task<SearchResultDto> Handle(
         SearchCheckListsQuery request, 
         CancellationToken cancellationToken)
     {
@@ -37,6 +36,6 @@ public class SearchCheckListsQueryHandler(ICheckListApiService checkListService)
         var searchResult = new SearchResultDto(
             pcs4SearchResult.MaxAvailable,
             pcs4SearchResult.Items.Select(c => new CheckListDto(c)));
-        return new SuccessResult<SearchResultDto>(searchResult);
+        return searchResult;
     }
 }

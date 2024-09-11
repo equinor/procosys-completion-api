@@ -44,7 +44,7 @@ public class SearchCheckListsQueryHandlerTests
         var result = await _dut.Handle(_query, CancellationToken.None);
 
         // Assert
-        AssertResultDto(result.Data);
+        AssertResultDto(result);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class SearchCheckListsQueryHandlerTests
         var result = await _dut.Handle(_query, CancellationToken.None);
 
         // Assert
-        AssertResultDto(result.Data);
+        AssertResultDto(result);
     }
 
     private void AssertResultDto(SearchResultDto searchResultDto)
