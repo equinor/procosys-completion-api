@@ -485,7 +485,7 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         //var ipAddress = GetClientIpAddress();
 
         var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, null, null), cancellationToken);
-        return this.FromResult(result);
+        return Ok(result);
     }
 
     private string? GetIpAddressFromHeaders()
