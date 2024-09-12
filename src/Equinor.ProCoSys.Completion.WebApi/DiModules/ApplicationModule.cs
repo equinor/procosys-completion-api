@@ -37,6 +37,7 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
+using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
@@ -61,7 +62,6 @@ public static class ApplicationModule
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
         services.Configure<GraphOptions>(configuration.GetSection("Graph"));
-        services.Configure<ImportUserOptions>(configuration.GetSection("TieImport"));
 
         services.AddDbContext<CompletionContext>(options =>
         {

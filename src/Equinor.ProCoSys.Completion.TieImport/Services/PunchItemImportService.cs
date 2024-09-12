@@ -13,7 +13,6 @@ public class PunchItemImportService(
     IMediator mediator,
     IPlantSetter plantSetter,
     ICurrentUserSetter currentUserSetter,
-    IOptionsMonitor<ImportUserOptions> tieConfig,
     IImportDataFetcher importDataFetcher,
     ILogger<PunchItemImportService> logger) : IPunchItemImportService
 {
@@ -52,7 +51,7 @@ public class PunchItemImportService(
         ImportDataBundle dataBundle, CancellationToken cancellationToken)
     {
         plantSetter.SetPlant(dataBundle.Plant);
-        var importUser = dataBundle.Persons.First(x => x.UserName == tieConfig.CurrentValue.ImportUserName);
+        var importUser = dataBundle.Persons.First(x => x.UserName == ImportUserOptions.UserName);
         currentUserSetter.SetCurrentUserOid(importUser.Guid);
         
         await mediator.Send(importResult, cancellationToken);

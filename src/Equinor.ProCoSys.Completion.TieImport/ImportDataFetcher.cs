@@ -28,8 +28,7 @@ public interface IImportDataFetcher
 
 public sealed class ImportDataFetcher(
     CompletionContext completionContext,
-    ICheckListCache checkListCache,
-    IOptionsMonitor<ImportUserOptions> importOptions
+    ICheckListCache checkListCache
     ) : IImportDataFetcher
 {
     public async Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
@@ -46,9 +45,9 @@ public sealed class ImportDataFetcher(
     public async Task<IReadOnlyCollection<Person>> FetchImportUserPersonsAsync(
         CancellationToken cancellationToken)
     {
-        var importUserName = importOptions.CurrentValue.ImportUserName;
+        const string ImportUserName = ImportUserOptions.UserName;
         var persons = await completionContext.Persons
-            .Where(x =>  importUserName == x.UserName)
+            .Where(x =>  ImportUserName == x.UserName)
             .IgnoreQueryFilters()
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);

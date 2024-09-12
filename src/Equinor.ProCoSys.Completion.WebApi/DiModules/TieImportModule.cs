@@ -24,8 +24,6 @@ public static class TieImportModule
 {
     public static void AddTieImportModule(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        var configOptions = new TieImportOptions();
-
         services.AddTransient<IImportSchemaMapper, ImportSchemaMapper>();
         services.AddTransient<IImportHandler, ImportHandler>();
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
@@ -38,14 +36,16 @@ public static class TieImportModule
             services.AddOptions<TieImportOptions>()
                 .BindConfiguration("TieImport")
                 .ValidateDataAnnotations();
-            builder.Configuration.Bind("TieImport", configOptions);
-
+            var tieImportOptions = new TieImportOptions();
+            builder.Configuration.Bind("TieImport", tieImportOptions);
+            
             services.AddOptions<CommonLibOptions>()
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
             
-        var tiClientOptions = GetTiClientOptions(configOptions);
-        var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(configOptions);
+        var tiClientOptions = CreateTiClientOptions(tieImportOptions);
+        tiClientOptions.ApplicationAzureAppId = builder.Configuration.GetValue<string>("AzureAd:ClientId")!;
+        var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions);
 
         services.AddAdapter()
             .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
@@ -57,11 +57,11 @@ public static class TieImportModule
                     VerboseLogging = true,
                     MaxParallellism = 10,
                     ShouldRetrieveFullMessage = true,
-                    MessageHandleBehavior = configOptions.AdapterMessageHandleBehavior,
-                    MessageChunkSize = configOptions.AdapterMessageChunkSize,
-                    IdleTimeBetweenBatch = configOptions.AdapterIdleTimeBetweenBatch,
-                    IdleTimeOnNoMessages = configOptions.AdapterIdleTimeOnNoMessages,
-                    Partitions = configOptions.AdapterPartitions,
+                    MessageHandleBehavior = tieImportOptions.AdapterMessageHandleBehavior,
+                    MessageChunkSize = tieImportOptions.AdapterMessageChunkSize,
+                    IdleTimeBetweenBatch = tieImportOptions.AdapterIdleTimeBetweenBatch,
+                    IdleTimeOnNoMessages = tieImportOptions.AdapterIdleTimeOnNoMessages,
+                    Partitions = tieImportOptions.AdapterPartitions,
                     Tie1Info = new Tie1Info
                     {
                         ClientOptions = tiClientOptions,
@@ -82,7 +82,7 @@ public static class TieImportModule
             .Done();
 
         // Apply test/mock settings, if any
-        services.SetTestSettings(configOptions);
+        services.SetTestSettings(tieImportOptions);
         }
     }
 
@@ -102,11 +102,10 @@ public static class TieImportModule
         }
     }
 
-    private static TIClientOptions GetTiClientOptions(TieImportOptions configOptions) =>
+    private static TIClientOptions CreateTiClientOptions(TieImportOptions configOptions) =>
         new()
         {
             Application = configOptions.AdapterApplication,
-            ApplicationAzureAppId = configOptions.AzureClientId,
             ApplicationTenantId = configOptions.AzureTenantId,
             TieUri = configOptions.AdapterTieUri,
             TieId = configOptions.AzureTieApiId
