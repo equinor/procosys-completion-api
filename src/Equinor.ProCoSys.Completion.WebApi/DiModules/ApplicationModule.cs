@@ -37,8 +37,6 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
-using Equinor.ProCoSys.Completion.TieImport;
-using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
