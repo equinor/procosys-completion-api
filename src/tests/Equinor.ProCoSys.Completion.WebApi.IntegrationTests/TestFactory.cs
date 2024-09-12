@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Testing.Platform.Services;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
@@ -35,9 +36,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 public class TestFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
-    private readonly string _configPath;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
-    private readonly List<Action> _teardownList = new();
+    private readonly List<Action> _teardownList = [];
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
@@ -49,8 +49,8 @@ public class TestFactory : WebApplicationFactory<Program>
     private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
     private readonly ITagFunctionApiService _tagFunctionApiService = Substitute.For<ITagFunctionApiService>();
 
-    public static string ResponsibleCodeWithAccess = "RespA";
-    public static string ResponsibleCodeWithoutAccess = "RespB";
+    public static readonly string ResponsibleCodeWithAccess = "RespA";
+    public static readonly string ResponsibleCodeWithoutAccess = "RespB";
     public static string PlantWithAccess => KnownData.PlantA;
     public static string PlantWithoutAccess => KnownData.PlantB;
     public static string Unknown => "UNKNOWN";
@@ -114,11 +114,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
     private TestFactory()
     {
         SeededData = new Dictionary<string, KnownTestData>();
-
         var projectDir = Directory.GetCurrentDirectory();
         _connectionString = GetTestDbConnectionString(projectDir);
-        _configPath = Path.Combine(projectDir, "appsettings.json");
-
         SetupTestUsers();
     }
 
@@ -162,7 +159,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment(EnvironmentExtensions.IntegrationTestEnvironmentName);
-        builder.ConfigureAppConfiguration((_, conf) => conf.AddJsonFile(_configPath));
         builder.ConfigureTestServices(services =>
         {
             services.AddAuthentication()
@@ -189,11 +185,10 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.AddMassTransitTestHarness();
 
             ReplaceRealTokenCredentialsWithTestCredentials(services);
-                
             CreateSeededTestDatabase(services);
-                
             EnsureTestDatabaseDeletedAtTeardown(services);
         });
+        
     }
 
     private void ReplaceRealDbContextWithTestDbContext(IServiceCollection services)
@@ -229,7 +224,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         using var scope = serviceProvider.CreateScope();
             
         var scopeServiceProvider = scope.ServiceProvider;
-        var dbContext = scopeServiceProvider.GetRequiredService<CompletionContext>();
+        var dbContext = ServiceProviderServiceExtensions.GetRequiredService<CompletionContext>(scopeServiceProvider);
 
         dbContext.Database.EnsureDeleted();
         
@@ -262,12 +257,12 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         => _teardownList.Add(() =>
         {
             using var sp = services.BuildServiceProvider();
-            using var dbContext = sp.GetRequiredService<CompletionContext>();
+            using var dbContext = ServiceProviderServiceExtensions.GetRequiredService<CompletionContext>(sp);
                 
             dbContext.Database.EnsureDeleted();
         });
 
-    private string GetTestDbConnectionString(string projectDir)
+    private static string GetTestDbConnectionString(string projectDir)
     {
         var dbName = "IntegrationTestsDB";
         var dbPath = Path.Combine(projectDir, $"{dbName}.mdf");
@@ -318,19 +313,12 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 ProCoSysGuid = ProjectGuidWithoutAccess
             }
         };
-
         SetupAnonymousUser();
-
         SetupWriterUser(accessablePlants, accessableProjects);
-        
         SetupRestrictedWriterUser(accessablePlants, accessableProjects);
-
         SetupReaderUser(accessablePlants, accessableProjects);
-    
         SetupNoPermissionUser();
-        
         SetupProCoSysServiceMocks();
-
         CreateAuthenticatedHttpClients();
     }
 
@@ -371,13 +359,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
-        // Need to mock getting info for current application from Main. This to satisfy VerifyApplicationExistsAsPerson
-        var config = new ConfigurationBuilder().AddJsonFile(_configPath).Build();
-        var apiObjectId = config["Application:ObjectId"];
-        if (apiObjectId is null)
-        {
-            throw new Exception("Config missing: Application:ObjectId");
-        }
+        
+        var apiObjectId = "00000000-0000-0000-0000-000000099999"; //needs to match value in appsettings.integrationTests.json
         _personApiServiceMock.TryGetPersonByOidAsync(
                 new Guid(apiObjectId),
                 Arg.Any<bool>(),
