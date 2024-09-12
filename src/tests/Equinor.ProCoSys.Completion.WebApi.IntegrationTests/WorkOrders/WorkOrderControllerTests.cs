@@ -7,7 +7,6 @@ namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests.WorkOrders;
 [TestClass]
 public class WorkOrderControllerTests
 {
-
     [TestMethod]
     public async Task GetWorkOrder_BySearch_AsReader_ShouldReturnWorkOrder()
     {
