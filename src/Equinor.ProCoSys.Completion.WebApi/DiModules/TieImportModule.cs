@@ -42,47 +42,53 @@ public static class TieImportModule
             services.AddOptions<CommonLibOptions>()
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
-            
-        var tiClientOptions = CreateTiClientOptions(tieImportOptions);
-        tiClientOptions.ApplicationAzureAppId = builder.Configuration.GetValue<string>("AzureAd:ClientId")!;
-        var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions);
 
-        services.AddAdapter()
-            .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
-            .WithStaticConfigRetriever(
-                new TieAdapterConfig
-                {
-                    Name = "ProCoSys_Import",
-                    Id = "ProCoSys_Import",
-                    VerboseLogging = true,
-                    MaxParallellism = 10,
-                    ShouldRetrieveFullMessage = true,
-                    MessageHandleBehavior = tieImportOptions.AdapterMessageHandleBehavior,
-                    MessageChunkSize = tieImportOptions.AdapterMessageChunkSize,
-                    IdleTimeBetweenBatch = tieImportOptions.AdapterIdleTimeBetweenBatch,
-                    IdleTimeOnNoMessages = tieImportOptions.AdapterIdleTimeOnNoMessages,
-                    Partitions = tieImportOptions.AdapterPartitions,
-                    Tie1Info = new Tie1Info
+            services.AddOptions<AzureAdOptions>()
+                .BindConfiguration("AzureAd")
+                .ValidateDataAnnotations();
+            var azureAdOptions = new AzureAdOptions();
+            builder.Configuration.Bind("AzureAd", azureAdOptions);
+
+            var tiClientOptions = CreateTiClientOptions(tieImportOptions);
+            tiClientOptions.ApplicationAzureAppId = azureAdOptions.ClientId;
+            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions);
+
+            services.AddAdapter()
+                .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
+                .WithStaticConfigRetriever(
+                    new TieAdapterConfig
                     {
-                        ClientOptions = tiClientOptions,
-                        UseDefaultProvider = false,
-                        TokenProvider = null // --> see .WithConfigModifier()
+                        Name = "ProCoSys_Import",
+                        Id = "ProCoSys_Import",
+                        VerboseLogging = true,
+                        MaxParallellism = 10,
+                        ShouldRetrieveFullMessage = true,
+                        MessageHandleBehavior = tieImportOptions.AdapterMessageHandleBehavior,
+                        MessageChunkSize = tieImportOptions.AdapterMessageChunkSize,
+                        IdleTimeBetweenBatch = tieImportOptions.AdapterIdleTimeBetweenBatch,
+                        IdleTimeOnNoMessages = tieImportOptions.AdapterIdleTimeOnNoMessages,
+                        Partitions = tieImportOptions.AdapterPartitions,
+                        Tie1Info = new Tie1Info
+                        {
+                            ClientOptions = tiClientOptions,
+                            UseDefaultProvider = false,
+                            TokenProvider = null // --> see .WithConfigModifier()
+                        }
                     }
-                }
-            )
-            .WithConfigModifier(config =>
-            {
-                config.TieErrorShouldBeThrown = (_, _) => true;
-                config.Tie1Info.TokenProvider =
-                    new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
-            })
-            .FromTie1()
-            .To<Tie1MessageHandler>()
-            .AsBackgroundService()
-            .Done();
+                )
+                .WithConfigModifier(config =>
+                {
+                    config.TieErrorShouldBeThrown = (_, _) => true;
+                    config.Tie1Info.TokenProvider =
+                        new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
+                })
+                .FromTie1()
+                .To<Tie1MessageHandler>()
+                .AsBackgroundService()
+                .Done();
 
-        // Apply test/mock settings, if any
-        services.SetTestSettings(tieImportOptions);
+            // Apply test/mock settings, if any
+            services.SetTestSettings(tieImportOptions);
         }
     }
 
@@ -120,7 +126,7 @@ public static class TieImportModule
             // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
             KeyVaultUrl = configOptions.AzureKeyVaultUrl,
             Certificate = configOptions.AzureCertificateName,
-            ActionOnReadError = ex =>
+            ActionOnReadError = _ =>
             {
                 //TODO: 109877 - Figure out how to get logger object
                 //_logger.LogInformation($"Certificate error: {ex.Message}");
