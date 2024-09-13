@@ -38,7 +38,7 @@ public static class TieImportModule
                 .ValidateDataAnnotations();
             var tieImportOptions = new TieImportOptions();
             builder.Configuration.Bind("TieImport", tieImportOptions);
-
+            
             services.AddOptions<CommonLibOptions>()
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
@@ -126,7 +126,7 @@ public static class TieImportModule
             // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
             KeyVaultUrl = configOptions.AzureKeyVaultUrl,
             Certificate = configOptions.AzureCertificateName,
-            ActionOnReadError = ex =>
+            ActionOnReadError = _ =>
             {
                 //TODO: 109877 - Figure out how to get logger object
                 //_logger.LogInformation($"Certificate error: {ex.Message}");
