@@ -8,8 +8,6 @@ public sealed class TieImportOptions
 #pragma warning disable CS8618
     [Required]
     public string AdapterTieUri { get; set; }
-    [Required] 
-    public string AzureTenantId { get; set; }
     [Required]
     public string AzureTieApiId { get; set; }
     [Required]

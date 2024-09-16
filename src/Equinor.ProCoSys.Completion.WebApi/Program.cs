@@ -75,7 +75,7 @@ builder.ConfigureTelemetry(credential, devOnLocalhost);
 builder.Services.AddMediatrModules();
 builder.Services.AddApplicationModules(builder.Configuration);
 
-if (builder.Configuration.GetValue<bool>("EnableTieImport"))
+if (builder.Configuration.GetValue<bool>("TieImport:Enable"))
 {
     builder.Services.AddTieImportModule(builder);
 }
