@@ -1,22 +1,22 @@
-﻿using Equinor.TI.TIE.Adapter.Base.Setup;
-using Equinor.TI.TIE.Adapter.TIE1.Config;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
-using Statoil.TI.InterfaceServices.ProxyExtensions;
+﻿using System;
 using System.Threading.Tasks;
-using Equinor.TI.TIE.Adapter.TIE1.Setup;
-using Equinor.TI.TIE.Adapter.Base.Message;
-using Equinor.TI.TIE.Adapter.TIE1.Message;
-using System;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport;
+using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 using Equinor.ProCoSys.Completion.TieImport.Services;
+using Equinor.TI.TIE.Adapter.Base.Message;
+using Equinor.TI.TIE.Adapter.Base.Setup;
+using Equinor.TI.TIE.Adapter.TIE1.Config;
+using Equinor.TI.TIE.Adapter.TIE1.Message;
+using Equinor.TI.TIE.Adapter.TIE1.Setup;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
+using Statoil.TI.InterfaceServices.ProxyExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -49,8 +49,7 @@ public static class TieImportModule
             var azureAdOptions = new AzureAdOptions();
             builder.Configuration.Bind("AzureAd", azureAdOptions);
 
-            var tiClientOptions = CreateTiClientOptions(tieImportOptions);
-            tiClientOptions.ApplicationAzureAppId = azureAdOptions.ClientId;
+            var tiClientOptions = CreateTiClientOptions(tieImportOptions, azureAdOptions);
             var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions);
 
             services.AddAdapter()
@@ -108,13 +107,16 @@ public static class TieImportModule
         }
     }
 
-    private static TIClientOptions CreateTiClientOptions(TieImportOptions configOptions) =>
+    private static TIClientOptions CreateTiClientOptions(
+        TieImportOptions configOptions,
+        AzureAdOptions azureAdOptions) =>
         new()
         {
             Application = configOptions.AdapterApplication,
-            ApplicationTenantId = configOptions.AzureTenantId,
             TieUri = configOptions.AdapterTieUri,
-            TieId = configOptions.AzureTieApiId
+            TieId = configOptions.AzureTieApiId,
+            ApplicationAzureAppId = azureAdOptions.ClientId,
+            ApplicationTenantId = azureAdOptions.TenantId
         };
 
 
