@@ -15,6 +15,7 @@ using Equinor.TI.TIE.Adapter.TIE1.Setup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 
@@ -50,8 +51,13 @@ public static class TieImportModule
             builder.Configuration.Bind("AzureAd", azureAdOptions);
 
             var tiClientOptions = CreateTiClientOptions(tieImportOptions, azureAdOptions);
-            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions);
+            var serviceProvider = services.BuildServiceProvider();
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
 
+       
+           
+            
             services.AddAdapter()
                 .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
                 .WithStaticConfigRetriever(
@@ -77,7 +83,7 @@ public static class TieImportModule
                 )
                 .WithConfigModifier(config =>
                 {
-                    config.TieErrorShouldBeThrown = (_, _) => true;
+                    config.TieErrorShouldBeThrown = LogTieErrorAndReturnFalse(logger);
                     config.Tie1Info.TokenProvider =
                         new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
                 })
@@ -91,10 +97,22 @@ public static class TieImportModule
         }
     }
 
+    /// <summary>
+    /// I'd like to find a better name, if you have one, feel free to rename
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <returns></returns>
+    private static Func<ITie1AdapterPartitionConfig, Exception, bool> LogTieErrorAndReturnFalse(ILogger<Program> logger) =>
+        (config, e) =>
+        {
+            //may not need to log here, as TIE already logs the error
+            logger.LogError("TieAdapter threw exception{Exception}",e.Message);
+            return false;
+        };
+
     private static void SetTestSettings(this IServiceCollection services, TieImportOptions configOptions)
     {
-        if (configOptions.TestEnableMockTie1Listener &&
-            configOptions.TestEnableTestFileMessageListener)
+        if (configOptions is { TestEnableMockTie1Listener: true, TestEnableTestFileMessageListener: true })
         {
             throw new Exception("TestSettings error: only one MessageListener should be enabled.");
         }
@@ -121,17 +139,16 @@ public static class TieImportModule
 
 
     private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
-        TieImportOptions configOptions) =>
+        TieImportOptions configOptions, ILogger<Program> logger) =>
         new()
         {
             // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
             // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
             KeyVaultUrl = configOptions.AzureKeyVaultUrl,
             Certificate = configOptions.AzureCertificateName,
-            ActionOnReadError = _ =>
+            ActionOnReadError = ex =>
             {
-                //TODO: 109877 - Figure out how to get logger object
-                //_logger.LogInformation($"Certificate error: {ex.Message}");
+                logger.LogInformation("Certificate error: {Exception}", ex.Message);
                 return Task.CompletedTask;
             }
         };
