@@ -54,9 +54,6 @@ public static class TieImportModule
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
-
-       
-           
             
             services.AddAdapter()
                 .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
