@@ -145,7 +145,7 @@ public static class TieImportModule
             Certificate = configOptions.AzureCertificateName,
             ActionOnReadError = ex =>
             {
-                logger.LogInformation("Certificate error: {Exception}", ex.Message);
+                logger.LogError("Certificate error: {Exception}", ex.Message);
                 return Task.CompletedTask;
             }
         };
