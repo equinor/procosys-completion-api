@@ -3,6 +3,9 @@ using Equinor.ProCoSys.Common;
 
 namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 
+// Todo Consider to remove IVoidable / IsVoided from Project. IsClosed is to be used to check if Projects is closed
+// NB! In PCS4 Project.IsVoided is used to check if Projects is closed! In PCS4 Project.IsClosed tell if Projects is closed in SAP
+// https://statoildeveloper.visualstudio.com/Statoil.NextGenProCoSys/_wiki/wikis/Statoil.NextGenProCoSys.wiki/591/Closed-Projects
 public class Project : PlantEntityBase, IAggregateRoot, IHaveGuid, IVoidable
 {
     public const int NameLengthMax = 30;
