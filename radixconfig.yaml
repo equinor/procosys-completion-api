@@ -61,14 +61,14 @@ spec:
         ASPNETCORE_ENVIRONMENT: 'Production'
         UseAzureAppConfiguration: 'true'
       monitoring: false
-      replicas: 3
+      replicas: 4
       resources:
         requests:
-          memory: '256Mi'
-          cpu: '200m'
+          memory: '1024Mi'
+          cpu: '400m'
         limits:
-          memory: '256Mi'
-          cpu: '500m' 
+          memory: '1024Mi'
+          cpu: '500m'
   #-------------------------------------------------------
   # External docker image registry
   #
