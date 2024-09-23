@@ -16,6 +16,7 @@ public class LibraryItemRepository(CompletionContext context)
         LibraryType type,
         CancellationToken cancellationToken)
         => await DefaultQueryable
+               .IgnoreQueryFilters()
                .SingleOrDefaultAsync(x => x.Guid == libraryGuid && x.Type == type, cancellationToken)
            ?? throw new EntityNotFoundException<LibraryItem>(libraryGuid);
 }
