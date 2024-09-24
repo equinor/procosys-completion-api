@@ -80,8 +80,8 @@ public static class TieImportModule
                 )
                 .WithConfigModifier(config =>
                 {
-                    config.TieErrorShouldLeadToInactivityForAPeriod = LogTieErrorAndReturn(logger,true);
-                    config.TieErrorShouldLeadToInactivityForAPeriodWaitTimeInMs = 10000;
+                    // config.TieErrorShouldLeadToInactivityForAPeriod = LogTieErrorAndReturn(logger,true);
+                    // config.TieErrorShouldLeadToInactivityForAPeriodWaitTimeInMs = 10000;
                     config.TieErrorShouldBeThrown = LogTieErrorAndReturn(logger, false);
                     config.Tie1Info.TokenProvider =
                         new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
@@ -100,15 +100,15 @@ public static class TieImportModule
     /// I'd like to find a better name, if you have one, feel free to rename
     /// </summary>
     /// <param name="logger"></param>
-    /// <param name="b"></param>
+    /// <param name="boolMethodShouldReturn"></param>
     /// <returns></returns>
     private static Func<ITie1AdapterPartitionConfig, Exception, bool> LogTieErrorAndReturn(ILogger<Program> logger,
-        bool b) =>
+        bool boolMethodShouldReturn) =>
         (_, e) =>
         {
             //may not need to log here, as TIE already logs the error
             logger.LogError("TieAdapter threw exception{Exception}",e.Message);
-            return b;
+            return boolMethodShouldReturn;
         };
 
     private static void SetTestSettings(this IServiceCollection services, TieImportOptions configOptions)
