@@ -51,7 +51,7 @@ public sealed class ImportHandler(
                 return new TIMessageResult
                 {
                     Result = MessageResults.Failed,
-                    ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
+                    ErrorMessage = "Only CREATE method are supported at this time"
                 };
             }
             
