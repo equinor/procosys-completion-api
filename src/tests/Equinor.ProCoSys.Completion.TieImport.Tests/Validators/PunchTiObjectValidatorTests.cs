@@ -72,6 +72,39 @@ public sealed class PunchTiObjectValidatorTests
     }
 
     [TestMethod]
+    public void Validate_ShouldFail_WhenStatusNeitherPAOrPB()
+    {
+        // Arrange
+        var tiObject = new TIObject();
+        tiObject.AddAttribute(PunchObjectAttributes.Status, "PD");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Status)));
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WithManyErrors()
+    {
+        // Arrange
+        var tiObject = new TIObject();
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Project)));
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.TagNo)));
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.ExternalPunchItemNo)));
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.FormType)));
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Status)));
+    }
+
+    [TestMethod]
     public void Validate_ShouldPass_WhenAllRequiredAttributesArePresent()
     {
         // Arrange
@@ -80,6 +113,7 @@ public sealed class PunchTiObjectValidatorTests
         tiObject.AddAttribute(PunchObjectAttributes.ExternalPunchItemNo, "Punch1");
         tiObject.AddAttribute(PunchObjectAttributes.FormType, "Type1");
         tiObject.AddAttribute(PunchObjectAttributes.Responsible, "EQ");
+        tiObject.AddAttribute(PunchObjectAttributes.Status, "PA");
 
         // Act
         var result = _dut.Validate(tiObject);

@@ -51,7 +51,7 @@ public sealed class ImportHandler(
                 return new TIMessageResult
                 {
                     Result = MessageResults.Failed,
-                    ErrorMessage = "Only CREATE and INSERT methods are supported at this time"
+                    ErrorMessage = "Only CREATE method are supported at this time"
                 };
             }
             
@@ -106,11 +106,7 @@ public sealed class ImportHandler(
         return false;
     }
 
-    //Should return true if method is  one of CREATE, INSERT or ALLOCATE
-    private static bool IsCreateMethod(TIObject o) =>
-        o.Method?.ToUpperInvariant() == "CREATE" 
-        || o.Method?.ToUpperInvariant() == "INSERT" 
-        || o.Method?.ToUpperInvariant() == "ALLOCATE";
+    private static bool IsCreateMethod(TIObject o) => o.Method == "CREATE";
     
     private static void CheckForScriptInjection(TIObject tieObject)
     {

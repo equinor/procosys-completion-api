@@ -1,4 +1,4 @@
-namespace Equinor.ProCoSys.Completion.TieImport;
+﻿namespace Equinor.ProCoSys.Completion.TieImport;
 
 public static class PunchObjectAttributes
 {
@@ -29,7 +29,5 @@ public static class PunchObjectAttributes
     public static class Methods
     {
         public const string Create = "CREATE";
-        public const string Update = "UPDATE";
-        public const string Delete = "DELETE";
     }
 }
