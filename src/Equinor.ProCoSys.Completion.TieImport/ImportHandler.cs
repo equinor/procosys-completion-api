@@ -106,11 +106,7 @@ public sealed class ImportHandler(
         return false;
     }
 
-    //Should return true if method is  one of CREATE, INSERT or ALLOCATE
-    private static bool IsCreateMethod(TIObject o) =>
-        o.Method?.ToUpperInvariant() == "CREATE" 
-        || o.Method?.ToUpperInvariant() == "INSERT" 
-        || o.Method?.ToUpperInvariant() == "ALLOCATE";
+    private static bool IsCreateMethod(TIObject o) => o.Method == "CREATE";
     
     private static void CheckForScriptInjection(TIObject tieObject)
     {

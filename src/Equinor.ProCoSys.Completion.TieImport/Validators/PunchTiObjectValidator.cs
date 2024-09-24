@@ -16,7 +16,7 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             .Must(project => !string.IsNullOrEmpty(project))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{Project}'");
         
-        When(tiObject => tiObject.Method is "CREATE" or "INSERT" or "ALLOCATE", () =>
+        When(tiObject => tiObject.Method is "CREATE", () =>
             {
                 RuleFor(o => o)
                     .Must(tiObject => string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(ClearedBy)))
@@ -34,6 +34,8 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             });
         
         RuleFor(tiObject => tiObject)
+            .Must(BeValidStatus)
+            .WithMessage($"This Punch Item Import Object has illegal required attribute '{Status}'. Must be PA or PB")
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(TagNo)))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{TagNo}'")
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(ExternalPunchItemNo)))
@@ -42,5 +44,11 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{FormType}'")
             .Must(tiObject => !string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(Responsible)))
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{Responsible}'");
+
+        bool BeValidStatus(TIObject tiObject)
+        {
+            var status = tiObject.GetAttributeValueAsString(Status);
+            return status is "PA" or "PB";
+        }
     }
 }
