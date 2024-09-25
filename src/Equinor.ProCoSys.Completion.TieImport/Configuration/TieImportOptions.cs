@@ -63,7 +63,7 @@ public sealed class TieImportOptions
     /// </summary>
     public List<TieAdapterPartitionConfig> AdapterPartitions =>
         string.IsNullOrEmpty(AdapterSites)
-            ? new List<TieAdapterPartitionConfig>()
+            ? []
             : AdapterSites.Split(',').Select(site => new TieAdapterPartitionConfig {Key = site}).ToList();
 
     public bool TestEnableMockTie1Listener { get; set; }
@@ -75,6 +75,8 @@ public sealed class TieImportOptions
     public string TestFileMessageListenerPath { get; set; } = string.Empty;
 
     public int TestFileChunkSize { get; set; }
+    
+    public bool VerboseLogging { get; set; } = false;
 
     public override string ToString()
     {
