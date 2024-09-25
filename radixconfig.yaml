@@ -44,7 +44,7 @@ spec:
         ASPNETCORE_ENVIRONMENT: 'Test'
         UseAzureAppConfiguration: 'true'
       monitoring: false
-      replicas: 4
+      replicas: 1
       resources:
         requests:
           memory: '1024Mi'
@@ -61,7 +61,7 @@ spec:
         ASPNETCORE_ENVIRONMENT: 'Production'
         UseAzureAppConfiguration: 'true'
       monitoring: false
-      replicas: 4
+      replicas: 1
       resources:
         requests:
           memory: '1024Mi'
