@@ -197,29 +197,4 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase,
 
         return changes;
     }
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-
-    
 }
