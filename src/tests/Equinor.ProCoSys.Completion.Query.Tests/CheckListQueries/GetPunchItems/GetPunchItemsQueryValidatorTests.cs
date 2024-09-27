@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.Validators;
-using Equinor.ProCoSys.Completion.Query.ProjectQueries.GetPunchItems;
+using Equinor.ProCoSys.Completion.Query.CheckListQueries.GetPunchItems;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Equinor.ProCoSys.Completion.Query.Tests.ProjectQueries.GetPunchItems;
+namespace Equinor.ProCoSys.Completion.Query.Tests.CheckListQueries.GetPunchItems;
 
 [TestClass]
 public class GetPunchItemsQueryValidatorTests
@@ -19,8 +19,12 @@ public class GetPunchItemsQueryValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _query = new GetPunchItemsQuery(_projectGuid);
-        _projectValidatorMock.ExistsAsync(_query.ProjectGuid, default).Returns(true);
+        _query = new GetPunchItemsQuery(_projectGuid)
+        {
+            CheckListDetailsDto = new CheckListDetailsDto(Guid.Empty, "FT", "FG", "RC", "TRC", "TRD", "TFC", "TFD", _projectGuid)
+        };
+
+        _projectValidatorMock.ExistsAsync(_query.CheckListDetailsDto.ProjectGuid, default).Returns(true);
         _dut = new GetPunchItemsQueryValidator(_projectValidatorMock);
     }
 
@@ -38,7 +42,7 @@ public class GetPunchItemsQueryValidatorTests
     public async Task Validate_ShouldFail_When_ProjectNotExists()
     {
         // Arrange
-        _projectValidatorMock.ExistsAsync(_query.ProjectGuid, default).Returns(false);
+        _projectValidatorMock.ExistsAsync(_query.CheckListDetailsDto.ProjectGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_query);
@@ -53,7 +57,7 @@ public class GetPunchItemsQueryValidatorTests
     public async Task Validate_ShouldFail_WithCustomState_When_ProjectNotExists()
     {
         // Arrange
-        _projectValidatorMock.ExistsAsync(_query.ProjectGuid, default).Returns(false);
+        _projectValidatorMock.ExistsAsync(_query.CheckListDetailsDto.ProjectGuid, default).Returns(false);
 
         // Act
         var result = await _dut.ValidateAsync(_query);
@@ -67,7 +71,7 @@ public class GetPunchItemsQueryValidatorTests
     public async Task Validate_ShouldFail_When_ProjectIsClosed()
     {
         // Arrange
-        _projectValidatorMock.IsClosedAsync(_query.ProjectGuid, default).Returns(true);
+        _projectValidatorMock.IsClosedAsync(_query.CheckListDetailsDto.ProjectGuid, default).Returns(true);
 
         // Act
         var result = await _dut.ValidateAsync(_query);
