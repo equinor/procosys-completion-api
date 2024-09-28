@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth;
@@ -36,7 +35,6 @@ using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Swagger;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
@@ -46,7 +44,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Controllers.PunchItems;
 /// </summary>
 [ApiController]
 [Route("PunchItems")]
-public class PunchItemsController(IMediator mediator, ILogger<PunchItemsController> logger) : ControllerBase
+public class PunchItemsController(IMediator mediator) : ControllerBase
 {
     #region PunchItems
 
@@ -482,61 +480,8 @@ public class PunchItemsController(IMediator mediator, ILogger<PunchItemsControll
         CancellationToken cancellationToken,
         [FromRoute] Guid guid)
     {
-        //var ipAddress = GetClientIpAddress();
-
         var result = await mediator.Send(new GetPunchItemAttachmentsQuery(guid, null, null), cancellationToken);
         return Ok(result);
-    }
-
-    private string? GetIpAddressFromHeaders()
-    {
-        var proCoSysForwardHeader = Request.Headers["X-Forwarded-For-ProCoSys"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(proCoSysForwardHeader))
-        {
-            return proCoSysForwardHeader;
-        }
-
-        var forwardedForHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(forwardedForHeader))
-        {
-            return forwardedForHeader;
-        }
-
-        var realIpHeader = Request.Headers["X-Real-IP"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(realIpHeader))
-        {
-            return realIpHeader;
-        }
-
-        logger.LogInformation("No headers found, using connection: {IpAddress}",
-            Request.HttpContext.Connection.RemoteIpAddress?.ToString());
-        return Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-    }
-    
-    private string? GetClientIpAddress()
-    {
-        var ipAddress = GetIpAddressFromHeaders();
-        
-        if (string.IsNullOrEmpty(ipAddress))
-        {
-            logger.LogWarning("No IP address found");
-            return null;
-        }
-        
-        if (ipAddress.Contains(','))
-        {
-            var ipAddresses = ipAddress.Split(",");
-            ipAddress = ipAddresses[0].Trim();
-        }
-
-        if (ipAddress.Contains(':'))
-        {
-            var ipAddresses = ipAddress.Split(":");
-            ipAddress = ipAddresses[0].Trim();
-        }
-        
-        logger.LogInformation("Using address: {IpAddress}", ipAddress);
-        return ipAddress;
     }
 
     /// <summary>
