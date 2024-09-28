@@ -65,14 +65,14 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
 
     public bool HaveValidLengthOfStrings<T>(List<Operation<T>> operations) where T : class
     {
-        var illegalOperations = GetInvalidStringOperations(typeof(T).Name, operations);
+        var illegalOperations = GetInvalidStringOperations(operations);
 
         return illegalOperations.Count == 0;
     }
 
     public string? GetMessageForInvalidLengthOfStrings<T>(List<Operation<T>> operations) where T : class
     {
-        var illegalOperations = GetInvalidStringOperations(typeof(T).Name, operations);
+        var illegalOperations = GetInvalidStringOperations(operations);
         if (illegalOperations.Count == 0)
         {
             return null;
@@ -110,12 +110,12 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
                 if (operation.Value is null)
                 {
                     illegalOperations.Add(
-                        $"Can't assign null-value to property {operation.Key} of type {propType} in {typeName}");
+                        $"Can't assign null-value to property {operation.Key} of type {propType}");
                 }
                 else
                 {
                     illegalOperations.Add(
-                        $"Can't assign value value of type {operation.Value.GetType()} to property {operation.Key} of type {propType} in {typeName}");
+                        $"Can't assign value value of type {operation.Value.GetType()} to property {operation.Key} of type {propType}");
                 }
             }
         }
@@ -215,7 +215,7 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
         return requiredProperties.Intersect(replaceOperationsToSetNull).ToList();
     }
 
-    private List<string> GetInvalidStringOperations<T>(string typeName, List<Operation<T>> operations) where T : class
+    private List<string> GetInvalidStringOperations<T>(List<Operation<T>> operations) where T : class
     {
         var illegalOperations = new List<string>();
         var type = typeof(T);
@@ -241,7 +241,7 @@ public class PatchOperationInputValidator : IPatchOperationInputValidator
             var stringLengthAttribute = propertyWithLengthLimiting.GetCustomAttribute<StringLengthAttribute>(false)!;
             if (!stringLengthAttribute.IsValid(operation.value as string, out var message))
             {
-                illegalOperations.Add($"Can't assign value to property {propName} in {typeName}. {message}");
+                illegalOperations.Add($"Can't assign value to property {propName}. {message}");
             }
         }
 
