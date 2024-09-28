@@ -20,6 +20,7 @@ public static class ValidatorsConfig
         {
             typeof(IQueryMarker).GetTypeInfo().Assembly,
             typeof(ICommandMarker).GetTypeInfo().Assembly,
+            typeof(Program).GetTypeInfo().Assembly
         });
         return builder;
     }
