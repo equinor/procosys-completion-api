@@ -321,6 +321,8 @@ public static class MassTransitModule
                     e.ConfigureConsumer<DocumentEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
+                                                  //Seems to only be needed for document
                 });
                 cfg.SubscriptionEndpoint("completion_query", "query", e =>
                 {
