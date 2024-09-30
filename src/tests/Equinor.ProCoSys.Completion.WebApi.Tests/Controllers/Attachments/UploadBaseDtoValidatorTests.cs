@@ -46,7 +46,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
     }
 
     [TestMethod]
-    public void Validate_ShouldValidate_ShouldFail_WhenFileNotGiven()
+    public void Validate_ShouldFail_WhenFileNotGiven()
     {
         var uploadAttachmentDto = new T();
 
@@ -88,7 +88,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
     }
 
     [TestMethod]
-    public void Validate_ShouldValidate_ShouldFail_WhenFileToBig()
+    public void Validate_ShouldFail_WhenFileToBig()
     {
         var uploadAttachmentDto = new T
         {
@@ -103,7 +103,7 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
     }
 
     [TestMethod]
-    public void Validate_ShouldValidate_ShouldFail_WhenIllegalFileType()
+    public void Validate_ShouldFail_WhenIllegalFileType()
     {
         var uploadAttachmentDto = new T
         {
@@ -114,7 +114,22 @@ public abstract class UploadBaseDtoValidatorTests<T> where T : UploadBaseDto, ne
 
         Assert.IsFalse(result.IsValid);
         Assert.AreEqual(1, result.Errors.Count);
-        Assert.AreEqual(result.Errors[0].ErrorMessage, $"File {uploadAttachmentDto.File.FileName} is not a valid file for upload!");
+        Assert.AreEqual(result.Errors[0].ErrorMessage, $"File {uploadAttachmentDto.File.FileName} is not a valid file type!");
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenIllegalFileName()
+    {
+        var uploadAttachmentDto = new T
+        {
+            File = new TestableFormFile("picture å.jpg", 500)
+        };
+
+        var result = _dut.Validate(uploadAttachmentDto);
+
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(1, result.Errors.Count);
+        Assert.AreEqual(result.Errors[0].ErrorMessage, $"File {uploadAttachmentDto.File.FileName} is not a valid filename! Only ASCII characters allowed.");
     }
 }
 internal class TestableFormFile : IFormFile

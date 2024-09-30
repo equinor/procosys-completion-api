@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Text;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
 using FluentValidation;
@@ -25,17 +26,24 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
             .WithMessage("File name not given!")
             .MaximumLength(Attachment.FileNameLengthMax)
             .WithMessage($"File name to long! Max {Attachment.FileNameLengthMax} characters")
-            .Must(BeAValidFile)
-            .WithMessage(x => $"File {x.File.FileName} is not a valid file for upload!");
+            .Must(BeValidFileType)
+            .WithMessage(x => $"File {x.File.FileName} is not a valid file type!")
+            .Must(BeValidFileName)
+            .WithMessage(x => $"File {x.File.FileName} is not a valid filename! Only ASCII characters allowed.");
 
         RuleFor(x => x.File.Length)
             .Must(BeSmallerThanMaxSize)
             .WithMessage($"Maximum file size is {blobStorageOptions.Value.MaxSizeMb}MB!");
 
-        bool BeAValidFile(string? fileName)
+        bool BeValidFileType(string? fileName)
         {
             var suffix = Path.GetExtension(fileName?.ToLower());
             return suffix is not null && !blobStorageOptions.Value.BlockedFileSuffixes.Contains(suffix) && fileName?.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
+        }
+
+        bool BeValidFileName(string? fileName) 
+        {
+            return fileName is not null && Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(fileName)) == fileName;
         }
 
         bool BeSmallerThanMaxSize(long fileSizeInBytes)
