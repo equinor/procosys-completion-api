@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -155,6 +156,23 @@ public class PunchItemsControllerNegativeTests : TestBase
             expectedMessageOnBadRequest: "Check list with this guid does not exist");
 
     [TestMethod]
+    public async Task CreatePunchItem_AsWriter_ShouldReturnBadRequest_WhenSetToLongDescription()
+    {
+        var description = new string('x', PunchItem.DescriptionLengthMax + 1);
+        await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            "PA",
+            description,
+            TestFactory.CheckListGuidNotRestricted,
+            TestFactory.RaisedByOrgGuid,
+            TestFactory.ClearingByOrgGuid,
+            expectedStatusCode: HttpStatusCode.BadRequest,
+            expectedMessageOnBadRequest:
+            $"The length of 'Description' must be {PunchItem.DescriptionLengthMax} characters or fewer. You entered {description.Length} characters.");
+    }
+
+    [TestMethod]
     public async Task CreatePunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.CreatePunchItemAsync(
             UserType.Writer,
@@ -242,6 +260,22 @@ public class PunchItemsControllerNegativeTests : TestBase
             TestFactory.AValidRowVersion,
             HttpStatusCode.BadRequest,
             "Punch item with this guid does not exist");
+
+    [TestMethod]
+    public async Task UpdatePunchItem_AsWriter_ShouldReturnBadRequest_WhenSetToLongDescription()
+    {
+        var patchDocument = new JsonPatchDocument();
+        var description = new string('x', PunchItem.DescriptionLengthMax + 1);
+        patchDocument.Replace("Description", description);
+        await PunchItemsControllerTestsHelper.UpdatePunchItemAsync(
+            UserType.Writer,
+            TestFactory.PlantWithAccess,
+            _punchItemGuidUnderTest,
+            patchDocument,
+            TestFactory.AValidRowVersion,
+            HttpStatusCode.BadRequest,
+            $"Can't assign value to property Description. Length is {description.Length}. Length must be minimum 1 and maximum {PunchItem.DescriptionLengthMax}");
+    }
 
     [TestMethod]
     public async Task UpdatePunchItem_AsReader_ShouldReturnForbidden_WhenPermissionMissing()
