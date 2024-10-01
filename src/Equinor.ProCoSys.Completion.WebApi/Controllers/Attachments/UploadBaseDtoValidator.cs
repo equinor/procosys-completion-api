@@ -42,9 +42,7 @@ public class UploadBaseDtoValidator<T> : AbstractValidator<T> where T : UploadBa
         }
 
         bool BeValidFileName(string? fileName) 
-        {
-            return fileName is not null && Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(fileName)) == fileName;
-        }
+            => fileName is not null && Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(fileName)) == fileName;
 
         bool BeSmallerThanMaxSize(long fileSizeInBytes)
         {
