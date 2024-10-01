@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using Microsoft.Azure.Amqp.Framing;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -37,8 +36,7 @@ public static class TelemetryConfig
 
     public static void SetPlantTag(HttpRequest request, Activity activity)
     {
-        var plantHeader = request.Headers
-            .SingleOrDefault(header => 
+        var plantHeader = request.Headers.SingleOrDefault(header => 
                 string.Equals(header.Key, "x-plant", StringComparison.OrdinalIgnoreCase)).Value;
 
         if (!string.IsNullOrEmpty(plantHeader))
