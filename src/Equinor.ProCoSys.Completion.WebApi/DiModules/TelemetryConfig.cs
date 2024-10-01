@@ -15,8 +15,8 @@ public static class TelemetryConfig
 {
     public static WebApplicationBuilder ConfigureTelemetry(this WebApplicationBuilder builder, TokenCredential credential, bool devOnLocalhost)
     {
-        //if (!devOnLocalhost)
-       // {
+        if (!devOnLocalhost)
+        {
             builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder => tracerProviderBuilder
                 .AddAspNetCoreInstrumentation(o =>
                 {
@@ -28,8 +28,7 @@ public static class TelemetryConfig
                 }));
             // by default, UseAzureMonitor look for config key "AzureMonitor:ConnectionString"
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
-          
-       // }
+        }
 
         return builder;
     }
