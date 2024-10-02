@@ -21,8 +21,6 @@ public class Permissions
     public const string CPCL_READ = "CPCL/READ";
     public const string DCCL_READ = "DCCL/READ";
 
-    public const string LIBRARY_READ = "LIBRARY_GENERAL/READ";
-
     public const string APPLICATION_TESTER = "APPLICATION_EXPLORER/EXECUTE";
 
     public const string SUPERUSER = ClaimsTransformation.Superuser;

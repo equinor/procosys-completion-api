@@ -501,7 +501,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 [
                     Permissions.PUNCHITEM_READ,
                     Permissions.MCCR_READ,
-                    Permissions.LIBRARY_READ,
                     Permissions.USER_READ,
                     Permissions.WO_READ,
                     Permissions.SWCR_READ,
@@ -540,7 +539,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
                     Permissions.MCCR_READ,
-                    Permissions.LIBRARY_READ,
                     Permissions.USER_READ
                 ],
                 AccessableProjects = accessableProjects,
@@ -573,8 +571,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                     Permissions.PUNCHITEM_WRITE,
                     Permissions.PUNCHITEM_DELETE,
                     Permissions.PUNCHITEM_READ,
-                    Permissions.MCCR_READ,
-                    Permissions.LIBRARY_READ
+                    Permissions.MCCR_READ
                 ],
                 AccessableProjects = accessableProjects,
                 Restrictions = [ResponsibleCodeWithAccess]
