@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -27,9 +28,9 @@ public class CurrentPlantMiddleware
             throw new Exception("Could not determine request headers");
         }
 
-        if (headers.TryGetValue(PlantHeader, out var header))
+        var plant = headers.GetPlant();
+        if(plant is not null)
         {
-            var plant = header.ToString().ToUpperInvariant();
             plantSetter.SetPlant(plant);
             logger.LogDebug("----- {MiddlewareName} complete setting plant {Plant}", GetType().Name, plant);
         }

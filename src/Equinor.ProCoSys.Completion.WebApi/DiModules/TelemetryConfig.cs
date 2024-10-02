@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -28,7 +29,6 @@ public static class TelemetryConfig
                 }));
             // by default, UseAzureMonitor look for config key "AzureMonitor:ConnectionString"
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
-          
         }
 
         return builder;
@@ -36,12 +36,10 @@ public static class TelemetryConfig
 
     public static void SetPlantTag(HttpRequest request, Activity activity)
     {
-        var plantHeader = request.Headers
-            .SingleOrDefault(header => header.Key == "x-plant").Value;
-
-        if (!string.IsNullOrEmpty(plantHeader))
+        var plant = request.Headers.GetPlant();
+        if (plant is not null)
         {
-            activity.SetTag("plant", plantHeader.ToString().Substring(4));
+            activity.SetTag("plant", plant.Substring(4));
         }
     }
 
