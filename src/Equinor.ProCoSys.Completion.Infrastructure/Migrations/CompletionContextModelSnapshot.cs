@@ -358,8 +358,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 
                     b.HasIndex("Plant", "No", "IsVoided");
 
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Plant", "No", "IsVoided"));
-
                     b.ToTable("Documents");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>

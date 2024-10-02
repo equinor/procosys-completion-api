@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    [Migration("20241002124005_DocumentSearchIndexMigration")]
+    [Migration("20241002173241_DocumentSearchIndexMigration")]
     partial class DocumentSearchIndexMigration
     {
         /// <inheritdoc />
@@ -360,8 +360,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("Plant", "No", "IsVoided");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Plant", "No", "IsVoided"));
 
                     b.ToTable("Documents");
 

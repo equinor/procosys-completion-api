@@ -13,8 +13,7 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Documents_Plant_No_IsVoided",
                 table: "Documents",
-                columns: new[] { "Plant", "No", "IsVoided" })
-                .Annotation("SqlServer:Clustered", true);
+                columns: new[] { "Plant", "No", "IsVoided" });
         }
 
         /// <inheritdoc />
