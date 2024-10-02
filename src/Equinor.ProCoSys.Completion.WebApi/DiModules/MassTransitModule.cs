@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -14,7 +15,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class MassTransitModule
 {
-    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration)
+    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
     {
         services.AddMassTransit(x =>
         {
@@ -126,11 +127,9 @@ public static class MassTransitModule
                 var serviceBusNamespace = configuration.GetValue<string>("ServiceBusNamespace");
                 if (string.IsNullOrEmpty(serviceBusNamespace))
                 {
-                    throw new Exception("ServiceBusNamespace is not set in appsettings.json");
+                    throw new Exception("ServiceBusNamespace is not properly configured");
                 }
                 var serviceUri = new Uri(serviceBusNamespace);
-
-                var credential = new DefaultAzureCredential();
 
                 cfg.Host(serviceUri, host =>
                 {
