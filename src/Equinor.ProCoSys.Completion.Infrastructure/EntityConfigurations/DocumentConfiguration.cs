@@ -22,7 +22,6 @@ internal class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .IsRequired();
         
         // Document search performance
-        builder.HasIndex(d => new { d.Plant, d.No, d.IsVoided })
-            .IsClustered();
+        builder.HasIndex(d => new { d.Plant, d.No, d.IsVoided });
     }
 }
