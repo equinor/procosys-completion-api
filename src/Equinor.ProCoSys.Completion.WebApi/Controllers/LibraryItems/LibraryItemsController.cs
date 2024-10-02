@@ -21,7 +21,7 @@ public class LibraryItemsController : ControllerBase
 
     public LibraryItemsController(IMediator mediator) => _mediator = mediator;
 
-    [AuthorizeAny(Permissions.LIBRARY_READ, Permissions.APPLICATION_TESTER)]
+    [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LibraryItemDto>>> GetPunchLibraryItems(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
