@@ -191,30 +191,13 @@ public class SWCREventConsumerTests
         await _unitOfWorkMock.Received(1).SaveChangesFromSyncAsync();
     }
 
-    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided, DateTime lastUpdated, string? behavior) => new (
-            string.Empty,
+    private static SWCREvent GetTestEvent(Guid guid, string plant, string swcrNo, bool isVoided, DateTime lastUpdated, string? behavior)
+        => new (
             plant,
             guid,
-            string.Empty,
             swcrNo,
-            string.Empty,
-            11111,
-            Guid.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            DateTime.UtcNow,
             isVoided,
             lastUpdated,
-            DateOnly.MinValue,
-            float.MinValue, 
             behavior
         );
 }
