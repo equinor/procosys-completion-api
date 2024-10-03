@@ -1,11 +1,9 @@
-﻿using Equinor.ProCoSys.Common.Misc;
+﻿using System;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.PcsServiceBus.Interfaces;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
@@ -81,7 +79,7 @@ public class SWCREventConsumer(
         }
     }
 
-    private static void MapFromEventToSWCR(ISwcrEventV1 busEvent, SWCR swcr)
+    private static void MapFromEventToSWCR(SWCREvent busEvent, SWCR swcr)
     {
         swcr.IsVoided = busEvent.IsVoided;
         swcr.No = int.TryParse(busEvent.SwcrNo, out var intValue) ? intValue 
@@ -90,7 +88,7 @@ public class SWCREventConsumer(
        
     }
 
-    private static SWCR CreateSWCREntity(ISwcrEventV1 busEvent)
+    private static SWCR CreateSWCREntity(SWCREvent busEvent)
     {
         var swcr = new SWCR(
             busEvent.Plant,
@@ -104,28 +102,10 @@ public class SWCREventConsumer(
 
 public record SWCREvent
 (
-    string EventType,
     string Plant,
     Guid ProCoSysGuid,
-    string? ProjectName,
     string SwcrNo,
-    string? Title,
-    long SwcrId,
-    Guid? CommPkgGuid,
-    string? CommPkgNo,
-    string? Description,
-    string? Modification,
-    string? Priority,
-    string? System,
-    string? ControlSystem,
-    string? Contract,
-    string? Supplier,
-    string? Node,
-    string? Status,
-    DateTime CreatedAt,
     bool IsVoided,
     DateTime LastUpdated,
-    DateOnly? DueDate,
-    float? EstimatedManHours,
     string? Behavior
-) : ISwcrEventV1;
+);// :using fields from ISwcrEventV1;
