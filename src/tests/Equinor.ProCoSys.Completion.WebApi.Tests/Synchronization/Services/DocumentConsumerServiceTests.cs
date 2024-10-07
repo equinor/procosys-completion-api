@@ -48,7 +48,7 @@ public class DocumentConsumerServiceTests
         _documentRepoMock.ExistsAsync(guid, default).Returns(false);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         Assert.IsNotNull(_documentAddedToRepository);
@@ -75,7 +75,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         Assert.IsNull(_documentAddedToRepository);
@@ -105,7 +105,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -131,7 +131,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -147,7 +147,7 @@ public class DocumentConsumerServiceTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing ProCoSysGuid");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty), "Message is missing ProCoSysGuid");
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public class DocumentConsumerServiceTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing Plant");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty), "Message is missing Plant");
     }
 
     private static DocumentEvent GetTestEvent(Guid guid, string plant, string documentNo, DateTime lastUpdated) => new(

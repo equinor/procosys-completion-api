@@ -10,5 +10,5 @@ public class DocumentEventConsumer(
     : IConsumer<DocumentEvent>
 {
     public async Task Consume(ConsumeContext<DocumentEvent> context) 
-        => await documentConsumerService.ConsumeDocumentEvent(context, context.Message);
+        => await documentConsumerService.ConsumeDocumentEvent(context, context.Message, "Document");
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using MassTransit;
@@ -13,7 +12,7 @@ public class DocumentConsumerService(
     IDocumentRepository documentRepository,
     IUnitOfWork unitOfWork) : IDocumentConsumerService 
 { 
-    public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent)
+    public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent, string type)
     {
         ValidateMessage(busEvent);
 
@@ -21,8 +20,8 @@ public class DocumentConsumerService(
         {
             if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
             {
-                logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted",
-                    busEvent.ProCoSysGuid);
+                logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. Type: {Type}",
+                    busEvent.ProCoSysGuid, type);
             }
         }
    
@@ -34,9 +33,10 @@ public class DocumentConsumerService(
                 logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
                                       "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                       "EventLastUpdated: {LastUpdated} \n" +
-                                      "SyncedToCompletion: {SyncedTimeStamp} \n",
+                                      "SyncedToCompletion: {SyncedTimeStamp} \n" +
+                                      "Type: {Type} \n",
                     nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                    document.SyncTimestamp);
+                    document.SyncTimestamp, type);
                 return;
             }
 
@@ -45,9 +45,10 @@ public class DocumentConsumerService(
                 logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
                                   "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
-                                  "LastUpdatedFromDb: {LastUpdated}",
+                                  "LastUpdatedFromDb: {LastUpdated}" +
+                                  "Type: {Type} \n",
                     nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                    document.ProCoSys4LastUpdated);
+                    document.ProCoSys4LastUpdated, type);
                 return;
             }
 
@@ -63,8 +64,8 @@ public class DocumentConsumerService(
 
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No}",
-            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo);
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No} \n Type {Type}",
+            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type);
         }
     
     private static void ValidateMessage(DocumentEvent busEvent)
