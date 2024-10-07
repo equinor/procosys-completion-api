@@ -48,7 +48,7 @@ public class DocumentConsumerService(
                 logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
                                   "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {EventLastUpdated} \n" +
-                                  "LastUpdatedFromDb: {LastUpdated}" +
+                                  "LastUpdatedFromDb: {LastUpdated} \n" +
                                   "Type: {Type} \n",
                     nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
                     document.ProCoSys4LastUpdated, type);
