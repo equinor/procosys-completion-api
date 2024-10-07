@@ -18,7 +18,7 @@ public class QueryEventConsumer(IDocumentConsumerService documentConsumerService
             busEvent.IsVoided,
             busEvent.LastUpdated,
             busEvent.Behavior);
-        await documentConsumerService.ConsumeDocumentEvent(context, documentEvent);
+        await documentConsumerService.ConsumeDocumentEvent(context, documentEvent, "Query");
     }
 }
 
