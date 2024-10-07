@@ -16,6 +16,7 @@ public class DocumentConsumerService(
     {
         ValidateMessage(busEvent);
 
+        var handledAs = string.Empty;
         if (busEvent.Behavior == "delete")
         {
             if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
@@ -23,6 +24,8 @@ public class DocumentConsumerService(
                 logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. Type: {Type}",
                     busEvent.ProCoSysGuid, type);
             }
+
+            handledAs = "delete";
         }
    
         else if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
@@ -54,18 +57,20 @@ public class DocumentConsumerService(
 
             MapFromEventToDocument(busEvent, document);
             document.SyncTimestamp = DateTime.UtcNow;
+            handledAs = "update";
         }
         else
         {
             var document = CreateDocumentEntity(busEvent);
             document.SyncTimestamp = DateTime.UtcNow;
             documentRepository.Add(document);
+            handledAs = "create";
         }
 
         await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
-        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No} \n Type {Type}",
-            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type);
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No} \n Type {Type} \n HandledAs {HandledAs}",
+            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type, handledAs);
         }
     
     private static void ValidateMessage(DocumentEvent busEvent)
