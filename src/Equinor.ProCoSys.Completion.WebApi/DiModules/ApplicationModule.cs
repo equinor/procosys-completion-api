@@ -37,6 +37,7 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
+using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
@@ -81,6 +82,9 @@ public static class ApplicationModule
         services.AddHttpClient();
 
         // Hosted services
+
+        // Singleton - Created the first time they are requested
+        services.AddSingleton<IUserDelegationProvider, UserDelegationProvider>();
 
         // Scoped - Created once per client request (connection)
         // services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
@@ -142,8 +146,6 @@ public static class ApplicationModule
 
         services.AddScoped<ISyncToPCS4Service, SyncToPCS4Service>();
         services.AddScoped<ISyncTokenService, SyncTokenService>();
-
-        // Singleton - Created the first time they are requested
 
         // Transient - Created each time it is requested from the service container
         services.AddTransient<SyncBearerTokenHandler>();

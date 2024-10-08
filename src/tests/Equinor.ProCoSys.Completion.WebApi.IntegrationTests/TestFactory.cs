@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
+using Azure.Storage.Blobs.Models;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
@@ -286,6 +287,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 Arg.Any<string>(),
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<DateTimeOffset>(),
+                Arg.Any<UserDelegationKey>(),
                 Arg.Any<string>(),
                 Arg.Any<string>())
             .Returns(uri);

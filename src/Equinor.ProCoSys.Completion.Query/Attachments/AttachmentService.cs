@@ -9,6 +9,7 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -18,17 +19,20 @@ public class AttachmentService : IAttachmentService
 {
     private readonly IReadOnlyContext _context;
     private readonly IAzureBlobService _azureBlobService;
+    private readonly IUserDelegationProvider _userDelegationProvider;
     private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
     private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions;
 
     public AttachmentService(
         IReadOnlyContext context,
         IAzureBlobService azureBlobService,
+        IUserDelegationProvider userDelegationProvider,
         IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
         IOptionsSnapshot<ApplicationOptions> applicationOptions)
     {
         _context = context;
         _azureBlobService = azureBlobService;
+        _userDelegationProvider = userDelegationProvider;
         _blobStorageOptions = blobStorageOptions;
         _applicationOptions = applicationOptions;
     }
@@ -126,6 +130,7 @@ public class AttachmentService : IAttachmentService
             x.GetFullBlobPath(),
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
             new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)),
+            _userDelegationProvider.GetUserDelegationKey(),
             _applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
             _applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
         );
