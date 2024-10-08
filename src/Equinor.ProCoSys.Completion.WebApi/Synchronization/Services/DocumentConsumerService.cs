@@ -11,8 +11,10 @@ namespace Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 public class DocumentConsumerService(
     ILogger<DocumentConsumerService> logger,
     IDocumentRepository documentRepository,
-    IUnitOfWork unitOfWork) : IDocumentConsumerService 
-{ 
+    IUnitOfWork unitOfWork) : IDocumentConsumerService
+{
+    private const int MaxRetryCount = 2;
+
     public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent, string type)
     {
         ValidateMessage(busEvent);
@@ -20,58 +22,25 @@ public class DocumentConsumerService(
         // To avoid cases of dead letters caused by a race condition
         // we retry consuming the document event a couple of times before we give up
         var retryCount = 0;
-        while (retryCount > 1)
+        while (retryCount < 2)
         {
             try
             {
                 var handledAs = string.Empty;
                 if (busEvent.Behavior == "delete")
                 {
-                    if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
-                    {
-                        logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. Type: {Type}",
-                            busEvent.ProCoSysGuid, type);
-                    }
-
+                    await HandleDocumentDeleteEvent(context, busEvent, type);
                     handledAs = "delete";
                 }
 
                 else if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
                 {
-                    var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
-                    if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
-                    {
-                        logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
-                                              "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                              "EventLastUpdated: {LastUpdated} \n" +
-                                              "SyncedToCompletion: {SyncedTimeStamp} \n" +
-                                              "Type: {Type} \n",
-                            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                            document.SyncTimestamp, type);
-                        return;
-                    }
-
-                    if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
-                    {
-                        logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
-                                          "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                          "EventLastUpdated: {EventLastUpdated} \n" +
-                                          "LastUpdatedFromDb: {LastUpdated} \n" +
-                                          "Type: {Type} \n",
-                            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
-                            document.ProCoSys4LastUpdated, type);
-                        return;
-                    }
-
-                    MapFromEventToDocument(busEvent, document);
-                    document.SyncTimestamp = DateTime.UtcNow;
+                    await HandleDocumentUpdateEvent(context, busEvent, type);
                     handledAs = "update";
                 }
                 else
                 {
-                    var document = CreateDocumentEntity(busEvent);
-                    document.SyncTimestamp = DateTime.UtcNow;
-                    documentRepository.Add(document);
+                    HandleDocumentCreateEvent(context, busEvent, type);
                     handledAs = "create";
                 }
 
@@ -79,6 +48,8 @@ public class DocumentConsumerService(
 
                 logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No} \n Type {Type} \n HandledAs {HandledAs}",
                     nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type, handledAs);
+
+                return;
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -125,6 +96,53 @@ public class DocumentConsumerService(
         {
             throw new Exception($"{nameof(DocumentEvent)} is missing {nameof(DocumentEvent.Plant)}");
         }
+    }
+
+    private async Task HandleDocumentDeleteEvent(ConsumeContext context, DocumentEvent busEvent, string type)
+    {
+        if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
+        {
+            logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. Type: {Type}",
+                busEvent.ProCoSysGuid, type);
+        }
+    }
+
+    private async Task HandleDocumentUpdateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
+    {
+        var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
+        if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
+        {
+            logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
+                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+                                  "EventLastUpdated: {LastUpdated} \n" +
+                                  "SyncedToCompletion: {SyncedTimeStamp} \n" +
+                                  "Type: {Type} \n",
+                nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                document.SyncTimestamp, type);
+            return;
+        }
+
+        if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
+        {
+            logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
+                              "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+                              "EventLastUpdated: {EventLastUpdated} \n" +
+                              "LastUpdatedFromDb: {LastUpdated} \n" +
+                              "Type: {Type} \n",
+                nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
+                document.ProCoSys4LastUpdated, type);
+            return;
+        }
+
+        MapFromEventToDocument(busEvent, document);
+        document.SyncTimestamp = DateTime.UtcNow;
+    }
+
+    private void HandleDocumentCreateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
+    {
+        var document = CreateDocumentEntity(busEvent);
+        document.SyncTimestamp = DateTime.UtcNow;
+        documentRepository.Add(document);
     }
 
     private static Document CreateDocumentEntity(DocumentEvent busEvent)
