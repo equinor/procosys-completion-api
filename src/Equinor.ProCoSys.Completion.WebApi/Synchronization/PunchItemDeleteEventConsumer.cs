@@ -1,5 +1,4 @@
-﻿using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.Domain;
+﻿using Equinor.ProCoSys.Completion.Domain;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,16 +25,18 @@ public class PunchItemDeleteEventConsumer(
             if (await punchItemRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
             {
                 await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
+                logger.LogDebug("{EventName} Message {MessageId}: PunchItem with Guid {Guid} deleted",
+                    nameof(PunchItemDeleteEvent), context.MessageId, busEvent.ProCoSysGuid);
             }
             else
             {
-                logger.LogWarning("PunchItem with Guid {Guid} was not found and could not be deleted",
-                    busEvent.ProCoSysGuid);
+                logger.LogWarning("{EventName} Message {MessageId}: PunchItem with Guid {Guid} was not found and could not be deleted",
+                    nameof(PunchItemDeleteEvent), context.MessageId, busEvent.ProCoSysGuid);
             }
         }
 
-        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid}",
-            nameof(PunchItemDeleteEvent), context.MessageId, busEvent.ProCoSysGuid);
+        logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n Behavior {Behavior}",
+            nameof(PunchItemDeleteEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.Behavior);
     }
 
     private static void ValidateMessage(PunchItemDeleteEvent busEvent)

@@ -322,7 +322,6 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
-                                                  //Seems to only be needed for document
                 });
                 cfg.SubscriptionEndpoint("completion_query", "query", e =>
                 {
@@ -332,9 +331,8 @@ public static class MassTransitModule
                     e.ConfigureConsumer<QueryEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
-                
-                
                 cfg.SubscriptionEndpoint("completion_swcr", "swcr", e =>
                 {
                     e.ClearSerialization();
@@ -343,6 +341,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<SWCREventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_wo", "wo", e =>
                 {
@@ -352,6 +351,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<WorkOrderEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_punchitem_changehistory", "punchlistitem_changehistory", e =>
                 {
