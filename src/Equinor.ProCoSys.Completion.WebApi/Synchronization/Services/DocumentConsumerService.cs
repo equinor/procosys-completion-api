@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -13,6 +14,7 @@ public class DocumentConsumerService(
     IDocumentRepository documentRepository,
     IUnitOfWork unitOfWork) : IDocumentConsumerService
 {
+    private const string DuplicateKeyError = "Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'";
     private const int MaxRetryCount = 2;
 
     public async Task ConsumeDocumentEvent(ConsumeContext context, DocumentEvent busEvent, string type)
@@ -22,7 +24,7 @@ public class DocumentConsumerService(
         // To avoid cases of dead letters caused by a race condition
         // we retry consuming the document event a couple of times before we give up
         var retryCount = 0;
-        while (retryCount < 2)
+        while (retryCount < MaxRetryCount)
         {
             try
             {
@@ -35,7 +37,11 @@ public class DocumentConsumerService(
 
                 else if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
                 {
-                    await HandleDocumentUpdateEvent(context, busEvent, type);
+                    var didUpdate = await HandleDocumentUpdateEvent(context, busEvent, type);
+                    if (!didUpdate)
+                    {
+                        return;
+                    }
                     handledAs = "update";
                 }
                 else
@@ -53,23 +59,20 @@ public class DocumentConsumerService(
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                logger.LogWarning(ex, "{EventName} failed because of concurrency exception in the db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                  "Type: {Type} \n",
-                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, type);
+                var warningMessage = "failed because of concurrency exception in the db";
+                LogConcurrencyException(ex, context, busEvent, type, warningMessage);
 
+                Thread.Sleep(200);
                 retryCount++;
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'") ||
-                    (ex.InnerException != null && ex.InnerException.Message.Contains("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'")))
+                if (ex.Message.Contains(DuplicateKeyError) || (ex.InnerException != null && ex.InnerException.Message.Contains(DuplicateKeyError)))
                 {
-                    logger.LogWarning(ex, "{EventName} failed because of a duplicate key row for a unique index'\n" +
-                                      "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
-                                      "Type: {Type} \n",
-                        nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, type);
+                    var warningMessage = "failed because of a duplicate key row for a unique index";
+                    LogConcurrencyException(ex, context, busEvent, type, warningMessage);
 
+                    Thread.Sleep(200);
                     retryCount++;
                 }
                 else
@@ -102,40 +105,46 @@ public class DocumentConsumerService(
     {
         if (!await documentRepository.RemoveByGuidAsync(busEvent.ProCoSysGuid, context.CancellationToken))
         {
-            logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. Type: {Type}",
-                busEvent.ProCoSysGuid, type);
+            logger.LogWarning("Document with Guid {Guid} was not found and could not be deleted. \n" +
+                                    "MessageID {MessageId} \n" +
+                                    "Type: {Type}",
+                busEvent.ProCoSysGuid, context.MessageId, type);
         }
+        logger.LogWarning("Document with Guid {Guid} was deleted. Type: {Type}", busEvent.ProCoSysGuid, type);
     }
 
-    private async Task HandleDocumentUpdateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
+    private async Task<bool> HandleDocumentUpdateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
     {
         var document = await documentRepository.GetAsync(busEvent.ProCoSysGuid, context.CancellationToken);
         if (document.ProCoSys4LastUpdated == busEvent.LastUpdated)
         {
-            logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db\n" +
-                                  "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+            logger.LogDebug("{EventName} Ignored because LastUpdated is the same as in db \n" +
+                                  "MessageId: {MessageId} \n" +
+                                  "ProCoSysGuid: {ProCoSysGuid} \n " +
                                   "EventLastUpdated: {LastUpdated} \n" +
                                   "SyncedToCompletion: {SyncedTimeStamp} \n" +
-                                  "Type: {Type} \n",
+                                  "Type: {Type}",
                 nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
                 document.SyncTimestamp, type);
-            return;
+            return false;
         }
 
         if (document.ProCoSys4LastUpdated > busEvent.LastUpdated)
         {
-            logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db\n" +
-                              "MessageId: {MessageId} \n ProCoSysGuid: {ProCoSysGuid} \n " +
+            logger.LogWarning("{EventName} Ignored because a newer LastUpdated already exits in db \n" +
+                              "MessageId: {MessageId} \n" +
+                              "ProCoSysGuid: {ProCoSysGuid} \n " +
                               "EventLastUpdated: {EventLastUpdated} \n" +
                               "LastUpdatedFromDb: {LastUpdated} \n" +
-                              "Type: {Type} \n",
+                              "Type: {Type}",
                 nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.LastUpdated,
                 document.ProCoSys4LastUpdated, type);
-            return;
+            return false;
         }
 
         MapFromEventToDocument(busEvent, document);
         document.SyncTimestamp = DateTime.UtcNow;
+        return true;
     }
 
     private void HandleDocumentCreateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
@@ -143,6 +152,15 @@ public class DocumentConsumerService(
         var document = CreateDocumentEntity(busEvent);
         document.SyncTimestamp = DateTime.UtcNow;
         documentRepository.Add(document);
+    }
+
+    private void LogConcurrencyException(Exception ex, ConsumeContext context, DocumentEvent busEvent, string type, string message)
+    {
+        logger.LogWarning(ex, "{EventName} {Message} \n" +
+                          "MessageId: {MessageId} \n" +
+                          "ProCoSysGuid: {ProCoSysGuid} \n" +
+                          "Type: {Type}",
+            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, type, message);
     }
 
     private static Document CreateDocumentEntity(DocumentEvent busEvent)
