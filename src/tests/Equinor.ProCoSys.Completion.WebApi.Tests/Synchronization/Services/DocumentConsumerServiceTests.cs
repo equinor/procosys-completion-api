@@ -175,7 +175,7 @@ public class DocumentConsumerServiceTests
         var callCount = 0;
         _unitOfWorkMock
             .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
-            .Do(ci =>
+            .Do(_ =>
             {
                 callCount++;
                 throw new DbUpdateConcurrencyException();
@@ -201,7 +201,7 @@ public class DocumentConsumerServiceTests
         var callCount = 0;
         _unitOfWorkMock
             .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
-            .Do(ci =>
+            .Do(_ =>
             {
                 callCount++;
                 throw new Exception("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'");
@@ -227,7 +227,7 @@ public class DocumentConsumerServiceTests
         var callCount = 0;
         _unitOfWorkMock
             .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
-            .Do(ci =>
+            .Do(_ =>
             {
                 callCount++;
                 throw new Exception("Outer exception", new Exception("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'"));

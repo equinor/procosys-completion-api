@@ -28,7 +28,7 @@ public class DocumentConsumerService(
         {
             try
             {
-                var handledAs = string.Empty;
+                string handledAs;
                 if (busEvent.Behavior == "delete")
                 {
                     await HandleDocumentDeleteEvent(context, busEvent, type);
@@ -46,7 +46,7 @@ public class DocumentConsumerService(
                 }
                 else
                 {
-                    HandleDocumentCreateEvent(context, busEvent, type);
+                    HandleDocumentCreateEvent(busEvent);
                     handledAs = "create";
                 }
 
@@ -59,8 +59,7 @@ public class DocumentConsumerService(
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var warningMessage = "failed because of concurrency exception in the db";
-                LogConcurrencyException(ex, context, busEvent, type, warningMessage);
+                LogConcurrencyException(ex, context, busEvent, type, "failed because of concurrency exception in the db");
 
                 Thread.Sleep(200);
                 retryCount++;
@@ -69,8 +68,7 @@ public class DocumentConsumerService(
             {
                 if (ex.Message.Contains(DuplicateKeyError) || (ex.InnerException != null && ex.InnerException.Message.Contains(DuplicateKeyError)))
                 {
-                    var warningMessage = "failed because of a duplicate key row for a unique index";
-                    LogConcurrencyException(ex, context, busEvent, type, warningMessage);
+                    LogConcurrencyException(ex, context, busEvent, type, "failed because of a duplicate key row for a unique index");
 
                     Thread.Sleep(200);
                     retryCount++;
@@ -147,7 +145,7 @@ public class DocumentConsumerService(
         return true;
     }
 
-    private void HandleDocumentCreateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
+    private void HandleDocumentCreateEvent(DocumentEvent busEvent)
     {
         var document = CreateDocumentEntity(busEvent);
         document.SyncTimestamp = DateTime.UtcNow;
