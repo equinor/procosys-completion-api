@@ -32,7 +32,6 @@ public class DocumentConsumerService(
                 if (busEvent.Behavior == "delete")
                 {
                     await HandleDocumentDeleteEvent(context, busEvent, type);
-                    handledAs = "delete";
                 }
 
                 else if (await documentRepository.ExistsAsync(busEvent.ProCoSysGuid, context.CancellationToken))
@@ -42,18 +41,16 @@ public class DocumentConsumerService(
                     {
                         return;
                     }
-                    handledAs = "update";
                 }
                 else
                 {
                     HandleDocumentCreateEvent(context, busEvent, type);
-                    handledAs = "create";
                 }
 
                 await unitOfWork.SaveChangesFromSyncAsync(context.CancellationToken);
 
                 logger.LogDebug("{EventName} Message Consumed: {MessageId} \n Guid {Guid} \n No {No} \n Type {Type} \n HandledAs {HandledAs}",
-                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type, handledAs);
+                    nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, busEvent.DocumentNo, type, busEvent.Behavior);
 
                 return;
             }
