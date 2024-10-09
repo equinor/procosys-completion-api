@@ -16,12 +16,12 @@ public class UserDelegationProvider : IUserDelegationProvider
 
     public UserDelegationProvider(IOptionsMonitor<BlobStorageOptions> options, TokenCredential credential)
     {
-        if (string.IsNullOrEmpty(options.CurrentValue.BlobStorageAccountName))
+        if (string.IsNullOrEmpty(options.CurrentValue.AccountName))
         {
-            throw new ArgumentNullException(nameof(options.CurrentValue.BlobStorageAccountName));
+            throw new ArgumentNullException(nameof(options.CurrentValue.AccountName));
         }
 
-        var endpoint = "https://" + options.CurrentValue.BlobStorageAccountName + _blobStorageUrlSuffix;
+        var endpoint = "https://" + options.CurrentValue.AccountName + _blobStorageUrlSuffix;
 
         _blobServiceClient = new BlobServiceClient(new Uri($"{endpoint}"), credential);
     }
