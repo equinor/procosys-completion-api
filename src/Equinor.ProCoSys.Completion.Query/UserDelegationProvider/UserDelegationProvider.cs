@@ -12,15 +12,16 @@ public class UserDelegationProvider : IUserDelegationProvider
     private readonly BlobServiceClient _blobServiceClient;
     private UserDelegationKey? _userDelegationKeyCached;
     private DateTimeOffset? _expirationTime;
+    private readonly string _blobStorageUrlSuffix = ".blob.core.windows.net";
 
     public UserDelegationProvider(IOptionsMonitor<BlobStorageOptions> options, TokenCredential credential)
     {
-        if (string.IsNullOrEmpty(options.CurrentValue.BlobStorageAccountUrl))
+        if (string.IsNullOrEmpty(options.CurrentValue.BlobStorageAccountName))
         {
-            throw new ArgumentNullException(nameof(options.CurrentValue.BlobStorageAccountUrl));
+            throw new ArgumentNullException(nameof(options.CurrentValue.BlobStorageAccountName));
         }
 
-        var endpoint = options.CurrentValue.BlobStorageAccountUrl;
+        var endpoint = "https://" + options.CurrentValue.BlobStorageAccountName + _blobStorageUrlSuffix;
 
         _blobServiceClient = new BlobServiceClient(new Uri($"{endpoint}"), credential);
     }
