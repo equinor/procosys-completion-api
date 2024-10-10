@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -48,7 +50,7 @@ public class DocumentConsumerServiceTests
         _documentRepoMock.ExistsAsync(guid, default).Returns(false);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         Assert.IsNotNull(_documentAddedToRepository);
@@ -75,7 +77,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         Assert.IsNull(_documentAddedToRepository);
@@ -105,7 +107,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -131,7 +133,7 @@ public class DocumentConsumerServiceTests
         _contextMock.Message.Returns(bEvent);
 
         //Act
-        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message);
+        await _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty);
 
         //Assert
         await _unitOfWorkMock.Received(0).SaveChangesFromSyncAsync();
@@ -147,7 +149,7 @@ public class DocumentConsumerServiceTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing ProCoSysGuid");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty), "Message is missing ProCoSysGuid");
     }
 
     [TestMethod]
@@ -159,8 +161,87 @@ public class DocumentConsumerServiceTests
 
         //Act and Assert
         await Assert.ThrowsExceptionAsync<Exception>(()
-            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message), "Message is missing Plant");
+            =>  _dut.ConsumeDocumentEvent(_contextMock,_contextMock.Message, string.Empty), "Message is missing Plant");
     }
+
+    [TestMethod]
+    public async Task Consume_ShouldRetryTwoTimes_OnDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, DateTime.Now);
+        _contextMock.Message.Returns(bEvent);
+
+        var callCount = 0;
+        _unitOfWorkMock
+            .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
+            .Do(_ =>
+            {
+                callCount++;
+                throw new DbUpdateConcurrencyException();
+            });
+
+        // Act
+        await _dut.ConsumeDocumentEvent(_contextMock, _contextMock.Message, string.Empty);
+
+        // Assert
+        Assert.AreEqual(2, callCount);
+
+        await _unitOfWorkMock.Received(2).SaveChangesFromSyncAsync(Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldRetryTwoTimes_OnDuplicateKeyException()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, DateTime.Now);
+        _contextMock.Message.Returns(bEvent);
+
+        var callCount = 0;
+        _unitOfWorkMock
+            .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
+            .Do(_ =>
+            {
+                callCount++;
+                throw new Exception("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'");
+            });
+
+        // Act
+        await _dut.ConsumeDocumentEvent(_contextMock, _contextMock.Message, string.Empty);
+
+        // Assert
+        Assert.AreEqual(2, callCount);
+        // Verify that the unitOfWork.SaveChangesFromSyncAsync() is attempted MaxRetryCount times
+        await _unitOfWorkMock.Received(2).SaveChangesFromSyncAsync(Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task Consume_ShouldRetryTwoTimes_OnDuplicateKey_InnerException()
+    {
+        // Arrange
+        var guid = Guid.NewGuid();
+        var bEvent = GetTestEvent(guid, Plant, DocumentNo, DateTime.Now);
+        _contextMock.Message.Returns(bEvent);
+
+        var callCount = 0;
+        _unitOfWorkMock
+            .When(x => x.SaveChangesFromSyncAsync(Arg.Any<CancellationToken>()))
+            .Do(_ =>
+            {
+                callCount++;
+                throw new Exception("Outer exception", new Exception("Cannot insert duplicate key row in object 'dbo.Documents' with unique index 'IX_Documents_Guid'"));
+            });
+
+        // Act
+        await _dut.ConsumeDocumentEvent(_contextMock, _contextMock.Message, string.Empty);
+
+        // Assert
+        Assert.AreEqual(2, callCount);
+        // Verify that the unitOfWork.SaveChangesFromSyncAsync() is attempted MaxRetryCount times
+        await _unitOfWorkMock.Received(2).SaveChangesFromSyncAsync(Arg.Any<CancellationToken>());
+    }
+
 
     private static DocumentEvent GetTestEvent(Guid guid, string plant, string documentNo, DateTime lastUpdated) => new(
             plant,

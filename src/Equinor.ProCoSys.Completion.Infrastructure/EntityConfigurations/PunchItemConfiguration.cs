@@ -201,6 +201,10 @@ internal class PunchItemConfiguration : IEntityTypeConfiguration<PunchItem>
                 x.Id,
                 x.RowVersion
             });
+
+        builder
+            .HasIndex(p => new { p.Plant, p.CheckListGuid })
+            .IncludeProperties(p => p.Guid);
     }
 
     private string GetValidCategoryEnums()

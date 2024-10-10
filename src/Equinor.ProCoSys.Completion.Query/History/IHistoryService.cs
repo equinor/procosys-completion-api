@@ -7,7 +7,6 @@ namespace Equinor.ProCoSys.Completion.Query.History;
 
 public interface IHistoryService
 {
-    Task<IEnumerable<HistoryDto>> GetAllAsync(
-        Guid parentGuid,
+    Task<IReadOnlyCollection<HistoryDto>> GetAllAsync(Guid parentGuid,
         CancellationToken cancellationToken);
 }

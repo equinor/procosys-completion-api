@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
 {
     [DbContext(typeof(CompletionContext))]
-    partial class CompletionContextModelSnapshot : ModelSnapshot
+    [Migration("20241002173241_DocumentSearchIndexMigration")]
+    partial class DocumentSearchIndexMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -416,12 +419,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                         .HasColumnName("PeriodStart");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EventByOid");
-
-                    b.HasIndex("EventForGuid");
-
-                    b.HasIndex("EventForParentGuid");
 
                     b.HasIndex("Guid")
                         .IsUnique();
@@ -1162,10 +1159,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Migrations
                     b.HasIndex("VerifiedById");
 
                     b.HasIndex("WorkOrderId");
-
-                    b.HasIndex("Plant", "CheckListGuid");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Plant", "CheckListGuid"), new[] { "Guid" });
 
                     b.ToTable("PunchItems", t =>
                         {

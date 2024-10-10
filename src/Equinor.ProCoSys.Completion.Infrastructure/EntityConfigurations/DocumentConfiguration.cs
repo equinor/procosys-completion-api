@@ -20,5 +20,8 @@ internal class DocumentConfiguration : IEntityTypeConfiguration<Document>
         builder.Property(x => x.No)
             .HasMaxLength(Document.NoLengthMax)
             .IsRequired();
+        
+        // Document search performance
+        builder.HasIndex(d => new { d.Plant, d.No, d.IsVoided });
     }
 }
