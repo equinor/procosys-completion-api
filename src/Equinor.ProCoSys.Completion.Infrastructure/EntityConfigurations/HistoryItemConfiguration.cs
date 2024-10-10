@@ -40,5 +40,14 @@ internal class HistoryItemConfiguration : IEntityTypeConfiguration<HistoryItem>
         builder
             .HasIndex(x => x.Guid)
             .IsUnique();
+
+        builder
+            .HasIndex(x => x.EventForGuid);
+        
+        builder
+            .HasIndex(x => x.EventForParentGuid);
+
+        builder
+            .HasIndex(x => x.EventByOid);
     }
 }

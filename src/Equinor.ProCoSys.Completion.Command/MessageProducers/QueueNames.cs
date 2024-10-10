@@ -10,7 +10,6 @@ public static class QueueNames
     public const string DocumentCompletionTransferQueue = "documentCompletionTransferQueue";
     public const string WorkOrderCompletionTransferQueue = "workOrderCompletionTransferQueue";
     public const string PunchItemCompletionTransferQueue = "punchItemCompletionTransferQueue";
-    public const string PunchItemChangeHistoryCompletionTransferQueue = "punchItemChangeHistoryCompletionTransferQueue";
     public const string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
     public const string PersonCompletionTransferQueue = "personCompletionTransferQueue";
     public const string PunchItemAttachmentCompletionTransferQueue = "punchItemAttachmentCompletionTransferQueue";

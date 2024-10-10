@@ -1,4 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
+using Azure.Core;
+using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
@@ -12,7 +15,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class MassTransitModule
 {
-    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration)
+    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
     {
         services.AddMassTransit(x =>
         {
@@ -84,13 +87,6 @@ public static class MassTransitModule
                     e.Temporary = false;
                 });
             x.AddConsumer<PunchItemEventConsumer>();
-            x.AddConsumer<PunchItemChangeHistoryEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_changehistory";
-                    e.Temporary = false;
-                });
             x.AddConsumer<PunchItemAttachmentEventConsumer>()
                 .Endpoint(e =>
                 {
@@ -105,12 +101,6 @@ public static class MassTransitModule
                     e.Name = "completion_punchitem_comment";
                     e.Temporary = false;
                 });
-            x.AddConsumer<PunchItemDeleteEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Temporary = false;
-                });
             
             x.AddConsumer<ClassificationConsumer>()
                 .Endpoint(e =>
@@ -121,9 +111,18 @@ public static class MassTransitModule
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
-                var connectionString = configuration.GetConnectionString("ServiceBus");
+                var serviceBusNamespace = configuration.GetValue<string>("ServiceBusNamespace");
+                if (string.IsNullOrEmpty(serviceBusNamespace))
+                {
+                    throw new Exception("ServiceBusNamespace is not properly configured");
+                }
+                var serviceUri = new Uri(serviceBusNamespace);
 
-                cfg.Host(connectionString);
+                cfg.Host(serviceUri, host =>
+                {
+                    host.TokenCredential = credential;
+                });
+
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
@@ -216,17 +215,6 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                     e.PrefetchCount = configuration.GetValue<int>("MassTransit:PunchItemPrefetchCount");
-                });
-                cfg.ReceiveEndpoint(QueueNames.PunchItemChangeHistoryCompletionTransferQueue, e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                    e.ConfigureDeadLetterQueueDeadLetterTransport();
-                    e.ConfigureDeadLetterQueueErrorTransport();
                 });
                 cfg.ReceiveEndpoint(QueueNames.ProjectCompletionTransferQueue, e =>
                 {
@@ -322,7 +310,6 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
-                                                  //Seems to only be needed for document
                 });
                 cfg.SubscriptionEndpoint("completion_query", "query", e =>
                 {
@@ -332,9 +319,8 @@ public static class MassTransitModule
                     e.ConfigureConsumer<QueryEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
-                
-                
                 cfg.SubscriptionEndpoint("completion_swcr", "swcr", e =>
                 {
                     e.ClearSerialization();
@@ -343,6 +329,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<SWCREventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_wo", "wo", e =>
                 {
@@ -352,24 +339,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<WorkOrderEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
-                });
-                cfg.SubscriptionEndpoint("completion_punchitem_changehistory", "punchlistitem_changehistory", e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                });
-                cfg.SubscriptionEndpoint("completion_punch-item", "punchlistitem", e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemDeleteEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_punchprioritylibrarylation", "punchprioritylibraryrelation", e =>
                 {

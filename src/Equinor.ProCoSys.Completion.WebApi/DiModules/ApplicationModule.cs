@@ -1,4 +1,5 @@
 ﻿using System;
+using Azure.Core;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
@@ -53,7 +54,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class ApplicationModule
 {
-    public static void AddApplicationModules(this IServiceCollection services, IConfiguration configuration)
+    public static void AddApplicationModules(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
     {
         services.Configure<ApplicationOptions>(configuration.GetSection("Application"));
         services.Configure<MainApiOptions>(configuration.GetSection("MainApi"));
@@ -76,7 +77,7 @@ public static class ApplicationModule
             configure.AddApplicationInsights();
         });
 
-        services.AddMassTransitModule(configuration);
+        services.AddMassTransitModule(configuration, credential);
 
         services.AddHttpContextAccessor();
         services.AddHttpClient();

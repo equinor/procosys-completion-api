@@ -10,18 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Query.History;
 
-public class HistoryService : IHistoryService
+public sealed class HistoryService(IReadOnlyContext context) : IHistoryService
 {
-    private readonly IReadOnlyContext _context;
-
-    public HistoryService(IReadOnlyContext context) => _context = context;
-
-    public async Task<IEnumerable<HistoryDto>> GetAllAsync(
-        Guid parentGuid,
+    public async Task<IReadOnlyCollection<HistoryDto>> GetAllAsync(Guid parentGuid,
         CancellationToken cancellationToken)
     {
         var historyItems =
-            await (from h in _context.QuerySet<HistoryItem>()
+            await (from h in context.QuerySet<HistoryItem>()
                         .Include(h => h.Properties)
                     where h.EventForGuid == parentGuid || h.EventForParentGuid == parentGuid
                     orderby h.EventAtUtc descending 
@@ -44,6 +39,6 @@ public class HistoryService : IHistoryService
             )).ToList(),
             h.RowVersion.ConvertToString()));
 
-        return historyDtos;
+        return historyDtos.ToArray();
     }
 }
