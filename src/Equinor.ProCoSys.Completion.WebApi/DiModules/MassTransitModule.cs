@@ -87,13 +87,6 @@ public static class MassTransitModule
                     e.Temporary = false;
                 });
             x.AddConsumer<PunchItemEventConsumer>();
-            x.AddConsumer<PunchItemChangeHistoryEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_changehistory";
-                    e.Temporary = false;
-                });
             x.AddConsumer<PunchItemAttachmentEventConsumer>()
                 .Endpoint(e =>
                 {
@@ -106,12 +99,6 @@ public static class MassTransitModule
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Name = "completion_punchitem_comment";
-                    e.Temporary = false;
-                });
-            x.AddConsumer<PunchItemDeleteEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
                     e.Temporary = false;
                 });
             
@@ -228,17 +215,6 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                     e.PrefetchCount = configuration.GetValue<int>("MassTransit:PunchItemPrefetchCount");
-                });
-                cfg.ReceiveEndpoint(QueueNames.PunchItemChangeHistoryCompletionTransferQueue, e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                    e.ConfigureDeadLetterQueueDeadLetterTransport();
-                    e.ConfigureDeadLetterQueueErrorTransport();
                 });
                 cfg.ReceiveEndpoint(QueueNames.ProjectCompletionTransferQueue, e =>
                 {
@@ -364,24 +340,6 @@ public static class MassTransitModule
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
-                });
-                cfg.SubscriptionEndpoint("completion_punchitem_changehistory", "punchlistitem_changehistory", e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemChangeHistoryEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                });
-                cfg.SubscriptionEndpoint("completion_punch-item", "punchlistitem", e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemDeleteEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
                 });
                 cfg.SubscriptionEndpoint("completion_punchprioritylibrarylation", "punchprioritylibraryrelation", e =>
                 {
