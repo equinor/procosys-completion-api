@@ -9,30 +9,19 @@ using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.Time;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.AttachmentAggregate;
+using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Query.Attachments;
 
-public class AttachmentService : IAttachmentService
+public class AttachmentService(
+    IReadOnlyContext context,
+    IAzureBlobService azureBlobService,
+    IUserDelegationProvider userDelegationProvider,
+    IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
+    IOptionsSnapshot<ApplicationOptions> applicationOptions) : IAttachmentService
 {
-    private readonly IReadOnlyContext _context;
-    private readonly IAzureBlobService _azureBlobService;
-    private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions;
-
-    public AttachmentService(
-        IReadOnlyContext context,
-        IAzureBlobService azureBlobService,
-        IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IOptionsSnapshot<ApplicationOptions> applicationOptions)
-    {
-        _context = context;
-        _azureBlobService = azureBlobService;
-        _blobStorageOptions = blobStorageOptions;
-        _applicationOptions = applicationOptions;
-    }
-
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
         CancellationToken cancellationToken,
@@ -40,7 +29,7 @@ public class AttachmentService : IAttachmentService
         string? toIpAddress = null)
     {
         var attachments =
-            await (from a in _context.QuerySet<Attachment>()
+            await (from a in context.QuerySet<Attachment>()
                     .Include(a => a.Labels.Where(l => !l.IsVoided))
                     .Include(a => a.CreatedBy)
                     .Include(a => a.ModifiedBy)
@@ -102,7 +91,7 @@ public class AttachmentService : IAttachmentService
     private async Task<Attachment?> GetAttachmentAsync(Guid guid, CancellationToken cancellationToken)
     {
         var attachment = await
-            (from a in _context.QuerySet<Attachment>()
+            (from a in context.QuerySet<Attachment>()
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
         return attachment;
@@ -112,22 +101,23 @@ public class AttachmentService : IAttachmentService
         List<Attachment> attachments, 
         string? fromIpAddress = null, 
         string? toIpAddress = null) =>
-        attachments.Select(x => new
+        attachments.Select(attachment => new
         {
-            uri = GetSasUri(x, fromIpAddress, toIpAddress),
-            guid = x.Guid    
+            uri = GetSasUri(attachment, fromIpAddress, toIpAddress),
+            guid = attachment.Guid    
         }).ToDictionary(item => item.guid, item => item.uri);
 
 
-    private Uri GetSasUri(Attachment x, string? fromIpAddress = null, string? toIpAddress = null) {
+    private Uri GetSasUri(Attachment attachment, string? fromIpAddress = null, string? toIpAddress = null) {
         var now = TimeService.UtcNow;
-        return _azureBlobService.GetDownloadSasUri(
-            _blobStorageOptions.Value.BlobContainer,
-            x.GetFullBlobPath(),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)),
-            _applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
-            _applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
+        return azureBlobService.GetDownloadSasUri(
+            blobStorageOptions.Value.BlobContainer,
+            attachment.GetFullBlobPath(),
+            new DateTimeOffset(now.AddMinutes(blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
+            new DateTimeOffset(now.AddMinutes(blobStorageOptions.Value.BlobClockSkewMinutes)),
+            userDelegationProvider.GetUserDelegationKey(),
+            applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
+            applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
         );
     }
 }

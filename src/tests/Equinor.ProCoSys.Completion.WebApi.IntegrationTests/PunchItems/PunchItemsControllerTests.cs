@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.WebApi.IntegrationTests.Projects;
 using Microsoft.AspNetCore.JsonPatch;
@@ -477,7 +478,8 @@ public class PunchItemsControllerTests : TestBase
                 Arg.Any<string>(),
                 fullBlobPath,
                 Arg.Any<DateTimeOffset>(),
-                Arg.Any<DateTimeOffset>())
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<UserDelegationKey>())
             .Returns(uri);
 
         // Act
