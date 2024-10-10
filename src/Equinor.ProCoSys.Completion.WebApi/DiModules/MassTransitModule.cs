@@ -1,4 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
+using Azure.Core;
+using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
@@ -12,7 +15,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class MassTransitModule
 {
-    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration)
+    public static void AddMassTransitModule(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
     {
         services.AddMassTransit(x =>
         {
@@ -121,9 +124,18 @@ public static class MassTransitModule
 
             x.UsingAzureServiceBus((context, cfg) =>
             {
-                var connectionString = configuration.GetConnectionString("ServiceBus");
+                var serviceBusNamespace = configuration.GetValue<string>("ServiceBusNamespace");
+                if (string.IsNullOrEmpty(serviceBusNamespace))
+                {
+                    throw new Exception("ServiceBusNamespace is not properly configured");
+                }
+                var serviceUri = new Uri(serviceBusNamespace);
 
-                cfg.Host(connectionString);
+                cfg.Host(serviceUri, host =>
+                {
+                    host.TokenCredential = credential;
+                });
+
 
                 cfg.MessageTopology.SetEntityNameFormatter(new ProCoSysKebabCaseEntityNameFormatter());
                 
