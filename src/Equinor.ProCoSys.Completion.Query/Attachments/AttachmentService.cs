@@ -15,27 +15,18 @@ using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Query.Attachments;
 
-public class AttachmentService : IAttachmentService
+public class AttachmentService(
+    IReadOnlyContext context,
+    IAzureBlobService azureBlobService,
+    IUserDelegationProvider userDelegationProvider,
+    IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
+    IOptionsSnapshot<ApplicationOptions> applicationOptions) : IAttachmentService
 {
-    private readonly IReadOnlyContext _context;
-    private readonly IAzureBlobService _azureBlobService;
-    private readonly IUserDelegationProvider _userDelegationProvider;
-    private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions;
-    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions;
-
-    public AttachmentService(
-        IReadOnlyContext context,
-        IAzureBlobService azureBlobService,
-        IUserDelegationProvider userDelegationProvider,
-        IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
-        IOptionsSnapshot<ApplicationOptions> applicationOptions)
-    {
-        _context = context;
-        _azureBlobService = azureBlobService;
-        _userDelegationProvider = userDelegationProvider;
-        _blobStorageOptions = blobStorageOptions;
-        _applicationOptions = applicationOptions;
-    }
+    private readonly IReadOnlyContext _context = context;
+    private readonly IAzureBlobService _azureBlobService = azureBlobService;
+    private readonly IUserDelegationProvider _userDelegationProvider = userDelegationProvider;
+    private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions = blobStorageOptions;
+    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions = applicationOptions;
 
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
@@ -116,10 +107,10 @@ public class AttachmentService : IAttachmentService
         List<Attachment> attachments, 
         string? fromIpAddress = null, 
         string? toIpAddress = null) =>
-        attachments.Select(x => new
+        attachments.Select(attachment => new
         {
-            uri = GetSasUri(x, fromIpAddress, toIpAddress),
-            guid = x.Guid    
+            uri = GetSasUri(attachment, fromIpAddress, toIpAddress),
+            guid = attachment.Guid    
         }).ToDictionary(item => item.guid, item => item.uri);
 
 
