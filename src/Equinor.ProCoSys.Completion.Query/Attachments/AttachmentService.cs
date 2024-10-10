@@ -22,12 +22,6 @@ public class AttachmentService(
     IOptionsSnapshot<BlobStorageOptions> blobStorageOptions,
     IOptionsSnapshot<ApplicationOptions> applicationOptions) : IAttachmentService
 {
-    private readonly IReadOnlyContext _context = context;
-    private readonly IAzureBlobService _azureBlobService = azureBlobService;
-    private readonly IUserDelegationProvider _userDelegationProvider = userDelegationProvider;
-    private readonly IOptionsSnapshot<BlobStorageOptions> _blobStorageOptions = blobStorageOptions;
-    private readonly IOptionsSnapshot<ApplicationOptions> _applicationOptions = applicationOptions;
-
     public async Task<IEnumerable<AttachmentDto>> GetAllForParentAsync(
         Guid parent,
         CancellationToken cancellationToken,
@@ -35,7 +29,7 @@ public class AttachmentService(
         string? toIpAddress = null)
     {
         var attachments =
-            await (from a in _context.QuerySet<Attachment>()
+            await (from a in context.QuerySet<Attachment>()
                     .Include(a => a.Labels.Where(l => !l.IsVoided))
                     .Include(a => a.CreatedBy)
                     .Include(a => a.ModifiedBy)
@@ -97,7 +91,7 @@ public class AttachmentService(
     private async Task<Attachment?> GetAttachmentAsync(Guid guid, CancellationToken cancellationToken)
     {
         var attachment = await
-            (from a in _context.QuerySet<Attachment>()
+            (from a in context.QuerySet<Attachment>()
                 where a.Guid == guid
                 select a).SingleOrDefaultAsync(cancellationToken);
         return attachment;
@@ -114,16 +108,16 @@ public class AttachmentService(
         }).ToDictionary(item => item.guid, item => item.uri);
 
 
-    private Uri GetSasUri(Attachment x, string? fromIpAddress = null, string? toIpAddress = null) {
+    private Uri GetSasUri(Attachment attachment, string? fromIpAddress = null, string? toIpAddress = null) {
         var now = TimeService.UtcNow;
-        return _azureBlobService.GetDownloadSasUri(
-            _blobStorageOptions.Value.BlobContainer,
-            x.GetFullBlobPath(),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
-            new DateTimeOffset(now.AddMinutes(_blobStorageOptions.Value.BlobClockSkewMinutes)),
-            _userDelegationProvider.GetUserDelegationKey(),
-            _applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
-            _applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
+        return azureBlobService.GetDownloadSasUri(
+            blobStorageOptions.Value.BlobContainer,
+            attachment.GetFullBlobPath(),
+            new DateTimeOffset(now.AddMinutes(blobStorageOptions.Value.BlobClockSkewMinutes * -1)),
+            new DateTimeOffset(now.AddMinutes(blobStorageOptions.Value.BlobClockSkewMinutes)),
+            userDelegationProvider.GetUserDelegationKey(),
+            applicationOptions.Value.DevOnLocalhost ? null : fromIpAddress,
+            applicationOptions.Value.DevOnLocalhost ? null : toIpAddress
         );
     }
 }

@@ -27,7 +27,6 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     private Attachment _modifiedAttachment;
     private Guid _modifiedAttachmentGuid;
     private Guid _parentGuid;
-    private UserDelegationKey _userDelegationKeyMock;
     private IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
     private IAzureBlobService _azureBlobServiceMock;
     private IUserDelegationProvider _userDelegationProviderMock;
@@ -61,7 +60,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
 
-        _userDelegationKeyMock = Substitute.For<UserDelegationKey>();
+        var _userDelegationKeyMock = Substitute.For<UserDelegationKey>();
         _userDelegationProviderMock = Substitute.For<IUserDelegationProvider>();
         _userDelegationProviderMock.GetUserDelegationKey().Returns(_userDelegationKeyMock);
 

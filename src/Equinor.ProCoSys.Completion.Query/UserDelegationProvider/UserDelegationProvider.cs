@@ -20,9 +20,7 @@ public class UserDelegationProvider : IUserDelegationProvider
             throw new ArgumentNullException(nameof(options.CurrentValue.AccountUrl));
         }
 
-        var accountUrl = options.CurrentValue.AccountUrl;
-
-        _blobServiceClient = new BlobServiceClient(new Uri($"{accountUrl}"), credential);
+        _blobServiceClient = new BlobServiceClient(new Uri($"{options.CurrentValue.AccountUrl}"), credential);
     }
 
     public UserDelegationKey GetUserDelegationKey()
