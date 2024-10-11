@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
+using Azure.Storage.Blobs.Models;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
@@ -18,6 +19,7 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.FormularTypes;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.Responsibles;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.TagFunctions;
 using Equinor.ProCoSys.Completion.Infrastructure;
+using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,6 +39,7 @@ public class TestFactory : WebApplicationFactory<Program>
     private readonly List<Action> _teardownList = [];
 
     public readonly IAzureBlobService BlobStorageMock = Substitute.For<IAzureBlobService>();
+    private readonly IUserDelegationProvider _userDelegationProviderMock = Substitute.For<IUserDelegationProvider>();
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
@@ -164,6 +167,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.PostConfigureAll<JwtBearerOptions>(jwtBearerOptions =>
                 jwtBearerOptions.ForwardAuthenticate = IntegrationTestAuthHandler.TestAuthenticationScheme);
 
+            services.AddScoped(_ => _userDelegationProviderMock);
             services.AddScoped(_ => _personApiServiceMock);
             services.AddScoped(_ => _permissionApiServiceMock);
             services.AddScoped(_ => _checkListApiServiceMock);
@@ -286,6 +290,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 Arg.Any<string>(),
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<DateTimeOffset>(),
+                Arg.Any<UserDelegationKey>(),
                 Arg.Any<string>(),
                 Arg.Any<string>())
             .Returns(uri);

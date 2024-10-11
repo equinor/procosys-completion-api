@@ -13,6 +13,8 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.LabelAggregate;
 using NSubstitute;
 using Microsoft.Extensions.Options;
 using Equinor.ProCoSys.Completion.Domain;
+using Azure.Storage.Blobs.Models;
+using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 
 namespace Equinor.ProCoSys.Completion.Query.Tests.Attachments;
 
@@ -27,6 +29,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     private Guid _parentGuid;
     private IOptionsSnapshot<BlobStorageOptions> _blobStorageOptionsMock;
     private IAzureBlobService _azureBlobServiceMock;
+    private IUserDelegationProvider _userDelegationProviderMock;
     private IOptionsSnapshot<ApplicationOptions> _applicationOptionsMock;
 
     protected override async void SetupNewDatabase(DbContextOptions<CompletionContext> dbContextOptions)
@@ -57,6 +60,10 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
 
         _azureBlobServiceMock = Substitute.For<IAzureBlobService>();
 
+        var _userDelegationKeyMock = Substitute.For<UserDelegationKey>();
+        _userDelegationProviderMock = Substitute.For<IUserDelegationProvider>();
+        _userDelegationProviderMock.GetUserDelegationKey().Returns(_userDelegationKeyMock);
+
         _blobStorageOptionsMock = Substitute.For<IOptionsSnapshot<BlobStorageOptions>>();
         var blobStorageOptions = new BlobStorageOptions
         {
@@ -82,9 +89,9 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
         var toIpAddress = "0.0.0.1";
         var uri = new Uri("http://blah.blah.com");
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), fromIpAddress, toIpAddress).Returns(uri);
+        _azureBlobServiceMock.GetDownloadSasUri(_blobContainer, Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<UserDelegationKey>(), fromIpAddress, toIpAddress).Returns(uri);
 
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _userDelegationProviderMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.GetAllForParentAsync(_parentGuid, default, fromIpAddress, toIpAddress);
@@ -114,7 +121,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _userDelegationProviderMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.ExistsAsync(_createdAttachment.Guid, default);
@@ -127,7 +134,7 @@ public class AttachmentServiceTests : ReadOnlyTestsBase
     {
         // Arrange
         await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
-        var dut = new AttachmentService(context, _azureBlobServiceMock, _blobStorageOptionsMock, _applicationOptionsMock);
+        var dut = new AttachmentService(context, _azureBlobServiceMock, _userDelegationProviderMock, _blobStorageOptionsMock, _applicationOptionsMock);
 
         // Act
         var result = await dut.ExistsAsync(Guid.NewGuid(), default);
