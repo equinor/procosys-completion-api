@@ -205,7 +205,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandTestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSendEmailEventToCorrectEmails()
+    public async Task HandlingCommand_ShouldSendEmailEventForCorrectEmails()
     {
         // Arrange
         List<string> emailSentTo = null;

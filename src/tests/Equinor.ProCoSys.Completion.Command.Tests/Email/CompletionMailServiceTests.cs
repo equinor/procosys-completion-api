@@ -81,7 +81,7 @@ public class CompletionMailServiceTests
     }
 
     [TestMethod]
-    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventToMailAddresses()
+    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventForMailAddresses()
     {
         // Arrange
         SendEmailEvent sendEmailEvent = null!;
@@ -105,7 +105,7 @@ public class CompletionMailServiceTests
     }
 
     [TestMethod]
-    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventToCurrentUserEmail_WhenFakeEmailEnabled()
+    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventForCurrentUserEmail_WhenFakeEmailEnabled()
     {
         // Arrange
         SendEmailEvent sendEmailEvent = null!;
