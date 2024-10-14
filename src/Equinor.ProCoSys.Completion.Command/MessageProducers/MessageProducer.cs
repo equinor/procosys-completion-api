@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.MailEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MassTransit;
@@ -12,8 +13,6 @@ namespace Equinor.ProCoSys.Completion.Command.MessageProducers;
 public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublishEndpoint publishEndpoint, ILogger<MessageProducer> logger)
     : IMessageProducer
 {
-    private const string CompletionCopyAttachmentQueue = "completion-attachment-copy-event";
-
     public async Task PublishAsync<T>(T message, CancellationToken cancellationToken) where T : class, IIntegrationEvent
         => await publishEndpoint.Publish(message,
             context =>
@@ -51,17 +50,26 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
         await sender.Send(message, cancellationToken);
     }
 
-    public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message,
-        CancellationToken cancellationToken)
+    public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message, CancellationToken cancellationToken)
     {
-        var address = new Uri($"queue:{CompletionCopyAttachmentQueue}");
+        var address = new Uri($"queue:{QueueNames.CompletionCopyAttachmentQueue}");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
         logger.LogInformation("Sending: Event: {EventName}, Guid: {Guid}, CopyGuid: {DestGuid}, Address: {Address}",
             nameof(message),
             message.Guid,
             message.DestGuid,
             address);
-        await sender.Send(message!, cancellationToken);
+        await sender.Send(message, cancellationToken);
     }
 
+    public async Task SendEmailEventAsync(SendEmailEvent message, CancellationToken cancellationToken)
+    {
+        var address = new Uri($"queue:{QueueNames.CompletionSendMailQueue}");
+        var sender = await sendEndpointProvider.GetSendEndpoint(address);
+        logger.LogInformation("Sending: Event: {EventName}, To: {To}, Subject: {Subject}",
+            nameof(message),
+            string.Join(',', message.To),
+            message.Subject);
+        await sender.Send(message, cancellationToken);
+    }
 }

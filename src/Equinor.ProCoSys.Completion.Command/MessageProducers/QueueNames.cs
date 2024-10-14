@@ -1,6 +1,8 @@
 ﻿namespace Equinor.ProCoSys.Completion.Command.MessageProducers;
 public static class QueueNames
 {
+    public const string CompletionSendMailQueue = "completionSendMailQueue";
+    public const string CompletionCopyAttachmentQueue = "completion-attachment-copy-event";
     public const string ClassificationCompletionTransferQueue = "classificationCompletionTransferQueue";
     public const string CompletionHistoryCreated = "completionHistoryCreatedQueue";
     public const string CompletionHistoryUpdated = "completionHistoryUpdatedQueue";
