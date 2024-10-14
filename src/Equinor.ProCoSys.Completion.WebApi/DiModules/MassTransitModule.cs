@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using Azure.Core;
-using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
