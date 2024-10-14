@@ -128,14 +128,14 @@ public class CommentServiceTests : TestsBase
     }
 
     [TestMethod]
-    public async Task AddAsync_ShouldSendEmailToCorrectEmails()
+    public async Task AddAsync_ShouldSendEmailEventToCorrectEmails()
     {
         // Arrange
         var person = new Person(Guid.NewGuid(), null!, null!, null!, "p1@pcs.no", false);
         var emailTemplateCode = "MyCode";
         List<string> emailSentTo = null;
         _completionMailServiceMock
-            .When(x => x.SendEmailAsync(
+            .When(x => x.SendEmailEventAsync(
                 Arg.Any<string>(),
                 Arg.Any<dynamic>(),
                 Arg.Any<List<string>>(),
@@ -150,7 +150,7 @@ public class CommentServiceTests : TestsBase
 
         // Assert
         await _completionMailServiceMock.Received(1)
-            .SendEmailAsync(
+            .SendEmailEventAsync(
                 emailTemplateCode,
                 Arg.Any<dynamic>(),
                 Arg.Any<List<string>>(),
