@@ -43,10 +43,10 @@ public class CommentService(
         var commentCreatedEvent = new CommentCreatedIntegrationEvent(comment, plant);
 
         await messageProducer.PublishAsync(commentCreatedEvent, cancellationToken);
-        
+
+        await SendEmailEventAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        
-        await SendEMailAsync(emailTemplateCode, parentEntity, comment, cancellationToken);
         
         logger.LogInformation("Comment with guid {CommentGuid} created for {Type} : {CommentParentGuid}",
             comment.Guid,
@@ -80,7 +80,7 @@ public class CommentService(
         return comment;
     }
 
-    private async Task SendEMailAsync(
+    private async Task SendEmailEventAsync(
         string emailTemplateCode,
         IHaveGuid parentEntity,
         Comment comment, 
@@ -91,6 +91,6 @@ public class CommentService(
         emailContext.Url = deepLinkUtility.CreateUrl(parentEntity.GetContextName(), parentEntity.Guid);
         
         var emailAddresses = comment.Mentions.Select(m => m.Email).ToList();
-        await completionMailService.SendEmailAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);
+        await completionMailService.SendEmailEventAsync(emailTemplateCode, emailContext, emailAddresses, cancellationToken);
     }
 }

@@ -64,10 +64,11 @@ public class RejectPunchItemCommandHandler(
         var commentCreatedIntegrationEvent =
             await PublishCommentCreatedIntegrationEventsAsync(cancellationToken, comment, punchItem.Plant);
 
-        punchItem.SetRowVersion(request.RowVersion);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await SendEmailEventAsync(punchItem, request.Comment, mentions, cancellationToken);
 
-        await SendEMailAsync(punchItem, request.Comment, mentions, cancellationToken);
+        punchItem.SetRowVersion(request.RowVersion);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} rejected", punchItem.ItemNo,
             punchItem.Guid);
@@ -134,12 +135,12 @@ public class RejectPunchItemCommandHandler(
         return comment;
     }
 
-    private async Task SendEMailAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
+    private async Task SendEmailEventAsync(PunchItem punchItem, string comment, List<Person> mentions, CancellationToken cancellationToken)
     {
         var emailContext = GetEmailContext(punchItem, comment);
         var emailAddresses = mentions.Select(m => m.Email).ToList();
 
-        await completionMailService.SendEmailAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
+        await completionMailService.SendEmailEventAsync(MailTemplateCode.PunchRejected, emailContext, emailAddresses, cancellationToken);
     }
 
     private dynamic GetEmailContext(PunchItem punchItem, string comment)
