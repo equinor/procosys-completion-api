@@ -9,4 +9,4 @@ public record DocumentEvent(
     bool IsVoided,
     DateTime LastUpdated,
     string? Behavior
-);
+);//: using fields from IDocumentEventV1;

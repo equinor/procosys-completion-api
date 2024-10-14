@@ -108,7 +108,7 @@ public class DocumentConsumerService(
                                     "Type: {Type}",
                 busEvent.ProCoSysGuid, context.MessageId, type);
         }
-        logger.LogWarning("Document with Guid {Guid} was deleted. Type: {Type}", busEvent.ProCoSysGuid, type);
+        logger.LogInformation("Document with Guid {Guid} was deleted. Type: {Type}", busEvent.ProCoSysGuid, type);
     }
 
     private async Task<bool> HandleDocumentUpdateEvent(ConsumeContext context, DocumentEvent busEvent, string type)
@@ -152,14 +152,12 @@ public class DocumentConsumerService(
         documentRepository.Add(document);
     }
 
-    private void LogConcurrencyException(Exception ex, ConsumeContext context, DocumentEvent busEvent, string type, string message)
-    {
-        logger.LogWarning(ex, "{EventName} {Message} \n" +
-                          "MessageId: {MessageId} \n" +
-                          "ProCoSysGuid: {ProCoSysGuid} \n" +
-                          "Type: {Type}",
-            nameof(DocumentEvent), context.MessageId, busEvent.ProCoSysGuid, type, message);
-    }
+    private void LogConcurrencyException(Exception ex, ConsumeContext context, DocumentEvent busEvent, string type, string message) 
+        => logger.LogWarning(ex, "{EventName} {Message} \n" +
+                                 "MessageId: {MessageId} \n" +
+                                 "ProCoSysGuid: {ProCoSysGuid} \n" +
+                                 "Type: {Type}",
+            nameof(DocumentEvent),message, context.MessageId, busEvent.ProCoSysGuid, type);
 
     private static Document CreateDocumentEntity(DocumentEvent busEvent)
     {
@@ -178,5 +176,4 @@ public class DocumentConsumerService(
         document.IsVoided = busEvent.IsVoided;
     }
 }
-//: using fields from IDocumentEventV1;
 
