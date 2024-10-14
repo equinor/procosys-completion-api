@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using Azure.Core;
-using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
@@ -25,6 +24,7 @@ public static class MassTransitModule
                 o.UseBusOutbox();
             });
 
+            x.AddConsumer<SendEmailEventConsumer>();
             x.AddConsumer<HistoryItemCreatedEventConsumer>();
             x.AddConsumer<HistoryItemUpdatedEventConsumer>();
             x.AddConsumer<HistoryItemDeletedEventConsumer>();
@@ -135,6 +135,14 @@ public static class MassTransitModule
 
                 #region Receive from queues
 
+                cfg.ReceiveEndpoint(QueueNames.CompletionSendMailQueue, e =>
+                {
+                    e.ConfigureConsumer<SendEmailEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
                 cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
                 {
                     e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);

@@ -2,16 +2,13 @@
 using System.Threading.Tasks;
 using Equinor.ProCoSys.BlobStorage;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
-using Equinor.ProCoSys.Completion.MessageContracts.Attachment;
 using MassTransit;
 using Microsoft.Extensions.Options;
 
-
 namespace Equinor.ProCoSys.Completion.WebApi.Synchronization;
 
-// ReSharper disable once ClassNeverInstantiated.Global
-public class AttachmentDeletedConsumer(IAzureBlobService azureBlobService
-,IOptionsSnapshot<BlobStorageOptions> blobStorageOptions) : 
+public class AttachmentDeletedConsumer(IAzureBlobService azureBlobService,
+    IOptionsSnapshot<BlobStorageOptions> blobStorageOptions) : 
     IConsumer<AttachmentDeletedByPunchItemIntegrationEvent>,
     IConsumer<AttachmentDeletedIntegrationEvent>
 {
