@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.MailEvents;
 using MassTransit;
@@ -19,4 +20,3 @@ public class SendEmailEventConsumer (ILogger<SendEmailEventConsumer> logger, IEm
             nameof(SendEmailEvent), context.MessageId, string.Join(",", busEvent.To), busEvent.Subject);
     }
 }
-

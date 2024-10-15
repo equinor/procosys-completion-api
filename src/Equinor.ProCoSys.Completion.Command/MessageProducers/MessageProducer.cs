@@ -14,7 +14,6 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
     : IMessageProducer
 {
     private const string CompletionCopyAttachmentQueue = "completion-attachment-copy-event";
-    private const string CompletionSendEmailQueue = "completion-send-email-event";
 
     public async Task PublishAsync<T>(T message, CancellationToken cancellationToken) where T : class, IIntegrationEvent
         => await publishEndpoint.Publish(message,
@@ -67,7 +66,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
 
     public async Task SendEmailEventAsync(SendEmailEvent message, CancellationToken cancellationToken)
     {
-        var address = new Uri($"queue:{CompletionSendEmailQueue}");
+        var address = new Uri($"queue:{QueueNames.CompletionSendEmailQueue}");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
         logger.LogInformation("Sending: Event: {EventName}, To: {To}, Subject: {Subject}",
             nameof(message),

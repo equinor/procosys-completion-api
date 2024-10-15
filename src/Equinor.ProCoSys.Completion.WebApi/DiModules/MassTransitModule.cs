@@ -135,6 +135,15 @@ public static class MassTransitModule
 
                 #region Receive from queues
 
+                cfg.ReceiveEndpoint(QueueNames.CompletionSendEmailQueue, e =>
+                {
+                    e.ConfigureConsumer<SendEmailEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
+
                 cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
                 {
                     e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);
