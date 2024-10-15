@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using Azure.Core;
-using Azure.Identity;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.WebApi.MassTransit;
@@ -86,22 +85,6 @@ public static class MassTransitModule
                     e.Name = "completion_wo";
                     e.Temporary = false;
                 });
-            x.AddConsumer<PunchItemEventConsumer>();
-            x.AddConsumer<PunchItemAttachmentEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_attachment";
-                    e.Temporary = false;
-                });
-            x.AddConsumer<PunchItemCommentEventConsumer>()
-                .Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = "completion_punchitem_comment";
-                    e.Temporary = false;
-                });
-            
             x.AddConsumer<ClassificationConsumer>()
                 .Endpoint(e =>
                 {
@@ -204,18 +187,6 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-                cfg.ReceiveEndpoint(QueueNames.PunchItemCompletionTransferQueue, e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                    e.ConfigureDeadLetterQueueDeadLetterTransport();
-                    e.ConfigureDeadLetterQueueErrorTransport();
-                    e.PrefetchCount = configuration.GetValue<int>("MassTransit:PunchItemPrefetchCount");
-                });
                 cfg.ReceiveEndpoint(QueueNames.ProjectCompletionTransferQueue, e =>
                 {
                     e.ClearSerialization();
@@ -233,28 +204,6 @@ public static class MassTransitModule
                     e.UseRawJsonSerializer();
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<PersonEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                    e.ConfigureDeadLetterQueueDeadLetterTransport();
-                    e.ConfigureDeadLetterQueueErrorTransport();
-                });
-                cfg.ReceiveEndpoint(QueueNames.PunchItemAttachmentCompletionTransferQueue, e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemAttachmentEventConsumer>(context);
-                    e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false;
-                    e.ConfigureDeadLetterQueueDeadLetterTransport();
-                    e.ConfigureDeadLetterQueueErrorTransport();
-                });
-                cfg.ReceiveEndpoint(QueueNames.PunchItemCommentCompletionTransferQueue, e =>
-                {
-                    e.ClearSerialization();
-                    e.UseRawJsonSerializer();
-                    e.UseRawJsonDeserializer();
-                    e.ConfigureConsumer<PunchItemCommentEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
@@ -281,7 +230,8 @@ public static class MassTransitModule
                     e.UseRawJsonDeserializer();
                     e.ConfigureConsumer<ProjectEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
-                    e.PublishFaults = false; //I didn't get this to work, I think it tried to publish to endpoint that already exists in different context or something, we're logging errors anyway.
+                    e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_person", "person", e =>
                 {
@@ -291,6 +241,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<PersonEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_library", "library", e =>
                 {
@@ -300,6 +251,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<LibraryEventConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.SubscriptionEndpoint("completion_document", "document", e =>
                 {
@@ -349,6 +301,7 @@ public static class MassTransitModule
                     e.ConfigureConsumer<ClassificationConsumer>(context);
                     e.ConfigureConsumeTopology = false;
                     e.PublishFaults = false;
+                    e.ConcurrentMessageLimit = 1; //This forces consumer to handle messages one by one.
                 });
                 cfg.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("completion"));
                 #endregion
