@@ -13,6 +13,9 @@ namespace Equinor.ProCoSys.Completion.Command.MessageProducers;
 public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublishEndpoint publishEndpoint, ILogger<MessageProducer> logger)
     : IMessageProducer
 {
+    private const string CompletionCopyAttachmentQueue = "completion-attachment-copy-event";
+    private const string CompletionSendEmailQueue = "completion-send-email-event";
+
     public async Task PublishAsync<T>(T message, CancellationToken cancellationToken) where T : class, IIntegrationEvent
         => await publishEndpoint.Publish(message,
             context =>
@@ -52,7 +55,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
 
     public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message, CancellationToken cancellationToken)
     {
-        var address = new Uri($"queue:{QueueNames.CompletionCopyAttachmentQueue}");
+        var address = new Uri($"queue:{CompletionCopyAttachmentQueue}");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
         logger.LogInformation("Sending: Event: {EventName}, Guid: {Guid}, CopyGuid: {DestGuid}, Address: {Address}",
             nameof(message),
@@ -64,7 +67,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
 
     public async Task SendEmailEventAsync(SendEmailEvent message, CancellationToken cancellationToken)
     {
-        var address = new Uri($"queue:{QueueNames.CompletionSendMailQueue}");
+        var address = new Uri($"queue:{CompletionSendEmailQueue}");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
         logger.LogInformation("Sending: Event: {EventName}, To: {To}, Subject: {Subject}",
             nameof(message),
