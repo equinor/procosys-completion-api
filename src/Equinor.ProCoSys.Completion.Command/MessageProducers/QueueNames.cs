@@ -3,6 +3,7 @@
 public static class QueueNames
 {
     public const string CompletionSendEmailQueue = "completionSendEmailQueue";
+    public const string CompletionCopyAttachmentQueue = "completionCopyAttachmentQueue";
     public const string ClassificationCompletionTransferQueue = "classificationCompletionTransferQueue";
     public const string CompletionHistoryCreated = "completionHistoryCreatedQueue";
     public const string CompletionHistoryUpdated = "completionHistoryUpdatedQueue";
@@ -11,9 +12,6 @@ public static class QueueNames
     public const string SwcrCompletionTransferQueue = "swcrCompletionTransferQueue";
     public const string DocumentCompletionTransferQueue = "documentCompletionTransferQueue";
     public const string WorkOrderCompletionTransferQueue = "workOrderCompletionTransferQueue";
-    public const string PunchItemCompletionTransferQueue = "punchItemCompletionTransferQueue";
     public const string ProjectCompletionTransferQueue = "projectCompletionTransferQueue";
     public const string PersonCompletionTransferQueue = "personCompletionTransferQueue";
-    public const string PunchItemAttachmentCompletionTransferQueue = "punchItemAttachmentCompletionTransferQueue";
-    public const string PunchItemCommentCompletionTransferQueue = "punchItemCommentCompletionTransferQueue";
 }

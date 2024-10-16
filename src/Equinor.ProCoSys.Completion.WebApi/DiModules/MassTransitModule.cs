@@ -127,7 +127,14 @@ public static class MassTransitModule
                     e.ConfigureDeadLetterQueueDeadLetterTransport();
                     e.ConfigureDeadLetterQueueErrorTransport();
                 });
-
+                cfg.ReceiveEndpoint(QueueNames.CompletionCopyAttachmentQueue, e =>
+                {
+                    e.ConfigureConsumer<AttachmentCopyEventConsumer>(context);
+                    e.ConfigureConsumeTopology = false;
+                    e.PublishFaults = false;
+                    e.ConfigureDeadLetterQueueDeadLetterTransport();
+                    e.ConfigureDeadLetterQueueErrorTransport();
+                });
                 cfg.ReceiveEndpoint(QueueNames.CompletionHistoryCreated, e =>
                 {
                     e.ConfigureConsumer<HistoryItemCreatedEventConsumer>(context);
