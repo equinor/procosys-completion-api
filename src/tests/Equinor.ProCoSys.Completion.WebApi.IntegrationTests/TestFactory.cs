@@ -11,7 +11,6 @@ using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Permission;
 using Equinor.ProCoSys.Auth.Person;
 using Equinor.ProCoSys.BlobStorage;
-using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
@@ -43,7 +42,6 @@ public class TestFactory : WebApplicationFactory<Program>
     private readonly IPersonApiService _personApiServiceMock = Substitute.For<IPersonApiService>();
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
-    private readonly IEmailService _emailServiceMock = Substitute.For<IEmailService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
     private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
     private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
@@ -172,7 +170,6 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.AddScoped(_ => _permissionApiServiceMock);
             services.AddScoped(_ => _checkListApiServiceMock);
             services.AddScoped(_ => BlobStorageMock);
-            services.AddScoped(_ => _emailServiceMock);
             services.AddScoped(_ => _formularTypeApiService);
             services.AddScoped(_ => _responsibleApiService);
             services.AddScoped(_ => _tagFunctionApiService);

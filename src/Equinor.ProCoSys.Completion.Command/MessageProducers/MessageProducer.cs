@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.AttachmentEvents;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.MailEvents;
 using Equinor.ProCoSys.Completion.MessageContracts;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MassTransit;
@@ -51,8 +52,7 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
         await sender.Send(message, cancellationToken);
     }
 
-    public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message,
-        CancellationToken cancellationToken)
+    public async Task SendCopyAttachmentEventAsync(AttachmentCopyIntegrationEvent message, CancellationToken cancellationToken)
     {
         var address = new Uri($"queue:{CompletionCopyAttachmentQueue}");
         var sender = await sendEndpointProvider.GetSendEndpoint(address);
@@ -61,7 +61,17 @@ public class MessageProducer(ISendEndpointProvider sendEndpointProvider, IPublis
             message.Guid,
             message.DestGuid,
             address);
-        await sender.Send(message!, cancellationToken);
+        await sender.Send(message, cancellationToken);
     }
 
+    public async Task SendEmailEventAsync(SendEmailEvent message, CancellationToken cancellationToken)
+    {
+        var address = new Uri($"queue:{QueueNames.CompletionSendEmailQueue}");
+        var sender = await sendEndpointProvider.GetSendEndpoint(address);
+        logger.LogInformation("Sending: Event: {EventName}, To: {To}, Subject: {Subject}",
+            nameof(message),
+            string.Join(',', message.To),
+            message.Subject);
+        await sender.Send(message, cancellationToken);
+    }
 }

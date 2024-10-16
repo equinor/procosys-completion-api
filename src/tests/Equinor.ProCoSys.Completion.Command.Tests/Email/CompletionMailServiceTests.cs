@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Common.TemplateTransforming;
 using Equinor.ProCoSys.Completion.Command.Email;
+using Equinor.ProCoSys.Completion.Command.MessageProducers;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.MailTemplateAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.MailEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,7 +26,7 @@ public class CompletionMailServiceTests
     private IPersonRepository _personRepositoryMock;
     private IMailTemplateRepository _mailTemplateRepositoryMock;
     private ITemplateTransformer _templateTransformerMock;
-    private IEmailService _emailServiceMock;
+    private IMessageProducer _messageProducerMock;
     private IOptionsMonitor<ApplicationOptions> _optionsMock;
     
     private readonly object _context = new Whatever();
@@ -55,86 +56,85 @@ public class CompletionMailServiceTests
             .Returns(_transformedBody);
 
         _personRepositoryMock = Substitute.For<IPersonRepository>();
-        _emailServiceMock = Substitute.For<IEmailService>();
+        _messageProducerMock = Substitute.For<IMessageProducer>();
 
         _dut = new CompletionMailService(
             _plantProviderMock,
             _personRepositoryMock,
             _mailTemplateRepositoryMock,
             _templateTransformerMock,
-            _emailServiceMock,
+            _messageProducerMock,
             Substitute.For<ILogger<CompletionMailService>>(),
             _optionsMock);
     }
 
     [TestMethod]
-    public async Task SendEmailAsync_ShouldNotSendAnyMail_WhenNoEmailAddresses()
+    public async Task SendEmailEventAsync_ShouldNotSendAnyMailEvent_WhenNoEmailAddresses()
     {
         // Act
-        await _dut.SendEmailAsync(_code, _context, [], CancellationToken.None);
+        await _dut.SendEmailEventAsync(_code, _context, [], CancellationToken.None);
 
         // Assert
-        await _emailServiceMock.Received(0).SendEmailsAsync(
-            Arg.Any<List<string>>(),
-            Arg.Any<string>(),
-            Arg.Any<string>(),
+        await _messageProducerMock.Received(0).SendEmailEventAsync(
+            Arg.Any<SendEmailEvent>(),
             Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
-    public async Task SendEmailAsync_ShouldSendTransformedMailToMailAddresses()
-    {
-        // Act
-        await _dut.SendEmailAsync(_code, _context, _emailAddresses, CancellationToken.None);
-
-        // Assert
-        await _emailServiceMock.Received(1).SendEmailsAsync(
-            _emailAddresses, 
-            _transformedSubject, 
-            _transformedBody, 
-            Arg.Any<CancellationToken>());
-    }
-
-    [TestMethod]
-    public async Task SendEmailAsync_ShouldSendTransformedMailToCurrentUserEmail_WhenFakeEmailEnabled()
+    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventForMailAddresses()
     {
         // Arrange
-        List<string> emailSentTo = null;
-        string sentEmailSubject = null;
-        string sentEmailBody = null;
-        _emailServiceMock
-            .When(x => x.SendEmailsAsync(
-                Arg.Any<List<string>>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
+        SendEmailEvent sendEmailEvent = null!;
+        _messageProducerMock
+            .When(x => x.SendEmailEventAsync(
+                Arg.Any<SendEmailEvent>(),
                 Arg.Any<CancellationToken>()))
-            .Do(callInfo =>
-            {
-                emailSentTo = callInfo.ArgAt<List<string>>(0);
-                sentEmailSubject = callInfo.ArgAt<string>(1);
-                sentEmailBody = callInfo.ArgAt<string>(2);
-            });
+            .Do(callInfo => sendEmailEvent = callInfo.Arg<SendEmailEvent>());
+        
+        // Act
+        await _dut.SendEmailEventAsync(_code, _context, _emailAddresses, CancellationToken.None);
+
+        // Assert
+        await _messageProducerMock.Received(1).SendEmailEventAsync(
+            Arg.Any<SendEmailEvent>(),
+            Arg.Any<CancellationToken>());
+        Assert.IsNotNull(sendEmailEvent);
+        CollectionAssert.AreEqual(_emailAddresses, sendEmailEvent.To);
+        Assert.AreEqual(_transformedSubject, sendEmailEvent.Subject);
+        Assert.AreEqual(_transformedBody, sendEmailEvent.Body);
+    }
+
+    [TestMethod]
+    public async Task SendEmailEventAsync_ShouldSendTransformedMailEventForCurrentUserEmail_WhenFakeEmailEnabled()
+    {
+        // Arrange
+        SendEmailEvent sendEmailEvent = null!;
+        _messageProducerMock
+            .When(x => x.SendEmailEventAsync(
+                Arg.Any<SendEmailEvent>(),
+                Arg.Any<CancellationToken>()))
+            .Do(callInfo => sendEmailEvent = callInfo.Arg<SendEmailEvent>());
         _optionsMock.CurrentValue.Returns(new ApplicationOptions { FakeEmail = true });
         var currentPerson = new Person(Guid.NewGuid(), null!, null!, null!, "current@pcs.no", false);
         _personRepositoryMock.GetCurrentPersonAsync(CancellationToken.None)
             .Returns(currentPerson);
         
         // Act
-        await _dut.SendEmailAsync(_code, _context, _emailAddresses, CancellationToken.None);
+        await _dut.SendEmailEventAsync(_code, _context, _emailAddresses, CancellationToken.None);
 
         // Assert
-        await _emailServiceMock.Received(1).SendEmailsAsync(
-            Arg.Any<List<string>>(),
-            Arg.Any<string>(),
-            Arg.Any<string>(),
+        await _messageProducerMock.Received(1).SendEmailEventAsync(
+            Arg.Any<SendEmailEvent>(),
             Arg.Any<CancellationToken>());
-        Assert.AreEqual(1, emailSentTo.Count);
-        Assert.AreEqual(currentPerson.Email, emailSentTo.ElementAt(0));
+        Assert.IsNotNull(sendEmailEvent);
 
-        Assert.IsTrue(sentEmailSubject.StartsWith(_transformedSubject));
-        Assert.IsTrue(sentEmailSubject.Contains("fake email"));
-        Assert.IsTrue(sentEmailBody.EndsWith(_transformedBody));
-        Assert.IsTrue(sentEmailBody.Contains("fake email"));
+        Assert.AreEqual(1, sendEmailEvent.To.Count);
+        Assert.AreEqual(currentPerson.Email, sendEmailEvent.To.ElementAt(0));
+
+        Assert.IsTrue(sendEmailEvent.Subject.StartsWith(_transformedSubject));
+        Assert.IsTrue(sendEmailEvent.Subject.Contains("fake email"));
+        Assert.IsTrue(sendEmailEvent.Body.EndsWith(_transformedBody));
+        Assert.IsTrue(sendEmailEvent.Body.Contains("fake email"));
     }
 }
 

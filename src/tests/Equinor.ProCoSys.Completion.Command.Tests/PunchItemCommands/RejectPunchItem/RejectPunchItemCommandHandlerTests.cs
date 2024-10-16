@@ -205,12 +205,12 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandTestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldSendEmailToCorrectEmails()
+    public async Task HandlingCommand_ShouldSendEmailEventForCorrectEmails()
     {
         // Arrange
         List<string> emailSentTo = null;
         _completionMailServiceMock
-            .When(x => x.SendEmailAsync(
+            .When(x => x.SendEmailEventAsync(
                 Arg.Any<string>(),
                 Arg.Any<dynamic>(),
                 Arg.Any<List<string>>(),
@@ -225,7 +225,7 @@ public class RejectPunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         // Assert
         await _completionMailServiceMock.Received(1)
-            .SendEmailAsync(
+            .SendEmailEventAsync(
                 MailTemplateCode.PunchRejected,
                 Arg.Any<dynamic>(),
                 Arg.Any<List<string>>(),
