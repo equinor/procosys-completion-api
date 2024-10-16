@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.MailEvents;
 using MassTransit;
