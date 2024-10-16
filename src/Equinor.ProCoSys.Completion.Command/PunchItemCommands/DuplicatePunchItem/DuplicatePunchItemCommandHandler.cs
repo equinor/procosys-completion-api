@@ -68,7 +68,7 @@ public class DuplicatePunchItemCommandHandler(
                 punchCopyProperties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
 
                 var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(
-                    punchCopy.ItemNo, 
+                    punchItem.ItemNo, 
                     punchCopy,
                     punchCopyProperties, 
                     cancellationToken);
