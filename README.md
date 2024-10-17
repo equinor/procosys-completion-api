@@ -1,4 +1,6 @@
 # procosys-completion-api
+[![SCM Compliance](https://scm-compliance-api.radix.equinor.com/repos/equinor/f13fb50c-0f7c-4e82-8403-8153827b753b/badge)](https://developer.equinor.com/governance/scm-policy/)
+
 REST API for the completion module in Project Completion System (ProCoSys (PCS))
 
 ### Secrets
