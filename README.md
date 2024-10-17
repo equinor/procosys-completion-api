@@ -121,3 +121,7 @@ Deleting all local branches except for main
 ```Bash
 git for-each-ref --format '%(refname:short)' refs/heads | grep -v "main" | xargs git branch -D 
 ```
+
+## Contributing ##
+
+If you want to contribute to this project, please see: [CONTRIBUTING.md](CONTRIBUTING.md).
