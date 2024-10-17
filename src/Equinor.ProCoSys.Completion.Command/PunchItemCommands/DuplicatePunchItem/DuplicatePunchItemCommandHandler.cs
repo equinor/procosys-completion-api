@@ -65,7 +65,7 @@ public class DuplicatePunchItemCommandHandler(
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Add property for ItemNo first in list, since it is an "important" property
-                punchCopyProperties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchItem.ItemNo, ValueDisplayType.IntAsText));
+                punchCopyProperties.Insert(0, new Property(nameof(PunchItem.ItemNo), punchCopy.ItemNo, ValueDisplayType.IntAsText));
 
                 var integrationEvent = await PublishPunchItemCreatedIntegrationEventsAsync(
                     punchItem.ItemNo, 
