@@ -7,6 +7,8 @@ using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 using Equinor.ProCoSys.Completion.TieImport.Services;
+using Equinor.TI.CommonLibrary.Mapper;
+using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.TIE.Adapter.Base.Message;
 using Equinor.TI.TIE.Adapter.Base.Setup;
 using Equinor.TI.TIE.Adapter.TIE1.Config;
@@ -30,6 +32,21 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
+        services.AddSingleton<ISchemaSource, CacheWrapper>(x =>
+        {
+            var appId = builder.Configuration["AzureAd:ClientId"];
+            var tenantId = builder.Configuration["AzureAd:TenantId"];
+            var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+            var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
+            ISchemaSource source = new ApiSource(new ApiSourceOptions
+            {
+                TokenProviderConnectionString = $"RunAs=App;AppId={appId};" +
+                                                $"TenantId={tenantId};" +
+                                                $"AppKey={clientSecret}"
+            });
+            return new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(cacheDuration));
+        });
+        
         
         services.AddAdapterHosting();
         if (!builder.Environment.IsIntegrationTest())

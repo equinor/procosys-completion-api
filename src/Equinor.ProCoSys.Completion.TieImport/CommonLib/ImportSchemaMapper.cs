@@ -15,11 +15,11 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
 
     public ImportSchemaMapper(
         ILogger<ImportSchemaMapper> logger,
-        IOptionsMonitor<AzureAdOptions> azureAdOptions,
+        ISchemaSource schemaSource,
         IOptionsMonitor<CommonLibOptions> commonLibOptions)
     {
         _logger = logger;
-        _legacySchemaMapper = CreateLegacySchemaMapper(azureAdOptions, commonLibOptions);
+        _legacySchemaMapper = CreateLegacySchemaMapper(schemaSource, commonLibOptions);
     }
 
     public MappingResult Map(TIInterfaceMessage message)
@@ -51,25 +51,10 @@ public sealed class ImportSchemaMapper : IImportSchemaMapper
     /// </summary>
     /// TODO: 106837 Do we still need to use a legacy mapper, or can we use a different mapper?
     private LegacySchemaMapper CreateLegacySchemaMapper(
-        IOptionsMonitor<AzureAdOptions> azureAdOptions, 
+        ISchemaSource source, 
         IOptionsMonitor<CommonLibOptions> commonLibOptions)
     {
         _logger.LogInformation("Initializing CommonLib LegacySchemaMapper");
-
-        var appId = azureAdOptions.CurrentValue.ClientId;
-        var tenantId = azureAdOptions.CurrentValue.TenantId;
-        var appKey = azureAdOptions.CurrentValue.ClientSecret;
-
-        // Create a source for retrieving schema data from the API. A token provider connection string is needed.
-        ISchemaSource source = new ApiSource(new ApiSourceOptions
-        {
-            TokenProviderConnectionString = $"RunAs=App;AppId={appId};TenantId={tenantId};AppKey={appKey}"
-        });
-
-        // Add caching functionality
-        source = new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(commonLibOptions.CurrentValue.CacheDurationDays));
-
-        // Create an instance of a mapper that will map messages between [many] to [1] schema.
         var mapper = new SourceSchemaSelector
         {
             SchemaFromList = commonLibOptions.CurrentValue.SchemaFrom,
