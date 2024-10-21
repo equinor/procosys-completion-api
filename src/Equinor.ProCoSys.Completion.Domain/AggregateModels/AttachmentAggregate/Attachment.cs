@@ -106,14 +106,4 @@ public class Attachment : EntityBase, IAggregateRoot, ICreationAuditable, IModif
             }
         }
     }
-
-    public void SetSyncProperties(DateTime modifiedAt) => ModifiedAtUtc = modifiedAt;
-
-    public void SetSyncProperties(Person createdBy, DateTime createdAt, DateTime modifiedAt)
-    {
-        CreatedAtUtc = createdAt;
-        CreatedById = createdBy.Id;
-        CreatedBy = createdBy;
-        SetSyncProperties(modifiedAt);
-    }
 }
