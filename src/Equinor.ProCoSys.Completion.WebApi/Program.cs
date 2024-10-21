@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Azure.Core;
+﻿using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
