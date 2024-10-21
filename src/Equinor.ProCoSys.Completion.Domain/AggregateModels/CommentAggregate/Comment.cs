@@ -67,13 +67,6 @@ public class Comment : EntityBase, IAggregateRoot, ICreationAuditable, IBelongTo
         _mentions.AddRange(mentions);
     }
 
-    public void SetSyncProperties(Person createdBy, DateTime createdAt)
-    {
-        CreatedAtUtc = createdAt;
-        CreatedById = createdBy.Id;
-        CreatedBy = createdBy;
-    }
-
     private void AddNewLabels(IList<Label> labels)
     {
         foreach (var label in labels)

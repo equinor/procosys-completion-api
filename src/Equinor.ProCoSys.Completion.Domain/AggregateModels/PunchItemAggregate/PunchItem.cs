@@ -60,6 +60,8 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     // Guid to CheckList in ProCoSys 4 owning the Punch. Will probably be an internal Id to Internal CheckList table when CheckList migrated to Completion
     public Guid CheckListGuid { get; private set; }
     public Category Category { get; set; }
+    // ItemNo automatically set from a sequence
+    // ReSharper disable once UnusedAutoPropertyAccessor.Local
     public long ItemNo { get; private set; }
     public string Description { get; set; }
     public LibraryItem RaisedByOrg { get; private set; } = null!;
@@ -398,39 +400,6 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
 
         ProjectId = project.Id;
         Project = project;
-    }
-
-    public void SetSyncProperties(
-        Person? createdBy, 
-        DateTime createdAt,
-        Person? modifiedBy,
-        DateTime? modifiedAt,
-        Person? clearedBy,
-        DateTime? clearedAt,
-        Person? rejectedBy,
-        DateTime? rejectedAt,
-        Person? verifiedBy,
-        DateTime? verifiedAt,
-        Person? actionBy,
-        long itemNo
-        )
-    {
-        if(createdBy != null)
-        {
-            CreatedBy = createdBy;
-        }
-
-        CreatedAtUtc = createdAt;
-        ModifiedBy = modifiedBy;
-        ModifiedAtUtc = modifiedAt;
-        ClearedBy = clearedBy;
-        ClearedAtUtc = clearedAt;
-        RejectedBy = rejectedBy;
-        RejectedAtUtc = rejectedAt;
-        VerifiedBy = verifiedBy;
-        VerifiedAtUtc = verifiedAt;
-        ActionBy = actionBy;
-        ItemNo = itemNo;
     }
 
     public List<IProperty> GetRequiredProperties()
