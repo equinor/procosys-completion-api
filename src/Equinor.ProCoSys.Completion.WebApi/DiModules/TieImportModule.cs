@@ -32,7 +32,7 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
-        services.AddSingleton<ISchemaSource, CacheWrapper>(x =>
+        services.AddSingleton<ISchemaSource, CacheWrapper>(_ =>
         {
             var appId = builder.Configuration["AzureAd:ClientId"];
             var tenantId = builder.Configuration["AzureAd:TenantId"];
