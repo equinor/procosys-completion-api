@@ -57,7 +57,7 @@ public class PunchItemsController(IMediator mediator) : ControllerBase
     /// <param name="guids">List of guids on PunchItems to find</param>
     /// <returns>List of found PunchItems</returns>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
-    // use Post instead of Get due to length limitation on url and querystring
+    // using HttpPost and FromBody instead of HttpGet and FromQuery due to length limitation on url and querystring
     [HttpPost("GetMany")]
     public async Task<ActionResult<IEnumerable<PunchItemTinyDetailsDto>>> GetPunchItemsByGuids(
         [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]

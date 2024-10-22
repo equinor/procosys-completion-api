@@ -27,6 +27,62 @@ public class PunchItemsControllerNegativeTests : TestBase
         await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }
 
+    #region GetPunchItems
+    [TestMethod]
+    public async Task GetPunchItems_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest],
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest],
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItems_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithoutAccess, 
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnEmptyList_WhenUnknownPunchItem()
+    {
+        var dtos = await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            [Guid.NewGuid()]);
+
+        Assert.IsFalse(dtos.Any());
+    }
+
+    #endregion
+
     #region GetPunchItem
     [TestMethod]
     public async Task GetPunchItem_AsAnonymous_ShouldReturnUnauthorized()
