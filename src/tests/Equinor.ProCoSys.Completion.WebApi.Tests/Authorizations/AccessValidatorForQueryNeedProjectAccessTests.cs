@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations;
 
 [TestClass]
-public abstract class AccessValidatorForQueryNeedAccessTests<TQuery> : AccessValidatorTestBase
+public abstract class AccessValidatorForQueryNeedProjectAccessTests<TQuery> : AccessValidatorTestBase
     where TQuery : INeedProjectAccess, IBaseRequest
 {
     protected abstract TQuery GetQueryWithAccessToProjectToTest();

@@ -587,6 +587,454 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
     #endregion
 
+    #region GetPunchItemsByPunchItemGuids
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnManyPunchItems()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem1 = _createdPunchItem;
+        var testPunchItem2 = _modifiedPunchItem;
+        var testPunchItem3 = _clearedPunchItem;
+        var testPunchItem4 = _verifiedPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync(
+            [testPunchItem1.Guid, testPunchItem2.Guid, testPunchItem3.Guid, testPunchItem4.Guid], default);
+
+        // Assert
+        var dtoList = punchItemDetailsDtos.ToList();
+        Assert.AreEqual(4, dtoList.Count);
+        Assert.IsNotNull(dtoList.SingleOrDefault(p => p.Guid == testPunchItem1.Guid));
+        Assert.IsNotNull(dtoList.SingleOrDefault(p => p.Guid == testPunchItem2.Guid));
+        Assert.IsNotNull(dtoList.SingleOrDefault(p => p.Guid == testPunchItem3.Guid));
+        Assert.IsNotNull(dtoList.SingleOrDefault(p => p.Guid == testPunchItem4.Guid));
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnCorrectCreatedPunchItem_WhenPunchItemCreated()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _createdPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+
+        AssertRaisedByOrg(punchItemDetailsDto);
+        AssertClearingByOrg(punchItemDetailsDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnCorrectModifiedPunchItem_WhenPunchItemModified()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _modifiedPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnCorrectClearedPunchItem_WhenPunchItemCleared()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _clearedPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnCorrectVerifiedPunchItem_WhenPunchItemVerified()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _verifiedPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnCorrectRejectedPunchItem_WhenPunchItemRejected()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _rejectedPunchItem;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        AssertPunchItem(testPunchItem, punchItemDetailsDto);
+
+        Assert.IsTrue(punchItemDetailsDto.IsReadyToBeCleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUncleared);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
+        Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithPriority()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithPriority;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var libraryItemDto = punchItemDetailsDto.Priority;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_priority, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithSorting()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithSorting;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var libraryItemDto = punchItemDetailsDto.Sorting;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_sorting, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithType()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithType;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var libraryItemDto = punchItemDetailsDto.Type;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_type, libraryItemDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithDocument()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithDocument;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var documentDto = punchItemDetailsDto.Document;
+        Assert.IsNotNull(documentDto);
+        AssertDocument(_document, documentDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithWorkOrder;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var workOrderDto = punchItemDetailsDto.WorkOrder;
+        Assert.IsNotNull(workOrderDto);
+        AssertWorkOrder(_workOrder, workOrderDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithOriginalWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithOriginalWorkOrder;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var originalWorkOrderDto = punchItemDetailsDto.OriginalWorkOrder;
+        Assert.IsNotNull(originalWorkOrderDto);
+        AssertWorkOrder(_workOrder, originalWorkOrderDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithSWCR()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithSWCR;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        var swcrDto = punchItemDetailsDto.SWCR;
+        Assert.IsNotNull(swcrDto);
+        AssertSWCR(_swcr, swcrDto);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutPriority()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutPriority;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.Priority);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutSorting()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutSorting;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.Sorting);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutType()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutType;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.Type);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutDocument()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutDocument;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.Document);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutOriginalWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutOriginalWorkOrder;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.OriginalWorkOrder);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutSWCR()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutSWCR;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.SWCR);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnPunchItem_WithoutWorkOrder()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+
+        var testPunchItem = _punchItemWithoutWorkOrder;
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([testPunchItem.Guid], default);
+
+        // Assert
+        var punchItemDetailsDto = punchItemDetailsDtos.SingleOrDefault();
+        Assert.IsNotNull(punchItemDetailsDto);
+
+        Assert.IsNull(punchItemDetailsDto.WorkOrder);
+    }
+
+    [TestMethod]
+    public async Task GetPunchItemsByPunchItemGuids_ShouldReturnNull_WhenUnknownPunch()
+    {
+        // Arrange
+        await using var context = new CompletionContext(_dbContextOptions, _plantProviderMock, _eventDispatcherMock, _currentUserProviderMock, _tokenCredentialsMock);
+        var dut = new PunchItemService(context);
+
+        // Act
+        var punchItemDetailsDtos = await dut.GetPunchItemsByPunchItemGuidsAsync([Guid.NewGuid()], default);
+
+        // Assert
+        Assert.IsFalse(punchItemDetailsDtos.Any());
+    }
+    #endregion
+
     #region GetProjectOrNullByPunchItemGuid
     [TestMethod]
     public async Task GetProjectOrNullByPunchItemGuid_ShouldReturnProjectDetails_WhenKnownPunch()
@@ -643,6 +1091,16 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsNotNull(createdBy);
         Assert.AreEqual(CurrentUserOid, createdBy.Guid);
         Assert.AreEqual(punchItem.CreatedAtUtc, punchItemDetailsDto.CreatedAtUtc);
+    }
+
+    private void AssertPunchItem(PunchItem punchItem, PunchItemTinyDetailsDto punchItemDetailsDto)
+    {
+        Assert.AreEqual(punchItem.ItemNo, punchItemDetailsDto.ItemNo);
+        Assert.AreEqual(punchItem.Category.ToString(), punchItemDetailsDto.Category);
+        Assert.AreEqual(punchItem.Description, punchItemDetailsDto.Description);
+        Assert.AreEqual(punchItem.RowVersion.ConvertToString(), punchItemDetailsDto.RowVersion);
+        var project = GetProjectById(punchItem.ProjectId);
+        Assert.AreEqual(project.Name, punchItemDetailsDto.ProjectName);
     }
 
     private static void AssertNotModified(PunchItemDetailsDto punchItemDetailsDto)
@@ -705,6 +1163,20 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
     }
 
     private void AssertClearingByOrg(PunchItemDetailsDto punchItemDetailsDto)
+    {
+        var libraryItemDto = punchItemDetailsDto.ClearingByOrg;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_clearingByOrg, libraryItemDto);
+    }
+
+    private void AssertRaisedByOrg(PunchItemTinyDetailsDto punchItemDetailsDto)
+    {
+        var libraryItemDto = punchItemDetailsDto.RaisedByOrg;
+        Assert.IsNotNull(libraryItemDto);
+        AssertLibraryItem(_raisedByOrg, libraryItemDto);
+    }
+
+    private void AssertClearingByOrg(PunchItemTinyDetailsDto punchItemDetailsDto)
     {
         var libraryItemDto = punchItemDetailsDto.ClearingByOrg;
         Assert.IsNotNull(libraryItemDto);

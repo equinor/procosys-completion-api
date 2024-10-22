@@ -1,26 +1,30 @@
 ﻿using System;
-using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItem;
+using Equinor.ProCoSys.Completion.Query.PunchItemQueries.GetPunchItems;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsPunchItemQueryTests;
 
 [TestClass]
-public class AccessValidatorForGetPunchItemQueryTests : AccessValidatorForQueryNeedProjectAccessTests<GetPunchItemQuery>
+public class AccessValidatorForGetPunchItemsQueryTests : AccessValidatorForQueryNeedManyProjectAccessTests<GetPunchItemsQuery>
 {
-    protected override GetPunchItemQuery GetQueryWithAccessToProjectToTest()
-        => new(Guid.Empty)
+    protected override GetPunchItemsQuery GetQueryWithAccessToAllProjectsToTest()
+        => new([])
         {
-            PunchItemDetailsDto = PunchItemDetailsDtoMock(ProjectGuidWithAccess)
+            PunchItemsDetailsDto = [PunchItemTinyDetailsDtoMock(ProjectGuidWithAccess)]
         };
 
-    protected override GetPunchItemQuery GetQueryWithoutAccessToProjectToTest()
-        => new(Guid.Empty)
+    protected override GetPunchItemsQuery GetQueryWithoutAccessToAllProjectsToTest()
+        => new([])
         {
-            PunchItemDetailsDto = PunchItemDetailsDtoMock(ProjectGuidWithoutAccess)
+            PunchItemsDetailsDto = 
+            [
+                PunchItemTinyDetailsDtoMock(ProjectGuidWithAccess), 
+                PunchItemTinyDetailsDtoMock(ProjectGuidWithoutAccess)
+            ]
         };
 
-    private PunchItemDetailsDto PunchItemDetailsDtoMock(Guid projectGuid) =>
+    private PunchItemTinyDetailsDto PunchItemTinyDetailsDtoMock(Guid projectGuid) =>
         new(
             Guid: Guid.NewGuid(),
             CheckListGuid: Guid.NewGuid(),
@@ -29,21 +33,11 @@ public class AccessValidatorForGetPunchItemQueryTests : AccessValidatorForQueryN
             ItemNo: 0,
             Category: null!,
             Description: null!,
-            CreatedBy: null!,
-            CreatedAtUtc: DateTime.UtcNow,
-            ModifiedBy: null,
-            ModifiedAtUtc: null,
             IsReadyToBeCleared: true,
             IsReadyToBeUncleared: false,
-            ClearedBy: null,
-            ClearedAtUtc: null,
             IsReadyToBeRejected: false,
-            RejectedBy: null,
-            RejectedAtUtc: null,
             IsReadyToBeVerified: true,
             IsReadyToBeUnverified: false,
-            VerifiedBy: null,
-            VerifiedAtUtc: null,
             RaisedByOrg: null!,
             ClearingByOrg: null!,
             Priority: null,
@@ -60,7 +54,6 @@ public class AccessValidatorForGetPunchItemQueryTests : AccessValidatorForQueryN
             OriginalWorkOrder: null,
             Document: null,
             SWCR: null,
-            AttachmentCount: 0,
             RowVersion: null!
         );
 }

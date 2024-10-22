@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQue
 
 [TestClass]
 public class AccessValidatorForGetPunchItemsQueryTests
-    : AccessValidatorForQueryNeedAccessTests<GetPunchItemsQuery>
+    : AccessValidatorForQueryNeedProjectAccessTests<GetPunchItemsQuery>
 {
     protected override GetPunchItemsQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
