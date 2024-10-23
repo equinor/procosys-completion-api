@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Common.Misc;
@@ -56,6 +55,11 @@ public class PrefetchBehavior<TRequest, TResponse>(
                 // missing entity should return Not Found (404) on query requests, but Bad Request (400) for command requests
                 throw new EntityNotFoundException($"Punch item with this guid does not exist! Guid={punchItemQuery.PunchItemGuid}");
             }
+        }
+
+        else if (request is IIsPunchItemsQuery punchItemsQuery)
+        {
+            punchItemsQuery.PunchItemsDetailsDto = await punchItemService.GetPunchItemsByPunchItemGuidsAsync(punchItemsQuery.PunchItemGuids, cancellationToken);
         }
 
         else if (request is IIsPunchItemRelatedQuery punchItemRelatedQuery)

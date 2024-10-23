@@ -27,6 +27,62 @@ public class PunchItemsControllerNegativeTests : TestBase
         await EnsureWrongRowVersionDifferFromCorrectRowVersion();
     }
 
+    #region GetPunchItems
+    [TestMethod]
+    public async Task GetPunchItems_AsAnonymous_ShouldReturnUnauthorized()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Anonymous,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest],
+            HttpStatusCode.Unauthorized);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsNoPermissionUser_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.NoPermissionUser,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest],
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.Unknown,
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.BadRequest,
+            "is not a valid plant");
+
+    [TestMethod]
+    public async Task GetPunchItems_AsNoPermissionUser_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.NoPermissionUser,
+            TestFactory.PlantWithoutAccess,
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
+        => await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithoutAccess, 
+            [_punchItemGuidUnderTest], 
+            HttpStatusCode.Forbidden);
+
+    [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldReturnEmptyList_WhenUnknownPunchItem()
+    {
+        var dtos = await PunchItemsControllerTestsHelper.GetPunchItemsAsync(
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            [Guid.NewGuid()]);
+
+        Assert.IsFalse(dtos.Any());
+    }
+
+    #endregion
+
     #region GetPunchItem
     [TestMethod]
     public async Task GetPunchItem_AsAnonymous_ShouldReturnUnauthorized()
@@ -46,11 +102,11 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItem_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItem_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.Unknown,
-            _punchItemGuidUnderTest, 
+            _punchItemGuidUnderTest,
             HttpStatusCode.BadRequest,
             "is not a valid plant");
 
@@ -59,23 +115,23 @@ public class PunchItemsControllerNegativeTests : TestBase
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
             UserType.NoPermissionUser,
             TestFactory.PlantWithoutAccess,
-            _punchItemGuidUnderTest, 
+            _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItem_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItem_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
-            UserType.Writer,
-            TestFactory.PlantWithoutAccess, 
-            _punchItemGuidUnderTest, 
+            UserType.Reader,
+            TestFactory.PlantWithoutAccess,
+            _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItem_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItem_AsReader_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAsync(
-            UserType.Writer,
-            TestFactory.PlantWithAccess, 
-            Guid.NewGuid(), 
+            UserType.Reader,
+            TestFactory.PlantWithAccess,
+            Guid.NewGuid(),
             HttpStatusCode.NotFound);
     #endregion
 
@@ -593,9 +649,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemComments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemComments_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             HttpStatusCode.BadRequest,
@@ -610,17 +666,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemComments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemComments_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemComments_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItemComments_AsReader_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemCommentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
             HttpStatusCode.NotFound);
@@ -815,9 +871,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemAttachments_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             HttpStatusCode.BadRequest,
@@ -832,17 +888,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemAttachments_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachments_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItemAttachments_AsReader_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentsAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
             HttpStatusCode.NotFound);
@@ -869,9 +925,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             _attachmentGuidUnderTest,
@@ -888,27 +944,27 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             _attachmentGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsReader_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
             _attachmentGuidUnderTest,
             HttpStatusCode.NotFound);
 
     [TestMethod]
-    public async Task GetPunchItemAttachmentDownloadUrl_AsWriter_ShouldReturnNotFound_WhenUnknownAttachment()
+    public async Task GetPunchItemAttachmentDownloadUrl_AsReader_ShouldReturnNotFound_WhenUnknownAttachment()
         => await PunchItemsControllerTestsHelper.GetPunchItemAttachmentDownloadUrlAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithAccess,
             _punchItemGuidUnderTest,
             Guid.NewGuid(),
@@ -1587,9 +1643,9 @@ public class PunchItemsControllerNegativeTests : TestBase
             "is not a valid plant");
 
     [TestMethod]
-    public async Task GetPunchItemHistory_AsWriter_ShouldReturnBadRequest_WhenUnknownPlant()
+    public async Task GetPunchItemHistory_AsReader_ShouldReturnBadRequest_WhenUnknownPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.Unknown,
             _punchItemGuidUnderTest,
             HttpStatusCode.BadRequest,
@@ -1604,17 +1660,17 @@ public class PunchItemsControllerNegativeTests : TestBase
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemHistory_AsWriter_ShouldReturnForbidden_WhenNoAccessToPlant()
+    public async Task GetPunchItemHistory_AsReader_ShouldReturnForbidden_WhenNoAccessToPlant()
         => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithoutAccess,
             _punchItemGuidUnderTest,
             HttpStatusCode.Forbidden);
 
     [TestMethod]
-    public async Task GetPunchItemHistory_AsWriter_ShouldReturnNotFound_WhenUnknownPunchItem()
+    public async Task GetPunchItemHistory_AsReader_ShouldReturnNotFound_WhenUnknownPunchItem()
         => await PunchItemsControllerTestsHelper.GetPunchItemHistoryAsync(
-            UserType.Writer,
+            UserType.Reader,
             TestFactory.PlantWithAccess,
             Guid.NewGuid(),
             HttpStatusCode.NotFound);

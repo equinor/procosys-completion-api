@@ -72,6 +72,25 @@ public class PunchItemsControllerTests : TestBase
     }
 
     [TestMethod]
+    public async Task GetPunchItems_AsReader_ShouldGetPunchItems()
+    {
+        // Act
+        var punchItems = await PunchItemsControllerTestsHelper
+            .GetPunchItemsAsync(UserType.Reader, TestFactory.PlantWithAccess, [_punchItemGuidUnderTest]);
+
+        // Assert
+        var punchItem = punchItems.SingleOrDefault();
+        Assert.IsNotNull(punchItem);
+        Assert.AreEqual(_punchItemGuidUnderTest, punchItem.Guid);
+        Assert.IsNotNull(punchItem.RowVersion);
+        Assert.IsNotNull(punchItem.RaisedByOrg);
+        Assert.IsNotNull(punchItem.ClearingByOrg);
+        Assert.IsNotNull(punchItem.Priority);
+        Assert.IsNotNull(punchItem.Sorting);
+        Assert.IsNotNull(punchItem.Type);
+    }
+
+    [TestMethod]
     public async Task GetPunchItem_AsReader_ShouldGetPunchItem()
     {
         // Act

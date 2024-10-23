@@ -56,6 +56,29 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
         return MapPunchToDto(punchItem, attCount);
     }
 
+    public async Task<IEnumerable<PunchItemTinyDetailsDto>> GetPunchItemsByPunchItemGuidsAsync(
+        IEnumerable<Guid> punchItemGuids,
+        CancellationToken cancellationToken)
+    {
+        var punchItems = await context.QuerySet<PunchItem>()
+            .TagWith($"{nameof(PunchItemService)}.{nameof(GetPunchItemsByPunchItemGuidsAsync)}")
+            .Include(p => p.Project)
+            .Include(p => p.RaisedByOrg)
+            .Include(p => p.ClearingByOrg)
+            .Include(p => p.Priority)
+            .Include(p => p.Sorting)
+            .Include(p => p.Type)
+            .Include(p => p.ActionBy)
+            .Include(p => p.WorkOrder)
+            .Include(p => p.OriginalWorkOrder)
+            .Include(p => p.SWCR)
+            .Include(p => p.Document)
+            .Where(pi => punchItemGuids.Contains(pi.Guid))
+            .ToListAsync(cancellationToken);
+
+        return MapPunchToTinyDtos(punchItems);
+    }
+
     public async Task<ProjectDetailsDto?> GetProjectOrNullByPunchItemGuidAsync(Guid punchItemGuid, CancellationToken cancellationToken)
     {
         var dto = await context.QuerySet<PunchItem>()
@@ -155,6 +178,57 @@ public class PunchItemService(IReadOnlyContext context) : IPunchItemService
             attachmentCount,
             punchItem.RowVersion.ConvertToString()
         );
+    }
+
+    private IEnumerable<PunchItemTinyDetailsDto> MapPunchToTinyDtos(List<PunchItem> punchItems)
+    {
+        var tinyDtos = new List<PunchItemTinyDetailsDto>();
+        foreach (var punchItem in punchItems)
+        {
+            var raisedByOrg = MapToLibraryItemDto(punchItem.RaisedByOrg)!;
+            var clearingByOrg = MapToLibraryItemDto(punchItem.ClearingByOrg)!;
+            var sorting = MapToLibraryItemDto(punchItem.Sorting);
+            var priority = MapToLibraryItemDto(punchItem.Priority);
+            var type = MapToLibraryItemDto(punchItem.Type);
+            var actionBy = MapToPersonDto(punchItem.ActionBy);
+            var workOrderDto = MapToWorkOrderDto(punchItem.WorkOrder);
+            var originalWorkOrderDto = MapToWorkOrderDto(punchItem.OriginalWorkOrder);
+            var documentDto = MapToDocumentDto(punchItem.Document);
+            var swcrDto = MapToSWCRDto(punchItem.SWCR);
+
+            tinyDtos.Add(new PunchItemTinyDetailsDto(
+                punchItem.Guid,
+                punchItem.CheckListGuid,
+                punchItem.Project.Name,
+                punchItem.Project.Guid,
+                punchItem.ItemNo,
+                punchItem.Category.ToString(),
+                punchItem.Description,
+                punchItem.IsReadyToBeCleared,
+                punchItem.IsReadyToBeUncleared,
+                punchItem.IsReadyToBeRejected,
+                punchItem.IsReadyToBeVerified,
+                punchItem.IsReadyToBeUnverified,
+                raisedByOrg,
+                clearingByOrg,
+                priority,
+                sorting,
+                type,
+                actionBy,
+                punchItem.DueTimeUtc,
+                punchItem.Estimate,
+                punchItem.ExternalItemNo,
+                punchItem.MaterialRequired,
+                punchItem.MaterialETAUtc,
+                punchItem.MaterialExternalNo,
+                workOrderDto,
+                originalWorkOrderDto,
+                documentDto,
+                swcrDto,
+                punchItem.RowVersion.ConvertToString()));
+        }
+
+        return tinyDtos;
     }
 
     private static SWCRDto? MapToSWCRDto(SWCR? swcr)

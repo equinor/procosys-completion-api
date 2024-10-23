@@ -13,6 +13,28 @@ public static class PunchItemsControllerTestsHelper
 {
     private const string Route = "PunchItems";
 
+    public static async Task<IEnumerable<PunchItemTinyDetailsDto>> GetPunchItemsAsync(
+        UserType userType,
+        string plant,
+        IEnumerable<Guid> guids,
+        HttpStatusCode expectedStatusCode = HttpStatusCode.OK,
+        string expectedMessageOnBadRequest = null)
+    {
+        var serializePayload = JsonSerializer.Serialize(guids);
+        var content = new StringContent(serializePayload, Encoding.UTF8, "application/json");
+        var response = await TestFactory.Instance.GetHttpClient(userType, plant).PostAsync($"{Route}/GetMany", content);
+
+        await TestsHelper.AssertResponseAsync(response, expectedStatusCode, expectedMessageOnBadRequest);
+
+        if (expectedStatusCode != HttpStatusCode.OK)
+        {
+            return null;
+        }
+
+        var jsonString = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<IEnumerable<PunchItemTinyDetailsDto>>(jsonString, TestsHelper.JsonSerializerOptions);
+    }
+
     public static async Task<PunchItemDetailsDto> GetPunchItemAsync(
         UserType userType,
         string plant,

@@ -38,6 +38,19 @@ public class AccessValidator(
                 return false;
             }
         }
+        else if (request is INeedProjectsAccess projectsRequest)
+        {
+            var projectGuidsForAccessCheck = projectsRequest.GetProjectGuidsForAccessCheck();
+            foreach (var projectGuidForAccessCheck in projectGuidsForAccessCheck)
+            {
+                if (!projectAccessChecker.HasCurrentUserAccessToProject(projectGuidForAccessCheck))
+                {
+                    logger.LogWarning("Current user {UserOid} doesn't have access to project {ProjectGuid}",
+                        userOid, projectGuidForAccessCheck);
+                    return false;
+                }
+            }
+        }
 
         if (request is ICanHaveRestrictionsViaCheckList checkListRequest)
         {

@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsCheckListQue
 
 [TestClass]
 public class AccessValidatorForGetDuplicateInfoQueryTests
-    : AccessValidatorForQueryNeedAccessTests<GetDuplicateInfoQuery>
+    : AccessValidatorForQueryNeedProjectAccessTests<GetDuplicateInfoQuery>
 {
     protected override GetDuplicateInfoQuery GetQueryWithAccessToProjectToTest()
         => new(Guid.Empty)
