@@ -636,6 +636,10 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
 
+        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.VerifiedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
+
         AssertRaisedByOrg(punchItemDetailsDto);
         AssertClearingByOrg(punchItemDetailsDto);
     }
@@ -663,6 +667,10 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+
+        Assert.IsNull(punchItemDetailsDto.ClearedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.VerifiedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
     }
 
     [TestMethod]
@@ -688,6 +696,10 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeVerified);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeUnverified);
+
+        Assert.IsNotNull(punchItemDetailsDto.ClearedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.VerifiedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
     }
 
     [TestMethod]
@@ -713,6 +725,10 @@ public class PunchItemServiceTests : ReadOnlyTestsBase
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeRejected);
         Assert.IsFalse(punchItemDetailsDto.IsReadyToBeVerified);
         Assert.IsTrue(punchItemDetailsDto.IsReadyToBeUnverified);
+
+        Assert.IsNotNull(punchItemDetailsDto.ClearedAtUtc);
+        Assert.IsNotNull(punchItemDetailsDto.VerifiedAtUtc);
+        Assert.IsNull(punchItemDetailsDto.RejectedAtUtc);
     }
 
     [TestMethod]
