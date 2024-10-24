@@ -83,7 +83,7 @@ public class CheckMovedCheckLists(
 
         } while (pageCheckListGuids.Count == pageSize);
 
-        await SaveAsync(scope, cancellationToken);
+        //await SaveAsync(scope, cancellationToken);
 
         logger.LogInformation("CheckMovedCheckLists done");
     }
