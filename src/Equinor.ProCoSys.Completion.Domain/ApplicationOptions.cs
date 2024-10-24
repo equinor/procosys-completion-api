@@ -14,4 +14,5 @@ public class ApplicationOptions
     public Guid ObjectId { get; set; }
     public int CheckListCacheExpirationMinutes { get; set; } = 20;
     public int MaxDuplicatePunch { get; set; } = 50;
+    public bool CheckMovedCheckLists { get; set; } = false;
 }
