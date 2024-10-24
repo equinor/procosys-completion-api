@@ -19,40 +19,47 @@ public class CheckMovedCheckLists(
     IServiceScopeFactory serviceScopeFactory,
     IOptionsMonitor<ApplicationOptions> applicationOptions,
     ILogger<CheckMovedCheckLists> logger)
-    : IHostedService
+    : IHostedService, IDisposable
 {
     private readonly Guid _completionApiObjectId = applicationOptions.CurrentValue.ObjectId;
+    private Timer? _timer;
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
+        if (!applicationOptions.CurrentValue.CheckMovedCheckLists)
+        {
+            logger.LogInformation("CheckMovedCheckLists not enabled. Exiting ...");
+        }
+        else
+        {
+            _timer = new Timer(RunJob, cancellationToken, TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public void Dispose() => _timer?.Dispose();
+
+    private void RunJob(object? state)
+    {
+        var cancellationToken = state is CancellationToken token ? token : default;
+
+        CheckCheckListsAsync(cancellationToken).GetAwaiter();
+    }
+
+    private async Task CheckCheckListsAsync(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("CheckMovedCheckLists start");
+
         using var scope = serviceScopeFactory.CreateScope();
 
-        await CheckCheckListsAsync(scope, cancellationToken);
-
-        //await SaveAsync(scope, cancellationToken);
-    }
-
-    private async Task SaveAsync(IServiceScope scope, CancellationToken cancellationToken)
-    {
-        var currentUserSetter =
-            scope.ServiceProvider
-                .GetRequiredService<ICurrentUserSetter>();
-        var unitOfWork =
-            scope.ServiceProvider
-                .GetRequiredService<IUnitOfWork>();
-
-        currentUserSetter.SetCurrentUserOid(_completionApiObjectId);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task CheckCheckListsAsync(IServiceScope scope, CancellationToken cancellationToken)
-    {
         var projectRepository = scope.ServiceProvider.GetRequiredService<IProjectRepository>();
         var punchItemRepository = scope.ServiceProvider.GetRequiredService<IPunchItemRepository>();
         var checkListApiService = scope.ServiceProvider.GetRequiredService<ICheckListApiService>();
 
         var checkListGuids = await punchItemRepository.GetAllUniqueCheckListGuidsAsync(cancellationToken);
-        logger.LogInformation("Found {UniqueCheckListGuidCount} unique checklist guids", checkListGuids.Count);
+        logger.LogInformation("CheckMovedCheckLists: Found {UniqueCheckListGuidCount} unique checklist guids", checkListGuids.Count);
 
         var page = 0;
         var pageSize = 200;
@@ -67,7 +74,7 @@ public class CheckMovedCheckLists(
                 var checkListsPage
                     = await checkListApiService.GetManyCheckListsAsync(pageCheckListGuids, cancellationToken);
 
-                logger.LogInformation("Checking page {Page} of {TotalPages} of checklist guids", page+1, totalPages);
+                logger.LogInformation("CheckMovedCheckLists: Checking page {Page} of {TotalPages} of checklist guids", page+1, totalPages);
                 await CheckPunchItemsAsync(projectRepository, punchItemRepository, checkListsPage, cancellationToken);
             }
 
@@ -75,6 +82,10 @@ public class CheckMovedCheckLists(
 
 
         } while (pageCheckListGuids.Count == pageSize);
+
+        await SaveAsync(scope, cancellationToken);
+
+        logger.LogInformation("CheckMovedCheckLists done");
     }
 
     private async Task CheckPunchItemsAsync(
@@ -95,7 +106,7 @@ public class CheckMovedCheckLists(
                 var correctProject = await projectRepository.GetAsync(checkList.ProjectGuid, cancellationToken);
                 var punchItemNosWithWrongProject = punchItemWithWrongProject.Select(p => p.ItemNo.ToString());
                 var wrongProjects = punchItemWithWrongProject.Select(p => p.Project.Name);
-                logger.LogWarning(
+                logger.LogWarning("CheckMovedCheckLists: " +
                     "Found {PunchItemWithWrongProjectCount} punchItems with wrong project. " + 
                     "ItemNos: {PunchItemNosWithWrongProject}. " +
                     "Wrong projects: {WrongProjects}. " +
@@ -110,5 +121,16 @@ public class CheckMovedCheckLists(
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    private async Task SaveAsync(IServiceScope scope, CancellationToken cancellationToken)
+    {
+        var currentUserSetter =
+            scope.ServiceProvider
+                .GetRequiredService<ICurrentUserSetter>();
+        var unitOfWork =
+            scope.ServiceProvider
+                .GetRequiredService<IUnitOfWork>();
+
+        currentUserSetter.SetCurrentUserOid(_completionApiObjectId);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 }
