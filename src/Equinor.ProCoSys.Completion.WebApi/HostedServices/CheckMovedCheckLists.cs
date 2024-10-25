@@ -99,7 +99,11 @@ public class CheckMovedCheckLists(
 
         foreach (var checkList in checkLists)
         {
-            var punchItemWithWrongProject = punchItems.Where(p => p.Project.Guid != checkList.ProjectGuid).ToList();
+            var punchItemWithWrongProject
+                = punchItems.Where(p => 
+                    p.CheckListGuid == checkList.CheckListGuid &&
+                    p.Project.Guid != checkList.ProjectGuid 
+                    ).ToList();
 
             if (punchItemWithWrongProject.Count > 0)
             {
