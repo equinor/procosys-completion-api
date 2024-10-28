@@ -19,7 +19,6 @@ public static class HostedJobsConfig
         
         builder.Services.AddHostedService<VerifyApplicationExistsAsPerson>();
         builder.Services.AddHostedService<ConfigureRequiredLabels>();
-        builder.Services.AddHostedService<CheckMovedCheckLists>();
         
         return builder;
     }
