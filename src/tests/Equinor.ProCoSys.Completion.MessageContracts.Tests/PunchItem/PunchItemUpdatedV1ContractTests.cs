@@ -58,7 +58,8 @@ public class PunchItemUpdatedV1ContractTests : ContractTestBase<IPunchItemUpdate
             { "CreatedAtUtc", typeof(DateTime) },
             { "ModifiedBy", typeof(User) },
             { "ModifiedAtUtc", typeof(DateTime) },
-            { "MessageId", typeof(Guid)}
+            { "MessageId", typeof(Guid)},
+            { "AffectsCompletionStatus", typeof(bool) }
         };
 
         // Act

@@ -13,9 +13,10 @@ public class PunchItemUpdatedIntegrationEventTests : PunchItemIntegrationEventTe
     public void Constructor_ShouldSetCorrectProperties_WhenPunchItemHasRequiredPropertiesOnly()
     {
         // Act
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem, false);
 
         // Assert
+        Assert.IsFalse(integrationEvent.AffectsCompletionStatus);
         Assert.AreEqual(_punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(_punchItem.Guid, integrationEvent.Guid);
         AssertModifiedBy(_punchItem, integrationEvent);
@@ -33,9 +34,10 @@ public class PunchItemUpdatedIntegrationEventTests : PunchItemIntegrationEventTe
         FillOptionalProperties(_punchItem);
         
         // Act
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem, false);
 
         // Assert
+        Assert.IsFalse(integrationEvent.AffectsCompletionStatus);
         Assert.AreEqual(_punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(_punchItem.Guid, integrationEvent.Guid);
         AssertModifiedBy(_punchItem, integrationEvent);
@@ -53,9 +55,10 @@ public class PunchItemUpdatedIntegrationEventTests : PunchItemIntegrationEventTe
         _punchItem.Clear(_person);
 
         // Act
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem, true);
 
         // Assert
+        Assert.IsTrue(integrationEvent.AffectsCompletionStatus);
         Assert.AreEqual(_punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(_punchItem.Guid, integrationEvent.Guid);
         AssertModifiedBy(_punchItem, integrationEvent);
@@ -74,9 +77,10 @@ public class PunchItemUpdatedIntegrationEventTests : PunchItemIntegrationEventTe
         _punchItem.Reject(_person);
 
         // Act
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem, true);
 
         // Assert
+        Assert.IsTrue(integrationEvent.AffectsCompletionStatus);
         Assert.AreEqual(_punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(_punchItem.Guid, integrationEvent.Guid);
         AssertModifiedBy(_punchItem, integrationEvent);
@@ -95,9 +99,10 @@ public class PunchItemUpdatedIntegrationEventTests : PunchItemIntegrationEventTe
         _punchItem.Verify(_person);
 
         // Act
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(_punchItem, false);
 
         // Assert
+        Assert.IsFalse(integrationEvent.AffectsCompletionStatus);
         Assert.AreEqual(_punchItem.Plant, integrationEvent.Plant);
         Assert.AreEqual(_punchItem.Guid, integrationEvent.Guid);
         AssertModifiedBy(_punchItem, integrationEvent);
