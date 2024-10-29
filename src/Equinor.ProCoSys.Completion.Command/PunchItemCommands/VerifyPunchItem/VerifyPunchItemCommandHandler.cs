@@ -11,57 +11,44 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 
-public class VerifyPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<VerifyPunchItemCommand, string>
+public class VerifyPunchItemCommandHandler(
+    IPersonRepository personRepository,
+    ISyncToPCS4Service syncToPCS4Service,
+    IUnitOfWork unitOfWork,
+    IMessageProducer messageProducer,
+    ILogger<VerifyPunchItemCommandHandler> logger)
+    : PunchUpdateCommandBase, IRequestHandler<VerifyPunchItemCommand, string>
 {
-    private readonly IPersonRepository _personRepository;
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMessageProducer _messageProducer;
-    private readonly ILogger<VerifyPunchItemCommandHandler> _logger;
-
-    public VerifyPunchItemCommandHandler(
-        IPersonRepository personRepository,
-        ISyncToPCS4Service syncToPCS4Service,
-        IUnitOfWork unitOfWork,
-        IMessageProducer messageProducer,
-        ILogger<VerifyPunchItemCommandHandler> logger)
-    {
-        _personRepository = personRepository;
-        _syncToPCS4Service = syncToPCS4Service;
-        _unitOfWork = unitOfWork;
-        _messageProducer = messageProducer;
-        _logger = logger;
-    }
-
     public async Task<string> Handle(VerifyPunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
 
-        var currentPerson = await _personRepository.GetCurrentPersonAsync(cancellationToken);
+        var currentPerson = await personRepository.GetCurrentPersonAsync(cancellationToken);
         punchItem.Verify(currentPerson);
 
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-            _messageProducer,
+            messageProducer,
             punchItem,
             "Punch item verified",
             [],
+            false,
             cancellationToken);
 
         punchItem.SetRowVersion(request.RowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} verified", punchItem.ItemNo, punchItem.Guid);
+        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} verified", punchItem.ItemNo, punchItem.Guid);
 
         try
         {
-            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Verify on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Verify on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
         }
 
         return punchItem.RowVersion.ConvertToString();

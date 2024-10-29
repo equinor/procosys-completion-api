@@ -35,6 +35,7 @@ public class ClearPunchItemCommandHandler(
             punchItem,
             "Punch item cleared",
             [],
+            true,
             cancellationToken);
 
         punchItem.SetRowVersion(request.RowVersion);

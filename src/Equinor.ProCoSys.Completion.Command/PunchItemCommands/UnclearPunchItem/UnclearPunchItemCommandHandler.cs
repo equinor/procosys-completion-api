@@ -11,28 +11,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UnclearPunchItem;
 
-public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHandler<UnclearPunchItemCommand, string>
+public class UnclearPunchItemCommandHandler(
+    ISyncToPCS4Service syncToPCS4Service,
+    IUnitOfWork unitOfWork,
+    IMessageProducer messageProducer,
+    ICheckListApiService checkListApiService,
+    ILogger<UnclearPunchItemCommandHandler> logger)
+    : PunchUpdateCommandBase, IRequestHandler<UnclearPunchItemCommand, string>
 {
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMessageProducer _messageProducer;
-    private readonly ICheckListApiService _checkListApiService;
-    private readonly ILogger<UnclearPunchItemCommandHandler> _logger;
-
-    public UnclearPunchItemCommandHandler(
-        ISyncToPCS4Service syncToPCS4Service,
-        IUnitOfWork unitOfWork,
-        IMessageProducer messageProducer,
-        ICheckListApiService checkListApiService,
-        ILogger<UnclearPunchItemCommandHandler> logger)
-    {
-        _syncToPCS4Service = syncToPCS4Service;
-        _unitOfWork = unitOfWork;
-        _messageProducer = messageProducer;
-        _checkListApiService = checkListApiService;
-        _logger = logger;
-    }
-
     public async Task<string> Handle(UnclearPunchItemCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
@@ -40,37 +26,38 @@ public class UnclearPunchItemCommandHandler : PunchUpdateCommandBase, IRequestHa
         punchItem.Unclear();
 
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-            _messageProducer,
+            messageProducer,
             punchItem,
             "Punch item uncleared",
             [],
+            true,
             cancellationToken);
 
         punchItem.SetRowVersion(request.RowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
+        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} uncleared", punchItem.ItemNo, punchItem.Guid);
 
         try
         {
-            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Unclear on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Unclear on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
             return punchItem.RowVersion.ConvertToString();
         }
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
         return punchItem.RowVersion.ConvertToString();

@@ -59,6 +59,7 @@ public class RejectPunchItemCommandHandler(
             punchItem,
             "Punch item rejected",
             [change],
+            true,
             cancellationToken);
 
         var commentCreatedIntegrationEvent =
