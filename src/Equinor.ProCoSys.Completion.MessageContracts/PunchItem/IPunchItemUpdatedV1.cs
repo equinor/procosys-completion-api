@@ -6,4 +6,5 @@ public interface IPunchItemUpdatedV1 : IPunchItem, IIntegrationEvent
 {
     User ModifiedBy { get; }
     DateTime ModifiedAtUtc { get; }
+    bool AffectsCompletionStatus { get; }
 }
