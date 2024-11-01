@@ -35,9 +35,9 @@ public class SearchCheckListsQueryHandlerTests
     public async Task Handle_Should_ReturnSearchResult_WithNoneFilters()
     {
         // Arrange
-        _query = new SearchCheckListsQuery(_projectGuid, null, null, null, null, null, null, null);
+        _query = new SearchCheckListsQuery(_projectGuid, false, null, null, null, null, null, null);
         _checkListServiceMock
-            .SearchCheckListsAsync(_projectGuid, null, null, null, null, null, null, null, null, Arg.Any<CancellationToken>())
+            .SearchCheckListsAsync(_projectGuid, false, null, null, null, null, null, null, null, Arg.Any<CancellationToken>())
             .Returns(_psc4SearchResultDto);
 
         // Act
@@ -51,9 +51,9 @@ public class SearchCheckListsQueryHandlerTests
     public async Task Handle_Should_ReturnSearchResult_WithFiltering()
     {
         // Arrange
-        _query = new SearchCheckListsQuery(_projectGuid, null, "X", "RC", "REG/TF", "FT", 2, 10);
+        _query = new SearchCheckListsQuery(_projectGuid, false, "X", "RC", "REG/TF", "FT", 2, 10);
         _checkListServiceMock
-            .SearchCheckListsAsync(_projectGuid, null, "X", "RC", "REG", "TF", "FT", 2, 10, Arg.Any<CancellationToken>())
+            .SearchCheckListsAsync(_projectGuid, false, "X", "RC", "REG", "TF", "FT", 2, 10, Arg.Any<CancellationToken>())
             .Returns(_psc4SearchResultDto);
 
         // Act

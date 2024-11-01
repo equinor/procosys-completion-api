@@ -19,7 +19,7 @@ public class SearchCheckListsQueryValidatorTests
     [TestInitialize]
     public void Setup_OkState()
     {
-        _query = new SearchCheckListsQuery(_projectGuid, null, null, null, null, null, null, null);
+        _query = new SearchCheckListsQuery(_projectGuid, false, null, null, null, null, null, null);
         _projectValidatorMock.ExistsAsync(_query.ProjectGuid, default).Returns(true);
         _dut = new SearchCheckListsQueryValidator(_projectValidatorMock);
     }
@@ -82,7 +82,7 @@ public class SearchCheckListsQueryValidatorTests
     public async Task Validate_ShouldFail_When_InValidFilterForRegisterAndTagFunction()
     {
         // Arrange
-        _query = new SearchCheckListsQuery(_projectGuid, null, null, null, "ILLEGAL", null, null, null);
+        _query = new SearchCheckListsQuery(_projectGuid, false, null, null, "ILLEGAL", null, null, null);
 
         // Act
         var result = await _dut.ValidateAsync(_query);
