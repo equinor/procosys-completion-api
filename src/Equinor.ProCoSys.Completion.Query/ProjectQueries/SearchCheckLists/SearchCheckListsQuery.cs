@@ -6,7 +6,7 @@ namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 
 public class SearchCheckListsQuery(
     Guid projectGuid,
-    bool? multipleTagNo,
+    bool multipleTagNo,
     string? tagNoContains,
     string? responsibleCode,
     string? registerAndTagFunctionCode,
@@ -16,7 +16,7 @@ public class SearchCheckListsQuery(
     : INeedProjectAccess, IRequest<SearchResultDto>
 {
     public Guid ProjectGuid { get; } = projectGuid;
-    public bool? MultipleTagNo { get; } = multipleTagNo;
+    public bool MultipleTagNo { get; } = multipleTagNo;
     public string? TagNoContains { get; } = tagNoContains;
     public string? ResponsibleCode { get; } = responsibleCode;
     public string? RegisterAndTagFunctionCode { get; } = registerAndTagFunctionCode;

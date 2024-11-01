@@ -136,7 +136,7 @@ public class MainApiCheckListService(
 
     public async Task<ProCoSys4CheckListSearchResult> SearchCheckListsAsync(
         Guid projectGuid,
-        bool? multipleTagNo,
+        bool multipleTagNo,
         string? tagNoSearchString,
         string? responsibleCode,
         string? tagRegisterCode,
@@ -149,7 +149,7 @@ public class MainApiCheckListService(
         var url = $"{_baseAddress}CheckList/ForProCoSys5/Search" +
                   $"?projectGuid={projectGuid:N}" +
                   $"&api-version={_apiVersion}";
-        if (multipleTagNo is not null)
+        if (multipleTagNo)
         {
             url += $"&multipleTagNo={multipleTagNo}";
         }

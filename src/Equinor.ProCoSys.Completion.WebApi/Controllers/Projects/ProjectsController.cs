@@ -43,7 +43,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken,
         [Required]
         [FromRoute] Guid guid,
-        bool? multipleTagNo,
+        bool multipleTagNo = false,
         string? tagNoContains = null,
         string? responsibleCode = null,
         string? registerAndTagFunctionCode = null,
