@@ -24,7 +24,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid of project where to search</param>
     /// <param name="multipleTagNo">Flag if this is search for multiple TagNo's. Optional</param>
-    /// <param name="tagNoSearchString">Search for checklist where TagNo contains given string. Case-insensitive. Optional</param>
+    /// <param name="tagNoContains">Search for checklist with TagNo/s in given string . Case-insensitive. Optional</param>
     /// <param name="responsibleCode">Search for checklist where responsibleCode equals given string. Optional</param>
     /// <param name="registerAndTagFunctionCode">Search for checklist where registerCode and tagFunctionCode equals given string.
     /// The string must be given in format "registerCode/tagFunctionCode". Sample: "MANUAL_VALVE/WL" Optional</param>
@@ -44,7 +44,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
         [Required]
         [FromRoute] Guid guid,
         bool? multipleTagNo,
-        string? tagNoSearchString = null,
+        string? tagNoContains = null,
         string? responsibleCode = null,
         string? registerAndTagFunctionCode = null,
         string? formularType = null,
@@ -53,7 +53,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(new SearchCheckListsQuery(guid,
             multipleTagNo,
-            tagNoSearchString,
+            tagNoContains,
             responsibleCode,
             registerAndTagFunctionCode,
             formularType,

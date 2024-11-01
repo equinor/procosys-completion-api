@@ -155,7 +155,7 @@ public class MainApiCheckListService(
         }
         if (tagNoSearchString is not null)
         {
-            url += $"&tagNoSearchString={tagNoSearchString}";
+            url += $"&tagNoContains={tagNoSearchString}";
         }
         if (responsibleCode is not null)
         {

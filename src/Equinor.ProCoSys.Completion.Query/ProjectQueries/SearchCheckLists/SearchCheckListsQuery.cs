@@ -7,7 +7,7 @@ namespace Equinor.ProCoSys.Completion.Query.ProjectQueries.SearchCheckLists;
 public class SearchCheckListsQuery(
     Guid projectGuid,
     bool? multipleTagNo,
-    string? tagNoSearchString,
+    string? tagNoContains,
     string? responsibleCode,
     string? registerAndTagFunctionCode,
     string? formularType,
@@ -17,7 +17,7 @@ public class SearchCheckListsQuery(
 {
     public Guid ProjectGuid { get; } = projectGuid;
     public bool? MultipleTagNo { get; } = multipleTagNo;
-    public string? TagNoSearchString { get; } = tagNoSearchString;
+    public string? TagNoContains { get; } = tagNoContains;
     public string? ResponsibleCode { get; } = responsibleCode;
     public string? RegisterAndTagFunctionCode { get; } = registerAndTagFunctionCode;
     public string? FormularType { get; } = formularType;

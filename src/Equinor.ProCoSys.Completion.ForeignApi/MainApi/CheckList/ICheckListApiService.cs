@@ -20,7 +20,7 @@ public interface ICheckListApiService
     Task<ProCoSys4CheckListSearchResult> SearchCheckListsAsync(
         Guid projectGuid,
         bool? multipleTagNo,
-        string? tagNoSearchString,
+        string? tagNoContains,
         string? responsibleCode,
         string? tagRegisterCode,
         string? tagFunctionCode,
