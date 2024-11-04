@@ -148,11 +148,9 @@ public class MainApiCheckListService(
     {
         var url = $"{_baseAddress}CheckList/ForProCoSys5/Search" +
                   $"?projectGuid={projectGuid:N}" +
-                  $"&api-version={_apiVersion}";
-        if (multipleTagNo)
-        {
-            url += $"&multipleTagNo={multipleTagNo}";
-        }
+                  $"&api-version={_apiVersion}" +
+                  $"&multipleTagNo={multipleTagNo}";
+        
         if (tagNoSearchString is not null)
         {
             url += $"&tagNoContains={tagNoSearchString}";
