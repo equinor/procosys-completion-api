@@ -439,6 +439,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
         _checkListApiServiceMock.SearchCheckListsAsync(
             ProjectGuidWithAccess,
+            Arg.Any<bool>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),

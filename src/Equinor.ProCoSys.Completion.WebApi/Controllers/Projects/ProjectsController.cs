@@ -23,11 +23,12 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     /// <param name="plant">ID of plant in PCS$PLANT format</param>
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid of project where to search</param>
-    /// <param name="tagNoContains">Search for checklist where TagNo contains given string. Case-insensitive. Optional</param>
-    /// <param name="responsibleCode">Search for checklist where responsibleCode equals given string. Optional</param>
+    /// <param name="multipleTagNo">Flag if this is search for multiple TagNo's. Optional</param>
+    /// <param name="tagNoContains">Search for checklist with TagNo/s in given string . Case-insensitive. Optional</param>
+    /// <param name="responsibleCode">Search for checklist where responsibleCode equals given string. Optional, used when multipleTagNo is false</param>
     /// <param name="registerAndTagFunctionCode">Search for checklist where registerCode and tagFunctionCode equals given string.
-    /// The string must be given in format "registerCode/tagFunctionCode". Sample: "MANUAL_VALVE/WL" Optional</param>
-    /// <param name="formularType">Search for checklist where formularType equals given string. Optional</param>
+    /// The string must be given in format "registerCode/tagFunctionCode". Sample: "MANUAL_VALVE/WL" Optional, used when multipleTagNo is false</param>
+    /// <param name="formularType">Search for checklist where formularType equals given string. Optional, used when multipleTagNo is false</param>
     /// <param name="currentPage">Current page to get. Default is 0 (first page)</param>
     /// <param name="itemsPerPage">Number of items pr page. Default is 30</param>
     /// <returns>Search result</returns>
@@ -42,6 +43,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken,
         [Required]
         [FromRoute] Guid guid,
+        bool multipleTagNo = false,
         string? tagNoContains = null,
         string? responsibleCode = null,
         string? registerAndTagFunctionCode = null,
@@ -50,6 +52,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
         int? itemsPerPage = 30)
     {
         var result = await mediator.Send(new SearchCheckListsQuery(guid,
+            multipleTagNo,
             tagNoContains,
             responsibleCode,
             registerAndTagFunctionCode,

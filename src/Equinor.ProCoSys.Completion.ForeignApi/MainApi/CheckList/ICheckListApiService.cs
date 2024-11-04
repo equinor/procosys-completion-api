@@ -19,6 +19,7 @@ public interface ICheckListApiService
     // Do not pass plant to the GET endpoint for checklist in Main API due to performance. The endpoint has m2m auth, hence it doesn't require plant specific permissions
     Task<ProCoSys4CheckListSearchResult> SearchCheckListsAsync(
         Guid projectGuid,
+        bool multipleTagNo,
         string? tagNoContains,
         string? responsibleCode,
         string? tagRegisterCode,

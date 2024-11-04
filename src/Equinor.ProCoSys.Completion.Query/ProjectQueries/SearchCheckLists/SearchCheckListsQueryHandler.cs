@@ -24,6 +24,7 @@ public class SearchCheckListsQueryHandler(ICheckListApiService checkListService)
         }
         var pcs4SearchResult = await checkListService.SearchCheckListsAsync(
             request.ProjectGuid,
+            request.MultipleTagNo,
             request.TagNoContains,
             request.ResponsibleCode,
             tagRegisterCode,

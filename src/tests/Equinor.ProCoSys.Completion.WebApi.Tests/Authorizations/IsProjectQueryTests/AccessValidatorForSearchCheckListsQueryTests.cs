@@ -7,8 +7,8 @@ namespace Equinor.ProCoSys.Completion.WebApi.Tests.Authorizations.IsProjectQuery
 public class AccessValidatorForSearchCheckListsQueryTests : AccessValidatorForQueryNeedProjectAccessTests<SearchCheckListsQuery>
 {
     protected override SearchCheckListsQuery GetQueryWithAccessToProjectToTest()
-        => new(ProjectGuidWithAccess, null, null, null, null, null, null);
+        => new(ProjectGuidWithAccess, false, null, null, null, null, null, null);
 
     protected override SearchCheckListsQuery GetQueryWithoutAccessToProjectToTest()
-        => new(ProjectGuidWithoutAccess, null, null, null, null, null, null);
+        => new(ProjectGuidWithoutAccess, false, null, null, null, null, null, null);
 }
