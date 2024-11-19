@@ -17,9 +17,10 @@ public abstract class PunchUpdateCommandBase
         PunchItem punchItem,
         string historyDisplayName,
         List<IChangedProperty> changedProperties,
+        bool affectsCompletionStatus,
         CancellationToken cancellationToken)
     {
-        var integrationEvent = new PunchItemUpdatedIntegrationEvent(punchItem);
+        var integrationEvent = new PunchItemUpdatedIntegrationEvent(punchItem, affectsCompletionStatus);
         await messageProducer.PublishAsync(integrationEvent, cancellationToken);
 
         var historyEvent = new HistoryUpdatedIntegrationEvent(

@@ -50,10 +50,11 @@ public record PunchItemUpdatedIntegrationEvent(
     User CreatedBy,
     DateTime CreatedAtUtc,
     User ModifiedBy,
-    DateTime ModifiedAtUtc
+    DateTime ModifiedAtUtc,
+    bool AffectsCompletionStatus
 ) : IPunchItemUpdatedV1
 {
-    public PunchItemUpdatedIntegrationEvent(PunchItem punchItem) : this(
+    public PunchItemUpdatedIntegrationEvent(PunchItem punchItem, bool affectsCompletionStatus) : this(
         punchItem.Plant,
         punchItem.Guid,
         punchItem.Project.Guid,
@@ -63,9 +64,9 @@ public record PunchItemUpdatedIntegrationEvent(
         punchItem.Category.ToString(),
         punchItem.ItemNo,
         punchItem.Description,
-        punchItem.RaisedByOrg!.Code,
+        punchItem.RaisedByOrg.Code,
         punchItem.RaisedByOrg.Guid,
-        punchItem.ClearingByOrg!.Code,
+        punchItem.ClearingByOrg.Code,
         punchItem.ClearingByOrg.Guid,
         punchItem.Sorting?.Code,
         punchItem.Sorting?.Guid,
@@ -105,7 +106,8 @@ public record PunchItemUpdatedIntegrationEvent(
         new User(punchItem.CreatedBy.Guid, punchItem.CreatedBy.GetFullName()),
         punchItem.CreatedAtUtc,
         new User(punchItem.ModifiedBy!.Guid, punchItem.ModifiedBy!.GetFullName()),
-        punchItem.ModifiedAtUtc!.Value)
+        punchItem.ModifiedAtUtc!.Value,
+        affectsCompletionStatus)
     { }
 
     public Guid MessageId { get; } = NewId.NextGuid();

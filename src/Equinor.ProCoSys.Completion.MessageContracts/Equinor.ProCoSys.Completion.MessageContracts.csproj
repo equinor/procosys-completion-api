@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <VersionPrefix>1.0.2</VersionPrefix>
-      <Version>1.0.2</Version>
+      <VersionPrefix>1.0.3</VersionPrefix>
+      <Version>1.0.3</Version>
       <TargetFramework>net8.0</TargetFramework>
       <Nullable>enable</Nullable>
       <WarningsAsErrors>true</WarningsAsErrors>

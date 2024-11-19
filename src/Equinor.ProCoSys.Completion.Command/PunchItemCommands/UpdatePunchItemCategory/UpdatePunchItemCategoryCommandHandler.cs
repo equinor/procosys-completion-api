@@ -14,28 +14,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
 
-public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCategoryCommand, string>
+public class UpdatePunchItemCategoryCommandHandler(
+    ISyncToPCS4Service syncToPCS4Service,
+    IUnitOfWork unitOfWork,
+    IMessageProducer messageProducer,
+    ICheckListApiService checkListApiService,
+    ILogger<UpdatePunchItemCategoryCommandHandler> logger)
+    : PunchUpdateCommandBase, IRequestHandler<UpdatePunchItemCategoryCommand, string>
 {
-    private readonly ISyncToPCS4Service _syncToPCS4Service;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMessageProducer _messageProducer;
-    private readonly ICheckListApiService _checkListApiService;
-    private readonly ILogger<UpdatePunchItemCategoryCommandHandler> _logger;
-
-    public UpdatePunchItemCategoryCommandHandler(
-        ISyncToPCS4Service syncToPCS4Service,
-        IUnitOfWork unitOfWork,
-        IMessageProducer messageProducer,
-        ICheckListApiService checkListApiService,
-        ILogger<UpdatePunchItemCategoryCommandHandler> logger)
-    {
-        _syncToPCS4Service = syncToPCS4Service;
-        _unitOfWork = unitOfWork;
-        _messageProducer = messageProducer;
-        _checkListApiService = checkListApiService;
-        _logger = logger;
-    }
-
     public async Task<string> Handle(UpdatePunchItemCategoryCommand request, CancellationToken cancellationToken)
     {
         var punchItem = request.PunchItem;
@@ -43,41 +29,42 @@ public class UpdatePunchItemCategoryCommandHandler : PunchUpdateCommandBase, IRe
         var change = UpdateCategory(punchItem, request.Category);
 
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
-        await _unitOfWork.SetAuditDataAsync();
+        await unitOfWork.SetAuditDataAsync();
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-            _messageProducer,
+            messageProducer,
             punchItem,
             $"Punch item category changed to {request.Category}",
             [change],
+            true,
             cancellationToken);
 
         punchItem.SetRowVersion(request.RowVersion);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
 
-        _logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
+        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
             punchItem.ItemNo,
             punchItem.Guid,
             punchItem.Category);
 
         try
         {
-            await _syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
+            await syncToPCS4Service.SyncPunchListItemUpdateAsync(integrationEvent, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Sync Update Category on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
+            logger.LogError(e, "Error occurred while trying to Sync Update Category on PunchItemList with guid {PunchItemGuid}", request.PunchItemGuid);
             return punchItem.RowVersion.ConvertToString();
         }
 
         try
         {
-            await _checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
+            await checkListApiService.RecalculateCheckListStatusAsync(punchItem.Plant, punchItem.CheckListGuid, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
+            logger.LogError(e, "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {guid}", punchItem.CheckListGuid);
         }
 
         return punchItem.RowVersion.ConvertToString();

@@ -36,7 +36,7 @@ public class DuplicatePunchItemCommandHandler(
     ICheckListApiService checkListApiService,
     ILogger<DuplicatePunchItemCommandHandler> logger
     )
-    : PunchUpdateCommandBase, IRequestHandler<DuplicatePunchItemCommand, List<GuidAndRowVersion>>
+    : IRequestHandler<DuplicatePunchItemCommand, List<GuidAndRowVersion>>
 {
     public async Task<List<GuidAndRowVersion>> Handle(DuplicatePunchItemCommand request, CancellationToken cancellationToken)
     {
