@@ -57,5 +57,5 @@ jobs:
           file: ${{ inputs.dockerFilePath }}
           push: true
           tags: |
-            procosys.azurecr.io/api/${{ inputs.repositoryName }}:-${{ input.version }}
+            procosys.azurecr.io/api/${{ inputs.repositoryName }}:-${{ inputs.version }}
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest
