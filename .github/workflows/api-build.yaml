@@ -4,10 +4,6 @@ on:
   pull_request:
     branches: ["main"]
 
-  variables:
-    - name: 'versionNumber'
-      value: '1.000.0.'
-
   workflow_dispatch:
     inputs:
       environment:
@@ -36,7 +32,7 @@ jobs:
       repositoryName: procosys-completion
       dockerFilePath: ./src/Dockerfile
       environment: dev
-      version: ${{variables.versionNumber}}$(Build.BuildId)
+      version: 1.000.0.$(Build.BuildId)
      
  # deploy-to-radix:
  #   needs: build-and-push-docker
