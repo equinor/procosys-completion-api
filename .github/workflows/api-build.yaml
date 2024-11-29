@@ -22,7 +22,6 @@ permissions:
 
 jobs:
   build-and-push-docker:
-    needs: check-affected
     uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
