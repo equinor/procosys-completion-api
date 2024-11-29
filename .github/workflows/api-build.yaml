@@ -1,0 +1,51 @@
+name: build completion
+
+on: 
+  pull_request:
+    branches: ["main"]
+
+  variables:
+    - name: 'versionNumber'
+      value: '1.000.0.'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required : true
+        type: choice
+        default: dev
+        options: 
+          - dev
+          - test
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push-docker:
+    needs: check-affected
+    uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    with:
+      repositoryName: procosys-completion
+      dockerFilePath: ./src/Dockerfile
+      environment: dev
+      version: ${{variables.versionNumber}}$(Build.BuildId)
+     
+ # deploy-to-radix:
+ #   needs: build-and-push-docker
+ #   uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+ #   secrets:
+ #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+ #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+ #     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+ #   with:
+ #     applicationName: procosys-completion-api
+ #     imageTag: ${{variables.versionNumber}}$(Build.BuildId)
+ #     environment: dev

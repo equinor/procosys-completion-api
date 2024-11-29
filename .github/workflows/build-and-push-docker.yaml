@@ -1,0 +1,61 @@
+name: Build and push to Azure Container Registry
+
+on:
+  workflow_call:
+    inputs:
+      repositoryName:
+        description: "Name of the repository within Azure Container Registry"
+        required: true
+        type: string
+      dockerFilePath:
+        description: "File to the docker path"
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+      version:
+        description: 'Deploy version'
+        required: true
+        type: string
+    #outputs:
+    #  imageTag:
+    #    description: "The tag of the built Docker image"
+    #    value: ${{ jobs.build-and-push-docker.outputs.imageTag }}
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+#    outputs:
+#      imageTag: ${{ inputs.environment }}-${{ env.CURRENT_DATETIME }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Login to Azure Container Registry
+        run: az acr login --name procosys
+      - name: Get the current date and time
+        id: current-date
+        run: echo "CURRENT_DATETIME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src
+          file: ${{ inputs.dockerFilePath }}
+          push: true
+          tags: |
+            procosys.azurecr.io/api/${{ inputs.repositoryName }}:-${{ input.version }}
+            procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest
