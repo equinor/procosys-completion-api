@@ -49,7 +49,8 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
-
+      - name: echo env
+        run: echo ${{secrets.AZURE_ARTIFACTS_PAT}} 
       - name: Set NuGet authentication
         env:
           VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
@@ -57,7 +58,7 @@ jobs:
           dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
             --name AzureArtifacts \
             --username "statoildeveloper" \
-            --password ${{VSS_NUGET_ACCESSTOKEN}} \
+            --password $VSS_NUGET_ACCESSTOKEN \
             --store-password-in-clear-text
 
       - name: Build and push Docker image
