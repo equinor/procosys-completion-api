@@ -50,7 +50,9 @@ jobs:
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
       - name: echo env
-        run: echo ${{secrets.AZURE_ARTIFACTS_PAT}} 
+        env:
+          VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+        run: echo $VSS_NUGET_ACCESSTOKEN 
       - name: Set NuGet authentication
         env:
           VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
