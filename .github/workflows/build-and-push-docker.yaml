@@ -49,19 +49,15 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
-      - name: echo env
-        env:
-          VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
-        run: echo $VSS_NUGET_ACCESSTOKEN 
-      - name: Set NuGet authentication
-        env:
-          VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
-        run: |
-          dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
-            --name AzureArtifacts \
-            --username "statoildeveloper" \
-            --password $VSS_NUGET_ACCESSTOKEN \
-            --store-password-in-clear-text
+      # - name: Set NuGet authentication
+      #   env:
+      #     VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+      #   run: |
+      #     dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
+      #       --name AzureArtifacts \
+      #       --username "statoildeveloper" \
+      #       --password $VSS_NUGET_ACCESSTOKEN \
+      #       --store-password-in-clear-text
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -69,6 +65,8 @@ jobs:
           context: ./src
           file: ${{ inputs.dockerFilePath }}
           push: true
+          build-args: |
+            FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
           tags: |
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:${{ inputs.version }}
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest
