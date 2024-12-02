@@ -50,6 +50,11 @@ jobs:
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
         
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
       - name: Set NuGet authentication
         env:
           VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
