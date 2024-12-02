@@ -56,9 +56,12 @@ jobs:
         run: |
           dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
             --name AzureArtifacts \
-            --username "AzureDevOps" \
+            --username "statoildeveloper" \
             --password $VSS_NUGET_ACCESSTOKEN \
             --store-password-in-clear-text
+
+      - name: Restore NuGet Packages
+        run: dotnet restore
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
