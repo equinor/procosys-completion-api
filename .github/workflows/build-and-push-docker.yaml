@@ -60,9 +60,6 @@ jobs:
             --password $VSS_NUGET_ACCESSTOKEN \
             --store-password-in-clear-text
 
-      - name: Restore NuGet Packages
-        run: dotnet restore
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
