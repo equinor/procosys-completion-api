@@ -31,7 +31,7 @@ jobs:
       repositoryName: procosys-completion
       dockerFilePath: ./src/Dockerfile
       environment: dev
-      version: 1.000.0.${{Build.BuildId}}
+      version: 1.000.0.${{github.run_id}}
      
  # deploy-to-radix:
  #   needs: build-and-push-docker
