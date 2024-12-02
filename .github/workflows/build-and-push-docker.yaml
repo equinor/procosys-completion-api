@@ -57,7 +57,7 @@ jobs:
           dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
             --name AzureArtifacts \
             --username "statoildeveloper" \
-            --password $VSS_NUGET_ACCESSTOKEN \
+            --password ${{VSS_NUGET_ACCESSTOKEN}} \
             --store-password-in-clear-text
 
       - name: Build and push Docker image
