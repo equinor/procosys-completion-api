@@ -56,5 +56,6 @@ jobs:
             --from-config
             -e ${{ inputs.environment }}
             --component ${{ inputs.componentName }}
+            --context playground
             --image-tag-name ${{ inputs.componentName }}=${{ inputs.imageTag }}
             -f 
