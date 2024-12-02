@@ -57,7 +57,7 @@ jobs:
       - name: create migrations bundle
         id: bundle
         working-directory: ${{ inputs.workingDirectory }}
-        run: Global__UseAzureAppConfig="false" dotnet ef migrations bundle --self-contained --runtime linux-x64 -s ${{ inputs.bundleDirectory }} --context ${{ inputs.contextName }} -o bundle.exe
+        run: Global__UseAzureAppConfig="false" dotnet ef migrations bundle --self-contained --runtime linux-x64 -s ${{ inputs.bundleDirectory }} --context ${{ inputs.contextName }} -o bundle.exe --verbose
       - name: Copy appsettings.json
         working-directory: ${{ inputs.workingDirectory }}
         run: cp ${{ inputs.bundleDirectory }}/appsettings.json .
