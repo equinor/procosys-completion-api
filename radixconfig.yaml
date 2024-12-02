@@ -10,7 +10,7 @@ spec:
 
   components:
   - name: backend
-    image: procosys.azurecr.io/completion/api:{imageTagName}
+    image: procosys.azurecr.io/api/procosys-completion:{imageTagName}
     ports:
     - name: http
       port: 5000
