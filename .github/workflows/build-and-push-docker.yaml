@@ -30,6 +30,8 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
+      AZURE_ARTIFACTS_PAT:
+        required: true
 
 jobs:
   build-and-push-docker:
@@ -47,6 +49,16 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
+        
+      - name: Set NuGet authentication
+        env:
+          VSS_NUGET_ACCESSTOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+        run: |
+          dotnet nuget add source https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json \
+            --name AzureArtifacts \
+            --username "AzureDevOps" \
+            --password $VSS_NUGET_ACCESSTOKEN
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
