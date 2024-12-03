@@ -28,6 +28,8 @@ on:
         required: true
       DB_CONNECTION_STRING:
         required: true
+      AZURE_ARTIFACTS_PAT:
+        required: true
 
 jobs:
   migrate-dev:
@@ -53,11 +55,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Install dotnet ef
-        run: dotnet tool install -g dotnet-ef --prerelease
+        run: dotnet tool install -g dotnet-ef
       - name: create migrations bundle
         id: bundle
         working-directory: ${{ inputs.workingDirectory }}
-        run: Global__UseAzureAppConfig="false" dotnet ef migrations bundle --self-contained --runtime linux-x64 -s ${{ inputs.bundleDirectory }} --context ${{ inputs.contextName }} -o bundle.exe --verbose
+        run: Global__UseAzureAppConfig="false" FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }} dotnet ef migrations bundle --self-contained --runtime linux-x64 -s ${{ inputs.bundleDirectory }} --context ${{ inputs.contextName }} -o bundle.exe --verbose
       - name: Copy appsettings.json
         working-directory: ${{ inputs.workingDirectory }}
         run: cp ${{ inputs.bundleDirectory }}/appsettings.json .
