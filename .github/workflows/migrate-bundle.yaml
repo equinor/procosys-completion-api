@@ -66,10 +66,6 @@ jobs:
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
-      # Step 4: Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore
-
       - name: create migrations bundle
         id: bundle
         working-directory: ${{ inputs.workingDirectory }}
