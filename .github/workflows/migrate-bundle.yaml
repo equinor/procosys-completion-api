@@ -73,8 +73,28 @@ jobs:
       - name: Copy appsettings.json
         working-directory: ${{ inputs.workingDirectory }}
         run: cp ${{ inputs.bundleDirectory }}/appsettings.json .
+
+      - name: Add GitHub Actions IP to Azure SQL Server Firewall
+        run: |
+          github_ip_ranges=$(curl -s https://api.github.com/meta | jq -r '.actions[]')
+          for ip in $github_ip_ranges; do
+            az sql server firewall-rule create \
+              --resource-group rg-pcs5-completion-dev \
+              --server sql-pcs5-completion-dev \
+              --name GitHubActionsAccess \
+              --start-ip-address $ip \
+              --end-ip-address $ip
+          done
+
       - name: Run bundle
         working-directory: ${{ inputs.workingDirectory }}
         run: ./bundle.exe --connection ${{ secrets.DB_CONNECTION_STRING }}
         env:
           DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+
+      - name: Remove GitHub Actions IP from Firewall
+        run: |
+          az sql server firewall-rule delete \
+            --resource-group rg-pcs5-completion-dev \
+            --server sql-pcs5-completion-dev \
+            --name GitHubActionsAccess          
