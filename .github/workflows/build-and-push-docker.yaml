@@ -30,8 +30,8 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
-      AZURE_ARTIFACTS_PAT:
-        required: true
+     # AZURE_ARTIFACTS_PAT:
+     #   required: true
 
 jobs:
   build-and-push-docker:
@@ -56,8 +56,8 @@ jobs:
           context: ./src
           file: ${{ inputs.dockerFilePath }}
           push: true
-          build-args: |
-            FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
+          #build-args: |
+          #  FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
           tags: |
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:${{ inputs.version }}
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest
