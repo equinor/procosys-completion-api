@@ -76,3 +76,5 @@ jobs:
       - name: Run bundle
         working-directory: ${{ inputs.workingDirectory }}
         run: ./bundle.exe --connection ${{ secrets.DB_CONNECTION_STRING }}
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
