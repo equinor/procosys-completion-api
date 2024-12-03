@@ -34,22 +34,8 @@ jobs:
       environment: dev
       version: 1.000.0.${{github.run_id}}
      
-
-  deploy-to-radix:
-    needs: build-and-push-docker
-    uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
-    secrets:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    with:
-      applicationName: procosys-completion-api
-      componentName: backend
-      imageTag: 1.000.0.${{github.run_id}}
-      environment: dev
-
   migrate-dev:
-    needs: deploy-to-radix
+    needs: build-and-push-docker
     uses: equinor/procosys-completion-api/.github/workflows/migrate-bundle.yaml@github-action-pipeline
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -60,4 +46,17 @@ jobs:
       workingDirectory: ./src/Equinor.ProCoSys.Completion.Infrastructure
       bundleDirectory: ../Equinor.ProCoSys.Completion.WebApi
       contextName: CompletionContext
+      environment: dev
+
+  deploy-to-radix:
+    needs: migrate-dev
+    uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    with:
+      applicationName: procosys-completion-api
+      componentName: backend
+      imageTag: 1.000.0.${{github.run_id}}
       environment: dev
