@@ -39,8 +39,8 @@ ENV Global__UseAzureAppConfig="false"
 ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="${PATH}:/root/.dotnet/tools"
-WORKDIR "/src/Equinor.ProCoSys.Completion.Infrastructure"
-RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -o /app/migrations/bundle.exe --verbose
+WORKDIR "./src/Equinor.ProCoSys.Completion.Infrastructure"
+RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
 
 # Copy necessary configuration files for running the migration bundle
 # Assuming that 'appsettings.dev.json' is in the WebApi project directory
@@ -77,9 +77,7 @@ COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json
 # Set workdir to /app/migrations to run the migration bundle
 WORKDIR /app/migrations
 
-# Run the migration bundle (replace the placeholder with the actual environment variable)
-# You need to pass the database connection string to the migration bundle
-# Make sure to set the DB_CONNECTION_STRING environment variable when running the container
+# Run the migration bundle 
 CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
 
 # Set workdir back to /app for running the application
