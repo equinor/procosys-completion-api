@@ -87,15 +87,21 @@ COPY --chown=apprunner:apprunner --from=publish /app/migrations/bundle.exe /app/
 COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json /app/migrations/
 
 # Set workdir to /app/migrations to run the migration bundle
-WORKDIR /app/migrations
+##WORKDIR /app/migrations
 
 # Run the migration bundle (replace the placeholder with the actual environment variable)
 # You need to pass the database connection string to the migration bundle
 # Make sure to set the DB_CONNECTION_STRING environment variable when running the container
-CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
-
+##CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
+##RUN echo "Migration done."
 # Set workdir back to /app for running the application
-WORKDIR /app
+##WORKDIR /app
+
+# Copy entrypoint script
+COPY startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
 
 # Define the entrypoint for the application
-ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
+##ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
+# Set entrypoint
+ENTRYPOINT ["/app/startup.sh"]
