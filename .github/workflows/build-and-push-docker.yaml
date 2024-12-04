@@ -26,6 +26,8 @@ on:
     secrets:
       AZURE_CLIENT_ID:
         required: true
+      AZURE_CLIENT_SECRET:
+        required: true        
       AZURE_TENANT_ID:
         required: true
       AZURE_SUBSCRIPTION_ID:
@@ -61,6 +63,9 @@ jobs:
           build-args: |
             FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
             DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}
+            AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
+            AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
+            AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
           tags: |
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:${{ inputs.version }}
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest

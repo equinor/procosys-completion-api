@@ -15,13 +15,14 @@ COPY nuget.config .
 # Copy full solution
 COPY . .
 
-#### Restore dependencies
-RUN dotnet restore
-
 # Set workdir where main project is
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
 # Build
+ARG AZURE_CLIENT_ID
+ARG AZURE_TENANT_ID
+ARG AZURE_CLIENT_SECRET  
+
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
 ARG FEED_ACCESSTOKEN
@@ -31,31 +32,27 @@ RUN echo $DB_CONNECTION_STRING
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
-####RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
-RUN dotnet publish ./Equinor.ProCoSys.Completion.WebApi -c Release -o /app/publish
-
+RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
 
 # Publish the application
 FROM build AS publish
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
+
+# Install Azure CLI in the Docker container
+RUN apt-get update && apt-get install -y curl lsb-release apt-transport-https ca-certificates
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# Login to Azure using the service principal
+RUN az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+
 # Create the migrations bundle
-#ENV Global__UseAzureAppConfig="false"
-#ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
-#RUN dotnet tool install --global dotnet-ef
-#ENV PATH="${PATH}:/root/.dotnet/tools"
+ENV Global__UseAzureAppConfig="false"
+ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="${PATH}:/root/.dotnet/tools"
 WORKDIR "/src/Equinor.ProCoSys.Completion.Infrastructure"
-#RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
-RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
-
-
-WORKDIR /app
-
-# Copy migration bundle and application from the build stage
-COPY --from=build /app/migrations/bundle.exe /app/migrations/
-COPY --from=build /app/publish /app/
-
-
+RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe --verbose
 
 # Copy necessary configuration files for running the migration bundle
 # Assuming that 'appsettings.dev.json' is in the WebApi project directory
@@ -92,7 +89,9 @@ COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json
 # Set workdir to /app/migrations to run the migration bundle
 WORKDIR /app/migrations
 
-# Run the migration bundle 
+# Run the migration bundle (replace the placeholder with the actual environment variable)
+# You need to pass the database connection string to the migration bundle
+# Make sure to set the DB_CONNECTION_STRING environment variable when running the container
 CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
 
 # Set workdir back to /app for running the application
