@@ -44,7 +44,7 @@ RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context C
 
 # Copy necessary configuration files for running the migration bundle
 # Assuming that 'appsettings.dev.json' is in the WebApi project directory
-COPY ["Equinor.ProCoSys.Completion.WebApi/appsettings.dev.json", "/app/migrations/appsettings.json"]
+COPY ["Equinor.ProCoSys.Completion.WebApi/appsettings.json", "/app/migrations/appsettings.json"]
 
 # Publish the web application
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
