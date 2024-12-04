@@ -32,6 +32,8 @@ on:
         required: true
       AZURE_ARTIFACTS_PAT:
         required: true
+      DB_CONNECTION_STRING:
+        required: true
 
 jobs:
   build-and-push-docker:
@@ -58,6 +60,7 @@ jobs:
           push: true
           build-args: |
             FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
+            DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}
           tags: |
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:${{ inputs.version }}
             procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest

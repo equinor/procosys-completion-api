@@ -1,4 +1,5 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿# Use the .NET SDK image to build the application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy project files separately and restore NuGet packages to create layers. Skip test projects!
@@ -21,7 +22,9 @@ WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
 ARG FEED_ACCESSTOKEN
+ARG DB_CONNECTION_STRING
 RUN echo $FEED_ACCESSTOKEN
+RUN echo $DB_CONNECTION_STRING
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
@@ -30,12 +33,27 @@ RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
 # Publish the application
 FROM build AS publish
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
+
+# Create the migrations bundle
+ENV Global__UseAzureAppConfig="false"
+ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="${PATH}:/root/.dotnet/tools"
+WORKDIR "/src/Equinor.ProCoSys.Completion.Infrastructure"
+RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -o /app/migrations/bundle.exe --verbose
+
+# Copy necessary configuration files for running the migration bundle
+# Assuming that 'appsettings.dev.json' is in the WebApi project directory
+COPY ["Equinor.ProCoSys.Completion.WebApi/appsettings.dev.json", "/app/migrations/appsettings.json"]
+
+# Publish the web application
+WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 RUN dotnet publish "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Define the image used for the final result
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
-# Create non-root user. Set ui to 9999 to avoid conflicts with host OS just in case
+# Create non-root user. Set uid to 9999 to avoid conflicts with host OS just in case
 RUN adduser --disabled-password --uid 9999 --gecos "" apprunner
 
 # Create the folder and set the non-root as owner
@@ -51,4 +69,21 @@ WORKDIR /app
 # Copy the published files from the build image into this one
 # Copy defaults to copying files as root, specify the user that should be the owner
 COPY --chown=apprunner:apprunner --from=publish /app/publish .
+
+# Copy the migration bundle and appsettings.json
+COPY --chown=apprunner:apprunner --from=publish /app/migrations/bundle.exe /app/migrations/
+COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json /app/migrations/
+
+# Set workdir to /app/migrations to run the migration bundle
+WORKDIR /app/migrations
+
+# Run the migration bundle (replace the placeholder with the actual environment variable)
+# You need to pass the database connection string to the migration bundle
+# Make sure to set the DB_CONNECTION_STRING environment variable when running the container
+CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
+
+# Set workdir back to /app for running the application
+WORKDIR /app
+
+# Define the entrypoint for the application
 ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
