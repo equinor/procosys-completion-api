@@ -39,7 +39,7 @@ ENV Global__UseAzureAppConfig="false"
 ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="${PATH}:/root/.dotnet/tools"
-WORKDIR "./src/Equinor.ProCoSys.Completion.Infrastructure"
+WORKDIR "/src/Equinor.ProCoSys.Completion.Infrastructure"
 RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
 
 # Copy necessary configuration files for running the migration bundle
