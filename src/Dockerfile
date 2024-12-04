@@ -15,6 +15,9 @@ COPY nuget.config .
 # Copy full solution
 COPY . .
 
+#### Restore dependencies
+RUN dotnet restore
+
 # Set workdir where main project is
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
@@ -28,19 +31,31 @@ RUN echo $DB_CONNECTION_STRING
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
-RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
+####RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
+RUN dotnet publish ./Equinor.ProCoSys.Completion.WebApi -c Release -o /app/publish
+
 
 # Publish the application
 FROM build AS publish
 WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
 # Create the migrations bundle
-ENV Global__UseAzureAppConfig="false"
-ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="${PATH}:/root/.dotnet/tools"
+#ENV Global__UseAzureAppConfig="false"
+#ENV FEED_ACCESSTOKEN=${FEED_ACCESSTOKEN}
+#RUN dotnet tool install --global dotnet-ef
+#ENV PATH="${PATH}:/root/.dotnet/tools"
 WORKDIR "/src/Equinor.ProCoSys.Completion.Infrastructure"
+#RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
 RUN dotnet ef migrations bundle --self-contained --runtime linux-x64 --context CompletionContext -s ../Equinor.ProCoSys.Completion.WebApi -o /app/migrations/bundle.exe
+
+
+WORKDIR /app
+
+# Copy migration bundle and application from the build stage
+COPY --from=build /app/migrations/bundle.exe /app/migrations/
+COPY --from=build /app/publish /app/
+
+
 
 # Copy necessary configuration files for running the migration bundle
 # Assuming that 'appsettings.dev.json' is in the WebApi project directory
