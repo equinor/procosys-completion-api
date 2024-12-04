@@ -99,6 +99,7 @@ COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json
 
 # Copy entrypoint script
 COPY startup.sh /app/startup.sh
+USER root
 RUN chmod +x /app/startup.sh
 
 # Define the entrypoint for the application
