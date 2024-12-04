@@ -52,7 +52,7 @@ jobs:
  #     environment: dev
 
   deploy-to-radix:
-    needs: migrate-dev
+    needs: build-and-push-docker
     uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
