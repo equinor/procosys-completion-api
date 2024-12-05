@@ -6,15 +6,15 @@ on:
       deployment:
         description: 'Deployment type'
         required: false
-        default: ''
+        type: string
       environment:
         description: 'Target environment'
         required: true
-        default: 'dev'
+        type: string
       testPath:
         description: 'Path to the test project'
         required: true
-        default: './tests/MyTestProject'
+        type: string
 
 jobs:
   test-and-deploy:
