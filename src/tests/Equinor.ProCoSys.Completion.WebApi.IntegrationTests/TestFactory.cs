@@ -229,7 +229,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         
         //dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
-        dbContext.CreateNewDatabaseWithCorrectSchema();
+        //dbContext.CreateNewDatabaseWithCorrectSchema();
 
         dbContext.SeedCurrentUser();
 
