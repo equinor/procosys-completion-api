@@ -21,7 +21,16 @@ permissions:
   contents: read
 
 jobs:
+  runtests:
+    uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
+    secrets:
+    with:
+      deployment: 'runtests'
+      environment: 'pcs-completion-api-runtests'
+      testPath: './Equinor.Procosys.Completion.sln'
+
   build-and-push-docker:
+    needs: runtests
     uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
