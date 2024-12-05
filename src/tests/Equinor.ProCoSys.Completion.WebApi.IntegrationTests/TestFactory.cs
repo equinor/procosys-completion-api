@@ -199,7 +199,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.Remove(descriptor);
         }
 
-        services.AddDbContext<CompletionContext>(options 
+        services.AddDbContext<CompletionContext>(options
             => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
     }
 
