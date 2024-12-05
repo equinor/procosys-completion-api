@@ -25,7 +25,7 @@ jobs:
     uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
     with:
       deployment: 'runtests'
-      environment: 'pcs-completion-api-runtests'
+      environment: 'dev'
       testPath: './Equinor.Procosys.Completion.sln'
 
   build-and-push-docker:
