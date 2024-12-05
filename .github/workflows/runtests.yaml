@@ -30,8 +30,10 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      run:
+      run: |
+        pwd
         working-directory: ./src
+
 
     environment: ${{ inputs.environment }}
 

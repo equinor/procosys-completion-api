@@ -31,7 +31,7 @@ jobs:
     with:
       deployment: 'runtests'
       environment: 'dev'
-      testPath: './src/Equinor.Procosys.Completion.sln'
+      testPath: './src/Equinor.ProCoSys.Completion.sln'
 
   # build-and-push-docker:
   #   needs: runtests
