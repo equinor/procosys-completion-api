@@ -199,9 +199,8 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.Remove(descriptor);
         }
 
-        var myDatabaseName = "CompletionContextDatabase" + DateTime.Now.ToFileTimeUtc();
-
-        services.AddDbContext<CompletionContext>(x => x.UseInMemoryDatabase(databaseName: myDatabaseName));
+        services.AddDbContext<CompletionContext>(options
+            => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
     }
 
     private void ReplaceRealTokenCredentialsWithTestCredentials(IServiceCollection services)
@@ -227,9 +226,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
         dbContext.Database.EnsureDeleted();
         
-        //dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
+        dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
-        //dbContext.CreateNewDatabaseWithCorrectSchema();
+        dbContext.CreateNewDatabaseWithCorrectSchema();
 
         dbContext.SeedCurrentUser();
 
