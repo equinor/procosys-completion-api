@@ -19,10 +19,6 @@ on:
         description: 'Deploy version'
         required: true
         type: string
-    #outputs:
-    #  imageTag:
-    #    description: "The tag of the built Docker image"
-    #    value: ${{ jobs.build-and-push-docker.outputs.imageTag }}
     secrets:
       AZURE_CLIENT_ID:
         required: true
@@ -41,8 +37,6 @@ jobs:
   build-and-push-docker:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-#    outputs:
-#      imageTag: ${{ inputs.environment }}-${{ env.CURRENT_DATETIME }}
     steps:
       - uses: actions/checkout@v4
       - name: Azure CLI Login

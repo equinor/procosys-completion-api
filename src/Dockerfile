@@ -22,22 +22,14 @@ WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 ARG AZURE_CLIENT_ID
 ARG AZURE_TENANT_ID
 ARG AZURE_CLIENT_SECRET  
+ARG FEED_ACCESSTOKEN
+ARG DB_CONNECTION_STRING
 
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
-ARG FEED_ACCESSTOKEN
-ARG DB_CONNECTION_STRING
-RUN echo $FEED_ACCESSTOKEN
-RUN echo $DB_CONNECTION_STRING
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
-RUN echo $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
 RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
-
-# Publish the application
-FROM build AS publish
-WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
-
 
 # Install Azure CLI in the Docker container
 RUN apt-get update && apt-get install -y curl lsb-release apt-transport-https ca-certificates
@@ -45,6 +37,10 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Login to Azure using the service principal
 RUN az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+
+# Publish the application
+FROM build AS publish
+WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
 # Create the migrations bundle
 ENV Global__UseAzureAppConfig="false"
@@ -86,23 +82,8 @@ COPY --chown=apprunner:apprunner --from=publish /app/publish .
 COPY --chown=apprunner:apprunner --from=publish /app/migrations/bundle.exe /app/migrations/
 COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json /app/migrations/
 
-# Set workdir to /app/migrations to run the migration bundle
-##WORKDIR /app/migrations
-
-# Run the migration bundle (replace the placeholder with the actual environment variable)
-# You need to pass the database connection string to the migration bundle
-# Make sure to set the DB_CONNECTION_STRING environment variable when running the container
-##CMD ["./bundle.exe", "--connection", "${DB_CONNECTION_STRING}"]
-##RUN echo "Migration done."
-# Set workdir back to /app for running the application
-##WORKDIR /app
-
 # Copy entrypoint script
 COPY --chmod=755 startup.sh /app/startup.sh
-#COPY startup.sh /app/startup.sh
-#RUN chmod +x /app/startup.sh
 
 # Define the entrypoint for the application
-##ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
-# Set entrypoint
 ENTRYPOINT ["/app/startup.sh"]
