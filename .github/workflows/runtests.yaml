@@ -26,16 +26,9 @@ on:
         required: true           
 
 jobs:
-  test-and-deploy:
+  runtests:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./src/
-
-
     environment: ${{ inputs.environment }}
-
     steps:
       - uses: actions/checkout@v4
       - name: Azure CLI Login
@@ -51,20 +44,21 @@ jobs:
           inlineScript: |
             az account show
             # You can write your Azure CLI inline scripts here.
-      - name: List Nuget Src
-        run: dotnet nuget list source
-      # - name: Setup dotnet 8
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: '8.0.x'
+      - name: Setup dotnet 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install dotnet ef
+        run: dotnet tool install -g dotnet-ef
 
-      # - name: Configure NuGet source
-      #   run: |
-      #     dotnet nuget add source --name ProCoSysOfficial \
-      #         --username statoildeveloper \
-      #         --password ${{ secrets.AZURE_ARTIFACTS_PAT }} \
-      #         --store-password-in-clear-text \
-      #         https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
+      # Step 3: Configure NuGet source with access token
+      - name: Configure NuGet source
+        run: |
+          dotnet nuget add source --name ProCoSysOfficial \
+              --username statoildeveloper \
+              --password ${{ secrets.AZURE_ARTIFACTS_PAT }} \
+              --store-password-in-clear-text \
+              https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
       - name: Run tests
         run: |
