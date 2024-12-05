@@ -27,21 +27,8 @@ on:
 
 jobs:
   runtests:
-    runs-on: windows-latest
-
-    # services:
-    #   mssql:
-    #     image: mcr.microsoft.com/mssql/server:2022-latest
-    #     options: --health-cmd "exit 0" --health-timeout 30s --health-retries 3 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourPassword123!' -p 1433:1433
-    #     ports:
-    #       - 1433:1433
-
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-
-    # defaults:
-    #   run:
-    #     working-directory: ./src/
-
     steps:
       - uses: actions/checkout@v4
       - name: Azure CLI Login
@@ -50,13 +37,13 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # - name: Azure CLI script
-      #   uses: azure/cli@v2
-      #   with:
-      #     azcliversion: latest
-      #     inlineScript: |
-      #       az account show
-      #       # You can write your Azure CLI inline scripts here.
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+            # You can write your Azure CLI inline scripts here.
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
@@ -73,12 +60,11 @@ jobs:
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
       - name: Run tests
-        env:
-          #ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=TestDb;User Id=sa;Password=YourPassword123!"
-          DOTNET_NOLOGO: true
         run: |
           cd src/
           dotnet test ${{ inputs.testPath }} -c Release --logger "trx"
+        env:
+          DOTNET_NOLOGO: true
         
       - name: Publish Test Results
         uses: actions/upload-artifact@v3

@@ -199,8 +199,9 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.Remove(descriptor);
         }
 
-        services.AddDbContext<CompletionContext>(options 
-            => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+        var myDatabaseName = "CompletionContextDatabase" + DateTime.Now.ToFileTimeUtc();
+
+        services.AddDbContext<CompletionContext>(x => x.UseInMemoryDatabase(databaseName: myDatabaseName));
     }
 
     private void ReplaceRealTokenCredentialsWithTestCredentials(IServiceCollection services)
