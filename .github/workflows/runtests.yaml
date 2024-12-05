@@ -30,14 +30,15 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      run: |
-        pwd
+      run:
         working-directory: ./src
 
 
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Current dir
+        run: pwd 
       - uses: actions/checkout@v4
       - name: Azure CLI Login
         uses: azure/login@v2
