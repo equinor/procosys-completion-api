@@ -227,7 +227,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
 
         dbContext.Database.EnsureDeleted();
         
-        dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
+        //dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
         dbContext.CreateNewDatabaseWithCorrectSchema();
 
