@@ -51,6 +51,8 @@ jobs:
           inlineScript: |
             az account show
             # You can write your Azure CLI inline scripts here.
+      - name: List Nuget Src
+        run: dotnet nuget list source
       # - name: Setup dotnet 8
       #   uses: actions/setup-dotnet@v4
       #   with:
