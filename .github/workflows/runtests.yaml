@@ -31,7 +31,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./src
+        working-directory: src
 
 
     environment: ${{ inputs.environment }}
