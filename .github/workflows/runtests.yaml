@@ -51,10 +51,10 @@ jobs:
           inlineScript: |
             az account show
             # You can write your Azure CLI inline scripts here.
-      - name: Setup dotnet 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      # - name: Setup dotnet 8
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: '8.0.x'
 
       - name: Configure NuGet source
         run: |
