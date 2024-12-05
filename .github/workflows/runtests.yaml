@@ -29,6 +29,10 @@ jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./src
+
     environment: ${{ inputs.environment }}
 
     steps:
