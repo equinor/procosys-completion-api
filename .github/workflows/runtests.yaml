@@ -75,12 +75,11 @@ jobs:
       - name: Run tests
         env:
           ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=TestDb;User Id=sa;Password=YourPassword123!"
+          DOTNET_NOLOGO: true
         run: |
           cd src/
           dotnet test ${{ inputs.testPath }} -c Release --logger "trx"
-        env:
-          DOTNET_NOLOGO: true
-
+        
       - name: Publish Test Results
         uses: actions/upload-artifact@v3
         with:
