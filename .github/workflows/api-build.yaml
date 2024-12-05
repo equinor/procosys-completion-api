@@ -23,7 +23,6 @@ permissions:
 jobs:
   runtests:
     uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
-    secrets:
     with:
       deployment: 'runtests'
       environment: 'pcs-completion-api-runtests'
