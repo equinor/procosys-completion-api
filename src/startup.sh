@@ -2,8 +2,6 @@
 
 # Run database migrations
 echo "Running database migrations..."
-echo "Using AzureId: $AZURE_CLIENT_ID"
-echo "Using DB_CONNECTION_STRING: $DB_CONNECTION_STRING"
 
 /app/migrations/bundle.exe --connection "$DB_CONNECTION_STRING"
 
