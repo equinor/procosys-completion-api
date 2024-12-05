@@ -21,7 +21,9 @@ on:
       AZURE_TENANT_ID:
         required: true
       AZURE_SUBSCRIPTION_ID:
-        required: true        
+        required: true     
+      AZURE_ARTIFACTS_PAT:
+        required: true           
 
 jobs:
   test-and-deploy:
@@ -37,47 +39,47 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # - name: Azure CLI script
-      #   uses: azure/cli@v2
-      #   with:
-      #     azcliversion: latest
-      #     inlineScript: |
-      #       az account show
-      #       # You can write your Azure CLI inline scripts here.
-      # - name: Setup dotnet 8
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: '8.0.x'
-      # - name: Install dotnet ef
-      #   run: dotnet tool install -g dotnet-ef
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+            # You can write your Azure CLI inline scripts here.
+      - name: Setup dotnet 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install dotnet ef
+        run: dotnet tool install -g dotnet-ef
 
-      # # Step 3: Configure NuGet source with access token
-      # - name: Configure NuGet source
-      #   run: |
-      #     dotnet nuget add source --name ProCoSysOfficial \
-      #         --username statoildeveloper \
-      #         --password ${{ secrets.AZURE_ARTIFACTS_PAT }} \
-      #         --store-password-in-clear-text \
-      #         https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
+      # Step 3: Configure NuGet source with access token
+      - name: Configure NuGet source
+        run: |
+          dotnet nuget add source --name ProCoSysOfficial \
+              --username statoildeveloper \
+              --password ${{ secrets.AZURE_ARTIFACTS_PAT }} \
+              --store-password-in-clear-text \
+              https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
-      # - name: Authenticate NuGet
-      #   uses: NuGet/NuGetAuthenticate@v1
-      #   with:
-      #     force-reinstall-credential-provider: true
+      - name: Authenticate NuGet
+        uses: NuGet/NuGetAuthenticate@v1
+        with:
+          force-reinstall-credential-provider: true
 
-      # - name: Run tests
-      #   run: |
-      #     dotnet test ${{ inputs.testPath }} -c Release --logger "trx"
-      #   env:
-      #     DOTNET_NOLOGO: true
+      - name: Run tests
+        run: |
+          dotnet test ${{ inputs.testPath }} -c Release --logger "trx"
+        env:
+          DOTNET_NOLOGO: true
 
-      # - name: Publish Test Results
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: TestResults
-      #     path: '**/*.trx'
+      - name: Publish Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: TestResults
+          path: '**/*.trx'
 
-      # - name: Deploy
-      #   run: |
-      #     echo "Deploying to ${{ inputs.environment }}"
-      #     echo "Using deployment type: ${{ inputs.deployment }}"
+      - name: Deploy
+        run: |
+          echo "Deploying to ${{ inputs.environment }}"
+          echo "Using deployment type: ${{ inputs.deployment }}"
