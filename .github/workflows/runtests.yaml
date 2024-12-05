@@ -1,0 +1,54 @@
+name: Test and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: 'Deployment type'
+        required: false
+        default: ''
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+      testPath:
+        description: 'Path to the test project'
+        required: true
+        default: './tests/MyTestProject'
+
+jobs:
+  test-and-deploy:
+    runs-on: windows-latest
+
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate NuGet
+        uses: NuGet/NuGetAuthenticate@v1
+        with:
+          force-reinstall-credential-provider: true
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x'
+
+      - name: Run tests
+        run: |
+          dotnet test ${{ inputs.testPath }} -c Release --logger "trx"
+        env:
+          DOTNET_NOLOGO: true
+
+      - name: Publish Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: TestResults
+          path: '**/*.trx'
+
+      - name: Deploy
+        run: |
+          echo "Deploying to ${{ inputs.environment }}"
+          echo "Using deployment type: ${{ inputs.deployment }}"
