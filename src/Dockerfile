@@ -98,9 +98,9 @@ COPY --chown=apprunner:apprunner --from=publish /app/migrations/appsettings.json
 ##WORKDIR /app
 
 # Copy entrypoint script
-COPY startup.sh /app/startup.sh
-USER root
-RUN chmod +x /app/startup.sh
+COPY --chmod=755 startup.sh /app/startup.sh
+#COPY startup.sh /app/startup.sh
+#RUN chmod +x /app/startup.sh
 
 # Define the entrypoint for the application
 ##ENTRYPOINT ["dotnet", "Equinor.ProCoSys.Completion.WebApi.dll"]
