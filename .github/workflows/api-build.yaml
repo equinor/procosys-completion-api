@@ -61,3 +61,15 @@ jobs:
        componentName: backend
        imageTag: 1.000.0.${{github.run_id}}
        environment: dev
+
+  promote-to-test:
+    needs: deploy-to-radix
+    uses: equinor/procosys-completion-api/.github/workflows/promote-radix.yaml@github-action-pipeline
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    with:
+      applicationName: procosys-completion-api
+      toEnvironment: test
+      fromEnvironment: dev
