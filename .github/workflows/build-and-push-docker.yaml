@@ -30,8 +30,6 @@ on:
         required: true
       AZURE_ARTIFACTS_PAT:
         required: true
-      DB_CONNECTION_STRING:
-        required: true
 
 jobs:
   build-and-push-docker:
