@@ -20,7 +20,7 @@ spec:
     publicPort: http
     secrets: 
     - CONNECTIONSTRINGS__APPCONFIG
-    - FEED_ACCESSTOKEN
+    #- FEED_ACCESSTOKEN
     - DB_CONNECTION_STRING
     environmentConfig:
     # Development environment

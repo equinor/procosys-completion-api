@@ -41,7 +41,6 @@ jobs:
        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-       DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
        AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
      with:
        repositoryName: procosys-completion

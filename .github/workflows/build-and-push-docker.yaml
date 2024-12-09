@@ -56,7 +56,6 @@ jobs:
           push: true
           build-args: |
             FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
-            DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
             AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
             AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
