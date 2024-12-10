@@ -1,4 +1,5 @@
-﻿# Use the .NET SDK image to build the application
+﻿# syntax=docker/dockerfile:1.4
+# Use the .NET SDK image to build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -20,12 +21,11 @@ WORKDIR "/src/Equinor.ProCoSys.Completion.WebApi"
 
 # Build
 ARG AZURE_CLIENT_ID
-ARG AZURE_TENANT_ID
-ARG AZURE_CLIENT_SECRET  
+ARG AZURE_TENANT_ID 
 ARG FEED_ACCESSTOKEN
 
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
-ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED true
+ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED=true
 ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
 RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y curl lsb-release apt-transport-https ca
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Login to Azure using the service principal
-RUN az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+RUN --mount=type=secret,id=AZURE_CLIENT_SECRET az login --service-principal -u $AZURE_CLIENT_ID -p $(cat /run/secrets/AZURE_CLIENT_SECRET) --tenant $AZURE_TENANT_ID
 
 # Publish the application
 FROM build AS publish
@@ -69,7 +69,7 @@ RUN mkdir /app && chown apprunner.apprunner /app
 # Change the user from root to non-root- From now on, all Docker commands are run as non-root user (except for COPY)
 USER 9999
 
-ENV ASPNETCORE_URLS http://+:5000
+ENV ASPNETCORE_URLS=http://+:5000
 EXPOSE 5000
 WORKDIR /app
 
