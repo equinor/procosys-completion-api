@@ -25,14 +25,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Testcontainers.MsSql;
 
 namespace Equinor.ProCoSys.Completion.WebApi.IntegrationTests;
 
 public class TestFactory : WebApplicationFactory<Program>
 {
+
+    private static MsSqlContainer SqlContainer;
+    private static readonly string TestDbName = "IntegrationTestsDB";
+
     private readonly string _connectionString;
     private readonly Dictionary<UserType, ITestUser> _testUsers = new();
     private readonly List<Action> _teardownList = [];
@@ -77,15 +83,16 @@ public class TestFactory : WebApplicationFactory<Program>
         LastName = "Hansen",
         UserName = "oha@mail.com"
     };
-    public static ProCoSysPerson Person2 = new () {
+    public static ProCoSysPerson Person2 = new()
+    {
         AzureOid = "1234-4567-6789-5432",
         Email = "test2@email.com",
         FirstName = "Hans",
         LastName = "Olsen",
         UserName = "hans@mail.com"
     };
-    
-public Dictionary<string, KnownTestData> SeededData { get; }
+
+    public Dictionary<string, KnownTestData> SeededData { get; }
 
     #region singleton implementation
     private static TestFactory s_instance;
@@ -112,11 +119,13 @@ public Dictionary<string, KnownTestData> SeededData { get; }
     private TestFactory()
     {
         SeededData = new Dictionary<string, KnownTestData>();
-        var projectDir = Directory.GetCurrentDirectory();
-        _connectionString = GetTestDbConnectionString(projectDir);
+        PrepareSqlContainer().Wait();
+        _connectionString = new SqlConnectionStringBuilder(SqlContainer.GetConnectionString())
+        {
+            InitialCatalog = TestDbName
+        }.ConnectionString;
         SetupTestUsers();
     }
-
     #endregion
 
     public new void Dispose()
@@ -131,7 +140,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         {
             testUser.Value.HttpClient.Dispose();
         }
-            
+
         lock (s_padlock)
         {
             s_instance = null;
@@ -143,11 +152,11 @@ public Dictionary<string, KnownTestData> SeededData { get; }
     public HttpClient GetHttpClient(UserType userType, string plant)
     {
         var testUser = _testUsers[userType];
-            
+
         SetupPermissionMock(plant, testUser);
-            
+
         UpdatePlantInHeader(testUser.HttpClient, plant);
-            
+
         return testUser.HttpClient;
     }
 
@@ -178,7 +187,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         builder.ConfigureServices(services =>
         {
             ReplaceRealDbContextWithTestDbContext(services);
-        
+
             //replace Azure ServiceBus with in memory MassTransit
             services.AddMassTransitTestHarness();
 
@@ -186,7 +195,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             CreateSeededTestDatabase(services);
             EnsureTestDatabaseDeletedAtTeardown(services);
         });
-        
+
     }
 
     private void ReplaceRealDbContextWithTestDbContext(IServiceCollection services)
@@ -199,7 +208,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             services.Remove(descriptor);
         }
 
-        services.AddDbContext<CompletionContext>(options 
+        services.AddDbContext<CompletionContext>(options
             => options.UseSqlServer(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
     }
 
@@ -220,12 +229,15 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         using var serviceProvider = services.BuildServiceProvider();
 
         using var scope = serviceProvider.CreateScope();
-            
+
         var scopeServiceProvider = scope.ServiceProvider;
         var dbContext = ServiceProviderServiceExtensions.GetRequiredService<CompletionContext>(scopeServiceProvider);
 
-        dbContext.Database.EnsureDeleted();
-        
+        if (dbContext.Database.CanConnect())
+        {
+            dbContext.Database.EnsureDeleted();
+        }
+
         dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
 
         dbContext.CreateNewDatabaseWithCorrectSchema();
@@ -256,24 +268,62 @@ public Dictionary<string, KnownTestData> SeededData { get; }
         {
             using var sp = services.BuildServiceProvider();
             using var dbContext = ServiceProviderServiceExtensions.GetRequiredService<CompletionContext>(sp);
-                
+
             dbContext.Database.EnsureDeleted();
         });
 
-    private static string GetTestDbConnectionString(string projectDir)
+    private static async Task PrepareSqlContainer()
     {
-        var dbName = "IntegrationTestsDB";
-        var dbPath = Path.Combine(projectDir, $"{dbName}.mdf");
-            
-        // Set Initial Catalog to be able to delete database!
-        return $"Server=(LocalDB)\\MSSQLLocalDB;Initial Catalog={dbName};Integrated Security=true;AttachDbFileName={dbPath}";
+        SqlContainer = new MsSqlBuilder()
+            .WithPassword("YourStrongP@ssw0rd!")
+            .WithName("test-sql-server")
+            .Build();
+
+        await SqlContainer.StartAsync();
+        await WaitUntilContainerStarted(SqlContainer);
+        await CreateTestDatabase(SqlContainer.GetConnectionString());
     }
-        
+
+
+    private static async Task WaitUntilContainerStarted(MsSqlContainer sqlContainer)
+    {
+        var maxRetries = 10;
+        var delay = TimeSpan.FromSeconds(5);
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                using var connection = new SqlConnection(sqlContainer.GetConnectionString());
+                await connection.OpenAsync();
+                return; // Success, the container is ready!
+            }
+            catch
+            {
+                // Container not ready yet; retry after a delay
+                await Task.Delay(delay);
+            }
+        }
+
+        throw new InvalidOperationException("The SQL Server container did not start within the expected time.");
+    }
+
+    public static async Task CreateTestDatabase(string connectionString)
+    {
+        var createDbQuery = "CREATE DATABASE " + TestDbName;
+
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand(createDbQuery, connection);
+        await command.ExecuteNonQueryAsync();
+    }
+
     private void SetupPermissionMock(string plant, ITestUser testUser)
     {
         _permissionApiServiceMock.GetPermissionsForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.Permissions));
-                        
+
         _permissionApiServiceMock.GetAllOpenProjectsForCurrentUserAsync(plant, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(testUser.AccessableProjects));
 
@@ -349,7 +399,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             else
             {
                 _personApiServiceMock.TryGetPersonByOidAsync(
-                        new Guid(testUser.Profile.Oid), 
+                        new Guid(testUser.Profile.Oid),
                         Arg.Any<bool>(),
                         Arg.Any<CancellationToken>())
                     .Returns(Task.FromResult((ProCoSysPerson)null));
@@ -358,7 +408,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
                 .Returns(Task.FromResult(testUser.AccessablePlants));
         }
 
-        
+
         var apiObjectId = "00000000-0000-0000-0000-000000099999"; //needs to match value in appsettings.integrationTests.json
         _personApiServiceMock.TryGetPersonByOidAsync(
                 new Guid(apiObjectId),
@@ -387,7 +437,7 @@ public Dictionary<string, KnownTestData> SeededData { get; }
             TagFunctionDescription: "TFD",
             TagRegisterCode: "TRC",
             TagRegisterDescription: "TRD",
-            IsVoided: false, 
+            IsVoided: false,
             ProjectGuid: ProjectGuidWithAccess);
         var checkListRestricted = new ProCoSys4CheckList(
             CheckListGuid: CheckListGuidRestricted,
