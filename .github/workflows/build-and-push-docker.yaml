@@ -52,8 +52,10 @@ jobs:
           echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV
       - name: Verify Access Token
         run: |
-          echo "Access token starts with: ${{env.FEED_ACCESSTOKEN:0:10}}"
-          echo "Access token length: ${{#env.FEED_ACCESSTOKEN}}"
+          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
+          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
+        env:
+          FEED_ACCESSTOKEN: ${{ env.FEED_ACCESSTOKEN }}
       - name: Build and push Docker image
         env:
           DOCKER_BUILDKIT: 1 # Enable BuildKit for this step
