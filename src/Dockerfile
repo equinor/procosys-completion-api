@@ -26,7 +26,7 @@ ARG FEED_ACCESSTOKEN
 
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
 ENV NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED=true
-ENV NUGET_CREDENTIALPROVIDER_VSTS_TOKEN_PROVIDER=true
+# ENV NUGET_CREDENTIALPROVIDER_VSTS_TOKEN_PROVIDER=true
 # ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS="{\"endpointCredentials\": [{\"endpoint\":\"https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json\", \"username\":\"docker\", \"password\":\"${FEED_ACCESSTOKEN}\"}]}"
 RUN wget -qO- https://raw.githubusercontent.com/Microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
 
@@ -36,7 +36,10 @@ RUN apt-get update && apt-get install -y curl lsb-release apt-transport-https ca
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Login to Azure using the service principal
-RUN --mount=type=secret,id=AZURE_CLIENT_SECRET az login --service-principal -u $AZURE_CLIENT_ID -p $(cat /run/secrets/AZURE_CLIENT_SECRET) --tenant $AZURE_TENANT_ID
+RUN --mount=type=secret,id=AZURE_CLIENT_SECRET az login --service-principal \
+    -u $AZURE_CLIENT_ID \
+    -p $(cat /run/secrets/AZURE_CLIENT_SECRET) \
+    --tenant $AZURE_TENANT_ID
 
 RUN dotnet restore "Equinor.ProCoSys.Completion.WebApi.csproj" --source "https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json"
 RUN dotnet build "Equinor.ProCoSys.Completion.WebApi.csproj" -c Release
