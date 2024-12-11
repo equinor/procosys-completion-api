@@ -45,6 +45,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
+      - name: Get Access Token
+        run: |
+          echo "Retrieving access token..."
+          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
+          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV
       - name: Build and push Docker image
         env:
           DOCKER_BUILDKIT: 1 # Enable BuildKit for this step
@@ -54,7 +59,7 @@ jobs:
           file: ${{ inputs.dockerFilePath }}
           push: true
           build-args: |
-            FEED_ACCESSTOKEN=${{ secrets.AZURE_ARTIFACTS_PAT }}
+            FEED_ACCESSTOKEN=${{ env.FEED_ACCESSTOKEN }}
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
             AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
           secrets: |
