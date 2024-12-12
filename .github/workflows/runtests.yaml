@@ -43,7 +43,13 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az account show
-            # You can write your Azure CLI inline scripts here.          
+            # You can write your Azure CLI inline scripts here.     
+      - name: Verify Access Token
+        run: |
+          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
+          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
+        env:
+          FEED_ACCESSTOKEN: ${{ inputs.FEED_ACCESSTOKEN }}                  
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
