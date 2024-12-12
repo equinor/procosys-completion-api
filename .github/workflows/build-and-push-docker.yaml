@@ -28,8 +28,6 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
-      AZURE_ARTIFACTS_PAT:
-        required: true
 
 jobs:
   build-and-push-docker:
