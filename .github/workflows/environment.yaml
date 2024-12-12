@@ -23,8 +23,6 @@ jobs:
   setup_env:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    outputs:
-      access_token: ${{ steps.set_feed_accesstoken.outputs.access_token }}
     steps:
       - uses: actions/checkout@v4
       - name: Azure CLI Login
@@ -48,4 +46,5 @@ jobs:
           echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
         env:
           FEED_ACCESSTOKEN: ${{ steps.set_feed_accesstoken.outputs.access_token }}           
-
+    outputs:
+      access_token: ${{ steps.set_feed_accesstoken.outputs.access_token }}
