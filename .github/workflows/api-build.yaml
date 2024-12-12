@@ -40,17 +40,6 @@ jobs:
           echo "Access token length: ${#ACCESS_TOKEN}"
         env:
           ACCESS_TOKEN: ${{ needs.setup_env.outputs.access_token }}
-          
-  debug:
-    needs: setup_env
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug Access Token from setup_env
-        run: |
-          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
-          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
-        env:
-          FEED_ACCESSTOKEN: ${{ needs.setup_env.outputs.access_token }}  
 
   runtests:
     needs: setup_env
