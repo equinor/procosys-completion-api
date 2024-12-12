@@ -40,11 +40,11 @@ jobs:
           echo "Retrieving access token..."
           TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
           echo "::set-output name=access_token::$TOKEN"
-      # - name: Verify Access Token
-      #   run: |
-      #     echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
-      #     echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
-      #   env:
-      #     FEED_ACCESSTOKEN: ${{ env.FEED_ACCESSTOKEN }}           
+      - name: Verify Access Token
+        run: |
+          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
+          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
+        env:
+          FEED_ACCESSTOKEN: ${{ steps.set_feed_accesstoken.outputs.access_token }}           
     outputs:
       access_token: ${{ steps.set_feed_accesstoken.outputs.access_token }}
