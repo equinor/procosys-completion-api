@@ -31,6 +31,7 @@ jobs:
        environment: dev
 
   runtests:
+    needs: setup_env
     uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
