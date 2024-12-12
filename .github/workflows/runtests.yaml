@@ -38,10 +38,11 @@ jobs:
         run: |
           dotnet nuget add source --name ProCoSysOfficial \
               --username statoildeveloper \
-              --password ${{ env.FEED_ACCESSTOKEN }} \
+              --password $FEED_ACCESSTOKEN \
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
-
+        env:
+          FEED_ACCESSTOKEN: ${{ env.FEED_ACCESSTOKEN }}
       - name: Run tests
         run: |
           cd src/
