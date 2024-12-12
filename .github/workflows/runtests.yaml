@@ -15,9 +15,6 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
-      FEED_ACCESSTOKEN:
-        required: true
-        type: string
     secrets:
       AZURE_CLIENT_ID:
         required: true      
@@ -25,6 +22,7 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true        
+
 jobs:
   runtests:
     runs-on: ubuntu-latest
@@ -43,25 +41,23 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az account show
-            # You can write your Azure CLI inline scripts here.     
-      - name: Verify Access Token
+            # You can write your Azure CLI inline scripts here.
+      - name: Get Access Token
         run: |
-          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
-          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
-        env:
-          FEED_ACCESSTOKEN: ${{ inputs.FEED_ACCESSTOKEN }}                  
+          echo "Retrieving access token..."
+          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
+          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV            
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
       - name: Install dotnet ef
         run: dotnet tool install -g dotnet-ef          
-
       - name: Configure NuGet source
         run: |
           dotnet nuget add source --name ProCoSysOfficial \
               --username statoildeveloper \
-              --password ${{ inputs.FEED_ACCESSTOKEN }} \
+              --password ${{ env.FEED_ACCESSTOKEN }} \
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 

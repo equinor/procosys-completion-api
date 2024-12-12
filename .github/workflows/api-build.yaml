@@ -21,65 +21,43 @@ permissions:
   contents: read
 
 jobs:
-  setup_env:
-     uses: equinor/procosys-completion-api/.github/workflows/environment.yaml@github-action-pipeline
+  runtests:
+    uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    with:
+      deployment: 'runtests'
+      environment: 'dev'
+      testPath: './Equinor.ProCoSys.Completion.sln'
+
+  build-and-push-docker:
+     needs: runtests
+     uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
      secrets:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
      with:
+       repositoryName: procosys-completion
+       dockerFilePath: ./src/Dockerfile
        environment: dev
+       version: 1.000.0.${{github.run_id}}
 
-  debug:
-    needs: setup_env
-    runs-on: ubuntu-latest
-    steps:
-      - name: Anonymize and Debug Access Token from setup_env
-        run: |
-          echo "Access token starts with: ${ACCESS_TOKEN:0:10}"
-          echo "Access token length: ${#ACCESS_TOKEN}"
-        env:
-          ACCESS_TOKEN: ${{ needs.setup_env.outputs.access_token }}
-
-  # runtests:
-  #   needs: setup_env
-  #   uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
-  #   secrets:
-  #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  #     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  #   with:
-  #     FEED_ACCESSTOKEN: ${{ needs.setup_env.outputs.access_token }}
-  #     deployment: 'runtests'
-  #     environment: 'dev'
-  #     testPath: './Equinor.ProCoSys.Completion.sln'
-
-  # build-and-push-docker:
-  #    needs: runtests
-  #    uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
-  #    secrets:
-  #      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  #      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  #      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-  #      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  #    with:
-  #      repositoryName: procosys-completion
-  #      dockerFilePath: ./src/Dockerfile
-  #      environment: dev
-  #      version: 1.000.0.${{github.run_id}}
-
-  # deploy-to-radix:
-  #    needs: build-and-push-docker
-  #    uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
-  #    secrets:
-  #      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  #      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  #      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  #    with:
-  #      applicationName: procosys-completion-api
-  #      componentName: backend
-  #      imageTag: 1.000.0.${{github.run_id}}
-  #      environment: dev
+  deploy-to-radix:
+     needs: build-and-push-docker
+     uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+     secrets:
+       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+     with:
+       applicationName: procosys-completion-api
+       componentName: backend
+       imageTag: 1.000.0.${{github.run_id}}
+       environment: dev
 
 #  promote-to-test:
 #    needs: deploy-to-radix
