@@ -21,6 +21,15 @@ permissions:
   contents: read
 
 jobs:
+  setup_env:
+     uses: equinor/procosys-completion-api/.github/workflows/environment.yaml@github-action-pipeline
+     secrets:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+     with:
+       environment: dev
+
   runtests:
     uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
     secrets:
@@ -28,6 +37,7 @@ jobs:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     with:
+      FEED_ACCESSTOKEN: ${{ needs.setup_env.outputs.access_token }}
       deployment: 'runtests'
       environment: 'dev'
       testPath: './Equinor.ProCoSys.Completion.sln'

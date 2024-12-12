@@ -15,6 +15,9 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
+      FEED_ACCESSTOKEN:
+        required: true
+        type: string
     secrets:
       AZURE_CLIENT_ID:
         required: true      
@@ -40,12 +43,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az account show
-            # You can write your Azure CLI inline scripts here.
-      - name: Get Access Token
-        run: |
-          echo "Retrieving access token..."
-          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
-          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV            
+            # You can write your Azure CLI inline scripts here.          
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
@@ -57,7 +55,7 @@ jobs:
         run: |
           dotnet nuget add source --name ProCoSysOfficial \
               --username statoildeveloper \
-              --password ${{ env.FEED_ACCESSTOKEN }} \
+              --password ${{ inputs.FEED_ACCESSTOKEN }} \
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
