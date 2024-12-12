@@ -17,6 +17,7 @@ on:
 jobs:
   setup_env:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
       - name: Azure CLI Login
