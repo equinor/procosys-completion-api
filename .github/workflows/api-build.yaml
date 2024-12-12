@@ -41,7 +41,7 @@ jobs:
       deployment: 'runtests'
       environment: 'dev'
       testPath: './Equinor.ProCoSys.Completion.sln'
-      FEED_ACCESSTOKEN: ${{ needs.setup_env.outputs.feed_accesstoken }}
+      FEED_ACCESSTOKEN: ${{ needs.setup_env.outputs.FEED_ACCESSTOKEN }}
 
   # build-and-push-docker:
   #    needs: runtests
