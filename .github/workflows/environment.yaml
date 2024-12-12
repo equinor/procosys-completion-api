@@ -17,7 +17,7 @@ on:
     outputs:
       access_token:
         description: "Access token for use in subsequent jobs"
-        value: ${{ jobs.set_feed_accesstoken.outputs.access_token }}
+        value: ${{ jobs.setup_env.outputs.access_token }}
 
 jobs:
   setup_env:
