@@ -15,6 +15,9 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
+    secrets:
+      FEED_ACCESSTOKEN:
+        required: true
 
 jobs:
   runtests:
