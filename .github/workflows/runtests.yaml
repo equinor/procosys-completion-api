@@ -15,21 +15,37 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
-      FEED_ACCESSTOKEN:
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true      
+      AZURE_TENANT_ID:
         required: true
-        type: string
-
+      AZURE_SUBSCRIPTION_ID:
+        required: true        
 jobs:
   runtests:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - name: Verify Access Token
+      - uses: actions/checkout@v4
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+            # You can write your Azure CLI inline scripts here.
+      - name: Get Access Token
         run: |
-          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
-          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
-        env:
-          FEED_ACCESSTOKEN: ${{ inputs.FEED_ACCESSTOKEN }}              
+          echo "Retrieving access token..."
+          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
+          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV            
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
@@ -41,11 +57,10 @@ jobs:
         run: |
           dotnet nuget add source --name ProCoSysOfficial \
               --username statoildeveloper \
-              --password $FEED_ACCESSTOKEN \
+              --password ${{ env.FEED_ACCESSTOKEN }} \
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
-        env:
-          FEED_ACCESSTOKEN: ${{ inputs.FEED_ACCESSTOKEN }}
+
       - name: Run tests
         run: |
           cd src/
