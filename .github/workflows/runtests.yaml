@@ -45,7 +45,7 @@ jobs:
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
         env:
-          FEED_ACCESSTOKEN: ${{ input.FEED_ACCESSTOKEN }}
+          FEED_ACCESSTOKEN: ${{ inputs.FEED_ACCESSTOKEN }}
       - name: Run tests
         run: |
           cd src/
