@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "Retrieving access token..."
           TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
-          "access_token=$TOKEN" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          echo "::set-output name=access_token::$TOKEN"
       - name: Verify Access Token
         run: |
           echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
