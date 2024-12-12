@@ -47,5 +47,5 @@ jobs:
           echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
           echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
         env:
-          FEED_ACCESSTOKEN: ${{ outputs.access_token }}           
+          FEED_ACCESSTOKEN: ${{ steps.set_feed_accesstoken.outputs.access_token }}           
 
