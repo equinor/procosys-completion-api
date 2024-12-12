@@ -29,10 +29,12 @@ jobs:
       - name: Login to Azure Container Registry
         run: az acr login --name procosys
       - name: Get Access Token
+        id: set_feed_accesstoken
         run: |
           echo "Retrieving access token..."
           TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
           echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV
+          echo "::set-output name=feed_accesstoken::$TOKEN"
       - name: Verify Access Token
         run: |
           echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"

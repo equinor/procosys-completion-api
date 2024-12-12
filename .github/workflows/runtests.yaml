@@ -15,9 +15,9 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
-    secrets:
       FEED_ACCESSTOKEN:
         required: true
+        type: string
 
 jobs:
   runtests:
@@ -29,7 +29,7 @@ jobs:
           echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
           echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
         env:
-          FEED_ACCESSTOKEN: ${{ secrets.FEED_ACCESSTOKEN }}              
+          FEED_ACCESSTOKEN: ${{ input.FEED_ACCESSTOKEN }}              
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
@@ -45,7 +45,7 @@ jobs:
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
         env:
-          FEED_ACCESSTOKEN: ${{ env.FEED_ACCESSTOKEN }}
+          FEED_ACCESSTOKEN: ${{ input.FEED_ACCESSTOKEN }}
       - name: Run tests
         run: |
           cd src/
