@@ -15,38 +15,12 @@ on:
         description: 'Path to the test project'
         required: true
         type: string
-    secrets:
-      AZURE_CLIENT_ID:
-        required: true      
-      AZURE_TENANT_ID:
-        required: true
-      AZURE_SUBSCRIPTION_ID:
-        required: true
 
 jobs:
   runtests:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Azure CLI Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Azure CLI script
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az account show
-            # You can write your Azure CLI inline scripts here.
-      - name: Get Access Token
-        run: |
-          echo "Retrieving access token..."
-          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
-          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV            
+    steps:          
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
