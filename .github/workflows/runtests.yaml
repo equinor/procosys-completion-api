@@ -21,9 +21,7 @@ on:
       AZURE_TENANT_ID:
         required: true
       AZURE_SUBSCRIPTION_ID:
-        required: true     
-      AZURE_ARTIFACTS_PAT:
-        required: true           
+        required: true
 
 jobs:
   runtests:
@@ -44,6 +42,11 @@ jobs:
           inlineScript: |
             az account show
             # You can write your Azure CLI inline scripts here.
+      - name: Get Access Token
+        run: |
+          echo "Retrieving access token..."
+          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
+          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV            
       - name: Setup dotnet 8
         uses: actions/setup-dotnet@v4
         with:
@@ -55,7 +58,7 @@ jobs:
         run: |
           dotnet nuget add source --name ProCoSysOfficial \
               --username statoildeveloper \
-              --password ${{ secrets.AZURE_ARTIFACTS_PAT }} \
+              --password ${{ env.FEED_ACCESSTOKEN }} \
               --store-password-in-clear-text \
               https://statoildeveloper.pkgs.visualstudio.com/_packaging/ProCoSysOfficial/nuget/v3/index.json
 
