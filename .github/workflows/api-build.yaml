@@ -59,8 +59,17 @@ jobs:
        imageTag: 1.000.0.${{github.run_id}}
        environment: dev
 
+  approval-test:
+    runs-on: ubuntu-latest
+    environment:
+      name: test # Define an environment that requires approval in repository settings
+    needs: deploy-to-radix
+    steps:
+      - name: Await Approval
+        run: echo "Job is approved, continuing to next steps"
+
   deploy-to-radix-test:
-     needs: deploy-to-radix
+     needs: approval-test
      uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
