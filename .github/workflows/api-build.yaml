@@ -70,7 +70,6 @@ jobs:
 
   deploy-to-radix-test:
      needs: approval-test
-     environment: test
      uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
