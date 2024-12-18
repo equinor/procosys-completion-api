@@ -1,7 +1,7 @@
 name: build completion
 
 on: 
-  pull_request:
+  push:
     branches: ["main"]
 
   workflow_dispatch:
@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   runtests:
-    uses: equinor/procosys-completion-api/.github/workflows/runtests.yaml@github-action-pipeline
+    uses: ./.github/workflows/runtests.yaml
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -34,7 +34,7 @@ jobs:
 
   build-and-push-docker:
      needs: runtests
-     uses: equinor/procosys-completion-api/.github/workflows/build-and-push-docker.yaml@github-action-pipeline
+     uses: ./.github/workflows/build-and-push-docker.yaml
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -48,7 +48,7 @@ jobs:
 
   deploy-to-radix:
      needs: build-and-push-docker
-     uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+     uses: ./.github/workflows/deploy-to-radix.yaml
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -61,7 +61,7 @@ jobs:
 
   deploy-to-radix-test:
      needs: deploy-to-radix
-     uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+     uses: ./.github/workflows/deploy-to-radix.yaml
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -74,7 +74,7 @@ jobs:
 
   deploy-to-radix-prod:
      needs: deploy-to-radix-test
-     uses: equinor/procosys-completion-api/.github/workflows/deploy-to-radix.yaml@github-action-pipeline
+     uses: ./.github/workflows/deploy-to-radix.yaml
      secrets:
        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
