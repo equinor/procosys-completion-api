@@ -3,6 +3,9 @@ kind: RadixApplication
 metadata:
   name: procosys-completion-api
 spec:
+  privateImageHubs:
+    procosys.azurecr.io:
+      username: radix-pcs-completion
   environments:
   - name: dev
   - name: test
@@ -10,13 +13,15 @@ spec:
 
   components:
   - name: backend
-    image: procosys.azurecr.io/completion/api:{imageTagName}
+    image: procosys.azurecr.io/api/procosys-completion:{imageTagName}
     ports:
     - name: http
       port: 5000
     publicPort: http
     secrets: 
     - CONNECTIONSTRINGS__APPCONFIG
+    #- FEED_ACCESSTOKEN
+    - DB_CONNECTION_STRING
     environmentConfig:
     # Development environment
     - environment: dev
@@ -76,6 +81,6 @@ spec:
   # ...equinor-procosys-devops-docker-registry with ...
   # ...permission to puch to procosys.azurecr.io container registry
   #-------------------------------------------------------
-  privateImageHubs:
-    procosys.azurecr.io:
-      username: 9d3898e4-730f-4fb5-8ddf-a5de51537896
+  # privateImageHubs:
+  #   procosys.azurecr.io:
+  #     username: 9d3898e4-730f-4fb5-8ddf-a5de51537896
