@@ -1,0 +1,73 @@
+name: Build and push to Azure Container Registry
+
+on:
+  workflow_call:
+    inputs:
+      repositoryName:
+        description: "Name of the repository within Azure Container Registry"
+        required: true
+        type: string
+      dockerFilePath:
+        description: "File to the docker path"
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+      version:
+        description: 'Deploy version'
+        required: true
+        type: string
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_SECRET:
+        required: true        
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Login to Azure Container Registry
+        run: az acr login --name procosys
+      - name: Get Access Token
+        run: |
+          echo "Retrieving access token..."
+          TOKEN=$(az account get-access-token --resource=https://pkgs.visualstudio.com --query accessToken -o tsv)
+          echo "FEED_ACCESSTOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Verify Access Token
+        run: |
+          echo "Access token starts with: $(echo $FEED_ACCESSTOKEN | cut -c1-10)"
+          echo "Access token length: $(echo -n $FEED_ACCESSTOKEN | wc -c)"
+        env:
+          FEED_ACCESSTOKEN: ${{ env.FEED_ACCESSTOKEN }}
+      - name: Build and push Docker image
+        env:
+          DOCKER_BUILDKIT: 1 # Enable BuildKit for this step
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src
+          file: ${{ inputs.dockerFilePath }}
+          push: true
+          build-args: |
+            FEED_ACCESSTOKEN=${{ env.FEED_ACCESSTOKEN }}
+            AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
+            AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
+          secrets: |
+            AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
+          tags: |
+            procosys.azurecr.io/api/${{ inputs.repositoryName }}:${{ inputs.version }}
+            procosys.azurecr.io/api/${{ inputs.repositoryName }}:latest
