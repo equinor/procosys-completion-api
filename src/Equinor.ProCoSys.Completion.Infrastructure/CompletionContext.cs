@@ -99,8 +99,6 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
     public virtual DbSet<HistoryItem> History => Set<HistoryItem>();
     public virtual DbSet<Property> Properties => Set<Property>();
 
-    public DbSet<NewTable> NewTables { get; set; }
-
     // NB! This method need to be Public, if made private it will not apply
     public void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : PlantEntityBase =>
         builder
@@ -248,12 +246,5 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .Where(x => x.Entity.PostSaveDomainEvents is not null && x.Entity.PostSaveDomainEvents.Any())
             .Select(x => x.Entity);
         await _eventDispatcher.DispatchPostSaveEventsAsync(entities, cancellationToken);
-    }
-
-    public class NewTable
-    {
-        public int Id { get; set; } // Primary key
-        public string? Name { get; set; } // Example column
-        public DateTime? CreatedDate { get; set; }
     }
 }
