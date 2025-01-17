@@ -29,7 +29,7 @@ public class UserDelegationProvider : IUserDelegationProvider
         // using is about to run out in the next hour.
         // We want a bit of leeway here, as we don't want the key to be valid as we check it here as its about to
         // expire, and then have it expire and be invalid as we are trying to use it.
-        if (_userDelegationKeyCached == null || _expirationTime <= DateTimeOffset.UtcNow.AddHours(-1))
+        if (_userDelegationKeyCached == null || _expirationTime <= DateTimeOffset.UtcNow.AddHours(1))
         {
             // Set to about 7 days in the future, because that is the maximum lifetime
             // of a user delegation key.
