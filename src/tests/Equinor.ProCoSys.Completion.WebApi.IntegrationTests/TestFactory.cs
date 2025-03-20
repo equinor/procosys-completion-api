@@ -49,6 +49,7 @@ public class TestFactory : WebApplicationFactory<Program>
     private readonly IPermissionApiService _permissionApiServiceMock = Substitute.For<IPermissionApiService>();
     public readonly ICheckListApiService _checkListApiServiceMock = Substitute.For<ICheckListApiService>();
     private readonly TokenCredential _tokenCredentialsMock = Substitute.For<TokenCredential>();
+    private readonly TokenCredential _mailTokenCredentialsMock = Substitute.For<TokenCredential>();
     private readonly IFormularTypeApiService _formularTypeApiService = Substitute.For<IFormularTypeApiService>();
     private readonly IResponsibleApiService _responsibleApiService = Substitute.For<IResponsibleApiService>();
     private readonly ITagFunctionApiService _tagFunctionApiService = Substitute.For<ITagFunctionApiService>();
@@ -214,14 +215,16 @@ public class TestFactory : WebApplicationFactory<Program>
 
     private void ReplaceRealTokenCredentialsWithTestCredentials(IServiceCollection services)
     {
-        var descriptor = services.SingleOrDefault
-            (d => d.ServiceType == typeof(TokenCredential));
+        var descriptors = services
+            .Where(d => d.ServiceType == typeof(TokenCredential))
+            .ToList(); 
 
-        if (descriptor is not null)
+        foreach (var descriptor in descriptors)
         {
             services.Remove(descriptor);
         }
         services.AddSingleton(_tokenCredentialsMock);
+        services.AddKeyedSingleton("mailCredential", _mailTokenCredentialsMock);
     }
 
     private void CreateSeededTestDatabase(IServiceCollection services)
