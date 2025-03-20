@@ -76,6 +76,8 @@ public static class ApplicationModule
                 WorkloadIdentityClientId = graphOptions.ClientId
             });
 
+        services.AddKeyedSingleton("mailCredential", mailCredential);
+
         services.AddDbContext<CompletionContext>(options =>
         {
             var connectionString = configuration.GetConnectionString(CompletionContext.CompletionContextConnectionStringName);
@@ -152,9 +154,9 @@ public static class ApplicationModule
         services.AddScoped<ICompletionMailService, CompletionMailService>();
 
         services.AddTransient<IEmailService, EmailService>(provider => 
-            new EmailService(provider.GetRequiredService<IOptionsMonitor<EmailOptions>>(), 
-                mailCredential, 
-                provider.GetRequiredService<ILogger<EmailService>>()));
+            new EmailService(provider.GetRequiredService<IOptionsMonitor<EmailOptions>>(),
+                provider.GetRequiredKeyedService<TokenCredential>("mailCredential"), 
+            provider.GetRequiredService<ILogger<EmailService>>()));
 
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
         services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();
