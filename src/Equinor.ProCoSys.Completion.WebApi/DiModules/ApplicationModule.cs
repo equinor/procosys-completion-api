@@ -151,10 +151,10 @@ public static class ApplicationModule
         services.AddScoped<ITemplateTransformer, TemplateTransformer>();
         services.AddScoped<ICompletionMailService, CompletionMailService>();
 
-        services.AddScoped<IEmailService, EmailService>(provider => 
+        services.AddTransient<IEmailService, EmailService>(provider => 
             new EmailService(provider.GetRequiredService<IOptionsMonitor<EmailOptions>>(), 
-            mailCredential, 
-            provider.GetRequiredService<ILogger<EmailService>>()));
+                mailCredential, 
+                provider.GetRequiredService<ILogger<EmailService>>()));
 
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
         services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();

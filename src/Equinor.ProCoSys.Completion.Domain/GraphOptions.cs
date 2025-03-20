@@ -7,4 +7,3 @@ public class GraphOptions
     public string? TenantId { get; set; }
 
 }
-
