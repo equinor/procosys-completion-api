@@ -1,5 +1,6 @@
 ﻿using System;
 using Azure.Core;
+using Azure.Identity;
 using Equinor.ProCoSys.Auth.Authentication;
 using Equinor.ProCoSys.Auth.Authorization;
 using Equinor.ProCoSys.Auth.Caches;
@@ -39,9 +40,9 @@ using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
-using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using GraphOptions = Equinor.ProCoSys.Completion.Domain.GraphOptions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
@@ -63,7 +65,18 @@ public static class ApplicationModule
         services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
-        services.Configure<GraphOptions>(configuration.GetSection("Graph"));
+
+        var graphOptions = configuration.GetSection("Graph").Get<GraphOptions>()
+                           ?? throw new InvalidOperationException("GraphOptions configuration is missing");
+
+        TokenCredential mailCredential = configuration.IsDevOnLocalhost()
+            ? new ClientSecretCredential(graphOptions.TenantId, graphOptions.ClientId, graphOptions.ClientSecret)
+            : new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                WorkloadIdentityClientId = graphOptions.ClientId
+            });
+
+        services.AddKeyedSingleton("mailCredential", mailCredential);
 
         services.AddDbContext<CompletionContext>(options =>
         {
@@ -124,7 +137,6 @@ public static class ApplicationModule
         services.AddScoped<Command.ModifiedEvents.IModifiedEventService, Command.ModifiedEvents.ModifiedEventService>();
         services.AddScoped<IPunchItemService, PunchItemService>();
         services.AddScoped<ICacheManager, DistributedCacheManager>();
-  
         
         services.AddScoped<IProjectValidator, ProjectValidator>();
         services.AddScoped<IPunchItemValidator, PunchItemValidator>();
@@ -140,7 +152,12 @@ public static class ApplicationModule
         services.AddScoped<IAzureBlobService, AzureBlobService>();
         services.AddScoped<ITemplateTransformer, TemplateTransformer>();
         services.AddScoped<ICompletionMailService, CompletionMailService>();
-        services.AddScoped<IEmailService, EmailService>();
+
+        services.AddTransient<IEmailService, EmailService>(provider => 
+            new EmailService(provider.GetRequiredService<IOptionsMonitor<EmailOptions>>(),
+                provider.GetRequiredKeyedService<TokenCredential>("mailCredential"), 
+            provider.GetRequiredService<ILogger<EmailService>>()));
+
         services.AddScoped<IDeepLinkUtility, DeepLinkUtility>();
         services.AddScoped<IUserPropertyHelper, UserPropertyHelper>();
         services.AddScoped<IDocumentConsumerService, DocumentConsumerService>();
