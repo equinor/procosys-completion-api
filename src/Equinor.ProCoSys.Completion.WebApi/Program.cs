@@ -33,7 +33,7 @@ TokenCredential credential = new DefaultAzureCredential(includeInteractiveCreden
 // This ensures the application mimics production authentication while running in a local environment.  
 if (devOnLocalhost)
 {
-    credential = await GetCertificateTokenCredential(builder, credential);
+    credential = await GetCertificateTokenCredential(builder.Configuration, credential);
 }
 
 builder.Services.AddSingleton(credential);
@@ -134,17 +134,17 @@ return;
  * <summary>
  * Retrieves a certificate from Azure Key Vault and creates a ClientCertificateCredential for authentication.
  * </summary>
- * <param name="webApplicationBuilder">The WebApplicationBuilder instance to access application configuration.</param>
+ * <param name="configuration">The IConfiguration instance to access application configuration.</param>
  * <param name="tokenCredential">A TokenCredential used to authenticate and access Azure Key Vault.</param>
  * <returns>A Task containing a TokenCredential authenticated using the retrieved certificate.</returns>
 */
-async Task<TokenCredential> GetCertificateTokenCredential(WebApplicationBuilder webApplicationBuilder, TokenCredential tokenCredential)
+async Task<TokenCredential> GetCertificateTokenCredential(IConfiguration configuration, TokenCredential tokenCredential)
 {
     // Create a SecretClient to interact with Azure Key Vault using the provided token credential.
-    var secretClient = new SecretClient(new Uri(webApplicationBuilder.Configuration["AzureAd:ClientCredentials:0:KeyVaultUrl"]!), tokenCredential);
+    var secretClient = new SecretClient(new Uri(configuration["AzureAd:ClientCredentials:0:KeyVaultUrl"]!), tokenCredential);
 
     // Retrieve the certificate secret from Key Vault.
-    var secret = await secretClient.GetSecretAsync(webApplicationBuilder.Configuration["AzureAd:ClientCredentials:0:KeyVaultCertificateName"]!);
+    var secret = await secretClient.GetSecretAsync(configuration["AzureAd:ClientCredentials:0:KeyVaultCertificateName"]!);
     // Convert the Base64-encoded certificate into a byte array.
     var certificateBytes = Convert.FromBase64String(secret.Value.Value);
     // Load the certificate into an X509Certificate2 object.
@@ -152,8 +152,8 @@ async Task<TokenCredential> GetCertificateTokenCredential(WebApplicationBuilder 
 
     // Create a ClientCertificateCredential using the retrieved certificate for authentication.
     return new ClientCertificateCredential(
-        webApplicationBuilder.Configuration["AzureAd:TenantId"],
-        webApplicationBuilder.Configuration["AzureAd:ClientId"],
+        configuration["AzureAd:TenantId"],
+        configuration["AzureAd:ClientId"],
         certificate);
 }
 
