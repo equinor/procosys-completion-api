@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Equinor.ProCoSys.Auth.Authentication;
@@ -42,6 +43,7 @@ using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
+using Equinor.ProCoSys.Completion.WebApi.DiModules;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;
@@ -50,13 +52,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using GraphOptions = Equinor.ProCoSys.Completion.Domain.GraphOptions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
 
 public static class ApplicationModule
 {
-    public static void AddApplicationModules(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
+    private const string GraphSection = "Graph";
+
+    public static async Task AddApplicationModules(this IServiceCollection services, IConfiguration configuration, TokenCredential credential)
     {
         services.Configure<ApplicationOptions>(configuration.GetSection("Application"));
         services.Configure<MainApiOptions>(configuration.GetSection("MainApi"));
@@ -66,16 +69,19 @@ public static class ApplicationModule
         services.Configure<SyncToPCS4Options>(configuration.GetSection("SyncToPCS4Options"));
         services.Configure<EmailOptions>(configuration.GetSection("Email"));
 
-        var graphOptions = configuration.GetSection("Graph").Get<GraphOptions>()
-                           ?? throw new InvalidOperationException("GraphOptions configuration is missing");
+        var graphClientId = configuration[$"{GraphSection}:ClientId"];
+        if (graphClientId == null)
+        {
+            throw new InvalidOperationException("Graph:ClientId configuration is missing");
+        }
 
-        TokenCredential mailCredential = configuration.IsDevOnLocalhost()
-            ? new ClientSecretCredential(graphOptions.TenantId, graphOptions.ClientId, graphOptions.ClientSecret)
+        var mailCredential = configuration.IsDevOnLocalhost()
+            ? await CertificateCredentialProvider.GetClientCertificateTokenCredential(configuration, GraphSection, credential)
             : new DefaultAzureCredential(new DefaultAzureCredentialOptions
             {
-                WorkloadIdentityClientId = graphOptions.ClientId
+                WorkloadIdentityClientId = graphClientId
             });
-
+        
         services.AddKeyedSingleton("mailCredential", mailCredential);
 
         services.AddDbContext<CompletionContext>(options =>
