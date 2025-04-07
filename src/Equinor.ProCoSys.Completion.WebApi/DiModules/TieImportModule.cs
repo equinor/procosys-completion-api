@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
+using Equinor.ProCoSys.Completion.TieImport.Authorizations;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
@@ -32,18 +34,33 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
-        services.AddSingleton<ISchemaSource, CacheWrapper>(_ =>
-        {
-            var appId = builder.Configuration["AzureAd:ClientId"];
-            var tenantId = builder.Configuration["AzureAd:TenantId"];
-            var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
-            var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
-            ISchemaSource source = new ApiSource(new ApiSourceOptions
+
+        services.AddSingleton<ITieTokenService, TieTokenService>();
+        services.AddKeyedSingleton<ISchemaSource, TieApiSource>("TiApiSource");
+
+        // Transient - Created each time it is requested from the service container
+        services.AddTransient<TieBearerTokenHandler>();
+
+        // HttpClient - Creates a specifically configured HttpClient
+        services.AddHttpClient(TieApiSource.ClientName)
+            .ConfigureHttpClient(client =>
             {
-                TokenProviderConnectionString = $"RunAs=App;AppId={appId};" +
-                                                $"TenantId={tenantId};" +
-                                                $"AppKey={clientSecret}"
-            });
+                var options = new ApiSourceOptions();
+                client.BaseAddress = new Uri(options.CommonLibraryApiBaseAddress);
+                client.Timeout = options.RequestTimeout;
+            })
+            .AddHttpMessageHandler<TieBearerTokenHandler>();
+
+
+        services.AddTransient<ISchemaSource, CacheWrapper>(provider =>
+        {
+            //var appId = builder.Configuration["AzureAd:ClientId"];
+            //var tenantId = builder.Configuration["AzureAd:TenantId"];
+            //var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+            var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
+
+            var source = provider.GetRequiredKeyedService<ISchemaSource>("TiApiSource");
+
             return new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(cacheDuration));
         });
         
@@ -71,7 +88,11 @@ public static class TieImportModule
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
-            
+
+            var tokenProvider = new TieCertificateCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>(), tiClientOptions, keyVaultOptions);
+            //var tokenProvider = new TieCertificateCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>());
+            services.AddSingleton<ITokenProvider>(tokenProvider);
+
             services.AddAdapter()
                 .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
                 .WithStaticConfigRetriever(
@@ -100,8 +121,8 @@ public static class TieImportModule
                     // config.TieErrorShouldLeadToInactivityForAPeriod = LogTieErrorAndReturn(logger,true);
                     // config.TieErrorShouldLeadToInactivityForAPeriodWaitTimeInMs = 10000;
                     config.TieErrorShouldBeThrown = LogTieErrorAndReturn(logger, false);
-                    config.Tie1Info.TokenProvider =
-                        new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
+                    config.Tie1Info.TokenProvider = tokenProvider;
+                    //new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
                 })
                 .FromTie1()
                 .To<Tie1MessageHandler>()

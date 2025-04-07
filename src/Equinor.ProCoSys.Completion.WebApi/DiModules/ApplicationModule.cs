@@ -43,7 +43,6 @@ using Equinor.ProCoSys.Completion.Query.PunchItemServices;
 using Equinor.ProCoSys.Completion.Query.UserDelegationProvider;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.Controllers;
-using Equinor.ProCoSys.Completion.WebApi.DiModules;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization;
 using Equinor.ProCoSys.Completion.WebApi.Synchronization.Services;

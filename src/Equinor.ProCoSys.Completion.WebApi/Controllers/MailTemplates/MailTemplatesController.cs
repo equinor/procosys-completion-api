@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
+using Equinor.TI.CommonLibrary.Mapper.Core;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers.MailTemplates;
 
@@ -16,11 +20,13 @@ public class MailTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IEmailService _emailService;
+    private readonly ISchemaSource _schemaSource;
 
-    public MailTemplatesController(IMediator mediator, IEmailService emailService)
+    public MailTemplatesController(IMediator mediator, IEmailService emailService, IServiceProvider serviceProvide)
     {
         _mediator = mediator;
         _emailService = emailService;
+        _schemaSource = serviceProvide.GetRequiredKeyedService<ISchemaSource>("TiApiSource");
     }
 
     /// <summary>
@@ -36,9 +42,11 @@ public class MailTemplatesController : ControllerBase
     }
 
     [HttpGet("TestSendMail-Delete-After-Test")]
-    public async Task<ActionResult> SendTestMail(CancellationToken cancellationToken)
+    public void SendTestMail(CancellationToken cancellationToken)
     {
-        await _emailService.SendEmailsAsync(["eha@equinor.com"], "subject", "Body", cancellationToken);
-        return Ok();
+        //await _emailService.SendEmailsAsync(["eha@equinor.com"], "subject", "Body", cancellationToken);
+        var schema = _schemaSource.Get("Completion", "NotCompletion");
+        Console.WriteLine(schema);
+
     }
 }
