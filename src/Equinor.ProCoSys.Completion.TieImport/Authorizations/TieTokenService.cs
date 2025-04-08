@@ -52,9 +52,6 @@ public class TieTokenService : ITieTokenService
 
         // At this point we are guaranteed to have a valid access token
         return AccessToken!.Value.Token;
-        // Set the Authorization header with the bearer token
-        //        _client.DefaultRequestHeaders.Authorization =
-        //            new AuthenticationHeaderValue("Bearer", AccessToken?.Token);
     }
 
     private async Task RefreshAccessToken(CancellationToken cancellationToken)
@@ -82,6 +79,3 @@ public class TieTokenService : ITieTokenService
     /// </returns>
     private static bool IsAccessTokenExpired() => !AccessToken.HasValue || AccessToken.Value.ExpiresOn <= DateTimeOffset.UtcNow.AddMinutes(-1);
 }
-
-
-

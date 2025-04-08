@@ -4,9 +4,9 @@ using Equinor.TI.CommonLibrary.SchemaModel;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Services;
-public class TieApiSource(IHttpClientFactory httpClientFactory) : ISchemaCacheSource
+public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaCacheSource
 {
-    public static string ClientName = "TieHttpClient";
+    public static string ClientName = "CommonLibHttpClient";
     
     public SchemaDTO Get(string schemaFrom, string schemaTo)
     {

@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Authorizations;
 
-public class TieBearerTokenHandler : DelegatingHandler
+public class BearerTokenHandler : DelegatingHandler
 {
     private readonly ITieTokenService _tokenService;
-    private readonly ILogger<TieBearerTokenHandler> _logger;
+    private readonly ILogger<BearerTokenHandler> _logger;
 
-    public TieBearerTokenHandler(ITieTokenService tokenService, ILogger<TieBearerTokenHandler> logger)
+    public BearerTokenHandler(ITieTokenService tokenService, ILogger<BearerTokenHandler> logger)
     {
         _tokenService = tokenService;
         _logger = logger;
@@ -18,6 +18,7 @@ public class TieBearerTokenHandler : DelegatingHandler
     {
         try
         {
+            _logger.LogDebug("Requesting token for:: " + request.RequestUri);
             var token = await _tokenService.AcquireTokenAsync(cancellationToken);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }

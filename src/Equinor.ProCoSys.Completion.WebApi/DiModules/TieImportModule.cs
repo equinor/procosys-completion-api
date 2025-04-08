@@ -36,36 +36,31 @@ public static class TieImportModule
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
 
         services.AddSingleton<ITieTokenService, TieTokenService>();
-        services.AddKeyedSingleton<ISchemaSource, TieApiSource>("TiApiSource");
+        services.AddKeyedSingleton<ISchemaSource, CommonLibApiSource>("CommonLibApiSource");
 
         // Transient - Created each time it is requested from the service container
-        services.AddTransient<TieBearerTokenHandler>();
+        services.AddTransient<BearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
-        services.AddHttpClient(TieApiSource.ClientName)
+        services.AddHttpClient(CommonLibApiSource.ClientName)
             .ConfigureHttpClient(client =>
             {
                 var options = new ApiSourceOptions();
                 client.BaseAddress = new Uri(options.CommonLibraryApiBaseAddress);
                 client.Timeout = options.RequestTimeout;
             })
-            .AddHttpMessageHandler<TieBearerTokenHandler>();
-
+            .AddHttpMessageHandler<BearerTokenHandler>();
 
         services.AddTransient<ISchemaSource, CacheWrapper>(provider =>
         {
-            //var appId = builder.Configuration["AzureAd:ClientId"];
-            //var tenantId = builder.Configuration["AzureAd:TenantId"];
-            //var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
             var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
-
-            var source = provider.GetRequiredKeyedService<ISchemaSource>("TiApiSource");
-
+            var source = provider.GetRequiredKeyedService<ISchemaSource>("CommonLibApiSource");
             return new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(cacheDuration));
         });
         
         
         services.AddAdapterHosting();
+
         if (!builder.Environment.IsIntegrationTest())
         {
             services.AddOptions<TieImportOptions>()
@@ -81,16 +76,15 @@ public static class TieImportModule
             services.AddOptions<AzureAdOptions>()
                 .BindConfiguration("AzureAd")
                 .ValidateDataAnnotations();
-            var azureAdOptions = new AzureAdOptions();
-            builder.Configuration.Bind("AzureAd", azureAdOptions);
+            //var azureAdOptions = new AzureAdOptions();
+            //builder.Configuration.Bind("AzureAd", azureAdOptions);
 
-            var tiClientOptions = CreateTiClientOptions(tieImportOptions, azureAdOptions);
+            var tiClientOptions = CreateTiClientOptions(tieImportOptions);
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
+            //var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
 
-            var tokenProvider = new TieCertificateCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>(), tiClientOptions, keyVaultOptions);
-            //var tokenProvider = new TieCertificateCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>());
+            var tokenProvider = new TieCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>());
             services.AddSingleton<ITokenProvider>(tokenProvider);
 
             services.AddAdapter()
@@ -165,30 +159,13 @@ public static class TieImportModule
     }
 
     private static TIClientOptions CreateTiClientOptions(
-        TieImportOptions configOptions,
-        AzureAdOptions azureAdOptions) =>
+        TieImportOptions configOptions) =>
         new()
         {
             Application = configOptions.AdapterApplication,
             TieUri = configOptions.AdapterTieUri,
-            TieId = configOptions.AzureTieApiId,
-            ApplicationAzureAppId = azureAdOptions.ClientId,
-            ApplicationTenantId = azureAdOptions.TenantId
-        };
-
-
-    private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
-        TieImportOptions configOptions, ILogger<Program> logger) =>
-        new()
-        {
-            // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
-            // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
-            KeyVaultUrl = configOptions.AzureKeyVaultUrl,
-            Certificate = configOptions.AzureCertificateName,
-            ActionOnReadError = ex =>
-            {
-                logger.LogError("Certificate error: {Exception}", ex.Message);
-                return Task.CompletedTask;
-            }
+            TieId = configOptions.AzureTieApiId
+            //ApplicationAzureAppId = azureAdOptions.ClientId,
+            //ApplicationTenantId = azureAdOptions.TenantId
         };
 }

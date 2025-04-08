@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Equinor.ProCoSys.Auth;
+using Equinor.ProCoSys.Common;
 using Equinor.ProCoSys.Common.Email;
 using Equinor.ProCoSys.Completion.Query.MailTemplateQueries.GetAllMailTemplates;
+using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +45,12 @@ public class MailTemplatesController : ControllerBase
     }
 
     [HttpGet("TestSendMail-Delete-After-Test")]
-    public void SendTestMail(CancellationToken cancellationToken)
+    public void SendTestMail(
+        [FromHeader(Name = CurrentPlantMiddleware.PlantHeader)]
+        [Required]
+        [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
+        string plant
+        , CancellationToken cancellationToken)
     {
         //await _emailService.SendEmailsAsync(["eha@equinor.com"], "subject", "Body", cancellationToken);
         var schema = _schemaSource.Get("Completion", "NotCompletion");
