@@ -65,8 +65,8 @@ public class TokenService : ITokenService
     private async Task RefreshAccessToken(CancellationToken cancellationToken)
     {
         // Request a new access token using the provided token credential
-        var token = await _tokenCredential! // TODO Put Token in configuration
-            .GetTokenAsync(new TokenRequestContext(scopes: ["https://StatoilSRM.onmicrosoft.com/Statoil.TI.CommonLibrary.UI/.default"]), cancellationToken);
+        var token = await _tokenCredential
+            .GetTokenAsync(new TokenRequestContext(scopes: [_scope]), cancellationToken);
 
         if (string.IsNullOrEmpty(token.Token))
         {
