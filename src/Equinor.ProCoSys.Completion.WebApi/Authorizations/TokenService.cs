@@ -1,10 +1,14 @@
-﻿using Azure.Core;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure.Core;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Authorizations;
+namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public class TieTokenService : ITieTokenService
+public class TokenService : ITokenService
 {
     private readonly TokenCredential _tokenCredential;
+    public readonly string _scope;
 
     /// <summary>
     /// Stores the most recently acquired access token for authentication.
@@ -22,7 +26,11 @@ public class TieTokenService : ITieTokenService
     /// </remarks>
     private static readonly SemaphoreSlim s_tokenLock = new SemaphoreSlim(1, 1);
 
-    public TieTokenService(TokenCredential tokenCredential) => _tokenCredential = tokenCredential;
+    public TokenService(TokenCredential tokenCredential, string scope)
+    {
+        _tokenCredential = tokenCredential;
+        _scope = scope;
+    }
 
     /// <summary>
     /// Sets the Authorization header for the HTTP client by retrieving an access token.
@@ -57,7 +65,7 @@ public class TieTokenService : ITieTokenService
     private async Task RefreshAccessToken(CancellationToken cancellationToken)
     {
         // Request a new access token using the provided token credential
-        var token = await _tokenCredential!
+        var token = await _tokenCredential! // TODO Put Token in configuration
             .GetTokenAsync(new TokenRequestContext(scopes: ["https://StatoilSRM.onmicrosoft.com/Statoil.TI.CommonLibrary.UI/.default"]), cancellationToken);
 
         if (string.IsNullOrEmpty(token.Token))

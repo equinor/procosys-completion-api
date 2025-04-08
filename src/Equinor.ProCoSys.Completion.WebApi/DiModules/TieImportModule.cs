@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
-using Equinor.ProCoSys.Completion.TieImport.Authorizations;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 using Equinor.ProCoSys.Completion.TieImport.Services;
+using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.TIE.Adapter.Base.Message;
@@ -20,7 +19,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -35,11 +33,20 @@ public static class TieImportModule
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
 
-        services.AddSingleton<ITieTokenService, TieTokenService>();
+        var commonLibScope = builder.Configuration.GetValue<string>("CommonLib:Scope");
+        if (commonLibScope == null)
+        {
+            throw new ArgumentNullException("CommonLib:Scope", "Scope for CommonLib is not set in configuration");
+        }
+
+        services.AddSingleton<ITokenService, TokenService>(provider => 
+            new TokenService(provider.GetRequiredService<TokenCredential>(),
+                commonLibScope!));
+        
         services.AddKeyedSingleton<ISchemaSource, CommonLibApiSource>("CommonLibApiSource");
 
         // Transient - Created each time it is requested from the service container
-        services.AddTransient<BearerTokenHandler>();
+        services.AddTransient<HttpClientBearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
         services.AddHttpClient(CommonLibApiSource.ClientName)
@@ -49,7 +56,7 @@ public static class TieImportModule
                 client.BaseAddress = new Uri(options.CommonLibraryApiBaseAddress);
                 client.Timeout = options.RequestTimeout;
             })
-            .AddHttpMessageHandler<BearerTokenHandler>();
+            .AddHttpMessageHandler<HttpClientBearerTokenHandler>();
 
         services.AddTransient<ISchemaSource, CacheWrapper>(provider =>
         {

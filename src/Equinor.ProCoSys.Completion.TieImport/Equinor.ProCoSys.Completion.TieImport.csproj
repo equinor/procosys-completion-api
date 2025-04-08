@@ -27,6 +27,10 @@
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authorizations\" />
+  </ItemGroup>
   
 
 </Project>

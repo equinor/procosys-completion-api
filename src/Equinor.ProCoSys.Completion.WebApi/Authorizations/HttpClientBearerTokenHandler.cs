@@ -1,14 +1,18 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Authorizations;
+namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public class BearerTokenHandler : DelegatingHandler
+public class HttpClientBearerTokenHandler : DelegatingHandler
 {
-    private readonly ITieTokenService _tokenService;
-    private readonly ILogger<BearerTokenHandler> _logger;
+    private readonly ITokenService _tokenService;
+    private readonly ILogger<HttpClientBearerTokenHandler> _logger;
 
-    public BearerTokenHandler(ITieTokenService tokenService, ILogger<BearerTokenHandler> logger)
+    public HttpClientBearerTokenHandler(ITokenService tokenService, ILogger<HttpClientBearerTokenHandler> logger)
     {
         _tokenService = tokenService;
         _logger = logger;

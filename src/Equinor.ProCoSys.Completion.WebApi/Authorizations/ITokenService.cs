@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Authorizations;
+namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public interface ITieTokenService
+public interface ITokenService
 {
     Task<string> AcquireTokenAsync(CancellationToken cancellationToken);
 }

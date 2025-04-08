@@ -29,7 +29,7 @@ public class MailTemplatesController : ControllerBase
     {
         _mediator = mediator;
         _emailService = emailService;
-        _schemaSource = serviceProvide.GetRequiredKeyedService<ISchemaSource>("TiApiSource");
+        _schemaSource = serviceProvide.GetRequiredKeyedService<ISchemaSource>("CommonLibApiSource");
     }
 
     /// <summary>

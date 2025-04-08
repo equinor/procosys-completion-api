@@ -1,7 +1,8 @@
-﻿using Azure.Core;
+﻿using System.Threading.Tasks;
+using Azure.Core;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Authorizations;
+namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
 public sealed class TieCredentialProvider (TokenCredential tokenCredential) : ITokenProvider
 {
