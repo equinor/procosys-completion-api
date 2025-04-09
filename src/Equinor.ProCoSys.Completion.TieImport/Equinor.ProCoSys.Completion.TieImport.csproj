@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Authorizations\**" />
+    <EmbeddedResource Remove="Authorizations\**" />
+    <None Remove="Authorizations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Equinor.TI.CommonLibrary.Mapper" Version="0.40.0" />
     <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Core" Version="0.40.0" />
     <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Legacy" Version="0.40.0" />
@@ -26,10 +32,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Authorizations\" />
   </ItemGroup>
   
 

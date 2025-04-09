@@ -2,14 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
+using Equinor.ProCoSys.Completion.TieImport.CommonLib;
+using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
-public class TokenService : ITokenService
+public class TokenService (TokenCredential tokenCredential, IOptions<CommonLibOptions> options) : ITokenService
 {
-    private readonly TokenCredential _tokenCredential;
-    public readonly string _scope;
-
     /// <summary>
     /// Stores the most recently acquired access token for authentication.
     /// This token is used to authorize requests and is refreshed when expired.
@@ -25,12 +24,6 @@ public class TokenService : ITokenService
     /// The initial count is set to 1, allowing one thread to enter, and the maximum count is also set to 1, ensuring exclusive access.
     /// </remarks>
     private static readonly SemaphoreSlim s_tokenLock = new SemaphoreSlim(1, 1);
-
-    public TokenService(TokenCredential tokenCredential, string scope)
-    {
-        _tokenCredential = tokenCredential;
-        _scope = scope;
-    }
 
     /// <summary>
     /// Sets the Authorization header for the HTTP client by retrieving an access token.
@@ -65,8 +58,8 @@ public class TokenService : ITokenService
     private async Task RefreshAccessToken(CancellationToken cancellationToken)
     {
         // Request a new access token using the provided token credential
-        var token = await _tokenCredential
-            .GetTokenAsync(new TokenRequestContext(scopes: [_scope]), cancellationToken);
+        var token = await tokenCredential
+            .GetTokenAsync(new TokenRequestContext(scopes: [options.Value.Scope]), cancellationToken);
 
         if (string.IsNullOrEmpty(token.Token))
         {

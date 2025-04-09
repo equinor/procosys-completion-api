@@ -3,11 +3,19 @@ using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.SchemaModel;
 using Newtonsoft.Json;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Services;
+namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
+
+/// <summary> 
+/// This class replaces <see cref="Equinor.TI.CommonLibrary.Mapper.ApiSource"/> 
+/// (see <a href="https://github.com/equinor/ti-commonlibrary-mappercore/blob/master/src/Equinor.TI.CommonLibrary.Mapper/ApiSource.cs">source code</a>) 
+/// to provide our own implementation of <see cref="ISchemaCacheSource"/>. 
+/// This implementation uses <see cref="IHttpClientFactory"/> to create a 
+/// <see cref="HttpClient"/> with provided HttpClientBearerTokenHandler.
+/// </summary>
 public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaCacheSource
 {
     public static string ClientName = "CommonLibHttpClient";
-    
+
     public SchemaDTO Get(string schemaFrom, string schemaTo)
     {
         if (string.IsNullOrWhiteSpace(schemaFrom) || string.IsNullOrWhiteSpace(schemaTo) || schemaFrom == schemaTo)
@@ -69,4 +77,3 @@ public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaC
         }
     }
 }
-

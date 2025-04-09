@@ -1,6 +1,7 @@
 ﻿using System;
 using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
@@ -32,39 +33,28 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
-
-        var commonLibScope = builder.Configuration.GetValue<string>("CommonLib:Scope");
-        if (commonLibScope == null)
-        {
-            throw new ArgumentNullException("CommonLib:Scope", "Scope for CommonLib is not set in configuration");
-        }
-
-        services.AddSingleton<ITokenService, TokenService>(provider => 
-            new TokenService(provider.GetRequiredService<TokenCredential>(),
-                commonLibScope!));
-        
+        services.AddSingleton<ITokenService, TokenService>();
         services.AddKeyedSingleton<ISchemaSource, CommonLibApiSource>("CommonLibApiSource");
-
-        // Transient - Created each time it is requested from the service container
-        services.AddTransient<HttpClientBearerTokenHandler>();
+        services.AddSingleton<HttpClientBearerTokenHandler>();
 
         // HttpClient - Creates a specifically configured HttpClient
         services.AddHttpClient(CommonLibApiSource.ClientName)
             .ConfigureHttpClient(client =>
             {
+                // Be aware, these are hard coded options in the library.
+                // Request timeout is default 30sec.
                 var options = new ApiSourceOptions();
                 client.BaseAddress = new Uri(options.CommonLibraryApiBaseAddress);
                 client.Timeout = options.RequestTimeout;
             })
             .AddHttpMessageHandler<HttpClientBearerTokenHandler>();
 
-        services.AddTransient<ISchemaSource, CacheWrapper>(provider =>
+        services.AddSingleton<ISchemaSource, CacheWrapper>(provider =>
         {
             var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
             var source = provider.GetRequiredKeyedService<ISchemaSource>("CommonLibApiSource");
             return new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(cacheDuration));
         });
-        
         
         services.AddAdapterHosting();
 
@@ -80,18 +70,10 @@ public static class TieImportModule
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
 
-            services.AddOptions<AzureAdOptions>()
-                .BindConfiguration("AzureAd")
-                .ValidateDataAnnotations();
-            //var azureAdOptions = new AzureAdOptions();
-            //builder.Configuration.Bind("AzureAd", azureAdOptions);
-
             var tiClientOptions = CreateTiClientOptions(tieImportOptions);
-            var serviceProvider = services.BuildServiceProvider();
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            //var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
-
-            var tokenProvider = new TieCredentialProvider(serviceProvider.GetRequiredService<TokenCredential>());
+            var logger = services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+            
+            var tokenProvider = new TieCredentialProvider(services.BuildServiceProvider().GetRequiredService<TokenCredential>());
             services.AddSingleton<ITokenProvider>(tokenProvider);
 
             services.AddAdapter()
@@ -172,7 +154,5 @@ public static class TieImportModule
             Application = configOptions.AdapterApplication,
             TieUri = configOptions.AdapterTieUri,
             TieId = configOptions.AzureTieApiId
-            //ApplicationAzureAppId = azureAdOptions.ClientId,
-            //ApplicationTenantId = azureAdOptions.TenantId
         };
 }
