@@ -105,7 +105,6 @@ public static class TieImportModule
                     // config.TieErrorShouldLeadToInactivityForAPeriodWaitTimeInMs = 10000;
                     config.TieErrorShouldBeThrown = LogTieErrorAndReturn(logger, false);
                     config.Tie1Info.TokenProvider = tokenProvider;
-                    //new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
                 })
                 .FromTie1()
                 .To<Tie1MessageHandler>()
