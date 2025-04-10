@@ -6,7 +6,7 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 
-namespace Equinor.ProCoSys.Completion.WebApi.DiModules;
+namespace Equinor.ProCoSys.Completion.WebApi.Authorizations;
 
 public static class CertificateCredentialProvider
 {

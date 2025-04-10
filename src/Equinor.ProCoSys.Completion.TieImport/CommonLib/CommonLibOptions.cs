@@ -10,4 +10,6 @@ public sealed class CommonLibOptions
     public List<string> SchemaFrom { get; set; } = [];
     [Required]
     public string SchemaTo { get; set; } = string.Empty;
+    [Required]
+    public string Scope { get; set; } = string.Empty;
 }

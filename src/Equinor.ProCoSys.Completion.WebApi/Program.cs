@@ -2,7 +2,7 @@
 using Azure.Identity;
 using Equinor.ProCoSys.Auth;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.WebApi.DiModules;
+using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.ProCoSys.Completion.WebApi.DIModules;
 using Equinor.ProCoSys.Completion.WebApi.Middleware;
 using Equinor.ProCoSys.Completion.WebApi.Misc;

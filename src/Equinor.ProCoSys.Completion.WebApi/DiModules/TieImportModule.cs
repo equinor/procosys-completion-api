@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Threading.Tasks;
+using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
+using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
 using Equinor.ProCoSys.Completion.TieImport.Services;
+using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.Mapper.Core;
 using Equinor.TI.TIE.Adapter.Base.Message;
@@ -18,7 +20,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader;
 using Statoil.TI.InterfaceServices.ProxyExtensions;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -32,23 +33,31 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
-        services.AddSingleton<ISchemaSource, CacheWrapper>(_ =>
-        {
-            var appId = builder.Configuration["AzureAd:ClientId"];
-            var tenantId = builder.Configuration["AzureAd:TenantId"];
-            var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
-            var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
-            ISchemaSource source = new ApiSource(new ApiSourceOptions
+        services.AddSingleton<ITokenService, TokenService>();
+        services.AddKeyedSingleton<ISchemaSource, CommonLibApiSource>("CommonLibApiSource");
+        services.AddSingleton<HttpClientBearerTokenHandler>();
+
+        // HttpClient - Creates a specifically configured HttpClient
+        services.AddHttpClient(CommonLibApiSource.ClientName)
+            .ConfigureHttpClient(client =>
             {
-                TokenProviderConnectionString = $"RunAs=App;AppId={appId};" +
-                                                $"TenantId={tenantId};" +
-                                                $"AppKey={clientSecret}"
-            });
+                // Be aware, these are hard coded options in the library.
+                // Request timeout is default 30sec.
+                var options = new ApiSourceOptions();
+                client.BaseAddress = new Uri(options.CommonLibraryApiBaseAddress);
+                client.Timeout = options.RequestTimeout;
+            })
+            .AddHttpMessageHandler<HttpClientBearerTokenHandler>();
+
+        services.AddSingleton<ISchemaSource, CacheWrapper>(provider =>
+        {
+            var cacheDuration = builder.Configuration.GetValue<int>("CommonLib:CacheDurationDays");
+            var source = provider.GetRequiredKeyedService<ISchemaSource>("CommonLibApiSource");
             return new CacheWrapper(source, maxCacheAge: TimeSpan.FromDays(cacheDuration));
         });
         
-        
         services.AddAdapterHosting();
+
         if (!builder.Environment.IsIntegrationTest())
         {
             services.AddOptions<TieImportOptions>()
@@ -61,17 +70,12 @@ public static class TieImportModule
                 .BindConfiguration("CommonLib")
                 .ValidateDataAnnotations();
 
-            services.AddOptions<AzureAdOptions>()
-                .BindConfiguration("AzureAd")
-                .ValidateDataAnnotations();
-            var azureAdOptions = new AzureAdOptions();
-            builder.Configuration.Bind("AzureAd", azureAdOptions);
-
-            var tiClientOptions = CreateTiClientOptions(tieImportOptions, azureAdOptions);
-            var serviceProvider = services.BuildServiceProvider();
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            var keyVaultOptions = GetKeyVaultCertificateTokenProviderOptions(tieImportOptions, logger);
+            var tiClientOptions = CreateTiClientOptions(tieImportOptions);
+            var logger = services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
             
+            var tokenProvider = new TieCredentialProvider(services.BuildServiceProvider().GetRequiredService<TokenCredential>());
+            services.AddSingleton<ITokenProvider>(tokenProvider);
+
             services.AddAdapter()
                 .WithConfig<TieAdapterConfig, TieAdapterPartitionConfig>()
                 .WithStaticConfigRetriever(
@@ -100,8 +104,7 @@ public static class TieImportModule
                     // config.TieErrorShouldLeadToInactivityForAPeriod = LogTieErrorAndReturn(logger,true);
                     // config.TieErrorShouldLeadToInactivityForAPeriodWaitTimeInMs = 10000;
                     config.TieErrorShouldBeThrown = LogTieErrorAndReturn(logger, false);
-                    config.Tie1Info.TokenProvider =
-                        new KeyVaultCertificateTokenProvider(tiClientOptions, keyVaultOptions);
+                    config.Tie1Info.TokenProvider = tokenProvider;
                 })
                 .FromTie1()
                 .To<Tie1MessageHandler>()
@@ -144,30 +147,11 @@ public static class TieImportModule
     }
 
     private static TIClientOptions CreateTiClientOptions(
-        TieImportOptions configOptions,
-        AzureAdOptions azureAdOptions) =>
+        TieImportOptions configOptions) =>
         new()
         {
             Application = configOptions.AdapterApplication,
             TieUri = configOptions.AdapterTieUri,
-            TieId = configOptions.AzureTieApiId,
-            ApplicationAzureAppId = azureAdOptions.ClientId,
-            ApplicationTenantId = azureAdOptions.TenantId
-        };
-
-
-    private static KeyVaultCertificateTokenProviderOptions GetKeyVaultCertificateTokenProviderOptions(
-        TieImportOptions configOptions, ILogger<Program> logger) =>
-        new()
-        {
-            // The KeyVault will be accessed through MSI, so make sure your local user has access policy to read
-            // certificates from the KeyVault for development as well as the WebJob/AppService when running in Azure
-            KeyVaultUrl = configOptions.AzureKeyVaultUrl,
-            Certificate = configOptions.AzureCertificateName,
-            ActionOnReadError = ex =>
-            {
-                logger.LogError("Certificate error: {Exception}", ex.Message);
-                return Task.CompletedTask;
-            }
+            TieId = configOptions.AzureTieApiId
         };
 }

@@ -7,23 +7,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper" Version="0.40.0"/>
-    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Core" Version="0.40.0"/>
-    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Legacy" Version="0.40.0"/>
+    <Compile Remove="Authorizations\**" />
+    <EmbeddedResource Remove="Authorizations\**" />
+    <None Remove="Authorizations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper" Version="0.40.0" />
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Core" Version="0.40.0" />
+    <PackageReference Include="Equinor.TI.CommonLibrary.Mapper.Legacy" Version="0.40.0" />
     <PackageReference Include="Equinor.TI.CommonLibrary.SchemaModel" Version="1.2.7" />
-    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.11.2"/>
-    <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.11.2"/>
-    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.11.2"/>
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Base" Version="1.11.2" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.Common" Version="1.11.2" />
+    <PackageReference Include="Equinor.TI.TIE.Adapter.TIE1.Core" Version="1.11.2" />
+    <PackageReference Include="Statoil.TI.InterfaceServices.Client.KeyVaultCertificateReader" Version="1.7.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
     <PackageReference Include="MediatR" Version="12.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2"/>
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj"/>
+    <ProjectReference Include="..\Equinor.ProCoSys.Completion.Command\Equinor.ProCoSys.Completion.Command.csproj" />
     <ProjectReference Include="..\Equinor.ProCoSys.Completion.Infrastructure\Equinor.ProCoSys.Completion.Infrastructure.csproj" />
   </ItemGroup>
   
