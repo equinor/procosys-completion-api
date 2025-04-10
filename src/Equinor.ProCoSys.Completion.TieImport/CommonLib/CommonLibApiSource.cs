@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Equinor.TI.CommonLibrary.Mapper;
 using Equinor.TI.CommonLibrary.SchemaModel;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
@@ -12,7 +13,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.CommonLib;
 /// This implementation uses <see cref="IHttpClientFactory"/> to create a 
 /// <see cref="HttpClient"/> with provided HttpClientBearerTokenHandler.
 /// </summary>
-public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaCacheSource
+public class CommonLibApiSource(IHttpClientFactory httpClientFactory, ILogger<CommonLibApiSource> logger) : ISchemaCacheSource
 {
     public static string ClientName = "CommonLibHttpClient";
 
@@ -20,6 +21,8 @@ public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaC
     {
         if (string.IsNullOrWhiteSpace(schemaFrom) || string.IsNullOrWhiteSpace(schemaTo) || schemaFrom == schemaTo)
         {
+            // Log the details of the parameters before throwing the exception
+            logger.LogWarning("Invalid schema parameters: schemaFrom='{SchemaFrom}', schemaTo='{SchemaTo}'", schemaFrom, schemaTo);
             throw new ArgumentException("`schemaFrom` and `schemaTo` must specify two different schemata");
         }
 
@@ -38,6 +41,8 @@ public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaC
     {
         if (string.IsNullOrWhiteSpace(schemaFrom) || string.IsNullOrWhiteSpace(schemaTo) || schemaFrom == schemaTo)
         {
+            // Log the details of the parameters before throwing the exception
+            logger.LogWarning("Invalid schema parameters: schemaFrom='{SchemaFrom}', schemaTo='{SchemaTo}'", schemaFrom, schemaTo);
             throw new ArgumentException("`schemaFrom` and `schemaTo` must specify two different schemata");
         }
 
@@ -49,7 +54,7 @@ public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaC
         return time;
     }
 
-    public async Task<HttpResponseMessage> SendRequestAsync(HttpMethod verb, string url, HttpContent? content = null)
+    private async Task<HttpResponseMessage> SendRequestAsync(HttpMethod verb, string url, HttpContent? content = null)
     {
         var request = new HttpRequestMessage(verb, url);
 
@@ -66,14 +71,8 @@ public class CommonLibApiSource(IHttpClientFactory httpClientFactory) : ISchemaC
         }
         catch (HttpRequestException ex)
         {
-            // Handle specific HTTP request exceptions as needed
-            // Log the exception or rethrow it based on your application's needs
-            throw new Exception("An error occurred while sending the request.", ex);
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions as necessary
-            throw new Exception("An unexpected error occurred.", ex);
+            logger.LogError(ex, "Error sending {HttpMethod} request to {Url}.", verb, url);
+            throw new Exception($"Failed to send {verb} request to '{url}'.", ex);
         }
     }
 }

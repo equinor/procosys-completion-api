@@ -13,7 +13,7 @@ public class TokenService (TokenCredential tokenCredential, IOptions<CommonLibOp
     /// Stores the most recently acquired access token for authentication.
     /// This token is used to authorize requests and is refreshed when expired.
     /// </summary>
-    public static AccessToken? AccessToken;
+    private static AccessToken? s_accessToken;
 
     /// <summary>
     /// A <see cref="SemaphoreSlim"/> instance used to synchronize access to the token acquisition process.
@@ -52,7 +52,7 @@ public class TokenService (TokenCredential tokenCredential, IOptions<CommonLibOp
         }
 
         // At this point we are guaranteed to have a valid access token
-        return AccessToken!.Value.Token;
+        return s_accessToken!.Value.Token;
     }
 
     private async Task RefreshAccessToken(CancellationToken cancellationToken)
@@ -63,11 +63,11 @@ public class TokenService (TokenCredential tokenCredential, IOptions<CommonLibOp
 
         if (string.IsNullOrEmpty(token.Token))
         {
-            throw new InvalidOperationException("Received an invalid access token.");
+            throw new InvalidOperationException("Did not receive an access token.");
         }
 
         // Store the newly obtained token for reuse
-        AccessToken = token;
+        s_accessToken = token;
     }
 
     /// <summary>
@@ -78,5 +78,5 @@ public class TokenService (TokenCredential tokenCredential, IOptions<CommonLibOp
     /// The token is considered expired if it is null or if its expiration time is less than or equal to the current UTC time minus one minute.
     /// This allows for a slight buffer to ensure that the token is refreshed before it fully expires.
     /// </returns>
-    private static bool IsAccessTokenExpired() => !AccessToken.HasValue || AccessToken.Value.ExpiresOn <= DateTimeOffset.UtcNow.AddMinutes(-1);
+    private static bool IsAccessTokenExpired() => !s_accessToken.HasValue || s_accessToken.Value.ExpiresOn <= DateTimeOffset.UtcNow.AddMinutes(-1);
 }
