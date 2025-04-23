@@ -5,7 +5,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.4" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.5" />
     <PackageReference Include="Microsoft.Identity.Web.TokenAcquisition" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup>
