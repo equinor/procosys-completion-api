@@ -33,6 +33,7 @@ public static class TelemetryConfig
                         .AddAzureMonitorTraceExporter(o =>
                         {
                             o.Credential = credential; // Set the TokenCredential for authentication
+                            o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"];
                         });
                 });
         }
