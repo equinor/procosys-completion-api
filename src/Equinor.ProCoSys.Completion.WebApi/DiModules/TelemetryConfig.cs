@@ -1,13 +1,13 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 
 namespace Equinor.ProCoSys.Completion.WebApi.DIModules;
@@ -18,19 +18,24 @@ public static class TelemetryConfig
     {
         if (!devOnLocalhost)
         {
-            builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder => tracerProviderBuilder
-                .AddAspNetCoreInstrumentation(o =>
+            builder.Services.AddOpenTelemetry()
+                .WithTracing(tracerProviderBuilder =>
                 {
-                    o.EnrichWithHttpRequest = (activity, httpRequest) =>
-                    {
-                        SetAuthTags(httpRequest, activity);
-                        SetPlantTag(httpRequest, activity);
-                    };
-                }));
-            // by default, UseAzureMonitor look for config key "AzureMonitor:ConnectionString"
-            builder.Services.AddOpenTelemetry().UseAzureMonitor();
+                    tracerProviderBuilder
+                        .AddAspNetCoreInstrumentation(o =>
+                        {
+                            o.EnrichWithHttpRequest = (activity, httpRequest) =>
+                            {
+                                SetAuthTags(httpRequest, activity);
+                                SetPlantTag(httpRequest, activity);
+                            };
+                        })
+                        .AddAzureMonitorTraceExporter(o =>
+                        {
+                            o.Credential = credential; // Set the TokenCredential for authentication
+                        });
+                });
         }
-
         return builder;
     }
 
