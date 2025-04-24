@@ -17,7 +17,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.StackExchangeRedis" Version="3.2.1" />
-    <PackageReference Include="Equinor.ProCoSys.Auth" Version="3.1.4" />
+    <PackageReference Include="Equinor.ProCoSys.Auth" Version="4.0.0" />
     <PackageReference Include="Equinor.ProCoSys.PcsServiceBus" Version="4.3.25" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.5" />
