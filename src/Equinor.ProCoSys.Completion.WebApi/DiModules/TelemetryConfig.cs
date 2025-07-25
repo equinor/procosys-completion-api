@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Equinor.ProCoSys.Completion.WebApi.Misc;
 
@@ -18,7 +19,6 @@ public static class TelemetryConfig
     {
         if (!devOnLocalhost)
         {
-            builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddOpenTelemetry()
                 .WithTracing(tracerProviderBuilder =>
                 {
@@ -36,12 +36,12 @@ public static class TelemetryConfig
                             o.Credential = credential; // Set the TokenCredential for authentication
                             o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"];
                         });
-                });
+                }).UseAzureMonitor();
         }
         return builder;
     }
 
-    public static void SetPlantTag(HttpRequest request, Activity activity)
+    private static void SetPlantTag(HttpRequest request, Activity activity)
     {
         var plant = request.Headers.GetPlant();
         if (plant is not null)
@@ -50,7 +50,7 @@ public static class TelemetryConfig
         }
     }
 
-    public static void SetAuthTags(HttpRequest request, Activity activity)
+    private static void SetAuthTags(HttpRequest request, Activity activity)
     {
         if (request.Headers.TryGetValue("Authorization", out var authHeader)
             && !string.IsNullOrEmpty(authHeader)
