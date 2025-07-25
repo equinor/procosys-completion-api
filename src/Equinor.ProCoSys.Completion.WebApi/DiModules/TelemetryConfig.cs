@@ -18,6 +18,7 @@ public static class TelemetryConfig
     {
         if (!devOnLocalhost)
         {
+            builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddOpenTelemetry()
                 .WithTracing(tracerProviderBuilder =>
                 {
