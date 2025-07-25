@@ -19,8 +19,8 @@ public static class TelemetryConfig
     {
         if (!devOnLocalhost)
         {
-            builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddOpenTelemetry()
+                .UseAzureMonitor(o => o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"])
                 .WithTracing(tracerProviderBuilder =>
                 {
                     tracerProviderBuilder
@@ -37,7 +37,7 @@ public static class TelemetryConfig
                             o.Credential = credential; // Set the TokenCredential for authentication
                             o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"];
                         });
-                }).UseAzureMonitor();
+                });
         }
         return builder;
     }
