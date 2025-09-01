@@ -62,7 +62,7 @@ But always double check before committing.
 Replace `ACCESSTOKEN` with your actual access key to the ProCoSys Official NuGet feed.
 We use Personal AccessTokens and the token needs the permission `Packaging (read)`.
 This means that you give the container permission to access the feed on your behalf.
-If you dont already have one, it can be created here: https://statoildeveloper.visualstudio.com/_usersSettings/tokens
+If you don't already have one, it can be created here: https://statoildeveloper.visualstudio.com/_usersSettings/tokens
 
 ### 3. Login to Azure Container Registry
 

@@ -106,7 +106,6 @@ public static class ApplicationModule
         services.AddSingleton<IUserDelegationProvider, UserDelegationProvider>();
 
         // Scoped - Created once per client request (connection)
-        // services.AddScoped<ITelemetryClient, ApplicationInsightsTelemetryClient>();
         services.AddScoped<IAccessValidator, AccessValidator>();
         services.AddScoped<IProjectAccessChecker, ProjectAccessChecker>();
         services.AddScoped<IAccessChecker, AccessChecker>();
