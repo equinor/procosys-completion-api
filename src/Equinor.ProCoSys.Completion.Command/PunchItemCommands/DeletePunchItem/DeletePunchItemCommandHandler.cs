@@ -42,10 +42,7 @@ public class DeletePunchItemCommandHandler(
             attachmentRepository.Remove(attachment);
         }
         var punchItem = request.PunchItem;
-            
-        // Setting RowVersion before delete has 2 missions:
-        // 1) Set correct Concurrency
-        // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
+        
         if (request.RowVersion != null)
         {
             punchItem.SetRowVersion(request.RowVersion);
