@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.DeletePunchItem;
 
-public class DeletePunchItemCommand(Guid punchItemGuid, string rowVersion)
+public class DeletePunchItemCommand(Guid punchItemGuid, string? rowVersion)
     : ICanHaveRestrictionsViaCheckList, IRequest<Unit>, IIsPunchItemCommand
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
@@ -12,5 +12,5 @@ public class DeletePunchItemCommand(Guid punchItemGuid, string rowVersion)
     public Guid GetCheckListGuidForWriteAccessCheck() => PunchItem.CheckListGuid;
     public CheckListDetailsDto CheckListDetailsDto { get; set; } = null!;
     public PunchItem PunchItem { get; set; } = null!;
-    public string RowVersion { get; } = rowVersion;
+    public string? RowVersion { get; } = rowVersion;
 }

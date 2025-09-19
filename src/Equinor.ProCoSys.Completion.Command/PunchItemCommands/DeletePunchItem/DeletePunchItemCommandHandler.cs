@@ -46,7 +46,15 @@ public class DeletePunchItemCommandHandler(
         // Setting RowVersion before delete has 2 missions:
         // 1) Set correct Concurrency
         // 2) Ensure that _unitOfWork.SetAuditDataAsync can set ModifiedBy / ModifiedAt needed in published events
-        punchItem.SetRowVersion(request.RowVersion);
+        if (request.RowVersion != null)
+        {
+            punchItem.SetRowVersion(request.RowVersion);
+        }
+        else
+        {
+            unitOfWork.SetModified(punchItem);
+        }
+        
         punchItemRepository.Remove(punchItem);
 
         // AuditData must be set before publishing events due to use of Created- and Modified-properties
