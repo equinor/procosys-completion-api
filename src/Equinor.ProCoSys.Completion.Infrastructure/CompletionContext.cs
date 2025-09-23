@@ -106,6 +106,9 @@ public class CompletionContext : DbContext, IUnitOfWork, IReadOnlyContext
             .HasQueryFilter(e => e.Plant == _plantProvider.Plant || e.Plant == "N/A");
 
     public IQueryable<TEntity> QuerySet<TEntity>() where TEntity : class => Set<TEntity>().AsNoTracking();
+    
+    public void SetModified<TEntity>(TEntity entity) where TEntity : class
+        => Entry(entity).State = EntityState.Modified;
 
     public async Task<int> SaveChangesFromSyncAsync(CancellationToken cancellationToken = default)
         => await base.SaveChangesAsync(cancellationToken);

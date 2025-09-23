@@ -2,6 +2,6 @@
 
 namespace Equinor.ProCoSys.Completion.WebApi.Controllers;
 
-public record RowVersionDto(
+public sealed record RowVersionDto(
     [Required]
     string RowVersion);

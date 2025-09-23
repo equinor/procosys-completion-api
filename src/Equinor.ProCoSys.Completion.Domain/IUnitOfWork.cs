@@ -11,4 +11,6 @@ public interface IUnitOfWork
     Task BeginTransactionAsync(CancellationToken cancellationToken);
     Task CommitTransactionAsync(CancellationToken cancellationToken);
     Task RollbackTransactionAsync(CancellationToken cancellationToken);
+
+    void SetModified<TEntity>(TEntity entity) where TEntity : class;
 }
