@@ -358,10 +358,10 @@ public class PunchItemsController(IMediator mediator) : ControllerBase
         [StringLength(PlantEntityBase.PlantLengthMax, MinimumLength = PlantEntityBase.PlantLengthMin)]
         string plant,
         [FromRoute] Guid guid,
-        [FromBody] OptionalRowVersionDto dto,
+        [FromBody] OptionalRowVersionDto? dto,
         CancellationToken cancellationToken)
     {
-        await mediator.Send(new DeletePunchItemCommand(guid, dto.RowVersion), cancellationToken);
+        await mediator.Send(new DeletePunchItemCommand(guid, dto?.RowVersion), cancellationToken);
         return Ok();
     }
 
