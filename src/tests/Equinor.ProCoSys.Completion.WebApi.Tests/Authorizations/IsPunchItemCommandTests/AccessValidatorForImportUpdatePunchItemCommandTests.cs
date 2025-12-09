@@ -1,5 +1,5 @@
 ﻿// using System;
-// using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItem;
+// using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportUpdatePunchItemCommand;
 // using Equinor.ProCoSys.Completion.Domain;
 // using Equinor.ProCoSys.Completion.Domain.Imports;
 // using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,17 +9,17 @@
 // [TestClass]
 // public class
 //     AccessValidatorForImportUpdatePunchItemCommandTests : AccessValidatorForCommandNeedAccessTests<
-//     ImportUpdatePunchItemCommand>
+//     UpdatePunchItemCommandForImport>
 // {
-//     protected override ImportUpdatePunchItemCommand GetPunchItemCommandWithAccessToBothProjectAndContent()
+//     protected override UpdatePunchItemCommandForImport GetPunchItemCommandWithAccessToBothProjectAndContent()
 //         => new(Guid.Empty, Guid.Empty, string.Empty, PunchItemGuidWithAccessToProjectAndContent, null!, null!,
 //             new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), null!);
 //
-//     protected override ImportUpdatePunchItemCommand GetPunchItemCommandWithAccessToProjectButNotContent()
+//     protected override UpdatePunchItemCommandForImport GetPunchItemCommandWithAccessToProjectButNotContent()
 //         => new(Guid.Empty, Guid.Empty, string.Empty, PunchItemGuidWithAccessToProjectButNotContent, null!, null!,
 //             new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), null!);
 //
-//     protected override ImportUpdatePunchItemCommand GetPunchItemCommandWithoutAccessToProject()
+//     protected override UpdatePunchItemCommandForImport GetPunchItemCommandWithoutAccessToProject()
 //         => new(Guid.Empty, Guid.Empty, string.Empty, PunchItemGuidWithoutAccessToProject, null!, null!,
 //             new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), new Optional<ActionByPerson?>(), null!);
 // }

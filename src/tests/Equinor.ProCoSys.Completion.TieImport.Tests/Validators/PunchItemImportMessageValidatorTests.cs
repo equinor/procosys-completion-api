@@ -12,14 +12,39 @@ public sealed class PunchItemImportMessageValidatorTests
     private PunchItemImportMessageValidator _dut = null!;
 
     private readonly PunchItemImportMessage _baseMessage = new(
-         Guid.NewGuid(), "Plant",  "Projectname",  "TagNo", "ExternalPunchItemNo",
+        Guid.NewGuid(), 
+        "CREATE", 
+        "Projectname", 
+        "Plant", 
+        "TagNo", 
+        new Optional<string?>("ExternalPunchItemNo"),
         "FormType",
-        "EQ", new Optional<string?>(), new Optional<string?>(), new Optional<string?>(), 
-        Category.PA, new Optional<string?>(), new Optional<DateTime?>(), new Optional<DateTime?>(),
-        new Optional<string?>(), new Optional<string?>(),
-        new Optional<DateTime?>(), new Optional<string?>(), new Optional<DateTime?>(), new Optional<string?>(),
+        "EQ", 
+        new Optional<long?>(), 
+        new Optional<string?>(), 
+        new Optional<string?>(), 
+        Category.PA, 
+        new OptionalWithNull<string?>(), 
+        new OptionalWithNull<DateTime?>(), 
+        new Optional<DateTime?>(),
+        new Optional<string?>(), 
         new Optional<string?>(),
-        new Optional<DateTime?>(), new Optional<string?>());
+        new Optional<DateTime?>(), 
+        new Optional<string?>(), 
+        new Optional<DateTime?>(), 
+        new Optional<string?>(),
+        new Optional<bool?>(),
+        new OptionalWithNull<DateTime?>(), 
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<int?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<string?>(),
+        new OptionalWithNull<int?>(),
+        new Optional<string?>());
 
     [TestInitialize]
     public void Setup() =>

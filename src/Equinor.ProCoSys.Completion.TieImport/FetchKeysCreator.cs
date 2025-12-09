@@ -14,7 +14,9 @@ public static class FetchKeysCreator
                 {
                     CreateLibraryItemKey(message.PunchListType, LibraryType.PUNCHLIST_TYPE),
                     CreateLibraryItemKey(message.ClearedByOrganization, LibraryType.COMPLETION_ORGANIZATION),
-                    CreateLibraryItemKey(message.RaisedByOrganization, LibraryType.COMPLETION_ORGANIZATION)
+                    CreateLibraryItemKey(message.RaisedByOrganization, LibraryType.COMPLETION_ORGANIZATION),
+                    CreateLibraryItemKey(message.Priority, LibraryType.COMM_PRIORITY),
+                    CreateLibraryItemKey(message.Sorting, LibraryType.PUNCHLIST_SORTING)
                 }
                 .Where(x => x is not null)
                 .Select(x => x!.Value)
@@ -32,6 +34,17 @@ public static class FetchKeysCreator
         LibraryType type)
     {
         if (libraryCode is not { HasValue: true, Value: not null })
+        {
+            return null;
+        }
+        var key = new LibraryItemByPlant(libraryCode.Value, type);
+        return key;
+    }
+
+    private static LibraryItemByPlant? CreateLibraryItemKey(OptionalWithNull<string?> libraryCode,
+        LibraryType type)
+    {
+        if (!libraryCode.HasValue || libraryCode.ShouldBeNull || string.IsNullOrEmpty(libraryCode.Value))
         {
             return null;
         }

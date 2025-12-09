@@ -1,6 +1,6 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.Extensions;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
+using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
-using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Statoil.TI.InterfaceServices.Message;
@@ -32,17 +32,6 @@ public sealed class TiePunchImportService(IServiceScopeFactory serviceScopeFacto
         var messageResult = CreateTiMessageSuccessResult(tiObject.Guid);
         return messageResult;
     }
-
-    /// <summary>
-    /// Only used for Update
-    /// Implemented because we didn't use the punchUpdateValidator
-    /// If implementing update, please think differently
-    // private static List<ImportError> ValidatePunchImportMessages(PunchItemImportMessage punchImportMessage)
-    // {
-    //     var commandValidator = new PunchItemImportMessageValidator();
-    //     var validationResult = commandValidator.Validate(punchImportMessage);
-    //     return validationResult.Errors.Select(e => punchImportMessage.ToImportError(e.ErrorMessage)).ToList();
-    // }
 
     private static List<ImportError> ValidateInput(TIObject message)
     {
