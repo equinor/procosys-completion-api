@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
+using Equinor.ProCoSys.Completion.TieImport.References;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
@@ -13,7 +14,8 @@ namespace Equinor.ProCoSys.Completion.TieImport.Tests;
 [TestClass]
 public class CommandReferencesServiceTests
 {
-    private CommandReferencesService _dut = null!;
+    private ICommandReferencesService _dut = null!;
+    private ICommandReferencesServiceFactory _factory = null!;
     private ImportDataBundle _bundle = null!;
 
     private IWorkOrderRepository _workOrderRepository = null!;
@@ -66,12 +68,13 @@ public class CommandReferencesServiceTests
         _swcrRepository = Substitute.For<ISWCRRepository>();
         _personRepository = Substitute.For<IPersonRepository>();
 
-        _dut = new CommandReferencesService(
-            _bundle,
+        _factory = new CommandReferencesServiceFactory(
             _workOrderRepository,
             _documentRepository,
             _swcrRepository,
             _personRepository);
+
+        _dut = _factory.Create(_bundle);
     }
 
     [TestMethod]

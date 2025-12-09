@@ -1,12 +1,12 @@
 ﻿using System;
 using Azure.Core;
 using Equinor.ProCoSys.Common.Misc;
-using Equinor.ProCoSys.Completion.DbSyncToPCS4;
 using Equinor.ProCoSys.Completion.TieImport;
 using Equinor.ProCoSys.Completion.TieImport.Adapter;
 using Equinor.ProCoSys.Completion.TieImport.CommonLib;
 using Equinor.ProCoSys.Completion.TieImport.Configuration;
 using Equinor.ProCoSys.Completion.TieImport.Mocks;
+using Equinor.ProCoSys.Completion.TieImport.References;
 using Equinor.ProCoSys.Completion.TieImport.Services;
 using Equinor.ProCoSys.Completion.WebApi.Authorizations;
 using Equinor.TI.CommonLibrary.Mapper;
@@ -33,6 +33,7 @@ public static class TieImportModule
         services.AddTransient<IImportDataFetcher, ImportDataFetcher>();
         services.AddTransient<ITiePunchImportService, TiePunchImportService>();
         services.AddScoped<IPunchItemImportService, PunchItemImportService>();
+        services.AddScoped<ICommandReferencesServiceFactory, CommandReferencesServiceFactory>();
         services.AddSingleton<ITokenService, TokenService>();
         services.AddKeyedSingleton<ISchemaSource, CommonLibApiSource>("CommonLibApiSource");
         services.AddSingleton<HttpClientBearerTokenHandler>();

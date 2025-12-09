@@ -7,37 +7,22 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using static Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate.LibraryType;
 
-namespace Equinor.ProCoSys.Completion.TieImport;
+namespace Equinor.ProCoSys.Completion.TieImport.References;
 
-public class CommandReferencesService
+public class CommandReferencesService(
+    ImportDataBundle bundle,
+    IWorkOrderRepository workOrderRepository,
+    IDocumentRepository documentRepository,
+    ISWCRRepository swcrRepository,
+    IPersonRepository personRepository) : ICommandReferencesService
 {
-    private readonly ImportDataBundle _bundle;
-    private readonly IWorkOrderRepository _workOrderRepository;
-    private readonly IDocumentRepository _documentRepository;
-    private readonly ISWCRRepository _swcrRepository;
-    private readonly IPersonRepository _personRepository;
-    
-    public CommandReferencesService(
-        ImportDataBundle bundle,
-        IWorkOrderRepository workOrderRepository,
-        IDocumentRepository documentRepository,
-        ISWCRRepository swcrRepository,
-        IPersonRepository personRepository)
-    {
-        _bundle = bundle;
-        _workOrderRepository = workOrderRepository;
-        _documentRepository = documentRepository;
-        _swcrRepository = swcrRepository;
-        _personRepository = personRepository;
-    }
-    
     public async Task<CommandReferences> GetAndValidatePunchItemReferencesForImportAsync(
         PunchItemImportMessage message,
         CancellationToken cancellationToken)
     {
         var references = new CommandReferences();
         
-        references = references with { ProjectGuid = _bundle.Project.Guid };
+        references = references with { ProjectGuid = bundle.Project.Guid };
         references = ValidateAndSetCheckList(message, references);
         references = ValidateAndSetRaisedByOrg(message, references);
         references = ValidateAndSetClearedByOrg(message, references);
@@ -59,7 +44,7 @@ public class CommandReferencesService
     
     private CommandReferences ValidateAndSetCheckList(PunchItemImportMessage message, CommandReferences references)
     {
-        if (_bundle.CheckListGuid is null)
+        if (bundle.CheckListGuid is null)
         {
             return references with {Errors = 
             [
@@ -67,12 +52,12 @@ public class CommandReferencesService
                 message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' and responsible {message.Responsible} not found")
             ]};
         }
-        return references with{ CheckListGuid = _bundle.CheckListGuid ?? Guid.Empty };
+        return references with{ CheckListGuid = bundle.CheckListGuid ?? Guid.Empty };
     }
 
     private CommandReferences ValidateAndSetRaisedByOrg(PunchItemImportMessage message, CommandReferences references)
     {
-        var raisedByOrg = _bundle.Library.SingleOrDefault(x =>
+        var raisedByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.RaisedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (raisedByOrg is null)
         {
@@ -87,7 +72,7 @@ public class CommandReferencesService
 
     private CommandReferences ValidateAndSetClearedByOrg(PunchItemImportMessage message, CommandReferences references)
     {
-        var clearingByOrg = _bundle.Library.SingleOrDefault(x =>
+        var clearingByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.ClearedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (clearingByOrg is null)
         {
@@ -108,7 +93,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var type = _bundle.Library.SingleOrDefault(x =>
+        var type = bundle.Library.SingleOrDefault(x =>
             x.Code == message.PunchListType.Value && x.Type == PUNCHLIST_TYPE);
         return references with { TypeGuid = type?.Guid };
     }
@@ -121,7 +106,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var priority = _bundle.Library.SingleOrDefault(x =>
+        var priority = bundle.Library.SingleOrDefault(x =>
             x.Code == message.Priority.Value && x.Type == COMM_PRIORITY);
         return references with { PriorityGuid = priority?.Guid};
     }
@@ -134,7 +119,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var sorting = _bundle.Library.SingleOrDefault(x =>
+        var sorting = bundle.Library.SingleOrDefault(x =>
             x.Code == message.Sorting.Value && x.Type == PUNCHLIST_SORTING);
         return references with { SortingGuid = sorting?.Guid };
     }
@@ -150,7 +135,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var workOrder = await _workOrderRepository.GetByNoAsync(
+        var workOrder = await workOrderRepository.GetByNoAsync(
             message.WorkOrderNo.Value, 
             cancellationToken);
             
@@ -159,7 +144,7 @@ public class CommandReferencesService
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"WorkOrder '{message.WorkOrderNo.Value}' not found in plant '{_bundle.Plant}'")
+                message.ToImportError($"WorkOrder '{message.WorkOrderNo.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -186,7 +171,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var workOrder = await _workOrderRepository.GetByNoAsync(
+        var workOrder = await workOrderRepository.GetByNoAsync(
             message.OriginalWorkOrderNo.Value, 
             cancellationToken);
             
@@ -195,7 +180,7 @@ public class CommandReferencesService
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"OriginalWorkOrder '{message.OriginalWorkOrderNo.Value}' not found in plant '{_bundle.Plant}'")
+                message.ToImportError($"OriginalWorkOrder '{message.OriginalWorkOrderNo.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -222,7 +207,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var document = await _documentRepository.GetByNoAsync(
+        var document = await documentRepository.GetByNoAsync(
             message.DocumentNo.Value, 
             cancellationToken);
             
@@ -231,7 +216,7 @@ public class CommandReferencesService
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"Document '{message.DocumentNo.Value}' not found in plant '{_bundle.Plant}'")
+                message.ToImportError($"Document '{message.DocumentNo.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -260,7 +245,7 @@ public class CommandReferencesService
 
         var swcrNo = message.SwcrNo.Value.Value;
 
-        var swcr = await _swcrRepository.GetByNoAsync(
+        var swcr = await swcrRepository.GetByNoAsync(
             swcrNo, 
             cancellationToken);
             
@@ -269,7 +254,7 @@ public class CommandReferencesService
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"SWCR '{swcrNo}' not found in plant '{_bundle.Plant}'")
+                message.ToImportError($"SWCR '{swcrNo}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -296,7 +281,7 @@ public class CommandReferencesService
             return references;
         }
 
-        var person = await _personRepository.GetByUserNameAsync(
+        var person = await personRepository.GetByUserNameAsync(
             message.ActionBy.Value, 
             cancellationToken);
             
@@ -402,7 +387,7 @@ public class CommandReferencesService
         }
 
         // Look up the person
-        var person = await _personRepository.GetByUserNameAsync(personUsername.Value, cancellationToken);
+        var person = await personRepository.GetByUserNameAsync(personUsername.Value, cancellationToken);
         if (person is null)
         {
             return (null, message.ToImportError($"{personFieldName} person '{personUsername.Value}' not found"));

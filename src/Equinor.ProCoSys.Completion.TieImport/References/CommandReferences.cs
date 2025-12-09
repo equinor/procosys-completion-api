@@ -1,6 +1,6 @@
 ﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 
-namespace Equinor.ProCoSys.Completion.TieImport.Models;
+namespace Equinor.ProCoSys.Completion.TieImport.References;
 
 public sealed record CommandReferences 
 {

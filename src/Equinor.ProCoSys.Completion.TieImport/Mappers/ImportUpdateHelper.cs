@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
+using Equinor.ProCoSys.Completion.TieImport.References;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Mappers;

@@ -1,13 +1,10 @@
 ﻿using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Equinor.ProCoSys.Completion.Domain;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
-using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Mappers;
 using Equinor.ProCoSys.Completion.TieImport.Models;
+using Equinor.ProCoSys.Completion.TieImport.References;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -21,10 +18,7 @@ public class PunchItemImportService(
     ICurrentUserSetter currentUserSetter,
     IImportDataFetcher importDataFetcher,
     IPunchItemRepository punchItemRepository,
-    IDocumentRepository documentRepository,
-    IWorkOrderRepository workOrderRepository,
-    ISWCRRepository swcrRepository,
-    IPersonRepository personRepository,
+    ICommandReferencesServiceFactory commandReferencesServiceFactory,
     ILogger<PunchItemImportService> logger) : IPunchItemImportService
 {
 
@@ -52,7 +46,7 @@ public class PunchItemImportService(
     {
         SetImportUser(importBundle);
         
-        var referencesService = new CommandReferencesService(importBundle, workOrderRepository, documentRepository, swcrRepository, personRepository);
+        var referencesService = commandReferencesServiceFactory.Create(importBundle);
         var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
         if (references.Errors.Length != 0)
         {
@@ -139,7 +133,7 @@ public class PunchItemImportService(
     private async Task<List<ImportError>> ExecuteUpdateAsync(PunchItemImportMessage message, PunchItem punchItem, ImportDataBundle importBundle)
     {
         // Fetch and Validate references
-        var referencesService = new CommandReferencesService(importBundle, workOrderRepository, documentRepository, swcrRepository, personRepository);
+        var referencesService = commandReferencesServiceFactory.Create(importBundle);
         var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
 
         if (references.Errors.Length != 0)
