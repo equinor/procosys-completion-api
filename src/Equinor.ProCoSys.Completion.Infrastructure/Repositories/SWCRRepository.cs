@@ -7,6 +7,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
 public class SWCRRepository(CompletionContext context) : EntityWithGuidRepository<SWCR>(context, context.SWCRs), ISWCRRepository
 {
-    public async Task<SWCR?> GetByNoAsync(int swcrNo, CancellationToken cancellationToken) => await DefaultQueryable
+    public async Task<SWCR?> GetBySwcrNoAsync(int swcrNo, CancellationToken cancellationToken) => await DefaultQueryable
             .SingleOrDefaultAsync(s => s.No == swcrNo, cancellationToken);
 }

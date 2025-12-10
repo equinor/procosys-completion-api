@@ -135,7 +135,7 @@ public class CommandReferencesService(
             return references;
         }
 
-        var workOrder = await workOrderRepository.GetByNoAsync(
+        var workOrder = await workOrderRepository.GetByWoNoAsync(
             message.WorkOrderNo.Value, 
             cancellationToken);
             
@@ -171,7 +171,7 @@ public class CommandReferencesService(
             return references;
         }
 
-        var workOrder = await workOrderRepository.GetByNoAsync(
+        var workOrder = await workOrderRepository.GetByWoNoAsync(
             message.OriginalWorkOrderNo.Value, 
             cancellationToken);
             
@@ -207,7 +207,7 @@ public class CommandReferencesService(
             return references;
         }
 
-        var document = await documentRepository.GetByNoAsync(
+        var document = await documentRepository.GetByDocNoAsync(
             message.DocumentNo.Value, 
             cancellationToken);
             
@@ -245,7 +245,7 @@ public class CommandReferencesService(
 
         var swcrNo = message.SwcrNo.Value.Value;
 
-        var swcr = await swcrRepository.GetByNoAsync(
+        var swcr = await swcrRepository.GetBySwcrNoAsync(
             swcrNo, 
             cancellationToken);
             

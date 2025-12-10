@@ -7,6 +7,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
 public class WorkOrderRepository(CompletionContext context) : EntityWithGuidRepository<WorkOrder>(context, context.WorkOrders), IWorkOrderRepository
 {
-    public async Task<WorkOrder?> GetByNoAsync(string no, CancellationToken cancellationToken) => await DefaultQueryable
-            .SingleOrDefaultAsync(w => w.No == no, cancellationToken);
+    public async Task<WorkOrder?> GetByWoNoAsync(string woNo, CancellationToken cancellationToken) => await DefaultQueryable
+            .SingleOrDefaultAsync(w => w.No == woNo, cancellationToken);
 }

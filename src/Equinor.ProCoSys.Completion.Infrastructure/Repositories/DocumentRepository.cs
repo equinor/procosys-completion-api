@@ -7,6 +7,6 @@ namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
 public class DocumentRepository(CompletionContext context) : EntityWithGuidRepository<Document>(context, context.Documents), IDocumentRepository
 {
-    public Task<Document?> GetByNoAsync(string documentNo, CancellationToken cancellationToken) => DefaultQueryable
+    public Task<Document?> GetByDocNoAsync(string documentNo, CancellationToken cancellationToken) => DefaultQueryable
         .SingleOrDefaultAsync(x => x.No == documentNo, cancellationToken);
 }

@@ -6,5 +6,5 @@ namespace Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 public interface IDocumentRepository : IRepositoryWithGuid<Document>
 {
 
-    Task<Document?> GetByNoAsync(string documentNo, CancellationToken cancellationToken);
+    Task<Document?> GetByDocNoAsync(string documentNo, CancellationToken cancellationToken);
 }

@@ -360,7 +360,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnWorkOrderGuid()
     {
         // Arrange
-        _workOrderRepository.GetByNoAsync(_workOrder.No, Arg.Any<CancellationToken>()).Returns(_workOrder);
+        _workOrderRepository.GetByWoNoAsync(_workOrder.No, Arg.Any<CancellationToken>()).Returns(_workOrder);
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>(_workOrder.No) };
 
         // Act
@@ -374,7 +374,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenWorkOrderNotFound()
     {
         // Arrange
-        _workOrderRepository.GetByNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((WorkOrder?)null);
+        _workOrderRepository.GetByWoNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((WorkOrder?)null);
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
@@ -389,7 +389,7 @@ public class CommandReferencesServiceTests
     {
         // Arrange
         var voidedWorkOrder = new WorkOrder(TestPlant, Guid.NewGuid(), "WO-VOID") { IsVoided = true };
-        _workOrderRepository.GetByNoAsync(voidedWorkOrder.No, Arg.Any<CancellationToken>()).Returns(voidedWorkOrder);
+        _workOrderRepository.GetByWoNoAsync(voidedWorkOrder.No, Arg.Any<CancellationToken>()).Returns(voidedWorkOrder);
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>(voidedWorkOrder.No) };
 
         // Act
@@ -420,7 +420,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnOriginalWorkOrderGuid()
     {
         // Arrange
-        _workOrderRepository.GetByNoAsync(_originalWorkOrder.No, Arg.Any<CancellationToken>()).Returns(_originalWorkOrder);
+        _workOrderRepository.GetByWoNoAsync(_originalWorkOrder.No, Arg.Any<CancellationToken>()).Returns(_originalWorkOrder);
         var message = CreateBaseMessage() with { OriginalWorkOrderNo = new OptionalWithNull<string?>(_originalWorkOrder.No) };
 
         // Act
@@ -434,7 +434,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenOriginalWorkOrderNotFound()
     {
         // Arrange
-        _workOrderRepository.GetByNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((WorkOrder?)null);
+        _workOrderRepository.GetByWoNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((WorkOrder?)null);
         var message = CreateBaseMessage() with { OriginalWorkOrderNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
@@ -452,7 +452,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnDocumentGuid()
     {
         // Arrange
-        _documentRepository.GetByNoAsync(_document.No, Arg.Any<CancellationToken>()).Returns(_document);
+        _documentRepository.GetByDocNoAsync(_document.No, Arg.Any<CancellationToken>()).Returns(_document);
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>(_document.No) };
 
         // Act
@@ -466,7 +466,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenDocumentNotFound()
     {
         // Arrange
-        _documentRepository.GetByNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((Document?)null);
+        _documentRepository.GetByDocNoAsync("INVALID", Arg.Any<CancellationToken>()).Returns((Document?)null);
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
@@ -481,7 +481,7 @@ public class CommandReferencesServiceTests
     {
         // Arrange
         var voidedDocument = new Document(TestPlant, Guid.NewGuid(), "DOC-VOID") { IsVoided = true };
-        _documentRepository.GetByNoAsync(voidedDocument.No, Arg.Any<CancellationToken>()).Returns(voidedDocument);
+        _documentRepository.GetByDocNoAsync(voidedDocument.No, Arg.Any<CancellationToken>()).Returns(voidedDocument);
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>(voidedDocument.No) };
 
         // Act
@@ -499,7 +499,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnSWCRGuid()
     {
         // Arrange
-        _swcrRepository.GetByNoAsync(_swcr.No, Arg.Any<CancellationToken>()).Returns(_swcr);
+        _swcrRepository.GetBySwcrNoAsync(_swcr.No, Arg.Any<CancellationToken>()).Returns(_swcr);
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(_swcr.No) };
 
         // Act
@@ -513,7 +513,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenSWCRNotFound()
     {
         // Arrange
-        _swcrRepository.GetByNoAsync(999, Arg.Any<CancellationToken>()).Returns((SWCR?)null);
+        _swcrRepository.GetBySwcrNoAsync(999, Arg.Any<CancellationToken>()).Returns((SWCR?)null);
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(999) };
 
         // Act
@@ -528,7 +528,7 @@ public class CommandReferencesServiceTests
     {
         // Arrange
         var voidedSwcr = new SWCR(TestPlant, Guid.NewGuid(), 999) { IsVoided = true };
-        _swcrRepository.GetByNoAsync(voidedSwcr.No, Arg.Any<CancellationToken>()).Returns(voidedSwcr);
+        _swcrRepository.GetBySwcrNoAsync(voidedSwcr.No, Arg.Any<CancellationToken>()).Returns(voidedSwcr);
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(voidedSwcr.No) };
 
         // Act
@@ -755,10 +755,10 @@ public class CommandReferencesServiceTests
         var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
         var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
 
-        _workOrderRepository.GetByNoAsync(_workOrder.No, Arg.Any<CancellationToken>()).Returns(_workOrder);
-        _workOrderRepository.GetByNoAsync(_originalWorkOrder.No, Arg.Any<CancellationToken>()).Returns(_originalWorkOrder);
-        _documentRepository.GetByNoAsync(_document.No, Arg.Any<CancellationToken>()).Returns(_document);
-        _swcrRepository.GetByNoAsync(_swcr.No, Arg.Any<CancellationToken>()).Returns(_swcr);
+        _workOrderRepository.GetByWoNoAsync(_workOrder.No, Arg.Any<CancellationToken>()).Returns(_workOrder);
+        _workOrderRepository.GetByWoNoAsync(_originalWorkOrder.No, Arg.Any<CancellationToken>()).Returns(_originalWorkOrder);
+        _documentRepository.GetByDocNoAsync(_document.No, Arg.Any<CancellationToken>()).Returns(_document);
+        _swcrRepository.GetBySwcrNoAsync(_swcr.No, Arg.Any<CancellationToken>()).Returns(_swcr);
         _personRepository.GetByUserNameAsync(_actionByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_actionByPerson);
         _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
         _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
