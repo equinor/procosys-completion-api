@@ -92,9 +92,11 @@ public sealed class ImportUpdatePunchItemHandler(
         {
             var command = new ClearPunchItemCommand(
                         request.PunchItemGuid,
-                        request.RowVersion);
-            command.PunchItem = request.PunchItem;
-            command.CheckListDetailsDto = request.CheckListDetailsDto;
+                        request.RowVersion)
+            {
+                PunchItem = request.PunchItem,
+                CheckListDetailsDto = request.CheckListDetailsDto
+            };
 
             var results =
                 await clearValidator.ValidateAsync(
