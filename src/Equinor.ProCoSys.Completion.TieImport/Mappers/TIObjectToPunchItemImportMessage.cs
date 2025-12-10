@@ -155,19 +155,19 @@ public static class TiObjectToPunchItemImportMessage
 
     private static Category? GetCategoryFromStatus(TIObject tiObject)
     {
-        var status = tiObject.GetAttributeValueAsString(Status);
+        var status = tiObject.GetAttributeValueAsString(Status)?.Trim();
         if (IsNullOrEmpty(status))
         {
             return null;
         }
 
-        if (!string.Equals(status,Category.PB.ToString(), StringComparison.InvariantCultureIgnoreCase) 
-            && !string.Equals(status ,Category.PA.ToString(), StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(status, Category.PB.ToString(), StringComparison.OrdinalIgnoreCase) 
+            && !string.Equals(status, Category.PA.ToString(), StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        return status == Category.PA.ToString()
+        return string.Equals(status, Category.PA.ToString(), StringComparison.OrdinalIgnoreCase)
             ? Category.PA
             : Category.PB;
     }

@@ -122,7 +122,7 @@ public sealed class ImportUpdatePunchItemHandler(
 
         if (IsRejectingPunch(request))
         {
-            var val = new RejectPunchItemCommand(
+            var command = new RejectPunchItemCommand(
                     request.PunchItemGuid,
                     string.Empty,
                     [],
@@ -134,7 +134,7 @@ public sealed class ImportUpdatePunchItemHandler(
 
             var results =
                 await rejectValidator.ValidateAsync(
-                    val,
+                    command,
                     cancellationToken);
             errors.AddRange(results.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
         }
