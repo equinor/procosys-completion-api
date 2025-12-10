@@ -101,7 +101,7 @@ public class CommandReferencesServiceTests
         ProjectName,
         TestPlant,
         "TagNo",
-        new Optional<string?>("ExternalPunchItemNo"),
+        "ExternalPunchItemNo",
         "FormType",
         "EQ",
         new Optional<long?>(),

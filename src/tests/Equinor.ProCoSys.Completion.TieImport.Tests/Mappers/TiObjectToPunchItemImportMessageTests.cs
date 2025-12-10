@@ -283,8 +283,7 @@ public sealed class TiObjectToPunchItemImportMessageTests
         var result = TiObjectToPunchItemImportMessage.ToPunchItemImportMessage(tiObject);
 
         // Assert
-        Assert.IsTrue(result.ExternalPunchItemNo.HasValue);
-        Assert.AreEqual("EXT-123", result.ExternalPunchItemNo.Value);
+        Assert.AreEqual("EXT-123", result.ExternalPunchItemNo);
     }
 
     [TestMethod]
@@ -1034,7 +1033,7 @@ public sealed class TiObjectToPunchItemImportMessageTests
         Assert.AreEqual("FullFormType", result.FormType);
         Assert.AreEqual("FullResp", result.Responsible);
         Assert.AreEqual(Category.PB, result.Category);
-        Assert.AreEqual("EXT-FULL", result.ExternalPunchItemNo.Value);
+        Assert.AreEqual("EXT-FULL", result.ExternalPunchItemNo);
         Assert.AreEqual(99999L, result.PunchItemNo.Value);
         Assert.AreEqual("Full description", result.Description.Value);
         Assert.AreEqual("RaisedOrg", result.RaisedByOrganization.Value);

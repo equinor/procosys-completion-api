@@ -125,7 +125,7 @@ public class PunchItemImportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "APPEND import failed unexpectedly for PunchItem with ExternalItemNo {ExternalItemNo}",
-                message.ExternalPunchItemNo.Value);
+                message.ExternalPunchItemNo);
             return [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant, ex.Message)];
         }
     }
@@ -216,7 +216,7 @@ public class PunchItemImportService(
         {
             var identifier = message.PunchItemNo.HasValue && message.PunchItemNo.Value.HasValue
                 ? $"PunchItemNo '{message.PunchItemNo.Value}'" 
-                : $"ExternalItemNo '{message.ExternalPunchItemNo.Value}'";
+                : $"ExternalItemNo '{message.ExternalPunchItemNo}'";
             return new PunchItemOperationContext(null, null,
                 [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant,
                     $"PunchItem with {identifier} not found in plant '{message.Plant}'")]);
@@ -240,7 +240,7 @@ public class PunchItemImportService(
 
         // Fall back to ExternalPunchItemNo (always present - validated as required)
         return await punchItemRepository.GetByExternalItemNoAsync(
-            message.ExternalPunchItemNo.Value!, 
+            message.ExternalPunchItemNo, 
             checkListGuid, 
             CancellationToken.None);
     }
@@ -278,7 +278,7 @@ public class PunchItemImportService(
             null,
             null,
             null,
-            message.ExternalPunchItemNo.Value,
+            message.ExternalPunchItemNo,
             materialRequired,
             message.MaterialEta.Value,
             message.MaterialNo.Value

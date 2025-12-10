@@ -10,7 +10,7 @@ public sealed record PunchItemImportMessage(
     string ProjectName,
     string Plant,
     string TagNo,
-    Optional<string?> ExternalPunchItemNo,
+    string ExternalPunchItemNo,
     string FormType,
     string Responsible,
     Optional<long?> PunchItemNo,

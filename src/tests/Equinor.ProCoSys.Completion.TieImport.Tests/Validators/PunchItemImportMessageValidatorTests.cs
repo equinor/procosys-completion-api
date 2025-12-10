@@ -17,7 +17,7 @@ public sealed class PunchItemImportMessageValidatorTests
         "Projectname", 
         "Plant", 
         "TagNo", 
-        new Optional<string?>("ExternalPunchItemNo"),
+        "ExternalPunchItemNo",
         "FormType",
         "EQ", 
         new Optional<long?>(), 
