@@ -8,6 +8,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.References;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
@@ -27,6 +28,7 @@ public class CommandReferencesServiceTests
     private IDocumentRepository _documentRepository = null!;
     private ISWCRRepository _swcrRepository = null!;
     private IPersonRepository _personRepository = null!;
+    private IOptionsMonitor<ApplicationOptions> _options = null!;
 
     // Test entities
     private LibraryItem _raisedByOrg = null!;
@@ -83,6 +85,9 @@ public class CommandReferencesServiceTests
         _documentRepository = Substitute.For<IDocumentRepository>();
         _swcrRepository = Substitute.For<ISWCRRepository>();
         _personRepository = Substitute.For<IPersonRepository>();
+
+        _options = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
+        _options.CurrentValue.Returns(new ApplicationOptions());
 
         _factory = new CommandReferencesServiceFactory(
             _workOrderRepository,
@@ -142,7 +147,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_project.Guid, references.ProjectGuid);
@@ -155,7 +160,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_checkListGuid, references.CheckListGuid);
@@ -169,7 +174,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("CheckList")));
@@ -182,7 +187,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(0, references.Errors.Length);
@@ -199,7 +204,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_raisedByOrg.Guid, references.RaisedByOrgGuid);
@@ -212,7 +217,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { RaisedByOrganization = new Optional<string?>("INVALID_ORG") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RaisedByOrganization")));
@@ -229,7 +234,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_clearedByOrg.Guid, references.ClearedByOrgGuid);
@@ -242,7 +247,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { ClearedByOrganization = new Optional<string?>("INVALID_ORG") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedByOrganization")));
@@ -259,7 +264,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { PunchListType = new OptionalWithNull<string?>(_punchListType.Code) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_punchListType.Guid, references.TypeGuid);
@@ -272,7 +277,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsNull(references.TypeGuid);
@@ -285,7 +290,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { PunchListType = OptionalWithNull<string?>.CreateNull() };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsNull(references.TypeGuid);
@@ -303,7 +308,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { Priority = new OptionalWithNull<string?>(_priority.Code) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_priority.Guid, references.PriorityGuid);
@@ -316,7 +321,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsNull(references.PriorityGuid);
@@ -333,7 +338,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { Sorting = new OptionalWithNull<string?>(_sorting.Code) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_sorting.Guid, references.SortingGuid);
@@ -346,7 +351,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsNull(references.SortingGuid);
@@ -364,7 +369,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>(_workOrder.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_workOrder.Guid, references.WorkOrderGuid);
@@ -378,7 +383,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("WorkOrder") && e.Message.Contains("not found")));
@@ -393,7 +398,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { WorkOrderNo = new OptionalWithNull<string?>(voidedWorkOrder.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("WorkOrder") && e.Message.Contains("voided")));
@@ -406,7 +411,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage();
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsNull(references.WorkOrderGuid);
@@ -424,7 +429,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { OriginalWorkOrderNo = new OptionalWithNull<string?>(_originalWorkOrder.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_originalWorkOrder.Guid, references.OriginalWorkOrderGuid);
@@ -438,7 +443,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { OriginalWorkOrderNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("OriginalWorkOrder") && e.Message.Contains("not found")));
@@ -456,7 +461,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>(_document.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_document.Guid, references.DocumentGuid);
@@ -470,7 +475,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>("INVALID") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Document") && e.Message.Contains("not found")));
@@ -485,7 +490,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { DocumentNo = new OptionalWithNull<string?>(voidedDocument.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Document") && e.Message.Contains("voided")));
@@ -503,7 +508,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(_swcr.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_swcr.Guid, references.SWCRGuid);
@@ -517,7 +522,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(999) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("SWCR") && e.Message.Contains("not found")));
@@ -532,7 +537,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { SwcrNo = new OptionalWithNull<int?>(voidedSwcr.No) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("SWCR") && e.Message.Contains("voided")));
@@ -550,7 +555,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { ActionBy = new OptionalWithNull<string?>(_actionByPerson.UserName) };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(_actionByPerson.Guid, references.ActionByPersonOid);
@@ -564,7 +569,7 @@ public class CommandReferencesServiceTests
         var message = CreateBaseMessage() with { ActionBy = new OptionalWithNull<string?>("invalid@example.com") };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ActionBy") && e.Message.Contains("not found")));
@@ -575,9 +580,9 @@ public class CommandReferencesServiceTests
     #region ClearedBy Tests
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnClearedByPerson()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnNullClearedBy_WhenNoPunchItemProvided()
     {
-        // Arrange
+        // Arrange - ClearedBy validation is skipped when punchItem is null (CREATE scenario)
         var clearedDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
         var message = CreateBaseMessage() with
@@ -587,12 +592,57 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert - ClearedBy is null because punchItem is null (validation skipped for CREATE)
+        Assert.IsNull(references.ClearedBy);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnClearedBy_WhenPunchItemIsReadyToBeCleared()
+    {
+        // Arrange - UPDATE scenario with punch item ready to be cleared
+        var clearedDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        
+        var message = CreateBaseMessage() with
+        {
+            ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
+            ClearedDate = new Optional<DateTime?>(clearedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsNotNull(references.ClearedBy);
-        Assert.AreEqual(_clearedByPerson.Guid, references.ClearedBy.PersonOid);
+        Assert.AreEqual(_clearedByPerson.Guid, references.ClearedBy.Person.Guid);
         Assert.AreEqual(clearedDate, references.ClearedBy.ActionDate);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchItemCannotBeCleared()
+    {
+        // Arrange - UPDATE scenario with punch item already cleared
+        var clearedDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate); // Already cleared
+        
+        var message = CreateBaseMessage() with
+        {
+            ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
+            ClearedDate = new Optional<DateTime?>(clearedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("cannot be cleared") && e.Message.Contains("already cleared")));
     }
 
     [TestMethod]
@@ -600,6 +650,8 @@ public class CommandReferencesServiceTests
     {
         // Arrange
         _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        
         var message = CreateBaseMessage() with
         {
             ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
@@ -607,7 +659,7 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedDate") && e.Message.Contains("required")));
@@ -619,6 +671,8 @@ public class CommandReferencesServiceTests
         // Arrange
         var clearedDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync("invalid@example.com", Arg.Any<CancellationToken>()).Returns((Person?)null);
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        
         var message = CreateBaseMessage() with
         {
             ClearedBy = new Optional<string?>("invalid@example.com"),
@@ -626,7 +680,7 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedBy") && e.Message.Contains("not found")));
@@ -637,9 +691,9 @@ public class CommandReferencesServiceTests
     #region VerifiedBy Tests
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnVerifiedByPerson()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnNullVerifiedBy_WhenNoPunchItemProvided()
     {
-        // Arrange
+        // Arrange - VerifiedBy validation is skipped when punchItem is null (CREATE scenario)
         var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
         var message = CreateBaseMessage() with
@@ -649,19 +703,70 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert - VerifiedBy is null because punchItem is null (validation skipped for CREATE)
+        Assert.IsNull(references.VerifiedBy);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnVerifiedBy_WhenPunchItemIsReadyToBeVerified()
+    {
+        // Arrange - UPDATE scenario with punch item ready to be verified (already cleared)
+        var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
+        var clearedDate = new DateTime(2024, 2, 15, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate); // Must be cleared first
+        
+        var message = CreateBaseMessage() with
+        {
+            VerifiedBy = new Optional<string?>(_verifiedByPerson.UserName),
+            VerifiedDate = new Optional<DateTime?>(verifiedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsNotNull(references.VerifiedBy);
-        Assert.AreEqual(_verifiedByPerson.Guid, references.VerifiedBy.PersonOid);
+        Assert.AreEqual(_verifiedByPerson.Guid, references.VerifiedBy.Person.Guid);
         Assert.AreEqual(verifiedDate, references.VerifiedBy.ActionDate);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchItemCannotBeVerified_NotCleared()
+    {
+        // Arrange - UPDATE scenario with punch item not cleared
+        var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        // Not cleared - cannot be verified
+        
+        var message = CreateBaseMessage() with
+        {
+            VerifiedBy = new Optional<string?>(_verifiedByPerson.UserName),
+            VerifiedDate = new Optional<DateTime?>(verifiedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("cannot be verified") && e.Message.Contains("not cleared")));
     }
 
     [TestMethod]
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenVerifiedByWithoutVerifiedDate()
     {
         // Arrange
+        var clearedDate = new DateTime(2024, 3, 24, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate);
+        
         var message = CreateBaseMessage() with
         {
             VerifiedBy = new Optional<string?>(_verifiedByPerson.UserName),
@@ -669,7 +774,7 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("VerifiedDate") && e.Message.Contains("required")));
@@ -680,9 +785,9 @@ public class CommandReferencesServiceTests
     #region RejectedBy Tests
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnRejectedByPerson()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnNullRejectedBy_WhenNoPunchItemProvided()
     {
-        // Arrange
+        // Arrange - RejectedBy validation is skipped when punchItem is null (CREATE scenario)
         var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
         var message = CreateBaseMessage() with
@@ -692,19 +797,96 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert - RejectedBy is null because punchItem is null (validation skipped for CREATE)
+        Assert.IsNull(references.RejectedBy);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnRejectedBy_WhenPunchItemIsReadyToBeRejected()
+    {
+        // Arrange - UPDATE scenario with punch item ready to be rejected (cleared but not verified)
+        var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
+        var clearedDate = new DateTime(2024, 3, 24, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate); // Must be cleared to be rejected
+        
+        var message = CreateBaseMessage() with
+        {
+            RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
+            RejectedDate = new Optional<DateTime?>(rejectedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsNotNull(references.RejectedBy);
-        Assert.AreEqual(_rejectedByPerson.Guid, references.RejectedBy.PersonOid);
+        Assert.AreEqual(_rejectedByPerson.Guid, references.RejectedBy.Person.Guid);
         Assert.AreEqual(rejectedDate, references.RejectedBy.ActionDate);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchItemCannotBeRejected_NotCleared()
+    {
+        // Arrange - UPDATE scenario with punch item not cleared
+        var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        // Not cleared - cannot be rejected
+        
+        var message = CreateBaseMessage() with
+        {
+            RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
+            RejectedDate = new Optional<DateTime?>(rejectedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("cannot be rejected") && e.Message.Contains("not cleared")));
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchItemCannotBeRejected_AlreadyVerified()
+    {
+        // Arrange - UPDATE scenario with punch item already verified
+        var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
+        var clearedDate = new DateTime(2024, 3, 24, 0, 0, 0, DateTimeKind.Utc);
+        var verifiedDate = new DateTime(2024, 3, 26, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate);
+        punchItem.Verify(_verifiedByPerson, verifiedDate);
+        
+        var message = CreateBaseMessage() with
+        {
+            RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
+            RejectedDate = new Optional<DateTime?>(rejectedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("cannot be rejected") && e.Message.Contains("already verified")));
     }
 
     [TestMethod]
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenRejectedByWithoutRejectedDate()
     {
         // Arrange
+        var clearedDate = new DateTime(2024, 3, 24, 0, 0, 0, DateTimeKind.Utc);
         _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        punchItem.Clear(_clearedByPerson, clearedDate);
+        
         var message = CreateBaseMessage() with
         {
             RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
@@ -712,7 +894,7 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RejectedDate") && e.Message.Contains("required")));
@@ -734,7 +916,7 @@ public class CommandReferencesServiceTests
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
         Assert.IsTrue(references.Errors.Length >= 3);
@@ -748,21 +930,14 @@ public class CommandReferencesServiceTests
     #region Complete Reference Resolution Test
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldResolveAllReferences()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldResolveAllReferences_ForCreateScenario()
     {
         // Arrange
-        var clearedDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
-        var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
-        var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
-
         _workOrderRepository.GetByWoNoAsync(_workOrder.No, Arg.Any<CancellationToken>()).Returns(_workOrder);
         _workOrderRepository.GetByWoNoAsync(_originalWorkOrder.No, Arg.Any<CancellationToken>()).Returns(_originalWorkOrder);
         _documentRepository.GetByDocNoAsync(_document.No, Arg.Any<CancellationToken>()).Returns(_document);
         _swcrRepository.GetBySwcrNoAsync(_swcr.No, Arg.Any<CancellationToken>()).Returns(_swcr);
         _personRepository.GetByUserNameAsync(_actionByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_actionByPerson);
-        _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
-        _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
-        _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
 
         var message = CreateBaseMessage() with
         {
@@ -773,17 +948,11 @@ public class CommandReferencesServiceTests
             OriginalWorkOrderNo = new OptionalWithNull<string?>(_originalWorkOrder.No),
             DocumentNo = new OptionalWithNull<string?>(_document.No),
             SwcrNo = new OptionalWithNull<int?>(_swcr.No),
-            ActionBy = new OptionalWithNull<string?>(_actionByPerson.UserName),
-            ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
-            ClearedDate = new Optional<DateTime?>(clearedDate),
-            VerifiedBy = new Optional<string?>(_verifiedByPerson.UserName),
-            VerifiedDate = new Optional<DateTime?>(verifiedDate),
-            RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
-            RejectedDate = new Optional<DateTime?>(rejectedDate)
+            ActionBy = new OptionalWithNull<string?>(_actionByPerson.UserName)
         };
 
         // Act
-        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert - No errors
         Assert.AreEqual(0, references.Errors.Length, $"Errors: {string.Join(", ", references.Errors.Select(e => e.Message))}");
@@ -810,20 +979,10 @@ public class CommandReferencesServiceTests
         // Assert - ActionBy person
         Assert.AreEqual(_actionByPerson.Guid, references.ActionByPersonOid);
         
-        // Assert - ClearedBy with date
-        Assert.IsNotNull(references.ClearedBy);
-        Assert.AreEqual(_clearedByPerson.Guid, references.ClearedBy.PersonOid);
-        Assert.AreEqual(clearedDate, references.ClearedBy.ActionDate);
-        
-        // Assert - VerifiedBy with date
-        Assert.IsNotNull(references.VerifiedBy);
-        Assert.AreEqual(_verifiedByPerson.Guid, references.VerifiedBy.PersonOid);
-        Assert.AreEqual(verifiedDate, references.VerifiedBy.ActionDate);
-
-        // Assert - RejectedBy with date
-        Assert.IsNotNull(references.RejectedBy);
-        Assert.AreEqual(_rejectedByPerson.Guid, references.RejectedBy.PersonOid);
-        Assert.AreEqual(rejectedDate, references.RejectedBy.ActionDate);
+        // Assert - ClearedBy, VerifiedBy, RejectedBy are null for CREATE scenario (no punchItem)
+        Assert.IsNull(references.ClearedBy);
+        Assert.IsNull(references.VerifiedBy);
+        Assert.IsNull(references.RejectedBy);
     }
 
     #endregion

@@ -4,11 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Command.MessageProducers;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ClearPunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.RejectPunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItemCategory;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.VerifyPunchItem;
 using Equinor.ProCoSys.Completion.DbSyncToPCS4.Service;
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
@@ -19,22 +15,14 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.HistoryEvents;
 using Equinor.ProCoSys.Completion.Domain.Events.IntegrationEvents.PunchItemEvents;
-using Equinor.ProCoSys.Completion.Domain.Validators;
 using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.MessageContracts.History;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 
 public sealed class ImportUpdatePunchItemCommandHandler(
-    ILabelValidator labelValidator,
-    IOptionsMonitor<ApplicationOptions> options,
-    ILibraryItemValidator libraryItemValidator,
-    IWorkOrderValidator workOrderValidator,
-    ISWCRValidator swcrValidator,
-    IDocumentValidator documentValidator,
     IPersonRepository personRepository,
     IUnitOfWork unitOfWork,
     IMessageProducer messageProducer,
@@ -57,110 +45,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
             request.Plant,
             message);
 
-    private async Task<ImportError[]> Validate(ImportUpdatePunchItemCommand request,
-        CancellationToken cancellationToken)
-    {
-        var clearValidator = new ClearPunchItemCommandValidator();
-        var verifyValidator = new VerifyPunchItemCommandValidator();
-        var rejectValidator = new RejectPunchItemCommandValidator( labelValidator, options);
-        var updateValidator = new UpdatePunchItemCommandValidator( libraryItemValidator,
-            workOrderValidator, swcrValidator, documentValidator);
-        var categoryValidator = new UpdatePunchItemCategoryCommandValidator();
-
-        var errors = new List<ImportError>();
-
-        if (IsClearingPunch(request))
-        {
-            var command = new ClearPunchItemCommand(
-                        request.PunchItemGuid,
-                        request.RowVersion)
-            {
-                PunchItem = request.PunchItem,
-                CheckListDetailsDto = request.CheckListDetailsDto
-            };
-
-            var results =
-                await clearValidator.ValidateAsync(
-                    command,
-                    cancellationToken);
-            errors.AddRange(results.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
-        }
-
-        if (IsVerifyingPunch(request))
-        {
-            var command = new VerifyPunchItemCommand(
-                    request.PunchItemGuid,
-                    request.RowVersion)
-            {
-                PunchItem = request.PunchItem,
-                CheckListDetailsDto = request.CheckListDetailsDto
-            };
-
-            var results =
-                await verifyValidator.ValidateAsync(
-                    command,
-                    cancellationToken);
-            errors.AddRange(results.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
-        }
-
-        if (IsRejectingPunch(request))
-        {
-            var command = new RejectPunchItemCommand(
-                    request.PunchItemGuid,
-                    string.Empty,
-                    [],
-                    request.RowVersion)
-            {
-                PunchItem = request.PunchItem,
-                CheckListDetailsDto = request.CheckListDetailsDto
-            };
-
-            var results =
-                await rejectValidator.ValidateAsync(
-                    command,
-                    cancellationToken);
-            errors.AddRange(results.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
-        }
-
-        if (IsUpdatingPunchCategory(request))
-        {
-            var command = new UpdatePunchItemCategoryCommand(
-                        request.PunchItemGuid,
-                        request.Category!.Value,
-                        request.RowVersion)
-            {
-                PunchItem = request.PunchItem,
-                CheckListDetailsDto = request.CheckListDetailsDto
-            };
-
-            var results =
-                await categoryValidator.ValidateAsync(
-                    command,
-                    cancellationToken);
-            errors.AddRange(results.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
-        }
-
-        if (IsGeneralUpdate(request))
-        {
-            var command = new UpdatePunchItemCommand(
-            request.PunchItemGuid,
-            request.PatchDocument,
-            request.RowVersion)
-            {
-                PunchItem = request.PunchItem,
-                CheckListDetailsDto = request.CheckListDetailsDto
-            };
-
-            var updateResults =
-                await updateValidator.ValidateAsync(
-                    command,
-                    cancellationToken);
-            errors.AddRange(updateResults.Errors.Select(x => ToImportError(request, x.ErrorMessage)));
-        }
-
-        return [.. errors];
-    }
-
     private static bool IsGeneralUpdate(ImportUpdatePunchItemCommand request) => request.PatchDocument.Operations.Count != 0;
 
     private static bool IsUpdatingPunchCategory(ImportUpdatePunchItemCommand request) => request.Category.HasValue;
@@ -174,12 +58,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     public async Task<List<ImportError>> Handle(ImportUpdatePunchItemCommand request,
         CancellationToken cancellationToken)
     {
-        var errors = (await Validate(request, cancellationToken)).ToList();
-        if (errors.Count != 0)
-        {
-            return errors;
-        }
-
+        var errors = new List<ImportError>();
         var events = new List<object>();
         var punchItem = request.PunchItem;
 
@@ -375,10 +254,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
                     await PunchItemPatcher.PatchDocumentAsync(punchItem, patchedPunchItem, changes, documentRepository, cancellationToken);
                     break;
 
- //               case nameof(PatchablePunchItem.ExternalItemNo):
- //                   PunchItemPatcher.PatchExternalItemNo(punchItem, patchedPunchItem, changes);
- //                   break;
-
                 case nameof(PatchablePunchItem.MaterialRequired):
                     PunchItemPatcher.PatchMaterialRequired(punchItem, patchedPunchItem, changes);
                     break;
@@ -448,8 +323,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleRejectAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        var currentPerson =
-            await personRepository.GetOrCreateAsync(request.RejectedBy.Value!.PersonOid, cancellationToken);
+        var currentPerson = request.RejectedBy.Value!.Person;
         var change = new ChangedProperty<string?>(RejectReasonPropertyName, null, "IMPORTED REJECTION");
 
         punchItem.Reject(currentPerson, request.RejectedBy.Value?.ActionDate);
@@ -470,9 +344,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleVerifyAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        var currentPerson =
-            await personRepository.GetOrCreateAsync(request.VerifiedBy.Value!.PersonOid, cancellationToken);
-
+        var currentPerson = request.VerifiedBy.Value!.Person;
         punchItem.Verify(currentPerson, request.VerifiedBy.Value?.ActionDate);
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
@@ -490,7 +362,8 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleClearAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        var currentPerson = await personRepository.GetOrCreateAsync(request.ClearedBy.Value!.PersonOid, cancellationToken);
+        
+        var currentPerson = request.ClearedBy.Value!.Person;
         punchItem.Clear(currentPerson, request.ClearedBy.Value?.ActionDate);
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(

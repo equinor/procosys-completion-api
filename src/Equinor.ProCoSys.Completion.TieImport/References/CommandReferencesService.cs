@@ -2,6 +2,7 @@
 using Equinor.ProCoSys.Completion.Domain;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.DocumentAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
@@ -14,14 +15,16 @@ public class CommandReferencesService(
     IWorkOrderRepository workOrderRepository,
     IDocumentRepository documentRepository,
     ISWCRRepository swcrRepository,
-    IPersonRepository personRepository) : ICommandReferencesService
+    IPersonRepository personRepository
+    ) : ICommandReferencesService
 {
     public async Task<CommandReferences> GetAndValidatePunchItemReferencesForImportAsync(
         PunchItemImportMessage message,
+        PunchItem? punchItem,
         CancellationToken cancellationToken)
     {
         var references = new CommandReferences();
-        
+
         references = references with { ProjectGuid = bundle.Project.Guid };
         references = ValidateAndSetCheckList(message, references);
         references = ValidateAndSetRaisedByOrg(message, references);
@@ -29,16 +32,30 @@ public class CommandReferencesService(
         references = SetPunchType(message, references);
         references = SetPunchPriority(message, references);
         references = SetPunchSorting(message, references);
-        
+
         // Validate related entities
         references = await ValidateAndSetWorkOrderAsync(message, references, cancellationToken);
         references = await ValidateAndSetOriginalWorkOrderAsync(message, references, cancellationToken);
         references = await ValidateAndSetDocumentAsync(message, references, cancellationToken);
         references = await ValidateAndSetSWCRAsync(message, references, cancellationToken);
         references = await ValidateAndSetActionByAsync(message, references, cancellationToken);
-        references = await ValidateAndSetClearedByAsync(message, references, cancellationToken);
-        references = await ValidateAndSetVerifiedByAsync(message, references, cancellationToken);
-        references = await ValidateAndSetRejectedByAsync(message, references, cancellationToken);
+        
+        // Validate state transitions only when punchItem exists (UPDATE scenario) and message requests the action
+        if (punchItem != null)
+        {
+            if (message.ClearedBy.HasValue && !string.IsNullOrEmpty(message.ClearedBy.Value))
+            {
+                references = await ValidateAndSetClearedByAsync(message, punchItem, references, cancellationToken);
+            }
+            if (message.VerifiedBy.HasValue && !string.IsNullOrEmpty(message.VerifiedBy.Value))
+            {
+                references = await ValidateAndSetVerifiedByAsync(message, punchItem, references, cancellationToken);
+            }
+            if (message.RejectedBy.HasValue && !string.IsNullOrEmpty(message.RejectedBy.Value))
+            {
+                references = await ValidateAndSetRejectedByAsync(message, punchItem, references, cancellationToken);
+            }
+        }
         return references;
     }
     
@@ -309,9 +326,16 @@ public class CommandReferencesService(
 
     private async Task<CommandReferences> ValidateAndSetClearedByAsync(
         PunchItemImportMessage message, 
+        PunchItem punchItem,
         CommandReferences references, 
         CancellationToken cancellationToken)
     {
+        if (!punchItem.IsReadyToBeCleared)
+        {
+            var reason = punchItem.IsCleared ? "it is already cleared" : "unknown reason";
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be cleared: {reason}")] };
+        }
+
         var result = await ValidateAndCreateActionByPersonAsync(
             message,
             message.ClearedBy,
@@ -332,9 +356,17 @@ public class CommandReferencesService(
 
     private async Task<CommandReferences> ValidateAndSetVerifiedByAsync(
         PunchItemImportMessage message, 
+        PunchItem punchItem,
         CommandReferences references, 
         CancellationToken cancellationToken)
     {
+        if (!punchItem.IsReadyToBeVerified)
+        {
+            var reason = !punchItem.IsCleared ? "it is not cleared" : 
+                         punchItem.IsVerified ? "it is already verified" : "unknown reason";
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be verified: {reason}")] };
+        }
+
         var result = await ValidateAndCreateActionByPersonAsync(
             message,
             message.VerifiedBy,
@@ -354,10 +386,18 @@ public class CommandReferencesService(
     }
 
     private async Task<CommandReferences> ValidateAndSetRejectedByAsync(
-        PunchItemImportMessage message, 
+        PunchItemImportMessage message,
+        PunchItem punchItem,
         CommandReferences references, 
         CancellationToken cancellationToken)
     {
+        if (!punchItem.IsReadyToBeRejected)
+        {
+            var reason = !punchItem.IsCleared ? "it is not cleared" : 
+                         punchItem.IsVerified ? "it is already verified" : "unknown reason";
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be rejected: {reason}")] };
+        }
+
         var result = await ValidateAndCreateActionByPersonAsync(
             message,
             message.RejectedBy,
@@ -403,6 +443,7 @@ public class CommandReferencesService(
             return (null, message.ToImportError($"{personFieldName} person '{personUsername.Value}' not found"));
         }
 
-        return (new ActionByPerson(person.Guid, actionDate.Value.Value), null);
+        return (new ActionByPerson(person, actionDate.Value.Value), null);
     }
+
 }

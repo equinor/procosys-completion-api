@@ -47,7 +47,7 @@ public class PunchItemImportService(
         SetImportUser(importBundle);
         
         var referencesService = commandReferencesServiceFactory.Create(importBundle);
-        var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
         if (references.Errors.Length != 0)
         {
             return references.Errors.ToList();
@@ -134,7 +134,7 @@ public class PunchItemImportService(
     {
         // Fetch and Validate references
         var referencesService = commandReferencesServiceFactory.Create(importBundle);
-        var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, CancellationToken.None);
+        var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         if (references.Errors.Length != 0)
         {
