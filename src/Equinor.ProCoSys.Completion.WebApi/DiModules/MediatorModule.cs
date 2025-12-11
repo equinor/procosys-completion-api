@@ -27,7 +27,6 @@ public static class MediatorModule
         services.AddTransient<IRequestHandler<CreatePunchItemCommand, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
         services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
 
-        // Register ImportUpdatePunchItemCommand handler
         services.AddTransient<IRequestHandler<ImportUpdatePunchItemCommand, List<ImportError>>, ImportUpdatePunchItemCommandHandler>();
 
         // ordering is important

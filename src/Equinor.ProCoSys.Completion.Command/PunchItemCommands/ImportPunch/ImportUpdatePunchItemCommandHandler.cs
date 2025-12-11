@@ -196,7 +196,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Something went wrong when commiting import for Punch with Import Guid '{Guid}'",
+            logger.LogError(ex, "Punch item update import failed to commit changes. Import Guid: '{Guid}'",
                 request.ImportGuid);
             errors.Add(ToImportError(request, ex.Message));
 
@@ -211,7 +211,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error occurred while trying to Sync Clear on PunchItemList with guid {PunchItemGuid}",
+            logger.LogError(e, "Punch item update import failed to sync to PCS4, PunchItem with guid {PunchItemGuid}",
                 request.PunchItemGuid);
             errors.Add(ToImportError(request, e.Message));
             return errors;
@@ -225,7 +225,7 @@ public sealed class ImportUpdatePunchItemCommandHandler(
         catch (Exception e)
         {
             logger.LogError(e,
-                "Error occurred while trying to Recalculate the CheckListStatus for CheckList with Guid {Guid}",
+                "Punch item update import failed to Recalculate the CheckListStatus for CheckList with Guid {Guid}",
                 punchItem.CheckListGuid);
             errors.Add(ToImportError(request, e.Message));
         }
@@ -448,16 +448,11 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleRejectAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        if (request is { RejectedBy: { HasValue: false } } or { RejectedBy: { HasValue: true, Value: null } })
-        {
-            return ToImportError(request, "Missing RejectedBy, cannot reject");
-        }
-
         var currentPerson =
             await personRepository.GetOrCreateAsync(request.RejectedBy.Value!.PersonOid, cancellationToken);
         var change = new ChangedProperty<string?>(RejectReasonPropertyName, null, "IMPORTED REJECTION");
 
-        punchItem.Reject(currentPerson);
+        punchItem.Reject(currentPerson, request.RejectedBy.Value?.ActionDate);
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
             messageProducer,
@@ -475,15 +470,10 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleVerifyAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        if (request is { VerifiedBy: { HasValue: false } } or { VerifiedBy: { HasValue: true, Value: null } })
-        {
-            return ToImportError(request, "Missing VerifiedBy, cannot verify");
-        }
-
         var currentPerson =
             await personRepository.GetOrCreateAsync(request.VerifiedBy.Value!.PersonOid, cancellationToken);
 
-        punchItem.Verify(currentPerson);
+        punchItem.Verify(currentPerson, request.VerifiedBy.Value?.ActionDate);
 
         var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
             messageProducer,
@@ -500,11 +490,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
     private async Task<object> HandleClearAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
         CancellationToken cancellationToken)
     {
-        if (request is { ClearedBy: { HasValue: false } } or { ClearedBy: { HasValue: true, Value: null } })
-        {
-            return ToImportError(request, "Missing ClearedBy, cannot clear");
-        }
-
         var currentPerson = await personRepository.GetOrCreateAsync(request.ClearedBy.Value!.PersonOid, cancellationToken);
         punchItem.Clear(currentPerson, request.ClearedBy.Value?.ActionDate);
 

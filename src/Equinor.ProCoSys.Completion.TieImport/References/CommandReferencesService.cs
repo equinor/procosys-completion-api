@@ -57,6 +57,11 @@ public class CommandReferencesService(
 
     private CommandReferences ValidateAndSetRaisedByOrg(PunchItemImportMessage message, CommandReferences references)
     {
+        if (!message.RaisedByOrganization.HasValue || string.IsNullOrEmpty(message.RaisedByOrganization.Value))
+        {
+            return references;
+        }
+
         var raisedByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.RaisedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (raisedByOrg is null)
@@ -72,6 +77,11 @@ public class CommandReferencesService(
 
     private CommandReferences ValidateAndSetClearedByOrg(PunchItemImportMessage message, CommandReferences references)
     {
+        if (!message.ClearedByOrganization.HasValue || string.IsNullOrEmpty(message.ClearedByOrganization.Value))
+        {
+            return references;
+        }
+
         var clearingByOrg = bundle.Library.SingleOrDefault(x =>
             x.Code == message.ClearedByOrganization.Value && x.Type == COMPLETION_ORGANIZATION);
         if (clearingByOrg is null)

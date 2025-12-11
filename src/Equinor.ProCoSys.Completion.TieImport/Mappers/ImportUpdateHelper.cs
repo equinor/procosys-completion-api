@@ -24,7 +24,6 @@ public static class ImportUpdateHelper
         AddPatchIfChanged(
             jsonPatchDocument,
             message.RaisedByOrganization.HasValue &&
-            punchItem.RaisedByOrg != null &&
             references.RaisedByOrgGuid != punchItem.RaisedByOrg.Guid,
             x => x.RaisedByOrgGuid,
             references.RaisedByOrgGuid);
@@ -32,12 +31,11 @@ public static class ImportUpdateHelper
         AddPatchIfChanged(
             jsonPatchDocument,
             message.ClearedByOrganization.HasValue &&
-            punchItem.ClearingByOrg != null &&
             references.ClearedByOrgGuid != punchItem.ClearingByOrg.Guid,
             x => x.ClearingByOrgGuid,
             references.ClearedByOrgGuid);
 
-        // Handle DueDate - either set to new value or clear if marked as {NULL}
+        // Handle DueDate
         AddPatchIfChanged(
             jsonPatchDocument,
             message.DueDate.ShouldBeNull
@@ -47,7 +45,7 @@ public static class ImportUpdateHelper
             x => x.DueTimeUtc,
             message.DueDate.ShouldBeNull ? null : message.DueDate.Value);
 
-        // Handle PunchListType - either set to new value or clear if marked as {NULL}
+        // Handle PunchListType
         AddPatchIfChanged(
             jsonPatchDocument,
             message.PunchListType.ShouldBeNull
@@ -58,7 +56,7 @@ public static class ImportUpdateHelper
             x => x.TypeGuid,
             message.PunchListType.ShouldBeNull ? null : references.TypeGuid);
 
-        // Handle Sorting - either set to new value or clear if marked as {NULL}
+        // Handle Sorting
         AddPatchIfChanged(
             jsonPatchDocument,
             message.Sorting.ShouldBeNull
@@ -69,7 +67,7 @@ public static class ImportUpdateHelper
             x => x.SortingGuid,
             message.Sorting.ShouldBeNull ? null : references.SortingGuid);
 
-        // Handle Priority - either set to new value or clear if marked as {NULL}
+        // Handle Priority
         AddPatchIfChanged(
             jsonPatchDocument,
             message.Priority.ShouldBeNull
@@ -80,7 +78,7 @@ public static class ImportUpdateHelper
             x => x.PriorityGuid,
             message.Priority.ShouldBeNull ? null : references.PriorityGuid);
 
-        // Handle ActionBy - either set to new value or clear if marked as {NULL}
+        // Handle ActionBy
         AddPatchIfChanged(
             jsonPatchDocument,
             message.ActionBy.ShouldBeNull
@@ -91,13 +89,7 @@ public static class ImportUpdateHelper
             x => x.ActionByPersonOid,
             message.ActionBy.ShouldBeNull ? null : references.ActionByPersonOid);
 
-//        AddPatchIfChanged(
-//            jsonPatchDocument,
-//            message.ExternalPunchItemNo.HasValue && message.ExternalPunchItemNo.Value != punchItem.ExternalItemNo,
-//            x => x.ExternalItemNo,
-//            message.ExternalPunchItemNo.Value);
-
-        // Handle Estimate - either set to new value or clear if marked as {NULL}
+        // Handle Estimate
         AddPatchIfChanged(
             jsonPatchDocument,
             message.Estimate.ShouldBeNull
