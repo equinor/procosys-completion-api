@@ -8,7 +8,6 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.References;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Tests;
@@ -28,7 +27,6 @@ public class CommandReferencesServiceTests
     private IDocumentRepository _documentRepository = null!;
     private ISWCRRepository _swcrRepository = null!;
     private IPersonRepository _personRepository = null!;
-    private IOptionsMonitor<ApplicationOptions> _options = null!;
 
     // Test entities
     private LibraryItem _raisedByOrg = null!;
@@ -85,9 +83,6 @@ public class CommandReferencesServiceTests
         _documentRepository = Substitute.For<IDocumentRepository>();
         _swcrRepository = Substitute.For<ISWCRRepository>();
         _personRepository = Substitute.For<IPersonRepository>();
-
-        _options = Substitute.For<IOptionsMonitor<ApplicationOptions>>();
-        _options.CurrentValue.Returns(new ApplicationOptions());
 
         _factory = new CommandReferencesServiceFactory(
             _workOrderRepository,

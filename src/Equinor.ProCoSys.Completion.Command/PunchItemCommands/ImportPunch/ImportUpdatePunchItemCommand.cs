@@ -18,7 +18,7 @@ public sealed record ImportUpdatePunchItemCommand(
     Optional<ActionByPerson?> ClearedBy,
     Optional<ActionByPerson?> VerifiedBy,
     Optional<ActionByPerson?> RejectedBy,
-    string RowVersion) : ICanHaveRestrictionsViaCheckList, IRequest<List<ImportError>>, IIsPunchItemCommand , IImportCommand
+    string RowVersion) : IPatchPunchItemCommand, IRequest<List<ImportError>>, IImportCommand
 {
     public PunchItem PunchItem { get; set; } = null!;
     public Guid GetProjectGuidForAccessCheck() => PunchItem.Project.Guid;

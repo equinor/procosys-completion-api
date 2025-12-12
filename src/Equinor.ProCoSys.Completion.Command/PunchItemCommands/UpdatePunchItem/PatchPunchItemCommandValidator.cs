@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
-using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.LibraryAggregate;
 using Equinor.ProCoSys.Completion.Domain.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunchItem;
+namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 
-public class ImportUpdatePunchItemCommandValidator : AbstractValidator<ImportUpdatePunchItemCommand>
+/// <summary>
+/// Generic validator for commands that patch a PunchItem.
+/// Validates the patch document operations for both UpdatePunchItemCommand and ImportUpdatePunchItemCommand.
+/// </summary>
+public class PatchPunchItemCommandValidator<T> : AbstractValidator<T> where T : IPatchPunchItemCommand
 {
     // Business Validation is based on that Input Validation is done in advance, thus all replaced ...
     // ... guid values are validated to be Guids
-    public ImportUpdatePunchItemCommandValidator(
+    public PatchPunchItemCommandValidator(
         ILibraryItemValidator libraryItemValidator,
         IWorkOrderValidator workOrderValidator,
         ISWCRValidator swcrValidator,
