@@ -1,11 +1,12 @@
-﻿using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
-public class WorkOrderRepository : EntityWithGuidRepository<WorkOrder>, IWorkOrderRepository
+public class WorkOrderRepository(CompletionContext context) : EntityWithGuidRepository<WorkOrder>(context, context.WorkOrders), IWorkOrderRepository
 {
-    public WorkOrderRepository(CompletionContext context)
-        : base(context, context.WorkOrders)
-    {
-    }
+    public async Task<WorkOrder?> GetByWoNoAsync(string woNo, CancellationToken cancellationToken) => await DefaultQueryable
+            .SingleOrDefaultAsync(w => w.No == woNo, cancellationToken);
 }

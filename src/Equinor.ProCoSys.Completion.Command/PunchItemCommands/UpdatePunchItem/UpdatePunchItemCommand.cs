@@ -9,7 +9,7 @@ public class UpdatePunchItemCommand(
     Guid punchItemGuid,
     JsonPatchDocument<PatchablePunchItem> patchDocument,
     string rowVersion)
-    : ICanHaveRestrictionsViaCheckList, IRequest<string>, IIsPunchItemCommand
+    : IPatchPunchItemCommand, IRequest<string>
 {
     public Guid PunchItemGuid { get; } = punchItemGuid;
     public PunchItem PunchItem { get; set; } = null!;

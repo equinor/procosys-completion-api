@@ -1,4 +1,4 @@
-﻿using Equinor.ProCoSys.Completion.TieImport.Models;
+﻿using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
 using Statoil.TI.InterfaceServices.Message;
 
 namespace Equinor.ProCoSys.Completion.TieImport.Extensions;

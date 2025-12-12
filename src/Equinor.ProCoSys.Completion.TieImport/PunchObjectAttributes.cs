@@ -26,8 +26,27 @@ public static class PunchObjectAttributes
     public const string VerifiedBy = "VERIFIEDBY";
     public const string VerifiedDate = "VERIFIEDDATE";
     
+    public const string ActionBy = "ACTIONBYPERSON";
+    public const string DocumentNo = "DOCUMENTNUMBER";
+    public const string Estimate = "ESTIMATE";
+    public const string OriginalWorkOrderNo = "ORIGINALWONUMBER";
+    public const string WorkOrderNo = "WONUMBER";
+    public const string Priority = "PRIORITY";
+    public const string Sorting = "PUNCHLISTSORTING";
+    public const string SwcrNo = "SWCRNUMBER";
+
+    public const string IsVoided = "ISVOIDED";
+
+    /// <summary>
+    /// Special marker value indicating that a field should be cleared/set to null.
+    /// </summary>
+    public const string NullMarker = "{NULL}";
+
     public static class Methods
     {
         public const string Create = "CREATE";
+        public const string Update = "UPDATE";
+        public const string Append = "APPEND";
+        public const string Delete = "DELETE";
     }
 }

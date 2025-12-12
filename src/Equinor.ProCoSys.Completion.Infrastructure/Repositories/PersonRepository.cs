@@ -5,27 +5,18 @@ using System.Threading.Tasks;
 using Equinor.ProCoSys.Auth.Caches;
 using Equinor.ProCoSys.Common.Misc;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PersonAggregate;
+using Microsoft.EntityFrameworkCore;
 
 namespace Equinor.ProCoSys.Completion.Infrastructure.Repositories;
 
-public class PersonRepository : EntityWithGuidRepository<Person>, IPersonRepository
+public class PersonRepository(
+    CompletionContext context,
+    ICurrentUserProvider currentUserProvider,
+    IPersonCache personCache) : EntityWithGuidRepository<Person>(context, context.Persons), IPersonRepository
 {
-    private readonly ICurrentUserProvider _currentUserProvider;
-    private readonly IPersonCache _personCache;
-
-    public PersonRepository(
-        CompletionContext context,
-        ICurrentUserProvider currentUserProvider,
-        IPersonCache personCache)
-        : base(context, context.Persons)
-    {
-        _currentUserProvider = currentUserProvider;
-        _personCache = personCache;
-    }
-
     public async Task<Person> GetCurrentPersonAsync(CancellationToken cancellationToken)
     {
-        var currentUserOid = _currentUserProvider.GetCurrentUserOid();
+        var currentUserOid = currentUserProvider.GetCurrentUserOid();
         
         return await GetAsync(currentUserOid, cancellationToken);
     }
@@ -59,7 +50,7 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
             return existingPerson;
         }
 
-        var pcsPerson = await _personCache.GetAsync(oid, cancellationToken: cancellationToken);
+        var pcsPerson = await personCache.GetAsync(oid, cancellationToken: cancellationToken);
         if (pcsPerson is null)
         {
             throw new Exception($"Could not get or create person with oid {oid}");
@@ -75,4 +66,7 @@ public class PersonRepository : EntityWithGuidRepository<Person>, IPersonReposit
 
         return person;
     }
+
+    public async Task<Person?> GetByUserNameAsync(string userName, CancellationToken cancellationToken) => await DefaultQueryable
+            .SingleOrDefaultAsync(p => p.UserName == userName, cancellationToken);
 }

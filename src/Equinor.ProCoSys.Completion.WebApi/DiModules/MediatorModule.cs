@@ -1,7 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using Equinor.ProCoSys.Completion.Command;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.CreatePunchItem;
 using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunch;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.ImportPunchItem;
+using Equinor.ProCoSys.Completion.Command.PunchItemCommands.UpdatePunchItem;
 using Equinor.ProCoSys.Completion.Query;
 using Equinor.ProCoSys.Completion.WebApi.Behaviors;
 using FluentValidation;
@@ -25,6 +28,14 @@ public static class MediatorModule
         services.AddTransient<IValidator<CreatePunchItemCommandForImport>, CreatePunchItemCommandValidator<CreatePunchItemCommandForImport>>();
         services.AddTransient<IRequestHandler<CreatePunchItemCommand, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommand>>();
         services.AddTransient<IRequestHandler<CreatePunchItemCommandForImport, GuidAndRowVersion>, CreatePunchItemCommandHandler<CreatePunchItemCommandForImport>>();
+
+        // Validators for ImportUpdatePunchItemCommand - using generic PatchPunchItemCommandValidator and category validator
+        services.AddTransient<IValidator<ImportUpdatePunchItemCommand>, PatchPunchItemCommandValidator<ImportUpdatePunchItemCommand>>();
+        services.AddTransient<IValidator<ImportUpdatePunchItemCommand>, ImportUpdatePunchItemCategoryCommandValidator>();
+
+        services.AddTransient<IValidator<UpdatePunchItemCommand>, PatchPunchItemCommandValidator<UpdatePunchItemCommand>>();
+
+        services.AddTransient<IRequestHandler<ImportUpdatePunchItemCommand, List<ImportError>>, ImportUpdatePunchItemCommandHandler>();
 
         // ordering is important
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

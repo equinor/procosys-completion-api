@@ -144,26 +144,26 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
     public bool IsReadyToBeUncleared => IsCleared && !IsVerified;
     public bool IsReadyToBeUnverified => IsVerified;
 
-    public void Clear(Person clearedBy)
+    public void Clear(Person clearedBy, DateTime? clearedDate = null)       
     {
         if (!IsReadyToBeCleared)
         {
             throw new Exception($"{nameof(PunchItem)} can not be cleared");
         }
-        ClearedAtUtc = TimeService.UtcNow;
+        ClearedAtUtc = clearedDate ?? TimeService.UtcNow;
         ClearedBy = clearedBy;
         ClearedById = clearedBy.Id;
         RejectedAtUtc = null;
         RejectedById = null;
     }
-
-    public void Reject(Person rejectedBy)
+     
+    public void Reject(Person rejectedBy, DateTime? rejectedDate = null)
     {
         if (!IsReadyToBeRejected)
         {
             throw new Exception($"{nameof(PunchItem)} can not be rejected");
         }
-        RejectedAtUtc = TimeService.UtcNow;
+        RejectedAtUtc = rejectedDate ?? TimeService.UtcNow;
         RejectedBy = rejectedBy;
         RejectedById = rejectedBy.Id;
         ClearedAtUtc = null;
@@ -171,13 +171,13 @@ public class PunchItem : PlantEntityBase, IAggregateRoot, ICreationAuditable, IM
         ClearedById = null;
     }
 
-    public void Verify(Person verifiedBy)
+    public void Verify(Person verifiedBy, DateTime? verifiedDate = null)
     {
         if (!IsReadyToBeVerified)
         {
             throw new Exception($"{nameof(PunchItem)} can not be verified");
         }
-        VerifiedAtUtc = TimeService.UtcNow;
+        VerifiedAtUtc = verifiedDate ?? TimeService.UtcNow;
         VerifiedBy = verifiedBy;
         VerifiedById = verifiedBy.Id;
     }

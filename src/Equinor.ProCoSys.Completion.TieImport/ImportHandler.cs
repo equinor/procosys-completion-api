@@ -4,6 +4,7 @@ using Equinor.ProCoSys.Completion.TieImport.Extensions;
 using Equinor.ProCoSys.Completion.TieImport.Services;
 using Microsoft.Extensions.Logging;
 using Statoil.TI.InterfaceServices.Message;
+using static Equinor.ProCoSys.Completion.TieImport.PunchObjectAttributes;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -46,12 +47,12 @@ public sealed class ImportHandler(
             
             var tiObject = mapped.Message!.Objects.First();
             
-            if (!IsCreateMethod(tiObject))
+            if (!IsSupportedMethod(tiObject))
             {
                 return new TIMessageResult
                 {
                     Result = MessageResults.Failed,
-                    ErrorMessage = "Only CREATE method are supported at this time"
+                    ErrorMessage = $"Only {Methods.Create}, {Methods.Update} and {Methods.Append} methods are supported. Received: {tiObject.Method}"
                 };
             }
             
@@ -106,7 +107,8 @@ public sealed class ImportHandler(
         return false;
     }
 
-    private static bool IsCreateMethod(TIObject o) => o.Method == "CREATE";
+    private static bool IsSupportedMethod(TIObject o) => 
+        o.Method == Methods.Create || o.Method == Methods.Update || o.Method == Methods.Append;
     
     private static void CheckForScriptInjection(TIObject tieObject)
     {
