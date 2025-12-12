@@ -144,13 +144,6 @@ public class PunchItemImportService(
         // Build JsonPatchDocument for field updates
         var patchDocument = ImportUpdateHelper.CreateJsonPatchDocument(message, punchItem, references);
 
-        // Determine if category is changing
-        Category? newCategory = null;
-        if (message.Category.HasValue && message.Category != punchItem.Category)
-        {
-            newCategory = message.Category;
-        }
-
         // Create and send UPDATE command
         // ActionByPerson objects are already validated and populated in references
         var updateCommand = new ImportUpdatePunchItemCommand(
@@ -159,7 +152,6 @@ public class PunchItemImportService(
             message.Plant,
             punchItem.Guid,
             patchDocument,
-            newCategory,
             ToOptional(references.ClearedBy),
             ToOptional(references.VerifiedBy),
             ToOptional(references.RejectedBy),
@@ -235,7 +227,10 @@ public class PunchItemImportService(
                 checkListGuid, 
                 CancellationToken.None);
             
+            if (punchItem is not null)
+            {
                 return punchItem;
+            }
         }
 
         // Fall back to ExternalPunchItemNo (always present - validated as required)

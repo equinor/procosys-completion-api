@@ -15,6 +15,13 @@ public static class ImportUpdateHelper
     {
         var jsonPatchDocument = new JsonPatchDocument<PatchablePunchItem>();
 
+        // Handle Category
+        AddPatchIfChanged(
+            jsonPatchDocument,
+            message.Category.HasValue && message.Category != punchItem.Category,
+            x => x.Category,
+            message.Category);
+
         AddPatchIfChanged(
             jsonPatchDocument,
             message.Description.HasValue && message.Description.Value != punchItem.Description,

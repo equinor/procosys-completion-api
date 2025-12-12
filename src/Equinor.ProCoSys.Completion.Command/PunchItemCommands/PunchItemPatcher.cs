@@ -20,6 +20,20 @@ namespace Equinor.ProCoSys.Completion.Command.PunchItemCommands;
 
 public static class PunchItemPatcher
 {
+    public static void PatchCategory(PunchItem punchItem, PatchablePunchItem patchedPunchItem,
+        List<IChangedProperty> changes)
+    {
+        if (!patchedPunchItem.Category.HasValue || punchItem.Category == patchedPunchItem.Category.Value)
+        {
+            return;
+        }
+
+        changes.Add(new ChangedProperty<string>(nameof(punchItem.Category),
+            punchItem.Category.ToString(),
+            patchedPunchItem.Category.Value.ToString()));
+        punchItem.Category = patchedPunchItem.Category.Value;
+    }
+
     public static void PatchDescription(PunchItem punchItem, PatchablePunchItem patchedPunchItem,
         List<IChangedProperty> changes)
     {

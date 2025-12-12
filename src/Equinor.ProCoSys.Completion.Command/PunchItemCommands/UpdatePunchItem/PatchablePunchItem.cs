@@ -19,6 +19,7 @@ public class PatchablePunchItem
     public Guid RaisedByOrgGuid { get; set; }
     [Required]
     public Guid ClearingByOrgGuid { get; set; }
+    public Category? Category { get; set; }
     public Guid? ActionByPersonOid { get; set; }
     public DateTime? DueTimeUtc { get; set; }
     public Guid? PriorityGuid { get; set; }

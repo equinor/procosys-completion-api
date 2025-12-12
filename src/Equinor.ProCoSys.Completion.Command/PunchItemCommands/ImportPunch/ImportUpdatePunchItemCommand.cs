@@ -14,7 +14,6 @@ public sealed record ImportUpdatePunchItemCommand(
     string Plant,
     Guid PunchItemGuid,
     JsonPatchDocument<PatchablePunchItem> PatchDocument,
-    Category? Category,
     Optional<ActionByPerson?> ClearedBy,
     Optional<ActionByPerson?> VerifiedBy,
     Optional<ActionByPerson?> RejectedBy,

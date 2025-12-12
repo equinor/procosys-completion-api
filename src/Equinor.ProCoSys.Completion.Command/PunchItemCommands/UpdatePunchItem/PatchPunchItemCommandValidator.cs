@@ -33,6 +33,7 @@ public class PatchPunchItemCommandValidator<T> : AbstractValidator<T> where T : 
             .WithMessage("Tag owning punch item is voided!")
              .Must(command => !command.PunchItem.IsCleared)
             .WithMessage(command => $"Punch item is cleared! Guid={command.PunchItemGuid}")
+            .When(command => command.PatchDocument.Operations.Count > 0)
 
             // validate RaisedByOrg, if given
             .MustAsync((command, cancellationToken)

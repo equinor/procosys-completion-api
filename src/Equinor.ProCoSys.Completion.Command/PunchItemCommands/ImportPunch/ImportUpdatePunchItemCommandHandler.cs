@@ -47,8 +47,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
 
     private static bool IsGeneralUpdate(ImportUpdatePunchItemCommand request) => request.PatchDocument.Operations.Count != 0;
 
-    private static bool IsUpdatingPunchCategory(ImportUpdatePunchItemCommand request) => request.Category.HasValue;
-
     private static bool IsRejectingPunch(ImportUpdatePunchItemCommand request) => request.RejectedBy.HasValue;
 
     private static bool IsVerifyingPunch(ImportUpdatePunchItemCommand request) => request.VerifiedBy.HasValue;
@@ -154,19 +152,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
                 events.Add(rejectEvent);
             }
         }
-        
-        if (IsUpdatingPunchCategory(request))
-        {
-            var updateCategoryEvent = await HandleCategoryUpdateAsync(request, punchItem, cancellationToken);
-            if (updateCategoryEvent is ImportError e)
-            {
-                errors = [..errors, e];
-            }
-            else
-            {
-                events.Add(updateCategoryEvent);
-            }
-        }
 
         if (IsGeneralUpdate(request))
         {
@@ -202,6 +187,10 @@ public sealed class ImportUpdatePunchItemCommandHandler(
         {
             switch (propertyToReplace)
             {
+                case nameof(PatchablePunchItem.Category):
+                    PunchItemPatcher.PatchCategory(punchItem, patchedPunchItem, changes);
+                    break;
+
                 case nameof(PatchablePunchItem.Description):
                     PunchItemPatcher.PatchDescription(punchItem, patchedPunchItem, changes);
                     break;
@@ -285,39 +274,6 @@ public sealed class ImportUpdatePunchItemCommandHandler(
 
         return integrationEvent;
 
-    }
-
-    private async Task<object> HandleCategoryUpdateAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem, CancellationToken cancellationToken)
-    {
-        if (request.Category is null)
-        {
-            return ToImportError(request, "Missing Category, cannot update");
-        }
-
-        var category = request.Category.Value;
-        
-        var change = new ChangedProperty<string>(
-            nameof(PunchItem.Category),
-            punchItem.Category.ToString(),
-            category.ToString());
-
-        punchItem.Category = category;
-
-        await unitOfWork.SetAuditDataAsync();
-
-        var integrationEvent = await PublishPunchItemUpdatedIntegrationEventsAsync(
-            messageProducer,
-            punchItem,
-            $"Punch item category changed to {request.Category}",
-            [change],
-            cancellationToken);
-        
-        logger.LogInformation("Punch item '{PunchItemNo}' with guid {PunchItemGuid} updated as {PunchItemCategory}",
-            punchItem.ItemNo,
-            punchItem.Guid,
-            punchItem.Category);
-
-        return integrationEvent;
     }
 
     private async Task<object> HandleRejectAsync(ImportUpdatePunchItemCommand request, PunchItem punchItem,
