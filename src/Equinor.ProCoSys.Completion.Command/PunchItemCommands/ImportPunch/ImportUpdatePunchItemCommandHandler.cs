@@ -60,11 +60,13 @@ public sealed class ImportUpdatePunchItemCommandHandler(
         var events = new List<object>();
         var punchItem = request.PunchItem;
 
+        // Mark as modified and set audit data BEFORE patching, 
+        // because PublishPunchItemUpdatedIntegrationEventsAsync requires ModifiedBy to be set
+        unitOfWork.SetModified(punchItem);
         await unitOfWork.SetAuditDataAsync();
 
         errors.AddRange(await PatchPunchAsync(request, punchItem, events, cancellationToken));
 
-        await unitOfWork.SetAuditDataAsync();
         punchItem.SetRowVersion(request.RowVersion);
 
         try
