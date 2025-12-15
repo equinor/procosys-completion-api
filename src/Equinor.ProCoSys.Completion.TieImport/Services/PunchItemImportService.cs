@@ -253,7 +253,7 @@ public class PunchItemImportService(
             .BuildAsync(punchItemImportMessage, CancellationToken.None);
         return scopedContext;
     }
-    
+
     private static CreatePunchItemCommandForImport CreateCommand(PunchItemImportMessage message, CommandReferences references)
     {
         var materialRequired = message.MaterialRequired.HasValue && message.MaterialRequired.Value == true;
@@ -263,16 +263,16 @@ public class PunchItemImportService(
             references.CheckListGuid,
             references.RaisedByOrgGuid,
             references.ClearedByOrgGuid,
-            null,
+            references.ActionByPersonOid,
             message.DueDate.Value,
-            null,
-            null,
+            references.PriorityGuid,
+            references.SortingGuid,
             references.TypeGuid,
-            null,
-            null,
-            null,
-            null,
-            null,
+            message.Estimate.Value,
+            references.OriginalWorkOrderGuid,
+            references.WorkOrderGuid,
+            references.SWCRGuid,
+            references.DocumentGuid,
             message.ExternalPunchItemNo,
             materialRequired,
             message.MaterialEta.Value,
