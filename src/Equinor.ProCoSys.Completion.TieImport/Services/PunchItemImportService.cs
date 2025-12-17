@@ -50,7 +50,7 @@ public class PunchItemImportService(
         var references = await referencesService.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
         if (references.Errors.Length != 0)
         {
-            return references.Errors.ToList();
+            return [.. references.Errors];
         }
         var createCommand = CreateCommand(message, references);
 
@@ -167,8 +167,7 @@ public class PunchItemImportService(
     
     /// <summary>
     /// Prepares the context for UPDATE and APPEND operations.
-    /// Builds import bundle, validates CheckListGuid, sets current user context, and retrieves the PunchItem.
-    /// PunchItem lookup priority: PunchItemNo first (if provided), then ExternalPunchItemNo as fallback.
+    /// Builds import bundle, validates CheckListGuid, sets current user context, and retrieves the PunchItem by ExternalPunchItemNo.
     /// </summary>
     /// <param name="message">The import message containing punch item data</param>
     /// <param name="requireExistingPunchItem">
@@ -200,46 +199,28 @@ public class PunchItemImportService(
         // Prepare execution context
         SetImportUser(importBundle);
 
-        // Retrieve existing PunchItem - try PunchItemNo first, then fall back to ExternalPunchItemNo
+        // Retrieve existing PunchItem by ExternalPunchItemNo
         var punchItem = await GetPunchItemAsync(message, importBundle.CheckListGuid.Value);
         
         // If punch item is required but not found, return error
         if (requireExistingPunchItem && punchItem is null)
         {
-            var identifier = message.PunchItemNo.HasValue && message.PunchItemNo.Value.HasValue
-                ? $"PunchItemNo '{message.PunchItemNo.Value}'" 
-                : $"ExternalItemNo '{message.ExternalPunchItemNo}'";
             return new PunchItemOperationContext(null, null,
                 [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant,
-                    $"PunchItem with {identifier} not found in plant '{message.Plant}'")]);
+                    $"PunchItem with ExternalItemNo '{message.ExternalPunchItemNo}' not found for the related tag ({message.TagNo}), " +
+                    $"formtype ({message.FormType}) and responsible ({message.Responsible}) combination in plant '{message.Plant}'")]);
         }
 
         return new PunchItemOperationContext(punchItem, importBundle, null);
     }
 
-    private async Task<PunchItem?> GetPunchItemAsync(PunchItemImportMessage message, Guid checkListGuid)
-    {
-        // Try PunchItemNo first if provided
-        if (message.PunchItemNo.HasValue && message.PunchItemNo.Value.HasValue)
-        {
-            var punchItem = await punchItemRepository.GetByItemNoAsync(
-                message.PunchItemNo.Value.Value, 
-                checkListGuid, 
-                CancellationToken.None);
-            
-            if (punchItem is not null)
-            {
-                return punchItem;
-            }
-        }
-
-        // Fall back to ExternalPunchItemNo (always present - validated as required)
-        return await punchItemRepository.GetByExternalItemNoAsync(
-            message.ExternalPunchItemNo, 
-            checkListGuid, 
+    private async Task<PunchItem?> GetPunchItemAsync(PunchItemImportMessage message, Guid checkListGuid) =>
+        // Look up by ExternalPunchItemNo
+        await punchItemRepository.GetByExternalItemNoAsync(
+            message.ExternalPunchItemNo,
+            checkListGuid,
             CancellationToken.None);
-    }
-     
+
     private void SetImportUser(ImportDataBundle dataBundle)
     {
         var importUser = dataBundle.Persons.First(x => x.UserName == ImportUserOptions.UserName);
