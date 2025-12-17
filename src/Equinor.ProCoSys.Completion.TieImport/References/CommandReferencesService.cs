@@ -66,7 +66,7 @@ public class CommandReferencesService(
             return references with {Errors = 
             [
                 ..references.Errors,
-                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' and responsible {message.Responsible} not found")
+                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' and responsible '{message.Responsible}' not found")
             ]};
         }
         return references with{ CheckListGuid = bundle.CheckListGuid ?? Guid.Empty };
