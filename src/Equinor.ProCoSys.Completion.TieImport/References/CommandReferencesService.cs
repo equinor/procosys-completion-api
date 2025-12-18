@@ -25,8 +25,18 @@ public class CommandReferencesService(
     {
         var references = new CommandReferences();
 
-        references = references with { ProjectGuid = bundle.Project.Guid };
+        // Validate CheckList and ImportMessageProject first, then set ProjectGuid from the validated CheckListProject
         references = ValidateAndSetCheckList(message, references);
+        references = ValidateCheckListProjectExists(message, references);
+        references = ValidateImportProjectExists(message, references);
+        references = ValidateProjectMatchesCheckListProject(message, references);
+        
+        // Set ProjectGuid from CheckListProject (the actual project the checklist belongs to)
+        if (bundle.CheckListProject is not null)
+        {
+            references = references with { ProjectGuid = bundle.CheckListProject.Guid };
+        }
+        
         references = ValidateAndSetRaisedByOrg(message, references);
         references = ValidateAndSetClearedByOrg(message, references);
         references = SetPunchType(message, references);
@@ -58,7 +68,69 @@ public class CommandReferencesService(
         }
         return references;
     }
-    
+
+    private CommandReferences ValidateImportProjectExists(PunchItemImportMessage message, CommandReferences references)
+    {
+        if (bundle.ImportMessageProject is null)
+        {
+            return references with
+            {
+                Errors =
+                [
+                    ..references.Errors,
+                    message.ToImportError(
+                        $"Project '{message.ProjectName}' provided in the import message was not found in plant '{message.Plant}'")
+                ]
+            };
+        }
+        
+        return references;
+    }
+
+    private CommandReferences ValidateCheckListProjectExists(PunchItemImportMessage message, CommandReferences references)
+    {
+        if (bundle.CheckListProject is null)
+        {
+            return references with
+            {
+                Errors =
+                [
+                    ..references.Errors,
+                    message.ToImportError(
+                        $"Project not found for the related Tag '{message.TagNo}', " +
+                        $"FormType '{message.FormType}' and Responsible '{message.Responsible}' combination in plant '{message.Plant}'")
+                ]
+            };
+        }
+        
+        return references;
+    }
+
+    private CommandReferences ValidateProjectMatchesCheckListProject(PunchItemImportMessage message, CommandReferences references)
+    {
+        // Skip if CheckListProject or ImportMessageProject is null (already handled by their respective validators)
+        if (bundle.CheckListProject is null || bundle.ImportMessageProject is null)
+        {
+            return references;
+        }
+        
+        if (bundle.ImportMessageProject.Guid != bundle.CheckListProject.Guid)
+        {
+            return references with
+            {
+                Errors =
+                [
+                    ..references.Errors,
+                    message.ToImportError(
+                        $"Project for Tag '{message.TagNo}', FormType '{message.FormType}' and Responsible '{message.Responsible}' " +
+                        $"is '{bundle.CheckListProject.Name}', which does not match the project '{message.ProjectName}' provided in the import message")
+                ]
+            };
+        }
+        
+        return references;
+    }
+
     private CommandReferences ValidateAndSetCheckList(PunchItemImportMessage message, CommandReferences references)
     {
         if (bundle.CheckListGuid is null)

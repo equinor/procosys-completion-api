@@ -34,7 +34,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     /// <param name="currentPage">Current page to get. Default is 0 (first page)</param>
     /// <param name="itemsPerPage">Number of items pr page. Default is 30</param>
     /// <returns>Search result</returns>
-    /// <response code="404">Project not found</response>
+    /// <response code="404">ImportMessageProject not found</response>
     [AuthorizeAny(Permissions.MCCR_READ, Permissions.CPCL_READ, Permissions.DCCL_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/CheckLists/Search")]
     public async Task<ActionResult<SearchResultDto>> SearchCheckLists(
@@ -71,7 +71,7 @@ public class ProjectsController(IMediator mediator) : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <param name="guid">Guid of project where to search</param>
     /// <returns>List of PunchItems (or empty list)</returns>
-    /// <response code="404">Project not found</response>
+    /// <response code="404">ImportMessageProject not found</response>
     [AuthorizeAny(Permissions.PUNCHITEM_READ, Permissions.APPLICATION_TESTER)]
     [HttpGet("{guid}/PunchItems")]
     public async Task<ActionResult<IEnumerable<PunchItemDto>>> GetPunchItems(
