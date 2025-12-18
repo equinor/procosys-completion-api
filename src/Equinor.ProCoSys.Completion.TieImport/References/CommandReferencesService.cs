@@ -25,7 +25,7 @@ public class CommandReferencesService(
     {
         var references = new CommandReferences();
 
-        // Validate CheckList and Project first, then set ProjectGuid from the validated CheckListProject
+        // Validate CheckList and ImportMessageProject first, then set ProjectGuid from the validated CheckListProject
         references = ValidateAndSetCheckList(message, references);
         references = ValidateCheckListProjectExists(message, references);
         references = ValidateImportProjectExists(message, references);
@@ -71,7 +71,7 @@ public class CommandReferencesService(
 
     private CommandReferences ValidateImportProjectExists(PunchItemImportMessage message, CommandReferences references)
     {
-        if (bundle.Project is null)
+        if (bundle.ImportMessageProject is null)
         {
             return references with
             {
@@ -108,13 +108,13 @@ public class CommandReferencesService(
 
     private CommandReferences ValidateProjectMatchesCheckListProject(PunchItemImportMessage message, CommandReferences references)
     {
-        // Skip if CheckListProject or Project is null (already handled by their respective validators)
-        if (bundle.CheckListProject is null || bundle.Project is null)
+        // Skip if CheckListProject or ImportMessageProject is null (already handled by their respective validators)
+        if (bundle.CheckListProject is null || bundle.ImportMessageProject is null)
         {
             return references;
         }
         
-        if (bundle.Project.Guid != bundle.CheckListProject.Guid)
+        if (bundle.ImportMessageProject.Guid != bundle.CheckListProject.Guid)
         {
             return references with
             {

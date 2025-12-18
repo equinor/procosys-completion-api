@@ -5,12 +5,12 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
-public sealed class ImportDataBundle(string plant, Project? project)
+public sealed class ImportDataBundle(string plant, Project? importMessageProject)
 {
     public string Plant { get; } = plant;
     public List<LibraryItem> Library { get; } = [];
     public List<Person> Persons { get; } = [];
-    public Project? Project { get; } = project;
+    public Project? ImportMessageProject { get; } = importMessageProject;
     public ProCoSys4CheckList? CheckList { get; set; }
     public Project? CheckListProject { get; set; }
 

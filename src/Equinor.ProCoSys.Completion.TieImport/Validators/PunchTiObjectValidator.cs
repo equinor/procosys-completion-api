@@ -20,7 +20,7 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             .Must(method => method == Methods.Create || method == Methods.Update || method == Methods.Append)
             .WithMessage($"Method must be either '{Methods.Create}', '{Methods.Update}' or '{Methods.Append}'");
 
-        // Project validation
+        // ImportMessageProject validation
         RuleFor(tiObject => tiObject.Project)
             .NotEmpty()
             .WithMessage($"This Punch Item Import Object is missing the required attribute '{Project}'");

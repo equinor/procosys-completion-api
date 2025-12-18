@@ -157,7 +157,7 @@ public class CommandReferencesServiceTests
         // Act
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
-        // Assert - ProjectGuid comes from CheckListProject, not from bundle.Project
+        // Assert - ProjectGuid comes from CheckListProject, not from bundle.ImportMessageProject
         Assert.AreEqual(_bundle.CheckListProject!.Guid, references.ProjectGuid);
     }
 
@@ -191,7 +191,7 @@ public class CommandReferencesServiceTests
     [TestMethod]
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenImportProjectIsMissing()
     {
-        // Arrange - Create a bundle with null Project
+        // Arrange - Create a bundle with null ImportMessageProject
         _bundle = new ImportDataBundle(TestPlant, null);
         _bundle.CheckList = new ProCoSys4CheckList(
             _checkListGuid,
@@ -1026,7 +1026,7 @@ public class CommandReferencesServiceTests
         // Assert - No errors
         Assert.AreEqual(0, references.Errors.Length, $"Errors: {string.Join(", ", references.Errors.Select(e => e.Message))}");
         
-        // Assert - Project and CheckList
+        // Assert - ImportMessageProject and CheckList
         Assert.AreEqual(_project.Guid, references.ProjectGuid);
         Assert.AreEqual(_checkListGuid, references.CheckListGuid);
         
