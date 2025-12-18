@@ -6,6 +6,7 @@ using Equinor.ProCoSys.Completion.Domain.AggregateModels.ProjectAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.PunchItemAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.SWCRAggregate;
 using Equinor.ProCoSys.Completion.Domain.AggregateModels.WorkOrderAggregate;
+using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Equinor.ProCoSys.Completion.TieImport.References;
 using NSubstitute;
@@ -75,7 +76,19 @@ public class CommandReferencesServiceTests
 
         // Setup bundle
         _bundle = new ImportDataBundle(TestPlant, _project);
-        _bundle.CheckListGuid = _checkListGuid;
+        _bundle.CheckList = new ProCoSys4CheckList(
+            _checkListGuid,
+            "FormType",
+            "FormGroup",
+            "ResponsibleCode",
+            "TagRegisterCode",
+            "TagRegisterDescription",
+            "TagFunctionCode",
+            "TagFunctionDescription",
+            false,
+            _project.Guid);
+        // CheckListProject must match the project for validation to pass
+        _bundle.CheckListProject = _project;
         _bundle.AddLibraryItems([_raisedByOrg, _clearedByOrg, _punchListType, _priority, _sorting]);
 
         // Setup repositories
@@ -136,7 +149,7 @@ public class CommandReferencesServiceTests
     #region Basic Validation Tests
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnProjectGuid()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnProjectGuid_FromCheckListProject()
     {
         // Arrange
         var message = CreateBaseMessage();
@@ -144,8 +157,8 @@ public class CommandReferencesServiceTests
         // Act
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
-        // Assert
-        Assert.AreEqual(_project.Guid, references.ProjectGuid);
+        // Assert - ProjectGuid comes from CheckListProject, not from bundle.Project
+        Assert.AreEqual(_bundle.CheckListProject!.Guid, references.ProjectGuid);
     }
 
     [TestMethod]
@@ -162,10 +175,10 @@ public class CommandReferencesServiceTests
     }
 
     [TestMethod]
-    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenCheckListGuidIsMissing()
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenCheckListIsMissing()
     {
         // Arrange
-        _bundle.CheckListGuid = null;
+        _bundle.CheckList = null;
         var message = CreateBaseMessage();
 
         // Act
@@ -173,6 +186,67 @@ public class CommandReferencesServiceTests
 
         // Assert
         Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("CheckList")));
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenImportProjectIsMissing()
+    {
+        // Arrange - Create a bundle with null Project
+        _bundle = new ImportDataBundle(TestPlant, null);
+        _bundle.CheckList = new ProCoSys4CheckList(
+            _checkListGuid,
+            "FormType",
+            "FormGroup",
+            "ResponsibleCode",
+            "TagRegisterCode",
+            "TagRegisterDescription",
+            "TagFunctionCode",
+            "TagFunctionDescription",
+            false,
+            Guid.NewGuid());
+        _bundle.CheckListProject = _project;
+        _bundle.AddLibraryItems([_raisedByOrg, _clearedByOrg, _punchListType, _priority, _sorting]);
+        _dut = _factory.Create(_bundle);
+        
+        var message = CreateBaseMessage();
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Project") && e.Message.Contains("not found")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains(ProjectName)));
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenCheckListProjectIsMissing()
+    {
+        // Arrange
+        _bundle.CheckListProject = null;
+        var message = CreateBaseMessage();
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Project not found")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("TagNo")));
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenProjectDoesNotMatchCheckListProject()
+    {
+        // Arrange - Create a different project for CheckListProject
+        var differentProject = new Project(TestPlant, Guid.NewGuid(), "DifferentProject", "Different Description");
+        _bundle.CheckListProject = differentProject;
+        var message = CreateBaseMessage();
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("does not match")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains(ProjectName)));
     }
 
     [TestMethod]
@@ -903,7 +977,7 @@ public class CommandReferencesServiceTests
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldCollectAllErrors()
     {
         // Arrange
-        _bundle.CheckListGuid = null;
+        _bundle.CheckList = null;
         var message = CreateBaseMessage() with
         {
             RaisedByOrganization = new Optional<string?>("INVALID_RAISED"),

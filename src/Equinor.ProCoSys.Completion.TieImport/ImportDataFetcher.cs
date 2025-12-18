@@ -12,7 +12,10 @@ namespace Equinor.ProCoSys.Completion.TieImport;
 
 public interface IImportDataFetcher
 {
-    Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
+    Task<Project?> FetchProjectsAsync(ProjectByPlantKey key,
+        CancellationToken cancellationToken);
+
+    Task<Project?> FetchProjectByGuidAsync(Guid guid, string plant,
         CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<Person>> FetchImportUserPersonsAsync(
@@ -24,6 +27,9 @@ public interface IImportDataFetcher
     
     Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
         PunchItemImportMessage message, CancellationToken cancellationToken);
+
+    Task<ProCoSys4CheckList?> GetCheckListByGuidAsync(
+        Guid checkListGuid, CancellationToken cancellationToken);
 }
 
 public sealed class ImportDataFetcher(
@@ -31,15 +37,25 @@ public sealed class ImportDataFetcher(
     ICheckListCache checkListCache
     ) : IImportDataFetcher
 {
-    public async Task<Project> FetchProjectsAsync(ProjectByPlantKey key,
+    public async Task<Project?> FetchProjectsAsync(ProjectByPlantKey key,
         CancellationToken cancellationToken)
     {
         var items = await completionContext.Projects
             .IgnoreQueryFilters()
             .AsNoTracking()
-            .SingleAsync(p => p.Name == key.Project && p.Plant == key.Plant,cancellationToken);
+            .SingleOrDefaultAsync(p => p.Name == key.Project && p.Plant == key.Plant,cancellationToken);
 
         return items;
+    }
+
+    public async Task<Project?> FetchProjectByGuidAsync(Guid guid, string plant,
+        CancellationToken cancellationToken)
+    {
+        var project = await completionContext.Projects
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(p => p.Guid == guid && p.Plant == plant, cancellationToken);
+        return project;
     }
 
     public async Task<IReadOnlyCollection<Person>> FetchImportUserPersonsAsync(
@@ -77,4 +93,8 @@ public sealed class ImportDataFetcher(
     public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
         PunchItemImportMessage message, CancellationToken cancellationToken) =>
         await checkListCache.GetCheckListGuidByMetaInfoAsync(message.Plant, message.TagNo, message.Responsible, message.FormType, cancellationToken);
+
+    public async Task<ProCoSys4CheckList?> GetCheckListByGuidAsync(
+        Guid checkListGuid, CancellationToken cancellationToken) =>
+        await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
 }
