@@ -405,7 +405,7 @@ public class CommandReferencesService(
         if (!punchItem.IsReadyToBeCleared)
         {
             var reason = punchItem.IsCleared ? "it is already cleared" : "unknown reason";
-            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be cleared: {reason}")] };
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with ExternalItemNo '{punchItem.ExternalItemNo}' cannot be cleared: {reason}")] };
         }
 
         var result = await ValidateAndCreateActionByPersonAsync(
@@ -432,11 +432,15 @@ public class CommandReferencesService(
         CommandReferences references, 
         CancellationToken cancellationToken)
     {
-        if (!punchItem.IsReadyToBeVerified)
+        // Check if punch item is ready to be verified, OR if it will be cleared by this same message
+        var willBeClearedByThisMessage = references.ClearedBy is not null;
+        var isReadyToBeVerified = punchItem.IsReadyToBeVerified || (punchItem.IsReadyToBeCleared && willBeClearedByThisMessage);
+        
+        if (!isReadyToBeVerified)
         {
-            var reason = !punchItem.IsCleared ? "it is not cleared" : 
+            var reason = !punchItem.IsCleared && !willBeClearedByThisMessage ? "it is not cleared" : 
                          punchItem.IsVerified ? "it is already verified" : "unknown reason";
-            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be verified: {reason}")] };
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with ExternalItemNo '{punchItem.ExternalItemNo}' cannot be verified: {reason}")] };
         }
 
         var result = await ValidateAndCreateActionByPersonAsync(
@@ -463,11 +467,15 @@ public class CommandReferencesService(
         CommandReferences references, 
         CancellationToken cancellationToken)
     {
-        if (!punchItem.IsReadyToBeRejected)
+        // Check if punch item is ready to be rejected, OR if it will be cleared by this same message
+        var willBeClearedByThisMessage = references.ClearedBy is not null;
+        var isReadyToBeRejected = punchItem.IsReadyToBeRejected || (punchItem.IsReadyToBeCleared && willBeClearedByThisMessage);
+        
+        if (!isReadyToBeRejected)
         {
-            var reason = !punchItem.IsCleared ? "it is not cleared" : 
+            var reason = !punchItem.IsCleared && !willBeClearedByThisMessage ? "it is not cleared" : 
                          punchItem.IsVerified ? "it is already verified" : "unknown reason";
-            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with Guid '{punchItem.Guid}' cannot be rejected: {reason}")] };
+            return references with { Errors = [.. references.Errors, message.ToImportError($"PunchItem with ExternalItemNo '{punchItem.ExternalItemNo}' cannot be rejected: {reason}")] };
         }
 
         var result = await ValidateAndCreateActionByPersonAsync(
