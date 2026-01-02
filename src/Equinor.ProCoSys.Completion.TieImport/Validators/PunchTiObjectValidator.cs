@@ -9,6 +9,7 @@ namespace Equinor.ProCoSys.Completion.TieImport.Validators;
 public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
 {
     private const string ExpectedDateFormat = "yyyy-MM-dd";
+    private const int DescriptionMaxLength = 3500;
     
     public PunchTiObjectValidator()
     {
@@ -48,6 +49,11 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
                 .Must(tiObject => string.IsNullOrEmpty(tiObject.GetAttributeValueAsString(VerifiedDate)))
                 .WithMessage($"'{VerifiedDate}' should not be set for CREATE");
         });
+
+        // Description length validation
+        RuleFor(tiObject => tiObject)
+            .Must(tiObject => IsValidDescriptionLength(tiObject.GetAttributeValueAsString(Description)))
+            .WithMessage($"'{Description}' must not exceed {DescriptionMaxLength} characters");
 
         // Required attributes validation
         RuleFor(tiObject => tiObject)
@@ -147,5 +153,14 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             return true;
         }
         return long.TryParse(value.Trim(), out _);
+    }
+
+    private static bool IsValidDescriptionLength(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return true;
+        }
+        return value.Length <= DescriptionMaxLength;
     }
 }

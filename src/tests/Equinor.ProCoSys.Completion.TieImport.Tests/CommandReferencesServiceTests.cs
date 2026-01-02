@@ -805,6 +805,37 @@ public class CommandReferencesServiceTests
     }
 
     [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnVerifiedBy_WhenPunchItemWillBeClearedByThisMessage()
+    {
+        // Arrange - UPDATE scenario with punch item NOT cleared, but ClearedBy is included in the same message
+        var clearedDate = new DateTime(2024, 2, 15, 0, 0, 0, DateTimeKind.Utc);
+        var verifiedDate = new DateTime(2024, 2, 20, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
+        _personRepository.GetByUserNameAsync(_verifiedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_verifiedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        // Not cleared yet - but message includes both ClearedBy and VerifiedBy
+        
+        var message = CreateBaseMessage() with
+        {
+            ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
+            ClearedDate = new Optional<DateTime?>(clearedDate),
+            VerifiedBy = new Optional<string?>(_verifiedByPerson.UserName),
+            VerifiedDate = new Optional<DateTime?>(verifiedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert - Both ClearedBy and VerifiedBy should be set (no errors)
+        Assert.AreEqual(0, references.Errors.Length, $"Errors: {string.Join(", ", references.Errors.Select(e => e.Message))}");
+        Assert.IsNotNull(references.ClearedBy);
+        Assert.IsNotNull(references.VerifiedBy);
+        Assert.AreEqual(_verifiedByPerson.Guid, references.VerifiedBy.Person.Guid);
+        Assert.AreEqual(verifiedDate, references.VerifiedBy.ActionDate);
+    }
+
+    [TestMethod]
     public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchItemCannotBeVerified_NotCleared()
     {
         // Arrange - UPDATE scenario with punch item not cleared
@@ -893,6 +924,37 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
 
         // Assert
+        Assert.IsNotNull(references.RejectedBy);
+        Assert.AreEqual(_rejectedByPerson.Guid, references.RejectedBy.Person.Guid);
+        Assert.AreEqual(rejectedDate, references.RejectedBy.ActionDate);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnRejectedBy_WhenPunchItemWillBeClearedByThisMessage()
+    {
+        // Arrange - UPDATE scenario with punch item NOT cleared, but ClearedBy is included in the same message
+        var clearedDate = new DateTime(2024, 3, 24, 0, 0, 0, DateTimeKind.Utc);
+        var rejectedDate = new DateTime(2024, 3, 25, 0, 0, 0, DateTimeKind.Utc);
+        _personRepository.GetByUserNameAsync(_clearedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_clearedByPerson);
+        _personRepository.GetByUserNameAsync(_rejectedByPerson.UserName, Arg.Any<CancellationToken>()).Returns(_rejectedByPerson);
+        
+        var punchItem = new PunchItem(TestPlant, _project, _checkListGuid, Category.PA, "Test", _raisedByOrg, _clearedByOrg);
+        // Not cleared yet - but message includes both ClearedBy and RejectedBy
+        
+        var message = CreateBaseMessage() with
+        {
+            ClearedBy = new Optional<string?>(_clearedByPerson.UserName),
+            ClearedDate = new Optional<DateTime?>(clearedDate),
+            RejectedBy = new Optional<string?>(_rejectedByPerson.UserName),
+            RejectedDate = new Optional<DateTime?>(rejectedDate)
+        };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, punchItem, CancellationToken.None);
+
+        // Assert - Both ClearedBy and RejectedBy should be set (no errors)
+        Assert.AreEqual(0, references.Errors.Length, $"Errors: {string.Join(", ", references.Errors.Select(e => e.Message))}");
+        Assert.IsNotNull(references.ClearedBy);
         Assert.IsNotNull(references.RejectedBy);
         Assert.AreEqual(_rejectedByPerson.Guid, references.RejectedBy.Person.Guid);
         Assert.AreEqual(rejectedDate, references.RejectedBy.ActionDate);
