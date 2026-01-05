@@ -77,6 +77,16 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             .Must(tiObject => IsValidOptionalDateFormat(tiObject.GetAttributeValueAsString(MaterialEta)))
             .WithMessage($"'{MaterialEta}' must be in format '{ExpectedDateFormat}'");
 
+        // SWCR validation - must be a valid integer or null marker if provided
+        RuleFor(tiObject => tiObject)
+            .Must(tiObject => IsValidOptionalInt(tiObject.GetAttributeValueAsString(SwcrNo)))
+            .WithMessage($"'{SwcrNo}' must be a valid integer or null marker");
+
+        // Estimate validation - must be a valid integer or null marker if provided
+        RuleFor(tiObject => tiObject)
+            .Must(tiObject => IsValidOptionalInt(tiObject.GetAttributeValueAsString(Estimate)))
+            .WithMessage($"'{Estimate}' must be a valid integer or null marker");
+
         // Cleared fields validation
         AddActionByDatePairValidation(ClearedBy, ClearedDate);
         
@@ -162,5 +172,14 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             return true;
         }
         return value.Length <= DescriptionMaxLength;
+    }
+
+    private static bool IsValidOptionalInt(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Trim() == NullMarker)
+        {
+            return true;
+        }
+        return int.TryParse(value.Trim(), out _);
     }
 }
