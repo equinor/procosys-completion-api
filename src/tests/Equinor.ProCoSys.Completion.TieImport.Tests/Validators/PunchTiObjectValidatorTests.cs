@@ -1021,4 +1021,217 @@ public sealed class PunchTiObjectValidatorTests
     }
 
     #endregion
+
+    #region Description Length Validation Tests
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenDescriptionIsWithinMaxLength()
+    {
+        // Arrange
+        var tiObject = CreateValidCreateTiObject();
+        tiObject.AddOrUpdateAttribute(PunchObjectAttributes.Description, new string('a', 3500));
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenDescriptionExceedsMaxLength()
+    {
+        // Arrange
+        var tiObject = CreateValidCreateTiObject();
+        tiObject.AddOrUpdateAttribute(PunchObjectAttributes.Description, new string('a', 3501));
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Description) && e.ErrorMessage.Contains("3500")));
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenDescriptionIsNotProvided()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        // Description not added (valid for UPDATE)
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    #endregion
+
+    #region SWCR Number Validation Tests
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenSwcrNoIsValidInteger()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.SwcrNo, "12345");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenSwcrNoIsNullMarker()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.SwcrNo, "{NULL}");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenSwcrNoIsNotProvided()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        // SwcrNo not added
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenSwcrNoHasWhitespace()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.SwcrNo, "  123  ");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenSwcrNoIsNotAValidInteger()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.SwcrNo, "ABC");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.SwcrNo)));
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenSwcrNoIsDecimal()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.SwcrNo, "123.45");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.SwcrNo)));
+    }
+
+    #endregion
+
+    #region Estimate Validation Tests
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenEstimateIsValidInteger()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.Estimate, "100");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenEstimateIsNullMarker()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.Estimate, "{NULL}");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenEstimateIsNotProvided()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        // Estimate not added
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenEstimateIsNotAValidInteger()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.Estimate, "ABC");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Estimate)));
+    }
+
+    [TestMethod]
+    public void Validate_ShouldFail_WhenEstimateIsDecimal()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.Estimate, "10.5");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.Estimate)));
+    }
+
+    #endregion
 }
