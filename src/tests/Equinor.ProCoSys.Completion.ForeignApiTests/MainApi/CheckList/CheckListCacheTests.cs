@@ -31,6 +31,7 @@ public class CheckListCacheTests
     private readonly string _tagNo = "T";
     private readonly string _respCode = "RC";
     private readonly string _formType = "FT";
+    private readonly string _projectName = "PN";
 
     [TestInitialize]
     public void Setup()
@@ -61,7 +62,7 @@ public class CheckListCacheTests
             false, 
             Guid.NewGuid());
         _checkListApiServiceMock.GetCheckListAsync(_checkListGuid1, Arg.Any<CancellationToken>()).Returns(_checkList1);
-        _checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>())
+        _checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, Arg.Any<CancellationToken>())
             .Returns(_checkListGuid1);
         _cacheManagerMock = Substitute.For<ICacheManager>();
 
@@ -105,26 +106,26 @@ public class CheckListCacheTests
     public async Task GetCheckListGuidByMetaInfo_ShouldReturnCheckListFromCheckListApiServiceFirstTime()
     {
         // Act
-        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, default);
 
         // Assert
         Assert.AreEqual(_checkListGuid1, result);
-        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>());
+        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
     public async Task GetCheckListGuidByMetaInfo_ShouldReturnCheckListsFromCacheSecondTime()
     {
         // Arrange
-        await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+        await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, default);
 
         // Act
-        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, default);
+        var result = await _dutWithRealCache.GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, default);
 
         // Assert
         Assert.AreEqual(_checkListGuid1, result);
         // since GetCheckListGuidByMetaInfoAsync has been called twice, but GetCheckListGuidByMetaInfoAsync has been called once, the second Get uses cache
-        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, Arg.Any<CancellationToken>());
+        await _checkListApiServiceMock.Received(1).GetCheckListGuidByMetaInfoAsync(_plant, _tagNo, _respCode, _formType, _projectName, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]

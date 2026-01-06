@@ -40,6 +40,7 @@ public class MainApiCheckListService(
         string tagNo, 
         string responsibleCode,
         string formularType,
+        string projectName,
         CancellationToken cancellationToken)
     {
         var url = $"{_baseAddress}CheckList/ForProCoSys5/ByMetaInfo" +
@@ -47,6 +48,7 @@ public class MainApiCheckListService(
                   $"&tagNo={tagNo}" +
                   $"&responsibleCode={responsibleCode}" +
                   $"&formularType={formularType}" +
+                  $"&projectName={projectName}" +
                   $"&api-version={_apiVersion}";
 
         // Execute as application. The get checklist endpoint in Main Api requires

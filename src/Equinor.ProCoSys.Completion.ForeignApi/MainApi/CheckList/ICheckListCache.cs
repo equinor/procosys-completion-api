@@ -13,6 +13,7 @@ public interface ICheckListCache
         string tagNo,
         string responsibleCode,
         string formularType,
+        string projectName,
         CancellationToken cancellationToken);
     Task<List<ProCoSys4CheckList>> GetManyCheckListsAsync(List<Guid> checkListGuids, CancellationToken cancellationToken);
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Equinor.ProCoSys.Completion.Infrastructure;
@@ -33,7 +33,7 @@ public class TiePunchImportServiceTest : TestBase
         const string TagNo = "testTagNo";
         const string Responsible = "AnyoneReally";
         const string FormType = "SuperDuperFormType";
-        TestFactory.Instance._checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(knownPunch.Plant,TagNo,Responsible,FormType,default)
+        TestFactory.Instance._checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(knownPunch.Plant,TagNo,Responsible,FormType,knownPunch.Project.Name,default)
             .Returns(knownPunch.CheckListGuid); 
         
         var tiObject = new TIObject {
@@ -71,7 +71,7 @@ public class TiePunchImportServiceTest : TestBase
         const string TagNo = "testTagNo";
         const string Responsible = "AnyoneReally";
         const string FormType = "SuperDuperFormType";
-        TestFactory.Instance._checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(knownPunch.Plant,TagNo,Responsible,FormType,default)
+        TestFactory.Instance._checkListApiServiceMock.GetCheckListGuidByMetaInfoAsync(knownPunch.Plant,TagNo,Responsible,FormType,knownPunch.Project.Name,default)
             .Returns(knownPunch.CheckListGuid); 
         
         var tiObject = new TIObject {
