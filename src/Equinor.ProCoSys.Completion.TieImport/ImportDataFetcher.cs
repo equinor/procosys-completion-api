@@ -92,7 +92,7 @@ public sealed class ImportDataFetcher(
 
     public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
         PunchItemImportMessage message, CancellationToken cancellationToken) =>
-        await checkListCache.GetCheckListGuidByMetaInfoAsync(message.Plant, message.TagNo, message.Responsible, message.FormType, cancellationToken);
+        await checkListCache.GetCheckListGuidByMetaInfoAsync(message.Plant, message.TagNo, message.Responsible, message.FormType, message.ProjectName, cancellationToken);
 
     public async Task<ProCoSys4CheckList?> GetCheckListByGuidAsync(
         Guid checkListGuid, CancellationToken cancellationToken) =>

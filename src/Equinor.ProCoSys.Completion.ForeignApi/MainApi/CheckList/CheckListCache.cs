@@ -28,10 +28,11 @@ public class CheckListCache(
         string tagNo, 
         string responsibleCode, 
         string formularType,
+        string projectName,
         CancellationToken cancellationToken)
         => await cacheManager.GetOrCreateAsync(
-            CheckListGuidCacheKey(plant, tagNo, responsibleCode, formularType),
-            token => checkListApiService.GetCheckListGuidByMetaInfoAsync(plant, tagNo, responsibleCode, formularType, token),
+            CheckListGuidCacheKey(plant, tagNo, responsibleCode, formularType, projectName),
+            token => checkListApiService.GetCheckListGuidByMetaInfoAsync(plant, tagNo, responsibleCode, formularType, projectName, token),
             CacheDuration.Minutes,
             applicationOptions.CurrentValue.CheckListCacheExpirationMinutes,
             cancellationToken);
@@ -69,8 +70,8 @@ public class CheckListCache(
         return checkListsFromCache;
     }
 
-    public static string CheckListGuidCacheKey(string plant, string tagNo, string responsibleCode, string formularType)
-        => $"CHKLIST_{plant}_{tagNo}_{responsibleCode}_{formularType}";
+    public static string CheckListGuidCacheKey(string plant, string tagNo, string responsibleCode, string formularType, string projectName)
+        => $"CHKLIST_{plant}_{tagNo}_{responsibleCode}_{formularType}_{projectName}";
 
     public static string CheckListGuidCacheKey(Guid checkListGuid)
         => $"CHKLIST_{checkListGuid.ToString().ToUpper()}";
