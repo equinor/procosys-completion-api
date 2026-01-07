@@ -100,6 +100,11 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
         RuleFor(tiObject => tiObject)
             .Must(tiObject => IsValidOptionalDateFormat(tiObject.GetAttributeValueAsString(DueDate)))
             .WithMessage($"'{DueDate}' must be in format '{ExpectedDateFormat}'");
+
+        // VerifiedBy and RejectedBy are mutually exclusive - cannot have both in the same message
+        RuleFor(tiObject => tiObject)
+            .Must(tiObject => !HasBothVerifiedByAndRejectedBy(tiObject))
+            .WithMessage($"'{VerifiedBy}' and '{RejectedBy}' cannot both be set in the same message");
     }
 
     private void AddActionByDatePairValidation(string actionByAttribute, string dateAttribute)
@@ -181,5 +186,12 @@ public sealed class PunchTiObjectValidator : AbstractValidator<TIObject>
             return true;
         }
         return int.TryParse(value.Trim(), out _);
+    }
+
+    private static bool HasBothVerifiedByAndRejectedBy(TIObject tiObject)
+    {
+        var verifiedBy = tiObject.GetAttributeValueAsString(VerifiedBy);
+        var rejectedBy = tiObject.GetAttributeValueAsString(RejectedBy);
+        return !string.IsNullOrEmpty(verifiedBy) && !string.IsNullOrEmpty(rejectedBy);
     }
 }
