@@ -98,7 +98,7 @@ public class CommandReferencesService(
                     ..references.Errors,
                     message.ToImportError(
                         $"Project not found for the related Tag '{message.TagNo}', " +
-                        $"FormType '{message.FormType}' and Responsible '{message.Responsible}' combination in plant '{message.Plant}'")
+                        $"FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' in plant '{message.Plant}'")
                 ]
             };
         }
@@ -122,7 +122,7 @@ public class CommandReferencesService(
                 [
                     ..references.Errors,
                     message.ToImportError(
-                        $"Project for Tag '{message.TagNo}', FormType '{message.FormType}' and Responsible '{message.Responsible}' " +
+                        $"Project for Tag '{message.TagNo}', FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' " +
                         $"is '{bundle.CheckListProject.Name}', which does not match the project '{message.ProjectName}' provided in the import message")
                 ]
             };
@@ -138,7 +138,7 @@ public class CommandReferencesService(
             return references with {Errors = 
             [
                 ..references.Errors,
-                message.ToImportError($"CheckList '{message.FormType}' for Tag '{message.TagNo}' and responsible '{message.Responsible}' not found")
+                message.ToImportError($"CheckList not found for Tag '{message.TagNo}', FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' in plant '{message.Plant}'")
             ]};
         }
         return references with{ CheckListGuid = bundle.CheckListGuid ?? Guid.Empty };

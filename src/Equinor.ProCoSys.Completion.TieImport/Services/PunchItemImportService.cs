@@ -193,7 +193,7 @@ public class PunchItemImportService(
         {
             return new PunchItemOperationContext(null, null,
                 [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant,
-                    $"CheckList not found for Tag '{message.TagNo}', FormType '{message.FormType}', Responsible '{message.Responsible}' in plant '{message.Plant}'")]);
+                    $"CheckList not found for Tag '{message.TagNo}', FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' in plant '{message.Plant}'")]);
         }
 
         // Prepare execution context
@@ -207,8 +207,8 @@ public class PunchItemImportService(
         {
             return new PunchItemOperationContext(null, null,
                 [new ImportError(message.MessageGuid, message.Method, message.ProjectName, message.Plant,
-                    $"PunchItem with ExternalItemNo '{message.ExternalPunchItemNo}' not found for the related tag ({message.TagNo}), " +
-                    $"formtype ({message.FormType}) and responsible ({message.Responsible}) combination in plant '{message.Plant}'")]);
+                    $"PunchItem with ExternalItemNo '{message.ExternalPunchItemNo}' not found for the related Tag '{message.TagNo}', " +
+                    $"FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' combination in plant '{message.Plant}'")]);
         }
 
         return new PunchItemOperationContext(punchItem, importBundle, null);
