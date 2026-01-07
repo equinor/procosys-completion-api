@@ -98,7 +98,7 @@ public class CommandReferencesService(
                     ..references.Errors,
                     message.ToImportError(
                         $"Project not found for the related Tag '{message.TagNo}', " +
-                        $"FormType '{message.FormType}' and Responsible '{message.Responsible}' combination in plant '{message.Plant}'")
+                        $"FormType '{message.FormType}', Responsible '{message.Responsible}' and Project '{message.ProjectName}' combination in plant '{message.Plant}'")
                 ]
             };
         }
