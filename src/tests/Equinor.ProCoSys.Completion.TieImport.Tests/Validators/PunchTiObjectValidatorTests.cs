@@ -815,14 +815,32 @@ public sealed class PunchTiObjectValidatorTests
 
     #endregion
 
-    #region VerifiedBy/VerifiedDate Pair Validation Tests
+    #region VerifiedBy and RejectedBy Mutual Exclusion Tests
 
     [TestMethod]
-    public void Validate_ShouldPass_WhenBothVerifiedByAndVerifiedDateAreProvided()
+    public void Validate_ShouldFail_WhenBothVerifiedByAndRejectedByAreProvided()
     {
         // Arrange
         var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.VerifiedBy, "user@example.com");
+        tiObject.AddAttribute(PunchObjectAttributes.VerifiedBy, "verified@example.com");
+        tiObject.AddAttribute(PunchObjectAttributes.VerifiedDate, "2024-01-15");
+        tiObject.AddAttribute(PunchObjectAttributes.RejectedBy, "rejected@example.com");
+        tiObject.AddAttribute(PunchObjectAttributes.RejectedDate, "2024-01-16");
+
+        // Act
+        var result = _dut.Validate(tiObject);
+
+        // Assert
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.VerifiedBy) && e.ErrorMessage.Contains(PunchObjectAttributes.RejectedBy) && e.ErrorMessage.Contains("cannot both be set")));
+    }
+
+    [TestMethod]
+    public void Validate_ShouldPass_WhenOnlyVerifiedByIsProvided()
+    {
+        // Arrange
+        var tiObject = CreateValidUpdateTiObject();
+        tiObject.AddAttribute(PunchObjectAttributes.VerifiedBy, "verified@example.com");
         tiObject.AddAttribute(PunchObjectAttributes.VerifiedDate, "2024-01-15");
 
         // Act
@@ -833,114 +851,18 @@ public sealed class PunchTiObjectValidatorTests
     }
 
     [TestMethod]
-    public void Validate_ShouldFail_WhenVerifiedByIsProvidedWithoutVerifiedDate()
+    public void Validate_ShouldPass_WhenOnlyRejectedByIsProvided()
     {
         // Arrange
         var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.VerifiedBy, "user@example.com");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.VerifiedDate) && e.ErrorMessage.Contains("required")));
-    }
-
-    [TestMethod]
-    public void Validate_ShouldFail_WhenVerifiedDateIsProvidedWithoutVerifiedBy()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.VerifiedDate, "2024-01-15");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.VerifiedBy) && e.ErrorMessage.Contains("required")));
-    }
-
-    [TestMethod]
-    public void Validate_ShouldFail_WhenVerifiedDateIsNullMarker()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.VerifiedBy, "user@example.com");
-        tiObject.AddAttribute(PunchObjectAttributes.VerifiedDate, "{NULL}");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.VerifiedDate)));
-    }
-
-    #endregion
-
-    #region RejectedBy/RejectedDate Pair Validation Tests
-
-    [TestMethod]
-    public void Validate_ShouldPass_WhenBothRejectedByAndRejectedDateAreProvided()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedBy, "user@example.com");
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedDate, "2024-01-15");
+        tiObject.AddAttribute(PunchObjectAttributes.RejectedBy, "rejected@example.com");
+        tiObject.AddAttribute(PunchObjectAttributes.RejectedDate, "2024-01-16");
 
         // Act
         var result = _dut.Validate(tiObject);
 
         // Assert
         Assert.IsTrue(result.IsValid);
-    }
-
-    [TestMethod]
-    public void Validate_ShouldFail_WhenRejectedByIsProvidedWithoutRejectedDate()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedBy, "user@example.com");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.RejectedDate) && e.ErrorMessage.Contains("required")));
-    }
-
-    [TestMethod]
-    public void Validate_ShouldFail_WhenRejectedDateIsProvidedWithoutRejectedBy()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedDate, "2024-01-15");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.RejectedBy) && e.ErrorMessage.Contains("required")));
-    }
-
-    [TestMethod]
-    public void Validate_ShouldFail_WhenRejectedDateIsNullMarker()
-    {
-        // Arrange
-        var tiObject = CreateValidUpdateTiObject();
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedBy, "user@example.com");
-        tiObject.AddAttribute(PunchObjectAttributes.RejectedDate, "{NULL}");
-
-        // Act
-        var result = _dut.Validate(tiObject);
-
-        // Assert
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(e => e.ErrorMessage.Contains(PunchObjectAttributes.RejectedDate)));
     }
 
     #endregion
