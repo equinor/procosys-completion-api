@@ -111,7 +111,8 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.AreEqual(_punchItemToDuplicate.WorkOrderId, duplicatedPunchItem.WorkOrderId);
         Assert.AreEqual(_punchItemToDuplicate.SWCRId, duplicatedPunchItem.SWCRId);
         Assert.AreEqual(_punchItemToDuplicate.DocumentId, duplicatedPunchItem.DocumentId);
-        Assert.AreEqual(_punchItemToDuplicate.ExternalItemNo, duplicatedPunchItem.ExternalItemNo);
+        // ExternalItemNo is not copied when duplicating - it should only be set during creation
+        Assert.IsNull(duplicatedPunchItem.ExternalItemNo);
         Assert.AreEqual(_punchItemToDuplicate.MaterialRequired, duplicatedPunchItem.MaterialRequired);
         Assert.AreEqual(_punchItemToDuplicate.MaterialETAUtc, duplicatedPunchItem.MaterialETAUtc);
         Assert.AreEqual(_punchItemToDuplicate.MaterialExternalNo, duplicatedPunchItem.MaterialExternalNo);
@@ -248,7 +249,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
             var properties = historyEvent.Properties;
             Assert.IsNotNull(properties);
-            Assert.AreEqual(19, properties.Count);
+            Assert.AreEqual(18, properties.Count);
             AssertProperty(
                 properties
                     .SingleOrDefault(c => c.Name == nameof(PunchItem.ItemNo)),
@@ -315,10 +316,7 @@ public class DuplicatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
                     .SingleOrDefault(c => c.Name == nameof(PunchItem.WorkOrder)),
                 punchItem.WorkOrder!.No);
 
-            AssertProperty(
-                properties
-                    .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
-                punchItem.ExternalItemNo);
+            // ExternalItemNo is not copied when duplicating - removed from history properties
             AssertProperty(
                 properties
                     .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
