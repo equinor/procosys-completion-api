@@ -142,8 +142,6 @@ public class PunchItemsControllerTests : TestBase
         patchDocument.Replace("WorkOrderGuid", TestFactory.WorkOrderGuid);
         patchDocument.Replace("SWCRGuid", TestFactory.SWCRGuid);
         patchDocument.Replace("DocumentGuid", TestFactory.DocumentGuid);
-        var newExternalItemNo = "123a";
-        patchDocument.Replace("ExternalItemNo", newExternalItemNo);
         const bool NewMaterialRequired = true;
         patchDocument.Replace("MaterialRequired", NewMaterialRequired);
         var newMaterialETAUtc = DateTime.UtcNow.AddDays(7);
@@ -176,7 +174,6 @@ public class PunchItemsControllerTests : TestBase
         Assert.AreEqual(TestFactory.WorkOrderGuid, punchItem.WorkOrder!.Guid);
         Assert.AreEqual(TestFactory.SWCRGuid, punchItem.SWCR!.Guid);
         Assert.AreEqual(TestFactory.DocumentGuid, punchItem.Document!.Guid);
-        Assert.AreEqual(newExternalItemNo, punchItem.ExternalItemNo);
         Assert.AreEqual(NewMaterialRequired, punchItem.MaterialRequired);
         Assert.AreEqual(newMaterialETAUtc, punchItem.MaterialETAUtc);
         Assert.AreEqual(newMaterialExternalNo, punchItem.MaterialExternalNo);

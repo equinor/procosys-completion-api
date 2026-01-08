@@ -122,20 +122,6 @@ public static class PunchItemPatcher
         punchItem.Estimate = patchedPunchItem.Estimate;
     }
 
-    public static void PatchExternalItemNo(PunchItem punchItem, PatchablePunchItem patchedPunchItem,
-        List<IChangedProperty> changes)
-    {
-        if (punchItem.ExternalItemNo == patchedPunchItem.ExternalItemNo)
-        {
-            return;
-        }
-
-        changes.Add(new ChangedProperty<string?>(nameof(punchItem.ExternalItemNo),
-            punchItem.ExternalItemNo,
-            patchedPunchItem.ExternalItemNo));
-        punchItem.ExternalItemNo = patchedPunchItem.ExternalItemNo;
-    }
-
     public static void PatchMaterialRequired(PunchItem punchItem, PatchablePunchItem patchedPunchItem,
         List<IChangedProperty> changes)
     {
