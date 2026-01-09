@@ -158,7 +158,7 @@ public class CommandReferencesService(
             return references with {Errors = 
             [
                 ..references.Errors,
-                message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found")
+                message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         return references with { RaisedByOrgGuid = raisedByOrg.Guid};
@@ -178,7 +178,7 @@ public class CommandReferencesService(
             return references with {Errors =
             [
                 ..references.Errors, message.ToImportError(
-                    $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found")
+                    $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         return references with{ ClearedByOrgGuid = clearingByOrg.Guid};
@@ -200,7 +200,7 @@ public class CommandReferencesService(
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"PunchListType '{message.PunchListType.Value}' not found")
+                message.ToImportError($"PunchListType '{message.PunchListType.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -223,7 +223,7 @@ public class CommandReferencesService(
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"Priority '{message.Priority.Value}' not found")
+                message.ToImportError($"Priority '{message.Priority.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         
@@ -246,7 +246,7 @@ public class CommandReferencesService(
             return references with {Errors =
             [
                 ..references.Errors,
-                message.ToImportError($"Sorting '{message.Sorting.Value}' not found")
+                message.ToImportError($"Sorting '{message.Sorting.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         

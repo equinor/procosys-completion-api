@@ -289,7 +289,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RaisedByOrganization")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RaisedByOrganization") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -319,7 +319,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedByOrganization")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedByOrganization") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -376,7 +376,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("PunchListType") && e.Message.Contains("not found")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("PunchListType") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -419,7 +419,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Priority") && e.Message.Contains("not found")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Priority") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -462,7 +462,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Sorting") && e.Message.Contains("not found")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Sorting") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
