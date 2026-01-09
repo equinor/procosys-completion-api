@@ -171,10 +171,6 @@ public class UpdatePunchItemCommandHandler : PunchUpdateCommandBase,
                     await PunchItemPatcher.PatchDocumentAsync(punchItem, patchedPunchItem, changes, _documentRepository, cancellationToken);
                     break;
 
-                case nameof(PatchablePunchItem.ExternalItemNo):
-                    PunchItemPatcher.PatchExternalItemNo(punchItem, patchedPunchItem, changes);
-                    break;
-
                 case nameof(PatchablePunchItem.MaterialRequired):
                     PunchItemPatcher.PatchMaterialRequired(punchItem, patchedPunchItem, changes);
                     break;

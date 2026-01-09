@@ -24,7 +24,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     private readonly string _newDescription = Guid.NewGuid().ToString();
     private readonly DateTime _newDueTimeUtc = DateTime.UtcNow.AddDays(7);
     private readonly int _newEstimate = 7;
-    private readonly string _newExternalItemNo = "1A";
     private readonly bool _newMaterialRequired = true;
     private readonly DateTime _newMaterialETAUtc = DateTime.UtcNow.AddDays(17);
     private readonly string _newMaterialExternalNo = "B7";
@@ -53,7 +52,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder1[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR1[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument1[TestPlantA].Guid);
-        _command.PatchDocument.Replace(p => p.ExternalItemNo, _newExternalItemNo);
         _command.PatchDocument.Replace(p => p.MaterialRequired, _newMaterialRequired);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, _newMaterialETAUtc);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
@@ -113,7 +111,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.IsNull(_existingPunchItem[TestPlantA].WorkOrder);
         Assert.IsNull(_existingPunchItem[TestPlantA].SWCR);
         Assert.IsNull(_existingPunchItem[TestPlantA].Document);
-        Assert.IsNull(_existingPunchItem[TestPlantA].ExternalItemNo);
         Assert.IsNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
         Assert.IsNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
@@ -131,7 +128,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.AreEqual(_existingWorkOrder1[TestPlantA].Id, _existingPunchItem[TestPlantA].WorkOrderId);
         Assert.AreEqual(_existingSWCR1[TestPlantA].Id, _existingPunchItem[TestPlantA].SWCRId);
         Assert.AreEqual(_existingDocument1[TestPlantA].Id, _existingPunchItem[TestPlantA].DocumentId);
-        Assert.AreEqual(_newExternalItemNo, _existingPunchItem[TestPlantA].ExternalItemNo);
         Assert.AreEqual(_newMaterialETAUtc, _existingPunchItem[TestPlantA].MaterialETAUtc);
         Assert.AreEqual(_newMaterialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
     }
@@ -151,7 +147,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
-        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
         _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
 
@@ -165,7 +160,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.IsNotNull(_existingPunchItem[TestPlantA].WorkOrder);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].SWCR);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].Document);
-        Assert.IsNotNull(_existingPunchItem[TestPlantA].ExternalItemNo);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
@@ -180,7 +174,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _command.PatchDocument.Replace(p => p.WorkOrderGuid, null);
         _command.PatchDocument.Replace(p => p.SWCRGuid, null);
         _command.PatchDocument.Replace(p => p.DocumentGuid, null);
-        _command.PatchDocument.Replace(p => p.ExternalItemNo, null);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, null);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, null);
 
@@ -198,7 +191,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.IsFalse(_existingPunchItem[TestPlantA].WorkOrderId.HasValue);
         Assert.IsFalse(_existingPunchItem[TestPlantA].SWCRId.HasValue);
         Assert.IsFalse(_existingPunchItem[TestPlantA].DocumentId.HasValue);
-        Assert.IsTrue(_existingPunchItem[TestPlantA].ExternalItemNo is null);
         Assert.IsFalse(_existingPunchItem[TestPlantA].MaterialETAUtc.HasValue);
         Assert.IsTrue(_existingPunchItem[TestPlantA].MaterialExternalNo is null);
     }
@@ -218,7 +210,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
-        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
         _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
 
@@ -232,13 +223,11 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.IsNotNull(_existingPunchItem[TestPlantA].WorkOrderId);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].SWCRId);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].DocumentId);
-        Assert.IsNotNull(_existingPunchItem[TestPlantA].ExternalItemNo);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialETAUtc);
         Assert.IsNotNull(_existingPunchItem[TestPlantA].MaterialExternalNo);
 
         var dueTimeUtc = _newDueTimeUtc.AddDays(1);
         var estimate = _newEstimate * 2;
-        var externalItemNo = $"{_newExternalItemNo}-2";
         var materialETAUtc = _newMaterialETAUtc.AddDays(2);
         var materialExternalNo = $"{_newMaterialExternalNo}-X1";
 
@@ -253,7 +242,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _command.PatchDocument.Replace(p => p.WorkOrderGuid, _existingWorkOrder2[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.SWCRGuid, _existingSWCR2[TestPlantA].Guid);
         _command.PatchDocument.Replace(p => p.DocumentGuid, _existingDocument2[TestPlantA].Guid);
-        _command.PatchDocument.Replace(p => p.ExternalItemNo, externalItemNo);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, materialETAUtc);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, materialExternalNo);
 
@@ -271,7 +259,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         Assert.AreEqual(_existingWorkOrder2[TestPlantA].Id, _existingPunchItem[TestPlantA].WorkOrderId);
         Assert.AreEqual(_existingSWCR2[TestPlantA].Id, _existingPunchItem[TestPlantA].SWCRId);
         Assert.AreEqual(_existingDocument2[TestPlantA].Id, _existingPunchItem[TestPlantA].DocumentId);
-        Assert.AreEqual(externalItemNo, _existingPunchItem[TestPlantA].ExternalItemNo);
         Assert.AreEqual(materialETAUtc, _existingPunchItem[TestPlantA].MaterialETAUtc);
         Assert.AreEqual(materialExternalNo, _existingPunchItem[TestPlantA].MaterialExternalNo);
     }
@@ -361,8 +348,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         var changedProperties = historyEvent.ChangedProperties;
         Assert.IsNotNull(changedProperties);
-        Assert.AreEqual(17, _command.PatchDocument.Operations.Count);
-        Assert.AreEqual(17, changedProperties.Count);
+        Assert.AreEqual(16, _command.PatchDocument.Operations.Count);
+        Assert.AreEqual(16, changedProperties.Count);
 
         AssertChange(
             changedProperties
@@ -434,11 +421,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             _existingDocument1[TestPlantA].No);
         AssertChange(
             changedProperties
-                .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
-            null,
-            _newExternalItemNo);
-        AssertChange(
-            changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.MaterialRequired)),
             oldMaterialRequired,
             _newMaterialRequired,
@@ -472,7 +454,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _command.PatchDocument.Replace(p => p.WorkOrderGuid, null);
         _command.PatchDocument.Replace(p => p.SWCRGuid, null);
         _command.PatchDocument.Replace(p => p.DocumentGuid, null);
-        _command.PatchDocument.Replace(p => p.ExternalItemNo, null);
         _command.PatchDocument.Replace(p => p.MaterialETAUtc, null);
         _command.PatchDocument.Replace(p => p.MaterialExternalNo, null);
 
@@ -486,7 +467,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
         _existingPunchItem[TestPlantA].SetWorkOrder(_existingWorkOrder1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetSWCR(_existingSWCR1[TestPlantA]);
         _existingPunchItem[TestPlantA].SetDocument(_existingDocument1[TestPlantA]);
-        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
         _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
         _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
         HistoryUpdatedIntegrationEvent historyEvent = null!;
@@ -511,8 +491,8 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
 
         var changedProperties = historyEvent.ChangedProperties;
         Assert.IsNotNull(changedProperties);
-        Assert.AreEqual(13, _command.PatchDocument.Operations.Count);
-        Assert.AreEqual(13, changedProperties.Count);
+        Assert.AreEqual(12, _command.PatchDocument.Operations.Count);
+        Assert.AreEqual(12, changedProperties.Count);
 
         AssertChange(
             changedProperties
@@ -566,11 +546,6 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
             changedProperties
                 .SingleOrDefault(c => c.Name == nameof(PunchItem.Document)),
             _existingDocument1[TestPlantA].No,
-            null);
-        AssertChange(
-            changedProperties
-                .SingleOrDefault(c => c.Name == nameof(PunchItem.ExternalItemNo)),
-            _newExternalItemNo,
             null);
         AssertChange(
             changedProperties
@@ -791,60 +766,12 @@ public class UpdatePunchItemCommandHandlerTests : PunchItemCommandTestsBase
     }
 
     [TestMethod]
-    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchExternalItemNoWithSameValue()
-    {
-        // Arrange 
-        _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[TestPlantA].ExternalItemNo = _newExternalItemNo;
-        _command.PatchDocument.Replace(p => p.ExternalItemNo, _newExternalItemNo);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert 
-        await _messageProducerMock.Received(0)
-            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
-    }
-
-    [TestMethod]
     public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialRequiredWithSameValue()
     {
         // Arrange 
         _command.PatchDocument.Operations.Clear();
         _existingPunchItem[TestPlantA].MaterialRequired = _newMaterialRequired;
         _command.PatchDocument.Replace(p => p.MaterialRequired, _newMaterialRequired);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert 
-        await _messageProducerMock.Received(0)
-            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialETAWithSameValue()
-    {
-        // Arrange 
-        _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[TestPlantA].MaterialETAUtc = _newMaterialETAUtc;
-        _command.PatchDocument.Replace(p => p.MaterialETAUtc, _newMaterialETAUtc);
-
-        // Act
-        await _dut.Handle(_command, default);
-
-        // Assert 
-        await _messageProducerMock.Received(0)
-            .PublishAsync(Arg.Any<IIntegrationEvent>(), Arg.Any<CancellationToken>());
-    }
-
-    [TestMethod]
-    public async Task HandlingCommand_ShouldNotNotPublishAnyEvent_WhenPatchMaterialExternalNoWithSameValue()
-    {
-        // Arrange 
-        _command.PatchDocument.Operations.Clear();
-        _existingPunchItem[TestPlantA].MaterialExternalNo = _newMaterialExternalNo;
-        _command.PatchDocument.Replace(p => p.MaterialExternalNo, _newMaterialExternalNo);
 
         // Act
         await _dut.Handle(_command, default);

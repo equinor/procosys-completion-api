@@ -30,7 +30,6 @@ public class PatchablePunchItem
     public Guid? WorkOrderGuid { get; set; }
     public Guid? SWCRGuid { get; set; }
     public Guid? DocumentGuid { get; set; }
-    public string? ExternalItemNo { get; set; }
     public bool MaterialRequired { get; set; }
     public DateTime? MaterialETAUtc { get; set; }
     public string? MaterialExternalNo { get; set; }

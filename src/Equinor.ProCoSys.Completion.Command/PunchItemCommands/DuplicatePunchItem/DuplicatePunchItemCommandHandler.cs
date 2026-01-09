@@ -189,7 +189,6 @@ public class DuplicatePunchItemCommandHandler(
         SetWorkOrder(newPunchItem, sourcePunchItem.WorkOrder, properties);
         SetSWCR(newPunchItem, sourcePunchItem.SWCR, properties);
         SetDocument(newPunchItem, sourcePunchItem.Document, properties);
-        SetExternalItemNo(newPunchItem, sourcePunchItem.ExternalItemNo, properties);
         SetMaterialRequired(newPunchItem, sourcePunchItem.MaterialRequired, properties);
         SetMaterialETAUtc(newPunchItem, sourcePunchItem.MaterialETAUtc, properties);
         SetMaterialExternalNo(newPunchItem, sourcePunchItem.MaterialExternalNo, properties);
@@ -321,17 +320,6 @@ public class DuplicatePunchItemCommandHandler(
 
         punchItem.SetDocument(document);
         properties.Add(new Property(nameof(PunchItem.Document), punchItem.Document!.No));
-    }
-
-    private static void SetExternalItemNo(PunchItem punchItem, string? externalItemNo, ICollection<IProperty> properties)
-    {
-        if (externalItemNo is null)
-        {
-            return;
-        }
-
-        punchItem.ExternalItemNo = externalItemNo;
-        properties.Add(new Property(nameof(PunchItem.ExternalItemNo), punchItem.ExternalItemNo));
     }
 
     private static void SetMaterialRequired(PunchItem punchItem, bool materialRequired, ICollection<IProperty> properties)
