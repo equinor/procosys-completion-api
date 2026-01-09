@@ -289,7 +289,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RaisedByOrganization")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("RaisedByOrganization") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -319,7 +319,7 @@ public class CommandReferencesServiceTests
         var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
 
         // Assert
-        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedByOrganization")));
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("ClearedByOrganization") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion
@@ -366,6 +366,19 @@ public class CommandReferencesServiceTests
         Assert.AreEqual(0, references.Errors.Length);
     }
 
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPunchListTypeNotFound()
+    {
+        // Arrange
+        var message = CreateBaseMessage() with { PunchListType = new OptionalWithNull<string?>("INVALID_TYPE") };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("PunchListType") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
+    }
+
     #endregion
 
     #region Priority Tests
@@ -396,6 +409,19 @@ public class CommandReferencesServiceTests
         Assert.IsNull(references.PriorityGuid);
     }
 
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenPriorityNotFound()
+    {
+        // Arrange
+        var message = CreateBaseMessage() with { Priority = new OptionalWithNull<string?>("INVALID_PRIORITY") };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Priority") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
+    }
+
     #endregion
 
     #region Sorting Tests
@@ -424,6 +450,19 @@ public class CommandReferencesServiceTests
 
         // Assert
         Assert.IsNull(references.SortingGuid);
+    }
+
+    [TestMethod]
+    public async Task GetAndValidatePunchItemReferencesForImport_ShouldReturnError_WhenSortingNotFound()
+    {
+        // Arrange
+        var message = CreateBaseMessage() with { Sorting = new OptionalWithNull<string?>("INVALID_SORTING") };
+
+        // Act
+        var references = await _dut.GetAndValidatePunchItemReferencesForImportAsync(message, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsTrue(references.Errors.Any(e => e.Message.Contains("Sorting") && e.Message.Contains("not found") && e.Message.Contains(TestPlant)));
     }
 
     #endregion

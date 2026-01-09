@@ -39,9 +39,9 @@ public class CommandReferencesService(
         
         references = ValidateAndSetRaisedByOrg(message, references);
         references = ValidateAndSetClearedByOrg(message, references);
-        references = SetPunchType(message, references);
-        references = SetPunchPriority(message, references);
-        references = SetPunchSorting(message, references);
+        references = ValidateAndSetPunchType(message, references);
+        references = ValidateAndSetPunchPriority(message, references);
+        references = ValidateAndSetPunchSorting(message, references);
 
         // Validate related entities
         references = await ValidateAndSetWorkOrderAsync(message, references, cancellationToken);
@@ -158,7 +158,7 @@ public class CommandReferencesService(
             return references with {Errors = 
             [
                 ..references.Errors,
-                message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found")
+                message.ToImportError($"RaisedByOrganization '{message.RaisedByOrganization.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         return references with { RaisedByOrgGuid = raisedByOrg.Guid};
@@ -178,13 +178,13 @@ public class CommandReferencesService(
             return references with {Errors =
             [
                 ..references.Errors, message.ToImportError(
-                    $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found")
+                    $"ClearedByOrganization '{message.ClearedByOrganization.Value}' not found in plant '{bundle.Plant}'")
             ]};
         }
         return references with{ ClearedByOrgGuid = clearingByOrg.Guid};
     }
 
-    private CommandReferences SetPunchType(PunchItemImportMessage message, CommandReferences references)
+    private CommandReferences ValidateAndSetPunchType(PunchItemImportMessage message, CommandReferences references)
     {
         // If marked for deletion or no value, skip lookup
         if (!message.PunchListType.HasValue || message.PunchListType.ShouldBeNull || string.IsNullOrEmpty(message.PunchListType.Value))
@@ -194,10 +194,20 @@ public class CommandReferencesService(
 
         var type = bundle.Library.SingleOrDefault(x =>
             x.Code == message.PunchListType.Value && x.Type == PUNCHLIST_TYPE);
-        return references with { TypeGuid = type?.Guid };
+        
+        if (type is null)
+        {
+            return references with {Errors =
+            [
+                ..references.Errors,
+                message.ToImportError($"PunchListType '{message.PunchListType.Value}' not found in plant '{bundle.Plant}'")
+            ]};
+        }
+        
+        return references with { TypeGuid = type.Guid };
     }
 
-    private CommandReferences SetPunchPriority(PunchItemImportMessage message, CommandReferences references)
+    private CommandReferences ValidateAndSetPunchPriority(PunchItemImportMessage message, CommandReferences references)
     {
         // If marked for deletion or no value, skip lookup
         if (!message.Priority.HasValue || message.Priority.ShouldBeNull || string.IsNullOrEmpty(message.Priority.Value))
@@ -207,10 +217,20 @@ public class CommandReferencesService(
 
         var priority = bundle.Library.SingleOrDefault(x =>
             x.Code == message.Priority.Value && x.Type == COMM_PRIORITY);
-        return references with { PriorityGuid = priority?.Guid};
+        
+        if (priority is null)
+        {
+            return references with {Errors =
+            [
+                ..references.Errors,
+                message.ToImportError($"Priority '{message.Priority.Value}' not found in plant '{bundle.Plant}'")
+            ]};
+        }
+        
+        return references with { PriorityGuid = priority.Guid };
     }
 
-    private CommandReferences SetPunchSorting(PunchItemImportMessage message, CommandReferences references)
+    private CommandReferences ValidateAndSetPunchSorting(PunchItemImportMessage message, CommandReferences references)
     {
         // If marked for deletion or no value, skip lookup
         if (!message.Sorting.HasValue || message.Sorting.ShouldBeNull || string.IsNullOrEmpty(message.Sorting.Value))
@@ -220,7 +240,17 @@ public class CommandReferencesService(
 
         var sorting = bundle.Library.SingleOrDefault(x =>
             x.Code == message.Sorting.Value && x.Type == PUNCHLIST_SORTING);
-        return references with { SortingGuid = sorting?.Guid };
+        
+        if (sorting is null)
+        {
+            return references with {Errors =
+            [
+                ..references.Errors,
+                message.ToImportError($"Sorting '{message.Sorting.Value}' not found in plant '{bundle.Plant}'")
+            ]};
+        }
+        
+        return references with { SortingGuid = sorting.Guid };
     }
 
     private async Task<CommandReferences> ValidateAndSetWorkOrderAsync(
