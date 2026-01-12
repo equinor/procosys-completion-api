@@ -6,7 +6,6 @@ using Equinor.ProCoSys.Completion.ForeignApi.MainApi.CheckList;
 using Equinor.ProCoSys.Completion.Infrastructure;
 using Equinor.ProCoSys.Completion.TieImport.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Equinor.ProCoSys.Completion.TieImport;
 
@@ -34,7 +33,7 @@ public interface IImportDataFetcher
 
 public sealed class ImportDataFetcher(
     CompletionContext completionContext,
-    ICheckListCache checkListCache
+    ICheckListApiService checkListApiService
     ) : IImportDataFetcher
 {
     public async Task<Project?> FetchProjectsAsync(ProjectByPlantKey key,
@@ -92,9 +91,9 @@ public sealed class ImportDataFetcher(
 
     public async Task<Guid?> GetCheckListGuidByCheckListMetaInfo(
         PunchItemImportMessage message, CancellationToken cancellationToken) =>
-        await checkListCache.GetCheckListGuidByMetaInfoAsync(message.Plant, message.TagNo, message.Responsible, message.FormType, message.ProjectName, cancellationToken);
+        await checkListApiService.GetCheckListGuidByMetaInfoAsync(message.Plant, message.TagNo, message.Responsible, message.FormType, message.ProjectName, cancellationToken);
 
     public async Task<ProCoSys4CheckList?> GetCheckListByGuidAsync(
         Guid checkListGuid, CancellationToken cancellationToken) =>
-        await checkListCache.GetCheckListAsync(checkListGuid, cancellationToken);
+        await checkListApiService.GetCheckListAsync(checkListGuid, cancellationToken);
 }
